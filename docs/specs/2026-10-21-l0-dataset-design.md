@@ -465,20 +465,22 @@ gate mapping merges, the VTR set (task 13, after the micros and VerilogEval work
 support (an Odin III front end, ADR D11), a Liberty reader, fine-grained per-gate provenance
 inside ABC cones, GUI.
 
-## 13. Open questions
+## 13. Decisions on the open questions (Peter, 2026-10-21)
 
-Listed with recommendations in the report that accompanies this spec; decisions Peter makes go
-into this section before the plan is executed.
-
-1. VerilogEval's 156 designs use SystemVerilog (`always_comb`), which Odin III 1.0 rejects
-   (probe: `Prob100_fsm3comb`). Recommendation: no preprocessor in L0; the manifest records the
-   parse failures as `skipped`, and the count is the first result of the run. Revisit after the
-   SystemVerilog front end.
-2. How `odin3` reaches Loki in CI: the wheel's name and index are not settled in the Odin III
-   repo. Recommendation: CI runs lint, types and the pure tests only; integration tests run
-   locally with `PYTHONPATH=<odin3>/plugins/python` and `ODIN3_LIB`.
-3. The exact carrier of the FSM flag (7.6). Recommendation: pin it in Task 6; if none, roles
-   still work and only FSM state registers lose the seed.
-4. Whether `Design.top()` after `flatten` always keeps hard cell names stable for
-   `--match-unnamed` (9). Recommendation: accept `skipped:blackbox-names`, count them, revisit
-   if more than 5% of F1 designs.
+1. SystemVerilog designs Odin III 1.0 rejects (`always_comb`, probe `Prob100_fsm3comb`): no
+   preprocessor in L0; the manifest records them as `skipped` and the count is the first result of the
+   run. Revisit after the SystemVerilog front end.
+2. CI installs Odin III from the v1.0.0 GitHub release wheel
+   (`https://github.com/drpaj12/odin3/releases/download/v1.0.0/odin3-1.0.0-py3-none-linux_x86_64.whl`;
+   the ubuntu-24.04 runner matches its glibc), so the Odin III integration tests run in CI too. Locally,
+   the same wheel or `PYTHONPATH=<odin3>/plugins/python` with `ODIN3_LIB`.
+3. FSM flag carrier: pinned by a probe test in Task 6; if none exists, roles still work and only FSM
+   state registers lose the seed.
+4. Hard blocks in F1 are not equivalence-checked: a hard cell's type already says what it is (Peter).
+   F1's equivalence check covers the soft logic around the hard cells only (hard cells are cut points
+   with matching names); `meta.json` records `equiv: soft-only`. Recovering the original operator from
+   hard pieces (adder chain length, a split multiplier's original width) is L1 / `unmap` work, by
+   chain following and clustering, not L0.
+5. LUT bit order: decided in Task 4 Step 6 against Odin III's own `write_blif`.
+6. F2 and F3 are identical across archs: built once (from the first arch in sorted order); `loki check`
+   verifies any other copies are byte-equal.
