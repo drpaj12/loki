@@ -1,4 +1,4 @@
-# Loki L1: the Bayesian hypothesis flow (design)
+# Loki III L1: the Bayesian hypothesis flow (design)
 
 Status: decisions approved by Peter, 2026-10-21 (section 2, items 1 to 7, verbatim); everything
 else is an agent default he may override. Open questions are section 17. This file is for his
@@ -9,7 +9,7 @@ review.
 L1 reverse-engineers one anonymous structural netlist (any L0 floor: F1 LUT + hard blocks, F2 LUT,
 F3 gates) into hierarchical, word-level Verilog. Detectors propose **hypotheses** ("these 9 LUTs
 are a 4-bit adder", "these 6 flip-flops are a modulo-10 counter"); each hypothesis carries
-log-odds that priors (from L0 statistics), structural evidence and proofs (`cone_check`, or Loki's
+log-odds that priors (from L0 statistics), structural evidence and proofs (`cone_check`, or Loki III's
 own exhaustive truth-table check) update. Confirmed pieces are committed with Odin III's `raise`
 and `submod`, which moves the design up one level; the next round detects on the new level, until
 a fixed point. There is no LLM step. L0's labels are the answer key for scoring.
@@ -693,7 +693,7 @@ table (`scores.md`, `scores.json`) with micro-averaged precision, recall, F1, AP
 hierarchy numbers, and the Gate-Breaker classes (VerilogEval `fsm`, `count`, `lfsr` problems)
 listed per design.
 
-## 13. CLI and the Wyrd step
+## 13. CLI and the Wyrd III step
 
 ```
 loki re <netlist> --floor {f1-k6,f1-earch,f2,f3,auto} [--odin3-root DIR] [--techlib L]

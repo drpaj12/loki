@@ -1,4 +1,4 @@
-# Loki L1 Bayesian Hypothesis Flow Implementation Plan
+# Loki III L1 Bayesian Hypothesis Flow Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -6,7 +6,7 @@
 
 **Architecture:** A pure core (`FnGraph` view of level 0, function facts, bit-parallel simulation, claims, overlay, Bayesian scoring, detectors, scoring) works on Python values; five modules touch Odin III objects handed out by L0's `loki/odin.py` (`normalise.py`, `fngraph.from_design`, `provers.ConeCheckProver`, `commit.py`, `loop.py`). Detectors are plugins behind one `Detector` protocol; the loop is detect, score, prove, compete, commit, repeat.
 
-**Tech Stack:** Python 3.11+, the `odin3` cffi binding (via `loki.odin` only), `unittest`, `ruff`, `mypy --strict`; Wyrd as a dev dependency for the step plugin.
+**Tech Stack:** Python 3.11+, the `odin3` cffi binding (via `loki.odin` only), `unittest`, `ruff`, `mypy --strict`; Wyrd III as a dev dependency for the step plugin.
 
 **Spec:** `docs/specs/2026-10-21-l1-hypotheses-design.md` (section numbers below refer to it). Read it and L0's spec `docs/specs/2026-10-21-l0-dataset-design.md` first. Every constant, rule and threshold in this plan comes from the spec; where the plan and spec differ, the spec wins and the difference is reported in the PR.
 

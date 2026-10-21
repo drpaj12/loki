@@ -1,8 +1,8 @@
-# Loki L0 Dataset Builder Implementation Plan
+# Loki III L0 Dataset Builder Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build Loki L0: a Wyrd step plugin that turns Verilog designs into labelled, anonymised netlist datasets (one directory per design per floor), with Odin III's provenance as the answer key.
+**Goal:** Build Loki III L0: a Wyrd III step plugin that turns Verilog designs into labelled, anonymised netlist datasets (one directory per design per floor), with Odin III's provenance as the answer key.
 
 **Architecture:** A pure core (model, rules, labels, anonymiser, BLIF writer, graph builder, assembler) works on a `Netlist` value; four thin modules touch Odin III (`odin.py`, `snapshot.py`, `extract.py`, `build.py`). A `DatasetStep` Wyrd plugin runs `python -m loki.build` per (design, architecture); `loki assemble` merges the finished runs into `dataset/` with a manifest and a design-level split.
 
