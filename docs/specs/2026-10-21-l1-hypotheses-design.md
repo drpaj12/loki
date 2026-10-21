@@ -782,7 +782,17 @@ equivalence; proofs in parallel processes; the `write_json` bulk loader for VTR-
 binding path is used; L2 or later); vector ports and net renaming in the output; GUI; any Odin III
 core change (the gaps of 3.2 are open questions, not workarounds in the core).
 
-## 17. Open questions (with recommendations)
+## 17. Decisions (Peter, 2026-10-21: "all good with the ideas")
+
+All six recommendations below are decisions. In particular: (1) `words.json` is folded into L0: the
+L0 build order is L0 Tasks 1-10, then L1 Task 1 (`words.json`), then L0 Task 11 onwards, so L0's
+acceptance already covers it; (2) the unmap contract items (BLIF input with vtr.o3lib, provenance to BLIF
+lines, the string attributes `unmap`, `unmap_note`, `unmap_cand`, and `unmap_cand` on converted `$mem`)
+are kept by the unmap review; (3) no core change for bit-level FSMs; (4) and (5) the core options
+`raise -const PORT=V` and vector ports for `submod` are later Odin III patch releases (after v1.0.4),
+each with its own spec; (6) metrics and default likelihoods as stated until the first baseline.
+
+The recommendations as written:
 
 1. **L0 `words.json`.** L0 is planned but not built. Recommend folding 12.1 into L0 Task 7 and
    Task 10 briefs before L0 Task 7 starts; otherwise L1 Task 1 adds it as its own PR.

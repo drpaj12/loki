@@ -190,6 +190,8 @@
 
 ### Task 10: Assembler, manifest, split, `loki check`, CLI
 
+> Build order (L1 spec section 17, Peter 2026-10-21): after this task, run L1 plan Task 1 (`words.json`, docs/plans/2026-10-21-l1-hypotheses-plan.md) before Task 11, so the L0 acceptance covers `words.json`.
+
 **Files:**
 - Create: `loki/assemble.py`, `loki/cli.py`, `tests/test_assemble.py`, `tests/test_check.py`, `tests/test_cli.py`
 
