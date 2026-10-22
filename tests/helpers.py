@@ -6,7 +6,12 @@ import importlib
 import os
 from pathlib import Path
 
-from loki.model import FinalCell, Net, Netlist, Port, PortBit, Span
+from loki.anon import build_key, number
+from loki.blifout import anon_naming, write_blif
+from loki.graph import build_graph
+from loki.labels import build_labels, labels_to_csv
+from loki.model import FinalCell, Net, Netlist, Port, PortBit, Snapshot, Span
+from loki.schemas import dump_json
 
 
 def odin_available() -> bool:
@@ -69,3 +74,43 @@ def micro(name: str) -> Path:
 
 def can_run_flow() -> bool:
     return odin_available() and vtr_arch() is not None
+
+
+def fake_netlist() -> Netlist:
+    """PIs A[0], A[1]; one AND LUT; PO X; the ports carry spans like real ones."""
+    span = (Span("/p/d.v", 1, 1, 1, 9),)
+    nets = {i: Net(i, ()) for i in (1, 2, 3)}
+    pbs = (
+        PortBit("A[0]", "in", 1, span),
+        PortBit("A[1]", "in", 2, span),
+        PortBit("X", "out", 3, span),
+    )
+    return Netlist("top", nets, (lut_cell(10, [1, 2], 3, "1000"),), pbs)
+
+
+def write_fake_floor(root: Path, design: str, floor: str) -> Path:
+    """Write the six files of a floor directory from a hand-built netlist; returns its path."""
+    nl = fake_netlist()
+    num = number(nl)
+    labels, word_ids = build_labels(nl, Snapshot((), (), "top"), num, {}, "/p")
+    graph, loops = build_graph(nl, labels, num, design, floor)
+    meta = {
+        "schema": 1, "design": design, "floor": floor, "odin3_version": "1.0.0", "abi_version": 5,
+        "script": ["lower"], "loki_version": "0.1.0", "loops_cut": loops, "unmatched": 1,
+        "counts": {"nodes": 4, "pi": 2, "po": 1, "lut": 1, "ff": 0, "const": 0, "hard": 0,
+                   "edges": 3},
+        "equiv": {"writer": {"status": "equivalent", "tool_exit": 0, "mode": "full"}},
+    }
+    out = root / design / floor
+    out.mkdir(parents=True, exist_ok=True)
+    files = {
+        "netlist.blif": write_blif(nl, anon_naming(num, nl)),
+        "netlist.v": "module top();\nendmodule\n",
+        "graph.json": dump_json(graph),
+        "labels.csv": labels_to_csv(labels),
+        "key.json": dump_json(build_key(nl, num, design, floor, word_ids)),
+        "meta.json": dump_json(meta),
+    }
+    for name, text in files.items():
+        (out / name).write_text(text, encoding="utf-8")
+    return out
