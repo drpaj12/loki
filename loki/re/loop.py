@@ -177,8 +177,13 @@ class _Run:
 
     def transfer(self, h0: Hypothesis, members: list[str], r: int,
                  counts: dict[str, Any], budget: list[int]) -> set[str]:
-        """Spec 8.1: ``cone_match`` the other members of ``h0``'s group, then the spot check."""
+        """Spec 8.1: ``cone_match`` the other members of ``h0``'s group, then the spot check.
+
+        The spot check costs one ``MAX_PROOFS`` slot and must run in the same round as the
+        transfers: with no free slot no transfer is made (a transfer never stands unproved)."""
         assert h0.claim is not None
+        if budget[0] <= 0:
+            return set()
         moved: list[str] = []
         for mid in sorted(members, key=_num):
             m = self.overlay.get(mid)
@@ -190,7 +195,7 @@ class _Run:
                 counts["engines"]["transfer"] += 1
                 self.transfers += 1
                 moved.append(mid)
-        if moved and budget[0] > 0:
+        if moved:
             budget[0] -= 1
             spot = self.overlay.get(moved[0])
             v = self.prove_one(spot, counts)

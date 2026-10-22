@@ -125,6 +125,16 @@ class LoopTest(unittest.TestCase):
         self.assertEqual(engines(res)["transfer"], 0)
         self.assertEqual(engines(res)["cone_check"], 4)
 
+    def test_no_transfer_without_spot_budget(self) -> None:
+        """Spec 8.1: a transfer stands only when the spot check runs in the same round. With the
+        MAX_PROOFS budget spent, no group is transferred (an unverified proof must not stand)."""
+        with mock.patch("loki.re.loop.bayes.MAX_PROOFS", 1):
+            res = run_re(opts(RE / "add2x4.blif", max_rounds=1))
+        self.assertEqual(engines(res)["cone_check"], 1)
+        self.assertEqual(engines(res)["transfer"], 0)
+        self.assertEqual(res.features["transfers"], 0)
+        self.assertEqual(res.features["transfer_failures"], 0)
+
     def test_spot_check_failure_revokes(self) -> None:
         real = provers.prove
         calls: list[str] = []
