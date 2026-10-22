@@ -63,7 +63,8 @@ def floor_script(
     return front, mapping
 
 
-def _skip_reason(err: Exception, records: list[Any], lib: Any) -> str:
+def error_reason(err: Exception, records: list[Any], lib: Any) -> str:
+    """``odin3: <status text> <first error: log line>`` for a failed script."""
     first = next((r.message for r in records if r.level <= int(lib.ODIN3_LOG_ERROR)), "")
     first = first.splitlines()[0] if first else ""
     m = _ERROR_LINE.match(first)
@@ -98,7 +99,7 @@ def open_front(
                 instances = take_instances(design)
                 design.run_script(FRONT)
             except mod.Odin3Error as err:
-                raise OdinSkip(_skip_reason(err, records, o.lib)) from err
+                raise OdinSkip(error_reason(err, records, o.lib)) from err
     finally:
         if top:
             o.lib.odin3_pass_set_top_name(o.ffi.NULL)

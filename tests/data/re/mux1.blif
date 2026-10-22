@@ -1,0 +1,9 @@
+.model m
+.inputs a b s
+.outputs y
+.names a b s y
+010 1
+110 1
+101 1
+111 1
+.end

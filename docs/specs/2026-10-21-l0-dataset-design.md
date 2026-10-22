@@ -67,7 +67,7 @@ dataset/
   <design>/
     design.json
     <floor>/
-      netlist.blif   netlist.v   graph.json   labels.csv   key.json   meta.json
+      netlist.blif   netlist.v   graph.json   labels.csv   key.json   meta.json   words.json
 ```
 
 ## 4. Pipeline of one (design, floor)
@@ -319,6 +319,24 @@ change with one. There is no timing field (it would break byte-identical rebuild
 ```
 Designs sorted by id; floors sorted by name. Statuses: `ok`, `skipped` (with reason), `fail`
 (internal error, with message). Only `ok` floors have a directory.
+
+### 6.10 `words.json`
+
+Added for L1 scoring (L1 spec 12.1); written next to `labels.csv` from the snapshot and the label
+join, with no original names (no word name, no span):
+
+```json
+{"schema": 1, "words": [
+  {"id": 6, "type": "$add", "params": {"A_WIDTH": 4, "B_WIDTH": 4, "Y_WIDTH": 5},
+   "fsm": false, "role": "datapath", "const_ports": ["B"], "footprint": ["n17", "n18"]}],
+ "edges": [{"src": 6, "src_port": "Y", "dst": 9, "dst_port": "D"}]}
+```
+
+`footprint` = the anonymised names of the final cells whose matched word ids contain `id`; `role`
+is the word's role (section 7, `unknown` when none was assigned); `const_ports` = input ports whose
+every bit is constant (net 0 or a net driven by a constant word); `edges` = one per (driver word,
+port, reader word, port) over nets, sorted, deduplicated. `loki check` validates it and `assemble`
+copies it.
 
 ## 7. The role rule table
 

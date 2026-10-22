@@ -1,0 +1,30 @@
+.model reconv
+.inputs a0 a1 b0 b1 p c1 d1
+.outputs y0 y1 z0 z1
+.names a0 b0 y0
+01 1
+10 1
+.cname n10
+.names a0 b0 k0
+11 1
+.cname n11
+.names a1 b1 k0 y1
+001 1
+010 1
+100 1
+111 1
+.cname n12
+.names p p z0
+01 1
+10 1
+.cname n13
+.names p p m0
+11 1
+.cname n14
+.names c1 d1 m0 z1
+001 1
+010 1
+100 1
+111 1
+.cname n15
+.end

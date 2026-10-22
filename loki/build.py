@@ -27,6 +27,7 @@ from loki.rules import UnlistedWordType, assign_roles
 from loki.schemas import FLOORS, SCHEMA, dump_json
 from loki.snapshot import take_snapshot
 from loki.techlib import TechLib, TechlibError, load_techlib
+from loki.words import build_words
 
 _HARD_KINDS = ("hard",)  # gates are written as .names, so they need no soft matching
 _EQUIV_OK = ("equivalent", "skipped:blackbox-names")
@@ -229,6 +230,7 @@ def _finish(
             "labels.csv": labels_to_csv(labels),
             "key.json": dump_json(key),
             "meta.json": dump_json(meta),
+            "words.json": dump_json(build_words(snap, word_ids, num, roles)),
         },
     )
     bad = floor_failures(results)

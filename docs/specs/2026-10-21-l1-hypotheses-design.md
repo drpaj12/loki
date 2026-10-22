@@ -78,14 +78,15 @@ Task 2 turns each into a test, and a changed fact stops the build.
    the line of its `.names` / `.latch` / `.subckt`. Lines are unique per cell, so `line` maps any
    later object back to level-0 cells.
 4. `raise`: the new cell's `sources()` is the union of the replaced cells' sources (probed: a
-   2-bit adder of 3 `$sop` gave lines 4, 7, 9). It has no name; it drives the net bound to `Y[0]`,
+   2-bit adder of 3 `$sop` gave the union of their `.names` lines; `tests/data/re/add2.blif`, which has a
+   `.cname` line after every cell, gives 4, 8, 11). It has no name; it drives the net bound to `Y[0]`,
    so `Module.net(name).driver().node()` finds it.
 5. `submod -attr KEY`: one module per value `V`, instance named `V_i`; moved nodes get new IDs in
    the new module (RE-ARCHITECTURE gap 5); nested `submod` (a group holding an instance) works;
    `Design.copy` works after `submod`. Boundary nets stay in the parent module with their names.
 6. `Node.set_attr` / `Module.set_attr` / `Net.set_attr` take strings; `write_verilog` writes them
    as `(* key = "value" *)` on instances, modules and net declarations, but **as a comment**
-   (`// (* ... *)`) on a cell it prints as an `assign` (a raised `$add`). Hence every committed
+   (`// (* ... *)`) on a cell it prints as an `assign` (a raised `$add`, a `$sop`). Hence every committed
    piece is wrapped in a submodule (section 9.3).
 7. `cone_check` + `raise` work on a BLIF-read design after `Odin3.load_abc()`; the template may be
    any combinational word or bit cell type (`src/passes/cone_check/tmpl.c`: registers, tristates
@@ -96,8 +97,9 @@ Task 2 turns each into a test, and a changed fact stops the build.
    `$dff`/`$adff` whose D is a `$mux`/`$pmux` tree (4.8 spec D-2, D-3).
 9. INT attributes (such as `levelize`'s `odin3_level`) cannot be read through the binding
    (`odin3_attr_get_string` fails with `INVALID_ARG`): Loki computes levels itself.
-10. Passes present (`Odin3.passes()`): `read_blif read_techlib read_arch read_verilog write_blif
-    write_json write_verilog flatten lower fsm_detect levelize submod cone_check raise`. Not yet:
+10. Passes present (`Odin3.passes()`, which lists many more): `read_blif read_techlib read_arch
+    read_verilog write_blif write_json write_verilog flatten lower fsm_detect levelize submod
+    cone_check raise`. Not yet:
     `unmap` (Odin III project 3, spec `docs/specs/2026-10-21-unmap-design.md` on branch
     `feat/unmap-spec`, commit `bc9e5799`, not merged), `write_blif --gates-as-names` (gate mapping).
 
@@ -329,6 +331,14 @@ with index) and the net id. L1 builds it from `FnGraph` (`structural.feature_gra
 L2's `graphio.to_feature_graph` gives the same from its `Graph`. On F1 and F2 the `FnGraph` and
 `graph.json` routes give the same nodes, tables and edges, up to the PI/PO node names (a test pins
 it on an L0 micro). F3 differs until L0 writes gate tables (open question 18.8).
+`type` is the cell kind (hard cells: the Odin III type), because `graph.json` holds no cell types;
+only LUTs carry a `table` (a constant's value is not in `graph.json`, so both routes leave it
+out); hard-cell input pins use the formal port names (`Cell.in_pins`, `name[bit]` for buses), and
+flip-flop and latch extra inputs are `I<k>`. L1 keeps `latch` as its own kind, which `graph.json`
+cannot tell from `ff` (it writes the latch enable as pin `EN` of an `ff`): the two routes differ
+on latch designs only. In the role rules a forcing input needs a LUT of at least two inputs (with
+one input every value forces), and an enable inside the same LUT as a synchronous reset is not a
+hold path, so it stays `signal` (the limit L2 spec 8.1 states for merged resets).
 
 **Role flags.** `loki.features.roles.classify_nets` implements L2 spec 8.1's rules once (per net:
 `const`, `clock`, `reset`, `enable` or `signal`; `SignalConfig(min_fanout=16, dominance=0.8)`) and
@@ -567,7 +577,11 @@ output nets (section 9.3).
 **Chains.** A chain is a sequence of nets `y_0..y_{k-1}` (`k >= 2`) with supports
 `S(y_0)` of size 2 (or 3: carry-in) and `S(y_i) = S(y_{i-1}) | {p_i, q_i}` with exactly two new
 sources. Found by indexing nets with a non-`None` support by size and testing supersets. Every
-ripple implementation (any LUT packing) has this property; it is a candidate only.
+ripple implementation (any LUT packing) has this property; it is a candidate only. A stage can hold
+several nets with one support (a sum and a carry net); taking every combination is exponential, so
+one chain is built per support sequence: at each stage the lowest-id net that flips when either new
+source flips (a sum bit), else the lowest-id net. The carry-in of a size-3 `S(y_0)` is its highest
+net id (a full adder is symmetric in its three inputs).
 
 **Orientation** (exact, two simulations per bit): with every other source 0, evaluate `y_{i+1}`
 for `(p_i, q_i) = (0, 1)` and `(1, 0)`. Both 0: symmetric bit (add). Exactly one 1: that
@@ -582,7 +596,12 @@ equal width `k` (or one bus and a chain's operands) gives one `comparator` candi
 `eq ne lt le gt ge`, with both pairings (`B` in bus order and reversed); the prover keeps the ones
 that hold. A net `z` whose support `S` has `2 <= |S| <= 16` and whose function over `S` is
 `and_like` (or `or_like`) gives `eq_const` (`ne` for `or_like`) with `C` the on-minterm.
-Features: `width` bins as `bus.k`; `out_reads` (`y` read by a register or primary output: `yes`
+**Derived operand words (deviation, Task 16):** a LUT-packed comparator has no per-bit cells, so
+the bus detector finds no `A`, `B`. For a net `z` of even support `2k` (`4 <= 2k <= 16`) not
+covered by the bus rule, the words are read off its truth table: for the most significant
+remaining pair `(x, y)`, `z` is constant on `x=1, y=0` and on `x=0, y=1` (the same constant:
+`eq`/`ne`; different: an order, `A` is the side that wins); repeat on `x=y=0`. Only the ops whose
+reference table equals `z`'s are offered (pairing `fwd`). Features: `width` bins as `bus.k`; `out_reads` (`y` read by a register or primary output: `yes`
 +0.69). Arithmetic and comparators are expected to be decided by proof.
 
 **NPN evidence** (6.7 item 2; off with `--features none`). For bit `i >= 1` a *carry net* `c_i` is
@@ -605,7 +624,9 @@ order), claim `muxn`. Word level: a `bus` whose slices are `mux_bit`s (or `mux_t
 select set gives `mux` of `WIDTH = k` (2:1: claim `mux2`, provable by `cone_check $mux`; N:1:
 claim `muxn` per bit). Children: the slices. Features: `width` bins as `bus.k`; `sel_shared`
 (`yes` +0.69); `npn_class` on `mux_bit` (the cell's class: `mux2` or `mux4` +0.69, `other` 0, a mux
-merged with other logic in one LUT); a word `mux` copies its bus's `wl_depth` bin (7.4).
+merged with other logic in one LUT); a word `mux` copies its bus's `wl_depth` bin (7.4). **Lone mux (deviation, Task 16):** from round 2,
+a 2:1 `mux_bit` that is no bus slice and lies in no `mux_tree` gives a `mux` of `WIDTH = 1` (claim
+`mux2`; features `width` `1`, `sel_shared` `no`), so a single multiplexer commits.
 
 ### 7.7 `seqfn` (counters: FF + incrementer feedback; shift registers, LFSRs)
 
@@ -622,7 +643,9 @@ set `E` where `g` is one constant `r`; `M` = `max(E) + 1` when `r = 0`), `load-c
 `shift-r` (`g = (q << 1 | x)` or `(q >> 1 | x << k-1)` with `x` a control), `linear`
 (`g(a ^ b) = g(a) ^ g(b) ^ g(0)` on every tested pair). A group where some control value gives
 `inc`/`dec`/`modulo` and the others give `hold` or `load-const` is a `counter` (params `dir`,
-`width`, `modulus` or 0, `en`, `rst`, `rst_value`); `shift-*` gives `shift_reg`; `linear` with
+`width`, `modulus` or 0, `en`, `rst`, `rst_value`); `shift-*` gives `shift_reg` (control values that are not shift modes are all `hold`, or all
+`load-const` where the constant's bit `i` is one control bit `p_i`: the claim then carries `LOAD`
+and `P`, and `LOAD` wins); `linear` with
 feedback taps gives `lfsr` (params `taps`). The claim (op `counter`, `shift`, `lfsr`) is the
 classified next-state function with the Q nets as inputs and the D nets as outputs; in the exact
 case the prover confirms it, in the sampled case it adds `SIM_LLR` at best. A counter whose only
@@ -676,7 +699,7 @@ pieces get `loki_role` = the majority role of their cells.
 `Claim(op, params, inputs, outputs)`: `inputs` and `outputs` are tuples of `(port, nets)` in
 template port order, nets LSB first. `REFS[op](params, ins: dict[str, int]) -> dict[str, int]`
 is the reference function over unsigned integers: `add`, `add_cin`, `sub`, `eq ne lt le gt ge`,
-`eq_const` (`Y = A == C`), `mux2` (`Y = S ? B : A`), `muxn` (`Y = D[S]`; select values `>= N` are
+`eq_const` (`Y = A == C`), `ne_const` (`Y = A != C`, for the `or_like` form of 7.5), `mux2` (`Y = S ? B : A`), `muxn` (`Y = D[S]`; select values `>= N` are
 don't-care), `counter`, `shift`, `lfsr`. Signed operations are not in L1.
 
 Provers return `Verdict(verdict, engine, detail, cex)` with `verdict` in `equivalent differs
@@ -802,7 +825,8 @@ without it, once.
 
 ### 9.4 Final check
 
-For F2 and F3: copy the final level, `flatten; lower; write_blif`, and run L0's
+For F2 and F3: copy the final level, `flatten; lower; write_blif --gates-as-names` (`lower` leaves `$_MUX_` and
+other gate cells that `equiv-check` cannot read as subcircuits; found by acceptance, Task 16), and run L0's
 `loki.equiv.check_equiv` against the input BLIF; the result is `report.final_equiv`. F1 records
 `skipped:hard` (decision 2). `differs` is a bug: the run exits 1.
 
@@ -825,6 +849,10 @@ semi-canonical form, itself deterministic).
 
 - `design.v`: `write_verilog` of the final level: hierarchical, one module per committed piece,
   with the `loki_*` attributes of 9.3. Uncommitted logic stays as `$sop` assigns in its parent.
+  Odin III's own proof attributes (`\odin3:cone_check`, `\odin3:cone_key`, `\odin3:cone_hash`,
+  `\odin3:cone_cell`) can also appear on the modules and nets the prove step ran on: the ABI
+  has no attribute-remove, so they stay in the committed level. They name no original signal;
+  a tool that reads `design.v` back ignores them.
 - `overlay.json` (5).
 - `report.json`, schema 1: `input` (`path`, `sha256`, `floor`), `seed`, `calib` (`path`, `sha256`
   or `null`), `versions` (`loki`, `odin3`, `abi`), `rounds` (per round: `new`, `proved`
@@ -1000,11 +1028,16 @@ On L0's 12-micro subset (L0 plan Task 11 `SUBSET`), floor F2, default calibratio
 
 1. every design: `loki re` exit 0, `final_equiv` `equivalent`, a second run byte-identical;
 2. `bm_DL_four_bit_adder_continuous_assign`: an `adder` (or `adder_cin`) of width 4 committed with
-   a proof and matching L0's `$add` (Jaccard >= 0.5);
-3. `bm_DL_2_1_mux`: a `mux` committed and matching `$mux`;
+   a proof, its footprint matching the design's logic nodes (Jaccard >= 0.5; the micro is
+   gate-level `^ & |`, so L0 holds no `$add` word to match);
+3. `bm_DL_2_1_mux`: a `mux` (WIDTH 1, from the lone-`mux_bit` rule of 7.6) committed and matching
+   `$mux`;
 4. `bm_DL_4_bit_comparator`: at least one `comparator` proved `equivalent`;
-5. `bm_DL_4_bit_shift_register`: a `shift_reg` of width 4;
-6. `bm_DL_Dff_w_synch_reset`: an `ff_srst` on every flip-flop of the register;
+5. `bm_DL_4_bit_shift_register`: a `shift_reg` of width 4 (the stages load in parallel: the
+   claim carries the `LOAD`/`P` mode, 7.7);
+6. `bm_DL_Dff_w_synch_reset`: an `ff_srst` (not rejected) on every flip-flop of the register;
+   with default priors a lone reset has `p_comp` 0.25 (`rst_fanout` bin `1`, -1.10), so a threshold
+   needs calibrated priors;
 7. every run: `report.features.transfer_failures == 0`, and the structural features of a second
    run are identical (part of item 1's byte identity).
 

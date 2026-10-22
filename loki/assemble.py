@@ -29,9 +29,11 @@ from loki.schemas import (
     validate_labels_csv,
     validate_manifest,
     validate_meta,
+    validate_words,
 )
 
-FLOOR_FILES = ("netlist.blif", "netlist.v", "graph.json", "labels.csv", "key.json", "meta.json")
+FLOOR_FILES = ("netlist.blif", "netlist.v", "graph.json", "labels.csv", "key.json", "meta.json",
+               "words.json")
 SPLIT_RULE = "sha256(seed + ':' + design) first 8 bytes, big-endian, mod 100 < 80 is train"
 _NAME = re.compile(r"^n[0-9]+$")
 _STEP_GLOB = "*-loki-dataset"
@@ -297,12 +299,14 @@ def _check_floor(fdir: Path, errs: list[str]) -> None:
     graph = _load(fdir / "graph.json", errs)
     key = _load(fdir / "key.json", errs)
     meta = _load(fdir / "meta.json", errs)
+    words = _load(fdir / "words.json", errs)
     csv_text = (fdir / "labels.csv").read_text(encoding="utf-8")
     blif = (fdir / "netlist.blif").read_text(encoding="utf-8")
     sub: list[str] = []
     sub += [f"graph.json: {e}" for e in validate_graph(graph)]
     sub += [f"key.json: {e}" for e in validate_key(key)]
     sub += [f"meta.json: {e}" for e in validate_meta(meta)]
+    sub += [f"words.json: {e}" for e in validate_words(words)]
     sub += validate_labels_csv(csv_text)
     if not sub and isinstance(graph, dict) and isinstance(key, dict):
         sub += _graph_label_errors(graph, csv_text)

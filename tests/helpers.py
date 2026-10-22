@@ -13,6 +13,7 @@ from loki.graph import build_graph
 from loki.labels import build_labels, labels_to_csv
 from loki.model import FinalCell, Net, Netlist, Port, PortBit, Snapshot, Span
 from loki.schemas import dump_json
+from loki.words import build_words
 
 
 def odin_available() -> bool:
@@ -162,6 +163,7 @@ def write_fake_floor(root: Path, design: str, floor: str) -> Path:
         "labels.csv": labels_to_csv(labels),
         "key.json": dump_json(build_key(nl, num, design, floor, word_ids)),
         "meta.json": dump_json(meta),
+        "words.json": dump_json(build_words(Snapshot((), (), "top"), word_ids, num, {})),
     }
     for name, text in files.items():
         (out / name).write_text(text, encoding="utf-8")

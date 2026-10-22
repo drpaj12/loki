@@ -15,6 +15,7 @@ loki = "loki.cli:main"
 
 [project.entry-points."wyrd.steps"]
 loki-dataset = "loki.step:DatasetStep"
+loki-re = "loki.re_step:ReStep"
 
 [tool.setuptools.packages.find]
 include = ["loki*"]

@@ -129,6 +129,66 @@ def validate_graph(obj: object) -> list[str]:
     return errs
 
 
+def validate_words(obj: object) -> list[str]:
+    """Errors of a words.json object (L1 spec 12.1, L0 spec 6.10)."""
+    errs: list[str] = []
+    d = _closed(obj, "words", ("schema", "words", "edges"), (), errs)
+    if d is None:
+        return errs
+    _schema_ok(d, "words", errs)
+    ids = _word_errors(d.get("words", []), errs)
+    _word_edge_errors(d.get("edges", []), ids, errs)
+    return errs
+
+
+def _word_errors(words: object, errs: list[str]) -> set[int]:
+    ids: set[int] = set()
+    if not isinstance(words, list):
+        errs.append("words: words must be a list")
+        return ids
+    keys = ("id", "type", "params", "fsm", "role", "const_ports", "footprint")
+    for i, w in enumerate(words):
+        where = f"words[{i}]"
+        wd = _closed(w, where, keys, (), errs)
+        if wd is None:
+            continue
+        _typed(wd, "id", int, where, errs)
+        _typed(wd, "type", str, where, errs)
+        _typed(wd, "params", dict, where, errs)
+        if not isinstance(wd.get("fsm"), bool):
+            errs.append(f"{where}: key 'fsm' must be bool")
+        if wd.get("role") not in ROLES:
+            errs.append(f"{where}: unknown role {wd.get('role')!r}")
+        for k in ("const_ports", "footprint"):
+            _typed(wd, k, list, where, errs)
+        fp = wd.get("footprint")
+        if isinstance(fp, list) and not all(isinstance(x, str) and _NAME_RE.match(x) for x in fp):
+            errs.append(f"{where}: footprint entries must be n<k> names")
+        wid = wd.get("id")
+        if isinstance(wid, int) and not isinstance(wid, bool):
+            if wid in ids:
+                errs.append(f"{where}: duplicate word id {wid}")
+            ids.add(wid)
+    return ids
+
+
+def _word_edge_errors(edges: object, ids: set[int], errs: list[str]) -> None:
+    if not isinstance(edges, list):
+        errs.append("words: edges must be a list")
+        return
+    for i, edge in enumerate(edges):
+        where = f"edges[{i}]"
+        e = _closed(edge, where, ("src", "src_port", "dst", "dst_port"), (), errs)
+        if e is None:
+            continue
+        for k in ("src", "dst"):
+            _typed(e, k, int, where, errs)
+            if _is_int(e.get(k)) and e[k] not in ids:
+                errs.append(f"{where}: edge endpoint {e[k]!r} is not a word")
+        for k in ("src_port", "dst_port"):
+            _typed(e, k, str, where, errs)
+
+
 def _edge_errors(edges: object, ids: set[str], errs: list[str]) -> None:
     if not isinstance(edges, list):
         errs.append("graph: edges must be a list")

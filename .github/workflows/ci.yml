@@ -5,8 +5,11 @@ on:
   pull_request:
 
 env:
-  ODIN3_WHEEL: https://github.com/drpaj12/odin3/releases/download/v1.0.0/odin3-1.0.0-py3-none-linux_x86_64.whl
-  ABC_COMMIT: a3001b72edc5de22442e942165487fddf150e3d0  # odin3 v1.0.0 third_party/abc
+  # L1 needs the v1.0.2 passes (read_blif, write_blif --gates-as-names, abc --gates, dfflibmap),
+  # so the test jobs build Odin III from source at this commit instead of installing the v1.0.0
+  # wheel. ABC_COMMIT is third_party/abc at that commit (cmake/abc_pin.cmake checks it).
+  ODIN3_COMMIT: d7defba70678e49580e507997b7dac488617df2b
+  ABC_COMMIT: a3001b72edc5de22442e942165487fddf150e3d0  # odin3 d7defba third_party/abc
 
 jobs:
   lint:
@@ -36,8 +39,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: drpaj12/odin3
-          ref: v1.0.0
+          ref: ${{ env.ODIN3_COMMIT }}
           path: odin3-src
+          submodules: recursive  # third_party/abc at the pin; cmake/abc_pin.cmake checks it
+      - name: Build Odin III (release, with the linked ABC adapter)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build bison flex
+          cmake --preset release
+          cmake --build --preset release --target odin3
+        working-directory: odin3-src
       # equiv-check needs the ABC binary; build the submodule commit once and cache it.
       - uses: actions/cache@v4
         id: abc-cache
@@ -50,12 +61,14 @@ jobs:
           git -C abc-src checkout "$ABC_COMMIT"
           make -C abc-src -j4 ABC_USE_NO_READLINE=1 abc
           mkdir -p abc-bin && cp abc-src/abc abc-bin/abc
-      - run: pip install cffi "$ODIN3_WHEEL" "wyrd @ git+https://github.com/drpaj12/wyrd@11ee708790f05a4830ffa9172ea56e509115c33b"
-      - run: pip install .
+      - run: pip install cffi "wyrd @ git+https://github.com/drpaj12/wyrd@11ee708790f05a4830ffa9172ea56e509115c33b"
+      - run: pip install --no-deps .  # odin3 is the source checkout on PYTHONPATH, not a dist
       - run: python -m unittest discover -s tests -t . -v
         env:
           ODIN3_ROOT: ${{ github.workspace }}/odin3-src
+          ODIN3_LIB: ${{ github.workspace }}/odin3-src/build/release/libodin3.so
           ODIN3_ABC: ${{ github.workspace }}/abc-bin/abc
+          PYTHONPATH: ${{ github.workspace }}/odin3-src/plugins/python
 
   docs:
     # The user manual (docs/user, Sphinx + MyST). Warnings are errors. Deployed by pages.yml on push
