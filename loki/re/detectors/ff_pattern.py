@@ -173,6 +173,18 @@ def _order(members: list[_Ff], bus_pos: dict[int, tuple[str, int]]) -> tuple[lis
     return sorted(members, key=lambda f: f.q), "net_id"
 
 
+def _d_source(
+    ctx: RoundContext, ff: _Ff, bus_pos: dict[int, tuple[str, int]]
+) -> str:
+    """Key of the one committed piece or bus that the FF's D cone reads, ``""`` when neither
+    (spec 7.3: the register branch without a shared enable or reset)."""
+    hit = sorted(p.hid for p in ctx.view.pieces if set(p.outs) & ff.reads)
+    if len(hit) == 1:
+        return "piece:" + hit[0]
+    buses = sorted({sp[0] for n in ff.reads if (sp := bus_pos.get(n)) is not None})
+    return "bus:" + buses[0] if len(buses) == 1 else ""
+
+
 class FfPatternDetector:
     name = "ff_pattern"
     kinds = ("ff_en", "ff_srst", "register")
@@ -210,6 +222,7 @@ class FfPatternDetector:
     def _registers(ctx: RoundContext, ffs: list[_Ff]) -> list[Candidate]:
         groups: dict[tuple[int, tuple[int, int] | None, tuple[int, int] | None, str], list[_Ff]]
         groups = {}
+        bus_pos = _bus_positions(ctx)
         for ff in ffs:
             if not ff.clock:
                 continue
@@ -217,14 +230,12 @@ class FfPatternDetector:
             rst = min((n, a) for n, a, _ in ff.rst) if ff.rst else None
             piece = ""
             if en is None and rst is None:
-                hit = sorted(p.hid for p in ctx.view.pieces if set(p.outs) & ff.reads)
-                if len(hit) != 1:
+                piece = _d_source(ctx, ff, bus_pos)
+                if not piece:
                     continue
-                piece = hit[0]
             groups.setdefault((ff.clock, en, rst, piece), []).append(ff)
         en_ids = _lookup(ctx, "ff_en")
         rst_ids = _lookup(ctx, "ff_srst")
-        bus_pos = _bus_positions(ctx)
         cands: list[Candidate] = []
         for key in sorted(groups, key=repr):
             if len(groups[key]) < 2:

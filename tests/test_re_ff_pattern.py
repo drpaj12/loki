@@ -83,6 +83,24 @@ class FfPatternTest(unittest.TestCase):
         (hyp,) = ov.by_kind("register")
         self.assertEqual({h.kind for h in ov.children_of(hyp.id)}, {"ff_en"})
 
+    def test_register_from_bus(self) -> None:
+        """Spec 7.3: FFs with one clock whose D cones all read one bus form a register, slices
+        ordered as the bus (feature d_from_piece, order_source bus)."""
+        g = GB()
+        clk = g.pi("clk")
+        ds = [g.pi(f"d{i}") for i in range(4)]
+        qs = [g.ff(d, clk) for d in ds]
+        graph = g.build(qs)
+        ov = Overlay()
+        # bus bit 0 is the highest D net: the Q order is the reverse of the net id order
+        nets = {f"slice{i}": (ds[3 - i],) for i in range(4)}
+        ov.add(Candidate("bus", frozenset({900}), nets, {}, {}), "bus", 1)
+        got = FfPatternDetector().propose(make_ctx(graph, ov))
+        self.assertEqual(kinds(got), ["register"])
+        self.assertEqual(got[0].nets["q"], (qs[3], qs[2], qs[1], qs[0]))
+        self.assertEqual(got[0].features["d_from_piece"], "yes")
+        self.assertEqual(got[0].params["order_source"], "bus")
+
     def test_no_register_without_shared_control(self) -> None:
         g = GB()
         clk = g.pi("clk")
