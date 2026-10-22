@@ -10,6 +10,19 @@ Town game). Loki III depends on the `odin3` Python package and never changes the
 
 License: MIT.
 
+## Documentation
+
+Start at the Yggdrasil III hub; every manual links to the others.
+
+- [Yggdrasil III hub](https://drpaj12.github.io/YggdrasilIII/): the suite, how the pieces connect, getting started.
+- [Odin III manual](https://drpaj12.github.io/odin3/).
+- [Wyrd III manual](https://drpaj12.github.io/wyrd/), with
+  [simulation (Bifrost III)](https://drpaj12.github.io/wyrd/simulation.html) and
+  [Midgard III (Verilog Town)](https://drpaj12.github.io/wyrd/midgard.html).
+- Tutorials (PDF): [command line](https://drpaj12.github.io/wyrd/wyrd-tutorial.pdf) and
+  [GUI](https://drpaj12.github.io/wyrd/wyrd-gui-tutorial.pdf).
+- [Loki III manual](https://drpaj12.github.io/loki/).
+
 ## Development
 
     python3 -m venv .venv && .venv/bin/pip install ruff mypy cffi
