@@ -50,12 +50,13 @@ forms, each with its own labels (Peter, 2026-10-21). L0 emits one netlist per de
 |---|---|---|---|---|
 | F1 | `f1-k6`, `f1-earch` | LUT6 + hard blocks | `read_arch` of `k6_frac_N10_frac_chain_mem32K_40nm` or `EArch`; `hardmap; lower; abc --lut 6`. Adders, multipliers and RAMs stay hard cells and are labelled too | now |
 | F2 | `f2` | LUT6 only | no `hardmap` (soft arithmetic): `lower; abc --lut 6` | now |
-| F3 | `f3` | six-cell gates | `read_techlib lib/cmos6.o3lib; lower; abc --gates ...; dfflibmap ...` as the gate-mapping spec (`odin3` `docs/specs/2026-10-21-gatemap-design.md`) fixes | task 12, gated on that PR |
+| F3 | `f3` | six-cell gates | `read_techlib lib/cmos6.o3lib; read_verilog ...;` common front; `lower; abc --gates cmos6; dfflibmap cmos6` (library name read from the `.o3lib`; gatemap spec `odin3` `docs/specs/2026-10-21-gatemap-design.md`) | now |
 
 Common front, all floors: `proc; fsm; opt; flatten; opt -full; wreduce` (the `vtr` flow of
 `docs/user/flow.md` up to `hardmap`). `read_verilog --nolatches --vtr-compat` as that flow.
-F2 and F3 read the architecture only for its cell types (`read_arch` of the k6 file); their
-output does not depend on the architecture. Directory names are fixed by this rule: `f1-` plus
+F2 reads the architecture only for its cell types (`read_arch` of the k6 file); its output does
+not depend on the architecture. F3 reads no architecture: `read_techlib` of `lib/cmos6.o3lib` of the
+Odin III checkout. Directory names are fixed by this rule: `f1-` plus
 the architecture's lower-case prefix before the first `_` (`k6`, `EArch` becomes `earch`).
 
 Layout, per design directory, the same files per floor:
@@ -209,9 +210,15 @@ Berkeley/VPR BLIF: `.model top`, `.inputs` (PI nets in port order), `.outputs`, 
 - constants `$_CONST0_`, `$_CONST1_`: the zero-input `.names` forms.
 - flip-flops (`$_DFF_P_`, `$_DFF_N_`, latches `$_DLATCH_P_`, `$_DLATCH_N_`): `.latch <d> <q>
   <re|fe|ah|al> <clock or enable net> 3` then `.cname`.
-- hard cells and (F3 later) gates: `.subckt <cell type> <port>[<bit>]=<net> ...` (a width-1
+- hard cells: `.subckt <cell type> <port>[<bit>]=<net> ...` (a width-1
   port without an index), `.param NAME VALUE` lines for parameters that the cell type needs,
   then `.cname`.
+- F3 library gates (`BUF INV NAND2 NOR2`, kind `gate`): `.names <inputs in library port order> <out>`
+  with the on-set rows of the cell function (read from the `.o3lib` `fn` line by `loki.techlib`; the
+  binding exposes no cell function), so `equiv-check` runs in full mode; the `DFF` is kind `ff` and a
+  `.latch <d> <q> re <clock> 3`. The Odin III side of the writer check is
+  `write_blif --gates-as-names` (plain dialect; `--vtr` refuses library gates), and port names come
+  from the same plain header.
 - an output bit whose net is also an input or another output bit's net: a buffer
   `.names <net> <po pseudo name>` with row `1 1`, and that name is listed in `.outputs`.
 
@@ -287,11 +294,12 @@ must not read it.
 ### 6.7 `meta.json`
 
 `{"schema":1, "design", "floor", "odin3_version", "abi_version", "script": [..the run_script text..],
-"loki_version", "counts": {"nodes", "pi", "po", "lut", "ff", "const", "hard", "edges"},
-"unmatched": n, "loops_cut": n, "equiv": {"writer": {"status": "...", "tool_exit": n, "mode":
-"full|soft-only"}, "anon": {...}}}`. `script` shows the commands with file names reduced to base names and
-the architecture reduced to its stem (`f1-*`) or `<arch>` (`f2`, `f3`: they do not depend on it), so f2 files
-are byte-equal across architectures. There is no timing field (it would break byte-identical rebuilds);
+"loki_version", "counts": {"nodes", "pi", "po", "lut", "ff", "const", "hard", "gate",
+"edges"}, "unmatched": n, "loops_cut": n, "equiv": {"writer": {"status": "...", "tool_exit": n,
+"mode": "full|soft-only"}, "anon": {...}}}`. `script` shows the commands with file names reduced
+to base names and the architecture reduced to its stem (`f1-*`) or `<arch>` (`f2`), and omitted for
+`f3` (it reads no architecture), so f2 files are byte-equal across architectures and f3 files do not
+change with one. There is no timing field (it would break byte-identical rebuilds);
 `metrics.json` of the step run holds seconds.
 
 ### 6.8 `design.json`
@@ -452,9 +460,10 @@ section 10.
 `<odin3_root>/tools/equiv-check/equiv-check A B` (exit 0 equivalent, 1 not, 2 error, 4 unproven,
 5 hard). Two comparisons per (design, floor), recorded in `meta.json` `equiv`:
 
-1. `writer`: Odin III's own `write_blif --vtr` of the final design against Loki's BLIF written
-   with the original port names (the same writer with the identity naming). Proves Loki's writer
-   preserves function.
+1. `writer`: Odin III's own `write_blif --vtr` of the final design (floor F3: `write_blif
+   --gates-as-names`, the plain dialect, because `--vtr` refuses library gates) against Loki's BLIF
+   written with the original port names (the same writer with the identity naming). Proves Loki's
+   writer preserves function.
 2. `anon`: the reference BLIF (identity naming) against `deanonymise(netlist.blif, key.json)`,
    which maps the port signals back to the original port-bit names. Proves the anonymisation and
    the key.
@@ -492,8 +501,8 @@ build is byte-identical. F1 is built for the same designs: no `differs`.
 
 ## 12. Not in L0
 
-The hypothesis search (L1), clustering and graph models (L2), any model training, F3 before
-gate mapping merges, the VTR set (task 13, after the micros and VerilogEval work), SystemVerilog
+The hypothesis search (L1), clustering and graph models (L2), any model training, the VTR set
+(task 13, after the micros and VerilogEval work), SystemVerilog
 support (an Odin III front end, ADR D11), a Liberty reader, fine-grained per-gate provenance
 inside ABC cones, GUI.
 

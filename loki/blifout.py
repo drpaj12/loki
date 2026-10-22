@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 from loki.anon import Numbering, logic_cells
 from loki.model import FinalCell, Netlist, Port
+from loki.techlib import TechLib
 
 # How a $lut's LUT string indexes input patterns (decided against Odin III's own write_blif in
 # tests/test_blif_vs_odin.py, plan Task 4 step 6): "string_msb_first" means the string reads like a
@@ -17,7 +18,7 @@ from loki.model import FinalCell, Netlist, Port
 LUT_ROW_ORDER = "string_msb_first"
 
 _CONSTS = ("$_CONST0_", "$_CONST1_", "$_CONSTX_")
-_LATCH = {"$_DFF_P_": "re", "$_DFF_N_": "fe", "$_DLATCH_P_": "ah", "$_DLATCH_N_": "al"}
+_LATCH = {"DFF": "re", "$_DFF_P_": "re", "$_DFF_N_": "fe", "$_DLATCH_P_": "ah", "$_DLATCH_N_": "al"}
 _CLOCK_PORTS = ("C", "CLK", "E", "EN")
 
 
@@ -124,14 +125,32 @@ def _const_lines(cell: FinalCell, naming: Naming) -> list[str]:
     return lines
 
 
-def _latch_lines(cell: FinalCell, naming: Naming) -> list[str]:
-    kind = _LATCH.get(cell.type)
+def _latch_lines(cell: FinalCell, naming: Naming, lib: TechLib | None) -> list[str]:
+    """A state cell as ``.latch``; a library cell's edge and clock come from its ``seq`` line."""
+    libcell = lib.cells.get(cell.type) if lib is not None else None
+    kind: str | None
+    if libcell is not None and libcell.seq_kind:
+        kind = libcell.seq_kind
+        clock_ports: tuple[str, ...] = (libcell.clock,) if libcell.clock else _CLOCK_PORTS
+    else:
+        kind = _LATCH.get(cell.type)
+        clock_ports = _CLOCK_PORTS
     if kind is None:
-        raise ValueError(f"unsupported storage cell type {cell.type}")
+        raise ValueError(f"unsupported storage cell type {cell.type}: no edge in the library")
     d = _single(_port(cell, ("D",)), naming)
     q = _single(_port(cell, ("Q",)), naming)
-    clk = _single(_port(cell, _CLOCK_PORTS), naming)
+    clk = _single(_port(cell, clock_ports), naming)
     return [f".latch {d} {q} {kind} {clk} 3"]
+
+
+def _gate_lines(cell: FinalCell, naming: Naming, lib: TechLib) -> list[str]:
+    """A library gate as ``.names`` of its function (the cover comes from the ``.o3lib`` text)."""
+    in_names, rows = lib.cover(cell.type)
+    ins = [_single(_port(cell, (n,)), naming) for n in in_names]
+    out = _single(_port(cell, (lib.cells[cell.type].outputs[0],)), naming)
+    lines = [".names " + " ".join([*ins, out])]
+    lines.extend(f"{row} 1" if row else "1" for row in rows)
+    return lines
 
 
 def _subckt_lines(cell: FinalCell, naming: Naming) -> list[str]:
@@ -145,13 +164,17 @@ def _subckt_lines(cell: FinalCell, naming: Naming) -> list[str]:
     return [".subckt " + " ".join([cell.type, *conns])]
 
 
-def _cell_lines(cell: FinalCell, naming: Naming) -> list[str]:
+def _cell_lines(cell: FinalCell, naming: Naming, lib: TechLib | None) -> list[str]:
     if cell.type == "$lut":
         lines = _lut_lines(cell, naming)
     elif cell.type in _CONSTS:
         lines = _const_lines(cell, naming)
     elif cell.kind == "ff":
-        lines = _latch_lines(cell, naming)
+        lines = _latch_lines(cell, naming, lib)
+    elif cell.kind == "gate":
+        if lib is None:
+            raise ValueError(f"gate cell {cell.type} needs the technology library")
+        lines = _gate_lines(cell, naming, lib)
     else:
         lines = _subckt_lines(cell, naming)
     name = naming.cell(cell)
@@ -166,13 +189,16 @@ def _group(cell: FinalCell) -> int:
     return 2 if cell.kind == "ff" else 3
 
 
-def write_blif(nl: Netlist, naming: Naming) -> str:
-    """The BLIF text of a netlist (deterministic; groups sorted by cell id)."""
+def write_blif(nl: Netlist, naming: Naming, lib: TechLib | None = None) -> str:
+    """The BLIF text of a netlist (deterministic; groups sorted by cell id).
+
+    ``lib`` is the technology library of an F3 netlist: its gates are written as ``.names``.
+    """
     inputs = [naming.net(pb.net) for pb in nl.port_bits if pb.direction == "in"]
     outputs, buffers = _outputs(nl, naming)
     lines = [".model top", ".inputs " + " ".join(inputs), ".outputs " + " ".join(outputs)]
     for cell in sorted(logic_cells(nl), key=lambda c: (_group(c), c.id)):
-        lines.extend(_cell_lines(cell, naming))
+        lines.extend(_cell_lines(cell, naming, lib))
     for net, buf in buffers:
         lines.extend([f".names {net} {buf}", "1 1"])
     lines.append(".end")

@@ -11,6 +11,7 @@ from typing import Any
 
 from loki.model import InstanceSite
 from loki.snapshot import take_instances
+from loki.techlib import load_techlib
 
 FRONT = "proc; fsm; opt; flatten; opt -full; wreduce"
 _ERROR_LINE = re.compile(r"^(\S+?):(\d+:\d+): error: (.*)$")
@@ -36,13 +37,15 @@ def read_script(
     floor: str, files: Sequence[Path], arch_xml: Path | None, cmos6_lib: Path | None
 ) -> str:
     """Reader part of a floor's script: architecture or tech library, then the Verilog files."""
+    paths = " ".join(_q(f) for f in files)
     if floor == "f3":
-        raise NotImplementedError("f3 needs gate mapping")
+        if cmos6_lib is None:
+            raise ValueError("floor f3 needs the cmos6.o3lib path")
+        return f"read_techlib {_q(cmos6_lib)}; read_verilog --nolatches --vtr-compat {paths}"
     if floor not in ("f1-k6", "f1-earch", "f2"):
         raise ValueError(f"unknown floor {floor!r}")
     if arch_xml is None:
         raise ValueError(f"floor {floor} needs an architecture xml")
-    paths = " ".join(_q(f) for f in files)
     return f"read_arch {_q(arch_xml)}; read_verilog --nolatches --vtr-compat {paths}"
 
 
@@ -51,6 +54,11 @@ def floor_script(
 ) -> tuple[str, str]:
     """(front script, map script) of a floor (spec 3)."""
     front = f"{read_script(floor, files, arch_xml, cmos6_lib)}; {FRONT}"
+    if floor == "f3":
+        if cmos6_lib is None:
+            raise ValueError("floor f3 needs the cmos6.o3lib path")
+        lib = load_techlib(cmos6_lib).name
+        return front, f"lower; abc --gates {lib}; dfflibmap {lib}"
     mapping = "hardmap; lower; abc --lut 6" if floor.startswith("f1-") else "lower; abc --lut 6"
     return front, mapping
 

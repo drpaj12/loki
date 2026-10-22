@@ -230,7 +230,7 @@
 
 **Interfaces:**
 - Consumes: Odin III scripts `abc --gates <library>` and `dfflibmap <library>` (names per the gate-mapping spec sections 4 and 6; verify they exist with `Odin3.passes()` before coding; a missing name stops the task).
-- Produces: `floor_script("f3", ...)` returning the front and map scripts `read_techlib <cmos6.o3lib>; ... ; lower; abc --gates cmos6; dfflibmap cmos6` (library name per the gate-mapping spec; use the name the `.o3lib` declares, read from the file); `FinalCell.kind == "gate"` for library cells (`BUF INV NAND2 NOR2`) and `ff` for `DFF`/`DFFSR`.
+- Produces: `floor_script("f3", ...)` returning the front and map scripts `read_techlib <cmos6.o3lib>; ... ; lower; abc --gates cmos6; dfflibmap cmos6` (library name per the gate-mapping spec; use the name the `.o3lib` declares, read from the file); `FinalCell.kind == "gate"` for `BUF`/`INV`/`NAND2`/`NOR2`, `ff` for `DFF`, `hard` (blackbox) for `DFFSR`, which `dfflibmap` never selects.
 
 - [ ] **Step 1: Failing tests** (`tests/test_f3.py`, skip when `lib/cmos6.o3lib` or the pass `dfflibmap` is absent): `test_f3_comparator` builds the comparator micro for `f3`: only library cells, constants and ports remain; each gate node has a labels row with source spans (gate provenance is per cone, spec G-2 of the gate-mapping spec: `n_construct_cells` may exceed 1); both equivalence statuses `equivalent`; `test_f3_blif_gates_as_names` (gates written as `.names` of their function so `equiv-check` can run; the cover comes from the library cell's truth table read through `Node.params()` / the `.o3lib`, whichever the merged Odin III documents; if neither is reachable from Python, write the covers for the six cells from `lib/cmos6.o3lib` text with a small parser and test it against the file); `test_f3_flip_flops` (a `DFF` becomes `.latch`).
 - [ ] **Step 2: Run** `python -m unittest tests.test_f3 -v`. Expected: FAIL.
@@ -241,8 +241,13 @@
 ### Task 13: VerilogEval run and VTR designs (after Tasks 11 and 12)
 
 **Files:**
-- Modify: `loki/bench.py` (add `discover_vtr(vtr_root) -> list[Path]`), `docs/runbook-l0.md`
+- Modify: `loki/bench.py` (add `discover_vtr(vtr_root) -> list[Path]`), `loki/assemble.py` (record a
+  failed `f3` run in the manifest like `f1-<arch>` and `f2`; see the backlog note), `docs/runbook-l0.md`
 - Create: `tests/test_bench_vtr.py`
+
+**Backlog from Task 12:** `assemble._record_failures` writes fail entries only for `f1-<arch>` and
+`f2`; a failed `f3` run leaves no manifest entry (no schema change, no current effect: all F3 runs
+are ok or skipped). Add `f3` when the assembler is next touched.
 
 **Interfaces:**
 - Produces: `discover_vtr(vtr_root: Path) -> list[Path]` returning the 14 small VTR designs that Odin III's equivalence sweep uses (read their list from `<odin3_root>/tools/vtr-qor` or `docs/` rather than guessing; the function takes the list file as a parameter); suite name `vtr`, design ids `vtr_<name>`, multi-file designs allowed.
