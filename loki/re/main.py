@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from collections.abc import Sequence
@@ -11,8 +12,10 @@ from pathlib import Path
 
 from loki.re import bayes
 from loki.re.loop import ReOptions, run_re
-from loki.re.normalise import NormaliseError
+from loki.re.normalise import NormaliseError, floor_from_path
 from loki.re.report import write_outputs
+from loki.schemas import dump_json
+from loki.score.metrics import score_run, wyrd_metrics
 
 FLOORS = ("f1-k6", "f1-earch", "f2", "f3", "auto")
 
@@ -33,6 +36,9 @@ def _parser() -> argparse.ArgumentParser:
     ap.add_argument("--keep-levels", default="")
     ap.add_argument("--no-commit", action="store_true")
     ap.add_argument("--features", choices=("all", "none"), default="all")
+    ap.add_argument("--score-dataset", default="", help="L0 dataset: also write score.json")
+    ap.add_argument("--score-design", default="", help="design id inside --score-dataset")
+    ap.add_argument("--score-p", type=float, default=0.5)
     return ap
 
 
@@ -55,12 +61,28 @@ def _options(args: argparse.Namespace) -> ReOptions:
     )
 
 
+def _score(args: argparse.Namespace, opts: ReOptions, out: Path) -> None:
+    """Write ``score.json`` into ``out`` and ``metrics.json`` next to it (the Wyrd step dir)."""
+    floor = floor_from_path(opts.netlist.resolve()) if opts.floor == "auto" else opts.floor
+    floor_dir = Path(args.score_dataset) / args.score_design / floor
+    if not floor_dir.is_dir():
+        raise ValueError(f"{floor_dir}: no such floor directory")
+    score = score_run(out, floor_dir, args.score_p)
+    (out / "score.json").write_text(dump_json(score), encoding="utf-8")
+    report = json.loads((out / "report.json").read_text(encoding="utf-8"))
+    (out.resolve().parent / "metrics.json").write_text(
+        dump_json(wyrd_metrics(report, score)), encoding="utf-8")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the flow and write ``--out``; the exit codes are those of spec 13."""
     try:
         args = _parser().parse_args(argv)
     except SystemExit as exc:
         return 0 if exc.code in (0, None) else 2
+    if bool(args.score_dataset) != bool(args.score_design):
+        print("loki re: --score-dataset and --score-design go together", file=sys.stderr)
+        return 2
     opts = _options(args)
     if not opts.netlist.is_file():
         print(f"loki re: {opts.netlist}: cannot read the netlist", file=sys.stderr)
@@ -68,6 +90,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         res = run_re(opts)
         write_outputs(res, opts, Path(args.out))
+        if args.score_dataset:
+            _score(args, opts, Path(args.out))
     except NormaliseError as err:
         print(str(err), file=sys.stderr)
         return 3
