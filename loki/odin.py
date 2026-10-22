@@ -55,7 +55,8 @@ def floor_script(
     """(front script, map script) of a floor (spec 3)."""
     front = f"{read_script(floor, files, arch_xml, cmos6_lib)}; {FRONT}"
     if floor == "f3":
-        assert cmos6_lib is not None
+        if cmos6_lib is None:
+            raise ValueError("floor f3 needs the cmos6.o3lib path")
         lib = load_techlib(cmos6_lib).name
         return front, f"lower; abc --gates {lib}; dfflibmap {lib}"
     mapping = "hardmap; lower; abc --lut 6" if floor.startswith("f1-") else "lower; abc --lut 6"

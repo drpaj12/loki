@@ -26,7 +26,7 @@ from loki.odin import OdinSkip, floor_script, odin_module, open_front
 from loki.rules import UnlistedWordType, assign_roles
 from loki.schemas import FLOORS, SCHEMA, dump_json
 from loki.snapshot import take_snapshot
-from loki.techlib import TechLib, load_techlib
+from loki.techlib import TechLib, TechlibError, load_techlib
 
 _HARD_KINDS = ("hard",)  # gates are written as .names, so they need no soft matching
 _EQUIV_OK = ("equivalent", "skipped:blackbox-names")
@@ -57,7 +57,8 @@ def display_script(
     """The script commands for meta.json, without machine paths (spec 6.7)."""
     names = " ".join(f.name for f in files)
     if floor == "f3":
-        assert cmos6_lib is not None
+        if cmos6_lib is None:
+            raise ValueError("floor f3 needs the cmos6.o3lib path")
         reader = f"read_techlib {cmos6_lib.name}; read_verilog --nolatches --vtr-compat {names}"
     else:
         arch = arch_xml.stem if floor.startswith("f1-") and arch_xml else "<arch>"
@@ -161,8 +162,15 @@ def build_floor(
     design_dir = out_dir / design
     _clear_floor(design_dir, floor)
     cmos6 = cmos6_path(odin3_root) if floor == "f3" else None
-    lib = load_techlib(cmos6) if cmos6 is not None else None
+    lib: TechLib | None = None
     try:
+        if cmos6 is not None:
+            if not cmos6.is_file():
+                raise OdinSkip(f"missing technology library {cmos6}")
+            try:
+                lib = load_techlib(cmos6)
+            except TechlibError as err:
+                raise OdinSkip(f"bad technology library {cmos6}: {err}") from err
         odin, instances = open_front(floor, files, top, arch_xml, cmos6)
     except OdinSkip as skip:
         _write_skipped(design_dir, floor, str(skip))
@@ -206,7 +214,8 @@ def _finish(
         tmp = Path(tmpname)
         results, anon, _ = _equivalences(run, nl, num, key, tmp)
         (tmp / "netlist.blif").write_text(anon, encoding="utf-8")
-        verilog = _verilog(tmp / "netlist.blif", tmp / "netlist.v", run.arch_xml)
+        arch = None if run.floor == "f3" else run.arch_xml  # F3 reads no architecture (spec 3)
+        verilog = _verilog(tmp / "netlist.blif", tmp / "netlist.v", arch)
     counts = _counts(graph)
     soft = any(c.kind in _HARD_KINDS for c in nl.cells)
     unmatched = sum(1 for lab in labels if _is_unmatched(lab))
