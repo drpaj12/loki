@@ -26,8 +26,9 @@ from loki.odin import OdinSkip, floor_script, odin_module, open_front
 from loki.rules import UnlistedWordType, assign_roles
 from loki.schemas import FLOORS, SCHEMA, dump_json
 from loki.snapshot import take_snapshot
+from loki.techlib import TechLib, load_techlib
 
-_HARD_KINDS = ("hard", "gate")
+_HARD_KINDS = ("hard",)  # gates are written as .names, so they need no soft matching
 _EQUIV_OK = ("equivalent", "skipped:blackbox-names")
 
 
@@ -45,12 +46,23 @@ def common_root(files: Sequence[Path]) -> str:
     return os.path.commonpath([str(f.parent) for f in files])
 
 
-def display_script(floor: str, files: Sequence[Path], arch_xml: Path | None) -> list[str]:
+def cmos6_path(odin3_root: Path) -> Path:
+    """The six-cell library of floor F3 in an Odin III checkout."""
+    return odin3_root / "lib" / "cmos6.o3lib"
+
+
+def display_script(
+    floor: str, files: Sequence[Path], arch_xml: Path | None, cmos6_lib: Path | None = None
+) -> list[str]:
     """The script commands for meta.json, without machine paths (spec 6.7)."""
-    arch = arch_xml.stem if floor.startswith("f1-") and arch_xml else "<arch>"
     names = " ".join(f.name for f in files)
-    front, mapping = floor_script(floor, [], Path("x"), None)
-    reader = f"read_arch {arch}; read_verilog --nolatches --vtr-compat {names}"
+    if floor == "f3":
+        assert cmos6_lib is not None
+        reader = f"read_techlib {cmos6_lib.name}; read_verilog --nolatches --vtr-compat {names}"
+    else:
+        arch = arch_xml.stem if floor.startswith("f1-") and arch_xml else "<arch>"
+        reader = f"read_arch {arch}; read_verilog --nolatches --vtr-compat {names}"
+    front, mapping = floor_script(floor, [], Path("x"), cmos6_lib)
     tail = front.split("--vtr-compat", 1)[1].split(";", 1)[1].strip()
     return [reader, *(c.strip() for c in tail.split(";")), *(c.strip() for c in mapping.split(";"))]
 
@@ -91,9 +103,11 @@ def _write_skipped(design_dir: Path, floor: str, reason: str) -> None:
     path.write_text(dump_json({"schema": SCHEMA, "floors": floors}), encoding="utf-8")
 
 
-def _odin_blif(design: Any, tmp: Path) -> str:
+def _odin_blif(design: Any, tmp: Path, gates: bool) -> str:
     path = tmp / "odin.blif"
-    design.run_script(f'write_blif --vtr "{path}"')
+    # --gates-as-names is for the plain dialect (refused with --vtr): library gates as .names
+    opt = "--gates-as-names" if gates else "--vtr"
+    design.run_script(f'write_blif {opt} "{path}"')
     return path.read_text(encoding="utf-8")
 
 
@@ -106,13 +120,14 @@ def _verilog(blif_path: Path, v_path: Path, arch_xml: Path | None) -> str:
 
 
 def _equivalences(
-    design: Any, nl: Netlist, num: Numbering, key: dict[str, object], odin3_root: Path, tmp: Path
+    run: _Run, nl: Netlist, num: Numbering, key: dict[str, object], tmp: Path
 ) -> tuple[dict[str, EquivResult], str, str]:
-    ident = write_blif(nl, identity_naming(nl))
-    anon = write_blif(nl, anon_naming(num, nl))
+    ident = write_blif(nl, identity_naming(nl), run.lib)
+    anon = write_blif(nl, anon_naming(num, nl), run.lib)
     soft = any(c.kind in _HARD_KINDS for c in nl.cells)
-    writer = check_equiv(_odin_blif(design, tmp), ident, odin3_root, soft)
-    back = check_equiv(ident, deanonymise(anon, key), odin3_root, soft)
+    odin_text = _odin_blif(run.odin, tmp, run.floor == "f3")
+    writer = check_equiv(odin_text, ident, run.odin3_root, soft)
+    back = check_equiv(ident, deanonymise(anon, key), run.odin3_root, soft)
     return {"writer": writer, "anon": back}, anon, ident
 
 
@@ -145,8 +160,10 @@ def build_floor(
     files = [f.resolve() for f in files]
     design_dir = out_dir / design
     _clear_floor(design_dir, floor)
+    cmos6 = cmos6_path(odin3_root) if floor == "f3" else None
+    lib = load_techlib(cmos6) if cmos6 is not None else None
     try:
-        odin, instances = open_front(floor, files, top, arch_xml, None)
+        odin, instances = open_front(floor, files, top, arch_xml, cmos6)
     except OdinSkip as skip:
         _write_skipped(design_dir, floor, str(skip))
         return FloorResult("skipped", str(skip))
@@ -155,14 +172,14 @@ def build_floor(
         roles = assign_roles(snap.words, snap.po_nets)
     except UnlistedWordType as err:
         return FloorResult("fail", f"fail: {err}")
-    odin.run_script(floor_script(floor, files, arch_xml, None)[1])
+    odin.run_script(floor_script(floor, files, arch_xml, cmos6)[1])
     try:
-        nl = extract_netlist(odin, snap.top)
+        nl = extract_netlist(odin, snap.top, lib)
     except Unsupported as err:
         reason = f"unsupported: {err}"
         _write_skipped(design_dir, floor, reason)
         return FloorResult("skipped", reason)
-    run = _Run(design, floor, files, arch_xml, odin3_root, odin)
+    run = _Run(design, floor, files, arch_xml, odin3_root, odin, cmos6, lib)
     return _finish(run, nl, snap, roles, design_dir / floor)
 
 
@@ -174,6 +191,8 @@ class _Run:
     arch_xml: Path | None
     odin3_root: Path
     odin: Any
+    cmos6: Path | None = None
+    lib: TechLib | None = None
 
 
 def _finish(
@@ -185,7 +204,7 @@ def _finish(
     key = build_key(nl, num, run.design, run.floor, word_ids)
     with tempfile.TemporaryDirectory(prefix="loki-build-") as tmpname:
         tmp = Path(tmpname)
-        results, anon, _ = _equivalences(run.odin, nl, num, key, run.odin3_root, tmp)
+        results, anon, _ = _equivalences(run, nl, num, key, tmp)
         (tmp / "netlist.blif").write_text(anon, encoding="utf-8")
         verilog = _verilog(tmp / "netlist.blif", tmp / "netlist.v", run.arch_xml)
     counts = _counts(graph)
@@ -234,7 +253,7 @@ def _meta(
         "floor": run.floor,
         "odin3_version": o.version(),
         "abi_version": o.abi_version(),
-        "script": display_script(run.floor, run.files, run.arch_xml),
+        "script": display_script(run.floor, run.files, run.arch_xml, run.cmos6),
         "loki_version": loki.__version__,
         "counts": counts,
         "unmatched": unmatched,

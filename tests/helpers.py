@@ -114,6 +114,14 @@ def can_run_f2() -> bool:
     return odin_available() and root is not None and abc_available(root) and f2_arch() is not None
 
 
+def have_f3() -> bool:
+    """F2 prerequisites, ``lib/cmos6.o3lib`` and the ``dfflibmap`` pass (gate mapping)."""
+    root = odin3_root()
+    if root is None or not can_run_f2() or not (root / "lib" / "cmos6.o3lib").is_file():
+        return False
+    return "dfflibmap" in importlib.import_module("odin3").default().passes()
+
+
 def fake_netlist() -> Netlist:
     """PIs A[0], A[1]; one AND LUT; PO X; the ports carry spans like real ones."""
     span = (Span("/p/d.v", 1, 1, 1, 9),)

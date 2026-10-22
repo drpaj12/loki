@@ -140,7 +140,7 @@ class OdinFactsTest(unittest.TestCase):
         self.assertEqual(map_s, "lower; abc --lut 6")
         f1 = floor_script("f1-k6", [], Path("a"), None)
         self.assertEqual(f1[1], "hardmap; lower; abc --lut 6")
-        with self.assertRaises(NotImplementedError):
+        with self.assertRaises(ValueError):
             floor_script("f3", [], None, None)
 
 

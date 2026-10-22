@@ -8,6 +8,7 @@ from typing import Any
 
 from loki.model import FinalCell, Net, Netlist, PortBit
 from loki.snapshot import node_ports, node_spans
+from loki.techlib import TechLib
 
 _CONSTS = ("$_CONST0_", "$_CONST1_", "$_CONSTX_")
 
@@ -16,8 +17,12 @@ class Unsupported(Exception):
     """The final design holds something L0 does not label (instances, tristates, inout)."""
 
 
-def _kind(design: Any, node: Any) -> str:
+def _kind(design: Any, node: Any, lib: TechLib | None) -> str:
     typ = str(node.type_name)
+    if lib is not None and typ in lib.gate_names():
+        return "gate"
+    if lib is not None and typ in lib.state_names():
+        return "ff"
     if typ == "$lut":
         return "lut"
     if typ.startswith(("$_DFF", "$_DLATCH")):
@@ -34,12 +39,12 @@ def _kind(design: Any, node: Any) -> str:
     raise Unsupported(f"unmapped {gran} cell {typ}")
 
 
-def _cell(design: Any, node: Any) -> FinalCell:
+def _cell(design: Any, node: Any, lib: TechLib | None) -> FinalCell:
     if any(p.direction == "inout" for p in node.ports()):
         raise Unsupported(f"inout port on {node.type_name}")
     return FinalCell(
         id=int(node.id),
-        kind=_kind(design, node),
+        kind=_kind(design, node, lib),
         type=str(node.type_name),
         name=str(node.name),
         params=dict(node.params()),
@@ -53,15 +58,18 @@ def _net_names(net: Any) -> tuple[str, ...]:
     return tuple(n for n in [net.name, *net.aliases()] if n)
 
 
-def declared_port_names(design: Any) -> tuple[list[str], list[str]]:
+def declared_port_names(design: Any, gates: bool = False) -> tuple[list[str], list[str]]:
     """Input and output port-bit names as Odin III's own ``write_blif --vtr`` prints them.
 
     The binding does not expose a port wire's declared range (``output [7:1] leds`` has bits 7
-    to 1), so the BLIF header is the reference for the bit indices (open question 1).
+    to 1), so the BLIF header is the reference for the bit indices (open question 1). With
+    ``gates`` (F3) the plain dialect is written, as ``--vtr`` refuses library gates.
     """
     with tempfile.TemporaryDirectory(prefix="loki-ports-") as tmp:
         path = Path(tmp) / "ports.blif"
-        design.run_script(f'write_blif --vtr "{path}"')
+        design.run_script(
+            f'write_blif --gates-as-names "{path}"' if gates else f'write_blif --vtr "{path}"'
+        )
         text = path.read_text(encoding="utf-8").replace("\\\n", " ")
     found: dict[str, list[str]] = {".inputs": [], ".outputs": []}
     for line in text.splitlines():
@@ -100,16 +108,21 @@ def _port_bits(
     return bits, next_net
 
 
-def extract_netlist(design: Any, top_name: str) -> Netlist:
-    """The final top module as a Netlist; Unsupported when it holds more than L0 handles."""
+def extract_netlist(design: Any, top_name: str, lib: TechLib | None = None) -> Netlist:
+    """The final top module as a Netlist; Unsupported when it holds more than L0 handles.
+
+    ``lib`` is the F3 technology library (its cells become kinds ``gate`` and ``ff``).
+    """
     module = design.top()
     cells = tuple(
-        _cell(design, n) for n in module.nodes() if not str(n.type_name).startswith("$port_")
+        _cell(design, n, lib)
+        for n in module.nodes()
+        if not str(n.type_name).startswith("$port_")
     )
     all_nets = {int(n.id): Net(int(n.id), _net_names(n)) for n in module.nets()}
     extra: list[int] = []
     bits, _ = _port_bits(
-        module, extra, max(all_nets, default=0) + 1, declared_port_names(design)
+        module, extra, max(all_nets, default=0) + 1, declared_port_names(design, lib is not None)
     )
     used = {n for c in cells for p in (*c.inputs, *c.outputs) for n in p.nets if n}
     used.update(pb.net for pb in bits)

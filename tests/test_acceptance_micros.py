@@ -10,7 +10,7 @@ from loki.assemble import assemble, check_dataset
 from loki.bench import ODIN3_SOURCE
 from loki.build import FloorResult, build_floor
 from loki.schemas import dump_json
-from tests.helpers import DATA, can_run_flow, micro, odin3_root, vtr_arch
+from tests.helpers import DATA, can_run_flow, have_f3, micro, odin3_root, vtr_arch
 
 K6 = "k6_frac_N10_frac_chain_mem32K_40nm"
 SUBSET = (
@@ -142,6 +142,35 @@ class AcceptanceTest(unittest.TestCase):
                 self.assertIn(res.status, ("ok", "skipped"), (did, res.reason))
                 for name, eq in res.equiv.items():
                     self.assertIn(eq.status, allowed, (did, name))
+
+
+@unittest.skipUnless(have_f3(), "needs Odin III gate mapping")
+class AcceptanceF3Test(unittest.TestCase):
+    def test_all_micros_f3(self) -> None:
+        odin = odin3_root()
+        assert odin is not None
+        names = tuple(p.stem for p in sorted((odin / "tests/micro/verilog/micro").glob("*.v")))
+        designs = {f"micro_{n}": micro(n) for n in names}
+        with tempfile.TemporaryDirectory() as tmp:
+            results = build_all(designs, "f3", Path(tmp) / "built")
+            failed = {d: r.reason for d, r in results.items() if r.status == "fail"}
+            self.assertEqual(failed, {})
+            ok = {d: r for d, r in results.items() if r.status == "ok"}
+            skipped = {d: r.reason for d, r in results.items() if r.status == "skipped"}
+            print(f"f3: {len(ok)} ok, {len(skipped)} skipped {sorted(set(skipped.values()))}")
+            self.assertGreater(len(ok), 50)
+            self.assertEqual(equiv_problems(ok), [])
+
+    def test_subset_f3_checked_dataset(self) -> None:
+        designs = sources(SUBSET)
+        with tempfile.TemporaryDirectory() as tmp:
+            built = Path(tmp) / "built"
+            results = build_all(designs, "f3", built)
+            for did, res in results.items():
+                self.assertEqual((res.status, res.reason), ("ok", ""), did)
+            self.assertEqual(equiv_problems(results), [])
+            out = assemble_built(designs, built, Path(tmp) / "proj")
+            self.assertEqual(check_dataset(out), [])
 
 
 if __name__ == "__main__":

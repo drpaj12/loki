@@ -50,12 +50,13 @@ forms, each with its own labels (Peter, 2026-10-21). L0 emits one netlist per de
 |---|---|---|---|---|
 | F1 | `f1-k6`, `f1-earch` | LUT6 + hard blocks | `read_arch` of `k6_frac_N10_frac_chain_mem32K_40nm` or `EArch`; `hardmap; lower; abc --lut 6`. Adders, multipliers and RAMs stay hard cells and are labelled too | now |
 | F2 | `f2` | LUT6 only | no `hardmap` (soft arithmetic): `lower; abc --lut 6` | now |
-| F3 | `f3` | six-cell gates | `read_techlib lib/cmos6.o3lib; lower; abc --gates ...; dfflibmap ...` as the gate-mapping spec (`odin3` `docs/specs/2026-10-21-gatemap-design.md`) fixes | task 12, gated on that PR |
+| F3 | `f3` | six-cell gates | `read_techlib lib/cmos6.o3lib; read_verilog ...;` common front; `lower; abc --gates cmos6; dfflibmap cmos6` (library name read from the `.o3lib`; gatemap spec `odin3` `docs/specs/2026-10-21-gatemap-design.md`) | now |
 
 Common front, all floors: `proc; fsm; opt; flatten; opt -full; wreduce` (the `vtr` flow of
 `docs/user/flow.md` up to `hardmap`). `read_verilog --nolatches --vtr-compat` as that flow.
-F2 and F3 read the architecture only for its cell types (`read_arch` of the k6 file); their
-output does not depend on the architecture. Directory names are fixed by this rule: `f1-` plus
+F2 reads the architecture only for its cell types (`read_arch` of the k6 file); its output does
+not depend on the architecture. F3 reads no architecture: `read_techlib` of `lib/cmos6.o3lib` of the
+Odin III checkout. Directory names are fixed by this rule: `f1-` plus
 the architecture's lower-case prefix before the first `_` (`k6`, `EArch` becomes `earch`).
 
 Layout, per design directory, the same files per floor:
@@ -209,9 +210,15 @@ Berkeley/VPR BLIF: `.model top`, `.inputs` (PI nets in port order), `.outputs`, 
 - constants `$_CONST0_`, `$_CONST1_`: the zero-input `.names` forms.
 - flip-flops (`$_DFF_P_`, `$_DFF_N_`, latches `$_DLATCH_P_`, `$_DLATCH_N_`): `.latch <d> <q>
   <re|fe|ah|al> <clock or enable net> 3` then `.cname`.
-- hard cells and (F3 later) gates: `.subckt <cell type> <port>[<bit>]=<net> ...` (a width-1
+- hard cells: `.subckt <cell type> <port>[<bit>]=<net> ...` (a width-1
   port without an index), `.param NAME VALUE` lines for parameters that the cell type needs,
   then `.cname`.
+- F3 library gates (`BUF INV NAND2 NOR2`, kind `gate`): `.names <inputs in library port order> <out>`
+  with the on-set rows of the cell function (read from the `.o3lib` `fn` line by `loki.techlib`; the
+  binding exposes no cell function), so `equiv-check` runs in full mode; the `DFF` is kind `ff` and a
+  `.latch <d> <q> re <clock> 3`. The Odin III side of the writer check is
+  `write_blif --gates-as-names` (plain dialect; `--vtr` refuses library gates), and port names come
+  from the same plain header.
 - an output bit whose net is also an input or another output bit's net: a buffer
   `.names <net> <po pseudo name>` with row `1 1`, and that name is listed in `.outputs`.
 
