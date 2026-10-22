@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -115,6 +116,24 @@ def _cex(claim: Claim, variables: list[int], nets: dict[int, int], k: int) -> di
     return {bound.get(net, f"n{net}"): (nets.get(net, 0) >> k) & 1 for net in variables}
 
 
+def boundary_nets(graph: FnGraph, cells: Sequence[int]) -> set[int]:
+    """Nets that connect the group ``cells`` to the rest: nets it reads that others drive, and
+    nets it drives that others read or that are primary outputs."""
+    group = set(cells)
+    pos = set(graph.pos)
+    out: set[int] = set()
+    for cid in cells:
+        cell = graph.cells[cid]
+        for net in cell.ins:
+            if net and graph.driver.get(net) not in group:
+                out.add(net)
+        for net in cell.outs:
+            readers = graph.readers.get(net, ())
+            if net and (net in pos or any(r not in group for r, _ in readers)):
+                out.add(net)
+    return out
+
+
 class ConeCheckProver:
     """One scratch copy of level 0; claims are proved one at a time with ``cone_check``."""
 
@@ -142,19 +161,7 @@ class ConeCheckProver:
         return f"lk{self.counter}"
 
     def _boundary(self, cells: tuple[int, ...]) -> set[int]:
-        group = set(cells)
-        pos = set(self.graph.pos)
-        out: set[int] = set()
-        for cid in cells:
-            cell = self.graph.cells[cid]
-            for net in cell.ins:
-                if net and self.graph.driver.get(net) not in group:
-                    out.add(net)
-            for net in cell.outs:
-                readers = self.graph.readers.get(net, ())
-                if net and (net in pos or any(r not in group for r, _ in readers)):
-                    out.add(net)
-        return out
+        return boundary_nets(self.graph, cells)
 
     def prove(self, claim: Claim, key: str) -> Verdict:
         """``cone_check`` the claim; ``invalid`` without a pass when it cannot bind the group."""
