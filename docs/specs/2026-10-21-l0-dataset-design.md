@@ -1,11 +1,11 @@
-# Loki L0: the ground-truth dataset builder (design)
+# Loki III L0: the ground-truth dataset builder (design)
 
 Status: decisions approved by Peter, 2026-10-21 (items 1 to 7 of section 2, and the floors of
 section 3); the rest are agent defaults he may override. This file is for his review.
 
 ## 1. Goal
 
-Loki reverse-engineers structural netlists (BLIF or gate-level Verilog): it guesses data flow
+Loki III reverse-engineers structural netlists (BLIF or gate-level Verilog): it guesses data flow
 versus control, then adders, multiplexers, register files, counters and FSMs, and rebuilds the
 hierarchy. The method is Bayesian hypotheses that climb a hierarchy (L1, later) over graph and
 clustering analysis (L2, later). There is no LLM step. L0 is step 0: a **labelled dataset in
@@ -29,7 +29,7 @@ passes `loki check`.
 | 3 | Labels per gate or LUT: from provenance, the module path, the HDL construct cell type (`$add`, `$mux`, `$dff`, FSM state register, ...) and file:line; from net names before anonymising, the bus name and bit index; datapath or control by a rule table over construct type and what the gate drives (FSM, enable, select). The rule table is section 7. |
 | 4 | Anonymise: flatten, rename every net and cell `n0`, `n1`, ..., strip attributes; keep the mapping in a separate key file. |
 | 5 | Format: one directory per design: anonymised BLIF (and Verilog), `graph.json` (nodes with features and labels, edges), `labels.csv`, key file; a manifest lists every design. Schemas are section 6. |
-| 6 | Runs as a Wyrd project; the dataset builder is a Loki step plugin (entry point group `wyrd.steps`); Loki reads provenance through Odin III's Python binding (Loki may import `odin3`; Wyrd may not). |
+| 6 | Runs as a Wyrd III project; the dataset builder is a Loki III step plugin (entry point group `wyrd.steps`); Loki reads provenance through Odin III's Python binding (Loki may import `odin3`; Wyrd may not). |
 | 7 | Train and test split by design, fixed seed. |
 
 Licences found while writing this spec (2026-10-21, GitHub API): Gate-Breaker is BSD-3-Clause;

@@ -1,0 +1,11 @@
+# Loki III
+
+Reverse engineering of structural netlists (LUT, hard-block and gate-level) back to hierarchical, word-level
+Verilog, with a Bayesian hypothesis flow over Odin III's provenance IR. Status: specs and plans in
+`docs/specs/` and `docs/plans/` (L0 ground-truth dataset, L1 Bayesian hypotheses, L2 analysis plugins).
+
+Loki III is part of **Yggdrasil III** (the project / world tree), the suite of Odin III
+(<https://github.com/drpaj12/odin3>), Wyrd III (<https://github.com/drpaj12/wyrd>), Loki III and Midgard III (the Verilog
+Town game). Loki III depends on the `odin3` Python package and never changes the Odin III core.
+
+License: MIT.
