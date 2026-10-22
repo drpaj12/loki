@@ -35,6 +35,7 @@ class Label:
     hdl_end_line: int
     hdl_end_col: int
     n_spans: int
+    ambiguous: bool = False  # some matched words share identical spans (spec 5.3); not a CSV column
 
 
 def match_words(cell: FinalCell, words: Sequence[WordCell]) -> list[WordCell]:
@@ -71,6 +72,14 @@ def _chain(sites: Sequence[InstanceSite]) -> list[InstanceSite]:
     return chain
 
 
+def _groups(matches: Sequence[WordCell]) -> list[list[WordCell]]:
+    """Matches grouped by identical (spans, type), in match order (spec 5.3)."""
+    groups: dict[tuple[tuple[Span, ...], str], list[WordCell]] = {}
+    for w in matches:
+        groups.setdefault((w.spans, w.type), []).append(w)
+    return list(groups.values())
+
+
 def module_path(spans: Sequence[Span], instances: Sequence[InstanceSite], top: str) -> str:
     """``top/<i1>/<i2>``, outermost first (spec 5.2).
 
@@ -79,11 +88,13 @@ def module_path(spans: Sequence[Span], instances: Sequence[InstanceSite], top: s
     ``*`` (the path above is ambiguous; no instance is guessed).
     """
     have = set(spans)
-    hit = [s for s in instances if s.span in have]
+    reach = _reachable(instances, top)
+    hit = [s for s in instances if s.span in have and s.parent_module in reach]
     chain = _chain(hit)
     if not chain:
         return top
-    reach = _reachable(instances, top)
+    if len(chain) != len(hit):  # unrelated instance chains: no instance is guessed
+        return "/".join([top, "*"])
     names = [s.name for s in chain]
     cur = chain[0].parent_module
     while cur != top:
@@ -152,16 +163,21 @@ def _cell_label(
 ) -> tuple[Label, tuple[int, ...]]:
     matches = match_words(c, snap.words)
     bus, bit = bus_bit(c, nl)
-    spans = matches[0].spans if matches else c.spans
-    role = "const" if c.kind == "const" else combine_roles([roles[w.id] for w in matches])
+    groups = _groups(matches)
+    ambiguous = any(len(g) > 1 for g in groups)
+    spans = [*c.spans, *(s for w in matches for s in w.spans)]
+    if c.kind == "const":
+        role = "const"
+    else:
+        role = combine_roles([("unknown" if len(g) > 1 else roles[g[0].id]) for g in groups])
     hdl = _first_span(c.spans, root)
     label = Label(
         node_id=num.cell[c.id],
         kind=c.kind,
         cell_type=c.type,
-        construct_type=_primary(c, matches),
-        construct_types=_distinct([w.type for w in matches]),
-        n_construct_cells=len(matches),
+        construct_type=_primary(c, [g[0] for g in groups]),
+        construct_types=_distinct([g[0].type for g in groups]),
+        n_construct_cells=len(groups),
         module_path=module_path(spans, snap.instances, snap.top),
         bus_name=bus,
         bit_index=bit,
@@ -172,6 +188,7 @@ def _cell_label(
         hdl_end_line=hdl[3],
         hdl_end_col=hdl[4],
         n_spans=len(c.spans),
+        ambiguous=ambiguous,
     )
     return label, tuple(w.id for w in matches)
 

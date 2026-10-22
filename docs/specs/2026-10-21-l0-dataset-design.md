@@ -145,6 +145,9 @@ span (section 5.1), the path is completed by climbing from the outermost listed 
 current module is not the top, the sites that instantiate it (from modules reachable from the top)
 are taken; exactly one gives its name, otherwise the unknown prefix is the single element `*`
 (`top/*/l1`: no instance is guessed). The algorithm sorts by the chain, not by list position.
+The span list used is the cell's own spans plus the spans of all its matches (section 5.3). If the
+instance sites found there (from modules reachable from the top) do not form one parent-to-child
+chain (a LUT merged across `u1` and `u2`), the path is `top/*`: the instance is not guessed.
 
 ### 5.3 The join: final cell to construct cells
 
@@ -155,9 +158,13 @@ empty. Matches are ordered by `(len(W.spans) descending, W.id ascending)`. Then:
 - `construct_types` = the distinct `W.type` of the matches, in match order, joined with `|`.
 - `construct_type` (primary) = the type of the first match whose first span equals `c`'s first
   span, else the first match, else the empty string.
-- `n_construct_cells` = number of matches; `matched_ids` (in `graph.json` only) lists the
+- Matches with identical spans and type (two instances of one module after flatten, or bit-slices
+  of one line) cannot be told apart. They count once in `n_construct_cells` and `construct_types`,
+  contribute role `unknown` to the cell's role (never a guess), and the cell is flagged
+  `ambiguous` (the `Label.ambiguous` field); `matched_ids` still lists all their ids.
+- `n_construct_cells` = number of distinct matches (see above); `matched_ids` (in `graph.json` only) lists the
   `W.id`.
-- `module_path` per section 5.2 from the primary match's spans (else from `c`'s).
+- `module_path` per section 5.2 from `c`'s spans and all matches' spans.
 - A cell with no match keeps its spans, gets an empty construct and role `unknown`, and is counted
   in `meta.json` `unmatched`. A hard cell (F1) matches the same way; its own `type_name`
   (`adder`, `multiply`, `single_port_ram`, ...) goes in the `kind` and `cell_type` columns.

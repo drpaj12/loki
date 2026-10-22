@@ -60,6 +60,35 @@ class LabelsTest(unittest.TestCase):
         )
         self.assertEqual(module_path((DEF, leaf), sites, "top"), "top/*/l1")
 
+    def test_lut_merged_across_instances_is_ambiguous(self) -> None:
+        w1, w2 = word(1, "$add", (DEF, I1)), word(2, "$add", (DEF, I2))
+        cell = lut_cell(10, [1], 2, "01", (DEF, I1, I2))
+        nl = Netlist("top", {1: Net(1, ()), 2: Net(2, ())}, (cell,), ())
+        snap = Snapshot((w1, w2), SITES, "top")
+        (lab,), _ = build_labels(nl, snap, number(nl), {1: "datapath", 2: "datapath"}, "/p")
+        self.assertEqual(lab.module_path, "top/*")
+        self.assertEqual(module_path((DEF, I1, I2), SITES, "top"), "top/*")
+
+    def test_identical_span_words_are_ambiguous(self) -> None:
+        # nested2: m1.l1 and m2.l1 give two $sub words with identical spans
+        leaf = Span("/p/a.v", 30, 1, 30, 9)
+        w1, w2 = word(1, "$sub", (DEF, leaf)), word(2, "$sub", (DEF, leaf))
+        cell = lut_cell(10, [1], 2, "01", (DEF, leaf))
+        nl = Netlist("top", {1: Net(1, ()), 2: Net(2, ())}, (cell,), ())
+        snap = Snapshot((w1, w2), (), "top")
+        (lab,), ids = build_labels(nl, snap, number(nl), {1: "datapath", 2: "datapath"}, "/p")
+        self.assertEqual((lab.n_construct_cells, lab.role, lab.ambiguous), (1, "unknown", True))
+        self.assertEqual(lab.construct_types, "$sub")
+        self.assertEqual(ids[10], (1, 2))
+        # a distinct second construct keeps its own role
+        eq = word(3, "$eq", (EQ,))
+        cell2 = lut_cell(11, [1], 2, "01", (DEF, leaf, EQ))
+        nl2 = Netlist("top", {1: Net(1, ()), 2: Net(2, ())}, (cell2,), ())
+        snap2 = Snapshot((w1, w2, eq), (), "top")
+        roles = {1: "datapath", 2: "datapath", 3: "control"}
+        (lab2,), _ = build_labels(nl2, snap2, number(nl2), roles, "/p")
+        self.assertEqual((lab2.n_construct_cells, lab2.role), (2, "control"))
+
     def test_match_order_and_primary(self) -> None:
         eq = word(1, "$eq", (EQ,))
         mux = word(2, "$mux", (M1, M2))
