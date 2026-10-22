@@ -51,6 +51,16 @@ class StepTest(unittest.TestCase):
         self.assertNotIn("--odin3-root", argv)
         self.assertEqual(env, {})
 
+    def test_features_option_and_project(self) -> None:
+        """The ablation of spec 15 runs the same project with ``features = "none"``."""
+        step = ReStep(StepSpec("loki-re", {"dataset": "/ds", "features": "none"}))
+        argv, _ = step.command(run_for("a__f2"), Path("/s"), settings())
+        self.assertEqual(argv[argv.index("--features") + 1], "none")
+        plain = ReStep(StepSpec("loki-re", {"dataset": "/ds"}))
+        self.assertNotIn("--features", plain.command(run_for("a__f2"), Path("/s"), settings())[0])
+        with self.assertRaises(ValueError):
+            ReStep(StepSpec("loki-re", {"dataset": "/ds", "features": "some"}))
+
     def test_floor_from_design_name(self) -> None:
         self.assertEqual(split_name("x__f1-k6"), ("x", "f1-k6"))
         self.assertEqual(split_name("a__b__f2"), ("a__b", "f2"))
@@ -100,6 +110,8 @@ class ProjectTest(unittest.TestCase):
             manifest(root)
             toml = write_re_project(root, ["f2"], "test", root / "calib", root / "out")
             data = tomllib.loads(toml.read_text(encoding="utf-8"))
+            toml = write_re_project(root, ["f2"], "test", root / "calib", root / "out2", "none")
+            none = tomllib.loads(toml.read_text(encoding="utf-8"))
         names = [d["name"] for d in data["design"]]
         self.assertEqual(names, ["a__f2", "b__f2"])
         self.assertTrue(data["design"][0]["files"][0].endswith("/a/f2/netlist.blif"))
@@ -109,6 +121,8 @@ class ProjectTest(unittest.TestCase):
         self.assertEqual(data["sweep"]["design"], names)
         self.assertEqual(data["sweep"]["recipe"], ["re"])
         self.assertEqual(data["sweep"]["arch"], ["k6_frac_N10_frac_chain_mem32K_40nm"])
+        self.assertNotIn("features", step)
+        self.assertEqual(none["recipe"]["re"]["steps"][0]["features"], "none")
 
     def test_project_errors_and_cli(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

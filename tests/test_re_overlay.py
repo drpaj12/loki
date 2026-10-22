@@ -259,6 +259,17 @@ class OverlayTest(unittest.TestCase):
         self.assertEqual(got2, ["h1", "h4"])
         self.assertEqual(rival.status, "rejected")
 
+    def test_weak_child_does_not_block_parent(self) -> None:
+        """A child that cannot commit (p below COMMIT_P, e.g. a register no proof can raise) must
+        not hold its proven parent back for ever (found on a 10-bit counter, Task 16)."""
+        ov = Overlay()
+        parent = ov.add(cand("counter", {1, 2, 3}), "seqfn", 1)
+        child = ov.add(cand("register", {1, 2}), "ff_pattern", 1)
+        ov.link_nesting()
+        self.assertEqual(parent.children, (child.id,))
+        parent.p_comp, child.p_comp = 0.99, 0.49
+        self.assertEqual([h.id for h in ov.select_commits(1)], [parent.id])
+
     def test_register_kind(self) -> None:
         with self.assertRaises(ValueError):
             register_kind("adder", KindSpec(2, True, "submod", 0))

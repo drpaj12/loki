@@ -17,11 +17,13 @@ def _q(text: str) -> str:
 
 
 def write_re_project(
-    dataset: Path, floors: Sequence[str], split: str, calib: Path, out: Path
+    dataset: Path, floors: Sequence[str], split: str, calib: Path, out: Path,
+    features: str = "all",
 ) -> Path:
     """Write ``out/wyrd.toml``: one design per (design, floor) of ``split`` whose floor status is
     ``ok``, named ``<id>__<floor>`` with that floor's ``netlist.blif`` as its file, and one recipe
-    ``re`` that runs the ``loki-re`` step. Returns the toml path."""
+    ``re`` that runs the ``loki-re`` step (``features = "none"`` for the ablation of spec 15).
+    Returns the toml path."""
     bad = [f for f in floors if f not in FLOORS]
     if bad or not floors:
         raise ValueError(f"floors must be among {FLOORS}, got {list(floors)}")
@@ -39,13 +41,16 @@ def write_re_project(
                               str((dataset / entry["design"] / floor / "netlist.blif").resolve())))
     if not names:
         raise ValueError(f"no ok {split} design for floors {list(floors)} in {dataset}")
+    if features not in ("all", "none"):
+        raise ValueError(f"features must be all or none, got {features!r}")
     lines = ['[project]', 'name = "loki-l1"', ""]
     for name, path in names:
         lines += ["[[design]]", f"name = {_q(name)}", f"files = [{_q(path)}]", ""]
     lines += [
         "[recipe.re]",
         f'steps = [{{ use = "loki-re", calib = {_q(str(calib.resolve()))}, '
-        f'dataset = {_q(str(dataset.resolve()))} }}]',
+        f'dataset = {_q(str(dataset.resolve()))}'
+        + (', features = "none"' if features == "none" else "") + " }]",
         "",
         "[sweep]",
         'recipe = ["re"]',

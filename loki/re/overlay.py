@@ -432,10 +432,16 @@ class Overlay:
         return chosen
 
     def _children_ready(self, h: Hypothesis) -> bool:
-        """Every exclusive child still in play is already committed."""
+        """Every exclusive child that could commit (``p_comp >= COMMIT_P``) is already committed.
+        A weaker child cannot be committed first, so waiting for it would hold the parent back
+        for ever (deviation from spec 9.2, found by the Task 16 baseline)."""
         for cid in h.children:
             child = self.hyps[cid]
-            if KINDS[child.kind].exclusive and child.status in _LIVE:
+            if (
+                KINDS[child.kind].exclusive
+                and child.status in _LIVE
+                and child.p_comp >= bayes.COMMIT_P
+            ):
                 return False
         return True
 

@@ -42,6 +42,9 @@ class ReStep:
         self.calib = _text(spec, "calib", False)
         self.dataset = _text(spec, "dataset", True) or ""
         self.odin3_root = _text(spec, "odin3_root", False)
+        self.features = _text(spec, "features", False)
+        if self.features not in (None, "all", "none"):
+            raise ValueError("step 'loki-re': features must be 'all' or 'none'")
 
     def command(
         self, run: RunSpec, step_dir: Path, settings: Settings
@@ -54,6 +57,8 @@ class ReStep:
             "--floor", floor, "--calib", calib, "--out", str(step_dir / "re"),
             "--score-dataset", self.dataset, "--score-design", design,
         ]
+        if self.features is not None:
+            argv += ["--features", self.features]
         if root:
             argv += ["--odin3-root", root]
         return argv, ({"ODIN3_ROOT": root} if root else {})

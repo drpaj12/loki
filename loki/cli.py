@@ -58,6 +58,7 @@ def _parser() -> argparse.ArgumentParser:
     rp.add_argument("--split", default="test", choices=("train", "test"))
     rp.add_argument("--calib", required=True, help="directory of <floor>.json files")
     rp.add_argument("--out", required=True)
+    rp.add_argument("--features", default="all", choices=("all", "none"))
     sub.add_parser("re", help="reverse-engineer a netlist (loki re --help)", add_help=False)
     return ap
 
@@ -125,7 +126,7 @@ def _run(args: argparse.Namespace) -> int:
     if args.cmd == "re-project":
         toml = write_re_project(
             Path(args.dataset), [f for f in args.floors.split(",") if f], args.split,
-            Path(args.calib), Path(args.out))
+            Path(args.calib), Path(args.out), args.features)
         print(f"wrote {toml}")
         return 0
     if args.cmd == "calibrate":
