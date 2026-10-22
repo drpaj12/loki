@@ -76,3 +76,12 @@ class ReScoreTest(unittest.TestCase):
         self.assertEqual((score["design"], score["floor"]), ("d", "f2"))
         self.assertIn("rounds", metrics)
         self.assertEqual(metrics["final_equiv_ok"], 1)
+
+
+class CalibrateCliTest(unittest.TestCase):
+    def test_calibrate_no_designs_exit_2(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "manifest.json").write_text('{"designs": []}', encoding="utf-8")
+            self.assertEqual(quiet(["calibrate", "--dataset", tmp, "--floor", "f2",
+                                    "--out", str(root / "c.json")]), 2)

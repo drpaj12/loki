@@ -13,6 +13,7 @@ from typing import Any
 from loki.assemble import assemble, check_dataset, dataset_warnings
 from loki.bench import SUITES, write_project
 from loki.schemas import FLOORS, dump_json
+from loki.score.calibrate import calibrate, write_calib
 from loki.score.metrics import aggregate, compare, score_run
 
 
@@ -43,6 +44,13 @@ def _parser() -> argparse.ArgumentParser:
     sa.add_argument("--out", required=True)
     sa.add_argument("--compare", default="", help="runs made with --features none")
     sa.add_argument("--score-p", type=float, default=0.5)
+    cal = sub.add_parser("calibrate", help="fit calibration tables on the L0 train split")
+    cal.add_argument("--dataset", required=True)
+    cal.add_argument("--floor", required=True, choices=FLOORS)
+    cal.add_argument("--split", default="train", choices=("train", "test"))
+    cal.add_argument("--out", required=True)
+    cal.add_argument("--odin3-root", default="")
+    cal.add_argument("--seed", type=int, default=1)
     sub.add_parser("re", help="reverse-engineer a netlist (loki re --help)", add_help=False)
     return ap
 
@@ -107,6 +115,18 @@ def _run(args: argparse.Namespace) -> int:
         return 0
     if args.cmd == "score-all":
         return _score_all(args)
+    if args.cmd == "calibrate":
+        root = args.odin3_root or os.environ.get("ODIN3_ROOT", "")
+        obj = calibrate(
+            Path(args.dataset), args.floor, args.split, Path(root) if root else None, args.seed)
+        designs = obj["designs"]
+        assert isinstance(designs, list)
+        if not designs:
+            print(f"loki calibrate: no ok {args.split} design for {args.floor}", file=sys.stderr)
+            return 2
+        write_calib(obj, Path(args.out))
+        print(f"wrote {args.out} from {len(designs)} designs")
+        return 0
     if args.cmd == "bench":
         cache = Path(args.cache) if args.cache else _default_cache()
         toml = write_project(args.suite, Path(args.odin3_root), cache, Path(args.out))
