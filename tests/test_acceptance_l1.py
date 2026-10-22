@@ -7,6 +7,8 @@ part of this run.
 
 import json
 import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -25,6 +27,10 @@ SUBSET = (
 )
 DATASET = os.environ.get("LOKI_DATASET", "")
 IDENTITY_SKIP = ("timing.json",)
+# The byte-identity second pass runs in a fresh interpreter (spec 15 item 1: a hash-order
+# dependent output must show up as a difference, and one process has one PYTHONHASHSEED).
+_RE_MAIN = "from loki.re.main import main; import sys; raise SystemExit(main(sys.argv[1:]))"
+HASH_SEED = "12345"
 
 
 def _read(path: Path) -> Any:
@@ -48,13 +54,20 @@ class AcceptanceL1Test(unittest.TestCase):
         cls.tmp = tempfile.TemporaryDirectory(prefix="loki-l1-acc-")
         root = Path(cls.tmp.name)
         cls.out, cls.again = root / "a", root / "b"
-        for base in (cls.out, cls.again):
-            for name in SUBSET:
-                did = f"micro_{name}"
-                net = Path(DATASET) / did / "f2" / "netlist.blif"
-                rc = re_main([str(net), "--floor", "f2", "--calib", "none",
-                              "--out", str(base / did)])
-                assert rc == 0, f"{did}: loki re exit {rc}"
+        for name in SUBSET:
+            did = f"micro_{name}"
+            net = Path(DATASET) / did / "f2" / "netlist.blif"
+            args = [str(net), "--floor", "f2", "--calib", "none"]
+            rc = re_main([*args, "--out", str(cls.out / did)])
+            assert rc == 0, f"{did}: loki re exit {rc}"
+            env = dict(os.environ, PYTHONHASHSEED=HASH_SEED)
+            proc = subprocess.run(
+                [sys.executable, "-c", _RE_MAIN, *args, "--out", str(cls.again / did)],
+                capture_output=True, text=True, env=env, check=False,
+            )
+            assert proc.returncode == 0, (
+                f"{did}: loki re exit {proc.returncode}: {proc.stderr[-400:]}"
+            )
 
     @classmethod
     def tearDownClass(cls) -> None:
