@@ -101,6 +101,12 @@ class LoopTest(unittest.TestCase):
         self.assertEqual(res.stop_reason, "no_commit")
         self.assertEqual(res.overlay.committed(), [])
 
+    def test_time_budget_stop(self) -> None:
+        """Spec 9.1: the loop stops before a round when the time budget is spent."""
+        res = run_re(opts(RE / "add2.blif", time_budget=0))
+        self.assertEqual(len(res.rounds), 1)
+        self.assertEqual(res.stop_reason, "time_budget")
+
     def test_max_rounds(self) -> None:
         res = run_re(opts(RE / "add2.blif", max_rounds=1))
         self.assertEqual(len(res.rounds), 1)
@@ -127,6 +133,34 @@ class LoopTest(unittest.TestCase):
             names = sorted(p.name for p in Path(tmp).iterdir())
         self.assertEqual(names, ["level0.json", "level1.json", "level2.json"])
         self.assertTrue(res.overlay.committed())
+
+    def test_max_proofs_cap(self) -> None:
+        """MAX_PROOFS bounds the real proofs of a round, spot checks included; with two slots
+        the first adder is proved and the three transfers are checked by one spot proof."""
+        with mock.patch("loki.re.loop.bayes.MAX_PROOFS", 2):
+            res = run_re(opts(RE / "add2x4.blif", max_rounds=1))
+        self.assertEqual(engines(res)["cone_check"], 2)
+        self.assertEqual(engines(res)["transfer"], 3)
+        self.assertEqual(res.rounds[0]["engines"],
+                         {"cone_check": 2, "transfer": 3, "truth_table": 0})
+
+    def test_seed_reaches_prover(self) -> None:
+        """Spec 10: the prover's sampling rng is rng("prove:<hid>"), so --seed reaches it."""
+        draws: list[float] = []
+
+        def fake(claim: Claim, graph: FnGraph, cc: Any, rng: Any) -> Verdict:
+            draws.append(rng.random())
+            return Verdict("unproven", "truth_table", "sampled", {})
+
+        runs: list[list[float]] = []
+        for seed in (7, 7, 8):
+            draws.clear()
+            with mock.patch("loki.re.loop.prove", fake):
+                run_re(opts(RE / "add2.blif", seed=seed, max_rounds=1))
+            runs.append(list(draws))
+        self.assertTrue(runs[0])
+        self.assertEqual(runs[0], runs[1])
+        self.assertNotEqual(runs[0], runs[2])
 
     def test_transfer_four_adders(self) -> None:
         res = run_re(opts(RE / "add2x4.blif"))
