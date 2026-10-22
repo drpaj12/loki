@@ -19,6 +19,13 @@ Spec: `docs/specs/2026-10-21-l0-dataset-design.md`. Plan: `docs/plans/2026-10-21
     .venv/bin/ruff check .
     .venv/bin/mypy --strict loki tests
 
+Dataset flow (details in `docs/runbook-l0.md`):
+
+    .venv/bin/loki bench init --suite micro --odin3-root $ODIN3_ROOT --out datasets/l0
+    .venv/bin/wyrd run --project datasets/l0 --jobs 3 --mem-budget 8G
+    .venv/bin/loki assemble --project datasets/l0 --out dataset
+    .venv/bin/loki check dataset
+
 ## Rules
 
 - Python 3.11+, no 3.12-only syntax. Runtime dependency: the `odin3` wheel only, imported through

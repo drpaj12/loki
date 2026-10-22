@@ -17,3 +17,12 @@ License: MIT.
     .venv/bin/ruff check . && .venv/bin/mypy --strict loki tests
 
 See `CLAUDE.md` for the Odin III environment variables.
+
+## L0 dataset
+
+    loki bench init --suite micro --odin3-root $ODIN3_ROOT --out datasets/l0
+    wyrd run --project datasets/l0
+    loki assemble --project datasets/l0 --out dataset
+    loki check dataset
+
+See `docs/runbook-l0.md`.
