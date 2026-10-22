@@ -68,15 +68,17 @@ def cut_class(graph: FnGraph, inputs: Sequence[int], out: int) -> NpnClass | Non
     return npn_class(table, m)
 
 
-def _sensitive(graph: FnGraph, view: View, net: int, pair: tuple[int, int]) -> bool:
+def _sensitive(
+    graph: FnGraph, view: View, net: int, pair: tuple[int, int], rng: Callable[[str], random.Random]
+) -> bool:
     """True when flipping either source of ``pair`` flips ``net`` on every sampled vector."""
     support = view.support.of(net)
     if support is None:
         return False
     cells, _ = cone(graph, frozenset(), [net], _stop(view))
-    rng = random.Random(f"arith:{net}")
+    stream = rng(f"arith:{net}")
     mask = (1 << SENSE_VECTORS) - 1
-    base = {s: rng.getrandbits(SENSE_VECTORS) for s in sorted(support)}
+    base = {s: stream.getrandbits(SENSE_VECTORS) for s in sorted(support)}
     ref = simulate(graph, cells, base, SENSE_VECTORS)[net]
     for src in pair:
         flipped = dict(base)
@@ -86,10 +88,14 @@ def _sensitive(graph: FnGraph, view: View, net: int, pair: tuple[int, int]) -> b
     return True
 
 
-def find_chains(view: View, graph: FnGraph, index: Index | None = None) -> list[Chain]:
+def find_chains(
+    view: View, graph: FnGraph, index: Index | None = None,
+    rng: Callable[[str], random.Random] = random.Random,
+) -> list[Chain]:
     """Chains of spec 7.5: output nets and the new source pair of each bit (sorted), one chain
     per support sequence. The pair of bit 0 of a chain whose first support has three sources
-    holds the two lowest net ids; the third is the carry-in."""
+    holds the two lowest net ids; the third is the carry-in. Sum-bit sampling draws from
+    ``rng`` (the round context's, so ``--seed`` reaches it; spec 10)."""
     idx = support_index(view) if index is None else index
     by_size: dict[int, list[frozenset[int]]] = {}
     for s in sorted(idx, key=sorted):
@@ -120,7 +126,7 @@ def find_chains(view: View, graph: FnGraph, index: Index | None = None) -> list[
             nets = idx[s]
             pick = nets[0]
             if len(nets) > 1:
-                pick = next((n for n in nets if _sensitive(graph, view, n, pair)), nets[0])
+                pick = next((n for n in nets if _sensitive(graph, view, n, pair, rng)), nets[0])
             ys.append(pick)
         out.setdefault(tuple(ys), (tuple(ys), tuple(pairs)))
     return [out[k] for k in sorted(out)]
@@ -473,7 +479,7 @@ class ArithDetector:
     def propose(self, ctx: RoundContext) -> list[Candidate]:
         index = support_index(ctx.view)
         out: list[Candidate] = []
-        for chain in find_chains(ctx.view, ctx.graph, index):
+        for chain in find_chains(ctx.view, ctx.graph, index, ctx.rng):
             cand = _chain_candidate(ctx, chain, index)
             if cand is not None:
                 out.append(cand)

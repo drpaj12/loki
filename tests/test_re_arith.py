@@ -1,3 +1,4 @@
+import random
 import tempfile
 import unittest
 from pathlib import Path
@@ -116,6 +117,26 @@ class ChainTest(unittest.TestCase):
         self.assertGreater(len(graph.pis), SUPPORT_MAX)
         self.assertIsNone(view.support.of(top2))
         self.assertEqual(ArithDetector().propose(make_ctx(graph)), [])
+
+
+class RngTest(unittest.TestCase):
+    def test_chain_sampling_uses_ctx_rng(self) -> None:
+        """Spec 10: randomness only through ``rng(purpose)``; the sum-bit sampling of a chain
+        (two nets share a support) must take its Random from the round context, so --seed
+        reaches it."""
+        g = GB()
+        a, b = words(g, 4)
+        ripple(g, a, b)
+        graph = g.build()
+        purposes: list[str] = []
+
+        def rng(purpose: str) -> random.Random:
+            purposes.append(purpose)
+            return random.Random(purpose)
+
+        got = ArithDetector().propose(make_ctx(graph, rng=rng))
+        self.assertTrue([p for p in purposes if p.startswith("arith:")])
+        self.assertTrue(by_kind(got, "adder"))
 
 
 class NpnTest(unittest.TestCase):

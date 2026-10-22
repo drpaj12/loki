@@ -98,12 +98,13 @@ def make_ctx(
     overlay: Overlay | None = None,
     features: bool = True,
     view: View | None = None,
+    rng: Callable[[str], random.Random] | None = None,
 ) -> RoundContext:
     """A round-1 context over ``graph`` with defaults calibration."""
     return RoundContext(
         round=1, floor="f2-lut", graph=graph, view=view or View.level0(graph),
-        overlay=overlay or Overlay(), rng=lambda p: random.Random(f"1:{p}"), calib=DEFAULTS,
-        features=build_features(graph) if features else None,
+        overlay=overlay or Overlay(), rng=rng or (lambda p: random.Random(f"1:{p}")),
+        calib=DEFAULTS, features=build_features(graph) if features else None,
     )
 
 
