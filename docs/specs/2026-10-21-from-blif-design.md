@@ -169,7 +169,7 @@ does not delay L0's exit and is not part of L0's acceptance.
 Verilog input (L1 3 already reads it through `write_blif --gates-as-names`); guessing hidden
 structure (that is L1 and L2); a pure-Python BLIF reader.
 
-## 11. Open questions (with recommendations)
+## 11. Open questions (Peter accepted every recommendation, 2026-10-21)
 
 1. **"Without Odin III" in L2 14.2.** This design uses the Odin III binding as a BLIF reader
    only. Recommend accepting that reading (FB-1); a pure-Python reader can be added later behind
