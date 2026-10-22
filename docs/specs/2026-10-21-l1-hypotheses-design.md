@@ -78,14 +78,15 @@ Task 2 turns each into a test, and a changed fact stops the build.
    the line of its `.names` / `.latch` / `.subckt`. Lines are unique per cell, so `line` maps any
    later object back to level-0 cells.
 4. `raise`: the new cell's `sources()` is the union of the replaced cells' sources (probed: a
-   2-bit adder of 3 `$sop` gave lines 4, 7, 9). It has no name; it drives the net bound to `Y[0]`,
+   2-bit adder of 3 `$sop` gave the union of their `.names` lines; `tests/data/re/add2.blif`, which has a
+   `.cname` line after every cell, gives 4, 8, 11). It has no name; it drives the net bound to `Y[0]`,
    so `Module.net(name).driver().node()` finds it.
 5. `submod -attr KEY`: one module per value `V`, instance named `V_i`; moved nodes get new IDs in
    the new module (RE-ARCHITECTURE gap 5); nested `submod` (a group holding an instance) works;
    `Design.copy` works after `submod`. Boundary nets stay in the parent module with their names.
 6. `Node.set_attr` / `Module.set_attr` / `Net.set_attr` take strings; `write_verilog` writes them
    as `(* key = "value" *)` on instances, modules and net declarations, but **as a comment**
-   (`// (* ... *)`) on a cell it prints as an `assign` (a raised `$add`). Hence every committed
+   (`// (* ... *)`) on a cell it prints as an `assign` (a raised `$add`, a `$sop`). Hence every committed
    piece is wrapped in a submodule (section 9.3).
 7. `cone_check` + `raise` work on a BLIF-read design after `Odin3.load_abc()`; the template may be
    any combinational word or bit cell type (`src/passes/cone_check/tmpl.c`: registers, tristates
@@ -96,8 +97,9 @@ Task 2 turns each into a test, and a changed fact stops the build.
    `$dff`/`$adff` whose D is a `$mux`/`$pmux` tree (4.8 spec D-2, D-3).
 9. INT attributes (such as `levelize`'s `odin3_level`) cannot be read through the binding
    (`odin3_attr_get_string` fails with `INVALID_ARG`): Loki computes levels itself.
-10. Passes present (`Odin3.passes()`): `read_blif read_techlib read_arch read_verilog write_blif
-    write_json write_verilog flatten lower fsm_detect levelize submod cone_check raise`. Not yet:
+10. Passes present (`Odin3.passes()`, which lists many more): `read_blif read_techlib read_arch
+    read_verilog write_blif write_json write_verilog flatten lower fsm_detect levelize submod
+    cone_check raise`. Not yet:
     `unmap` (Odin III project 3, spec `docs/specs/2026-10-21-unmap-design.md` on branch
     `feat/unmap-spec`, commit `bc9e5799`, not merged), `write_blif --gates-as-names` (gate mapping).
 
