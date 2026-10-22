@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from loki.re.detectors import Candidate
 from loki.re.detectors.ff_pattern import FfPatternDetector
-from loki.re.detectors.fsm import FsmDetector, fsm_detect_marks
+from loki.re.detectors.fsm import FsmDetector, _decoder_of, fsm_detect_marks
 from loki.re.overlay import Overlay
 from tests.re_fixtures import GB, make_ctx, table_of
 from tests.seq_fixtures import up_counter
@@ -112,6 +112,24 @@ class FsmTest(unittest.TestCase):
         for _ in range(3):
             g.ff(g.lut(0b01, (g.pi(),)), clk)
         self.assertEqual(propose(g), [])
+
+
+class DecoderSupportTest(unittest.TestCase):
+    def test_wide_reader_not_a_decoder(self) -> None:
+        """Spec 7.8: a reader of the Q nets counts as a decoder only with support <= 12; a
+        wider equality LUT would cost 2^|other inputs| per pattern."""
+        g = GB()
+        q0, q1 = g.pi("q0"), g.pi("q1")
+        group = frozenset({q0, q1})
+        nets = []
+        for width in (12, 13):
+            others = [g.pi(f"o{i}") for i in range(width - 2)]
+            one = table_of(width, lambda v: int(v[0] == 1 and v[1] == 1 and not any(v[2:])))
+            nets.append(g.lut(one, (q0, q1, *others)))
+        cells = g.build().cells
+        narrow, wide = (cells[g.cell_of(n)] for n in nets)
+        self.assertIsNotNone(_decoder_of(narrow, group))
+        self.assertIsNone(_decoder_of(wide, group))
 
 
 class MarksTest(unittest.TestCase):

@@ -26,6 +26,7 @@ CTRL_EDGES = (0, 1, 5)
 CTRL_LABELS = ("0", "1-4", "5+")
 ROWS_MAX = 256
 SELF_RESET_MAX = 16
+DECODER_SUPPORT_MAX = 12
 
 
 def fsm_detect_marks(working: Any) -> dict[frozenset[int], str]:
@@ -59,6 +60,8 @@ def _decoder_of(cell: Cell, group: frozenset[int]) -> _Decoder | None:
     bits, for some value of its other inputs."""
     if cell.kind != "lut" or len(cell.outs) != 1 or len(set(cell.ins)) != len(cell.ins):
         return None
+    if len(cell.ins) > DECODER_SUPPORT_MAX:
+        return None
     pos = [i for i, n in enumerate(cell.ins) if n in group]
     rest = [i for i in range(len(cell.ins)) if i not in pos]
     if len(pos) < 2:
@@ -83,7 +86,10 @@ def _decoders(ctx: RoundContext, q: tuple[int, ...]) -> tuple[list[_Decoder], in
     free = set(ctx.view.free_cells)
     group = frozenset(q)
     readers = sorted({r for n in q for r, _ in g.readers.get(n, ()) if r in free})
-    cells = [g.cells[r] for r in readers if g.cells[r].kind == "lut"]
+    cells = [
+        g.cells[r] for r in readers
+        if g.cells[r].kind == "lut" and len(g.cells[r].ins) <= DECODER_SUPPORT_MAX
+    ]
     decoders = [d for d in (_decoder_of(c, group) for c in cells) if d is not None]
     return decoders, len(cells)
 
