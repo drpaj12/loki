@@ -70,9 +70,9 @@ def levels(nl: Netlist) -> tuple[dict[int, int], int]:
 
 
 def lut_table_hex(table: str) -> str:
-    """Hex of a LUT table, MSB (highest pattern index) first, padded to the table width."""
+    """Hex of a LUT table string (it reads MSB first already), padded to the table width."""
     digits = max(1, len(table) // 4)
-    return format(int(table[::-1], 2), f"0{digits}x")
+    return format(int(table, 2), f"0{digits}x")
 
 
 def _pin_names(c: FinalCell) -> list[tuple[str, int]]:

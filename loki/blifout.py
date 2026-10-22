@@ -9,9 +9,12 @@ from dataclasses import dataclass
 from loki.anon import Numbering, logic_cells
 from loki.model import FinalCell, Netlist, Port
 
-# How a $lut's LUT string indexes input patterns. "index_lsb_first": string position i is the
-# output for the pattern where A[k] is bit k of i. Task 4 step 6 checks this against Odin III.
-LUT_ROW_ORDER = "index_lsb_first"
+# How a $lut's LUT string indexes input patterns (decided against Odin III's own write_blif in
+# tests/test_blif_vs_odin.py, plan Task 4 step 6): "string_msb_first" means the string reads like a
+# binary number: its last character is the output for all inputs 0, and character position p is
+# the output for the pattern index 2**W - 1 - p, where input A[k] is bit k of the index. (The two
+# conventions the plan named, index_lsb_first and index_msb_first, both disagree with Odin III.)
+LUT_ROW_ORDER = "string_msb_first"
 
 _CONSTS = ("$_CONST0_", "$_CONST1_", "$_CONSTX_")
 _LATCH = {"$_DFF_P_": "re", "$_DFF_N_": "fe", "$_DLATCH_P_": "ah", "$_DLATCH_N_": "al"}
@@ -90,6 +93,11 @@ def _single(port: Port, naming: Naming) -> str:
     return naming.net(port.nets[0])
 
 
+def _pattern(index: int, width: int) -> str:
+    """The input pattern (A[0] first) for table index ``index`` (A[k] is bit k)."""
+    return "".join("1" if (index >> k) & 1 else "0" for k in range(width))
+
+
 def _lut_lines(cell: FinalCell, naming: Naming) -> list[str]:
     a = _port(cell, ("A",))
     if not all(a.nets):
@@ -101,9 +109,9 @@ def _lut_lines(cell: FinalCell, naming: Naming) -> list[str]:
     if len(table) != 1 << width:
         raise ValueError(f"LUT cell {cell.id}: table length {len(table)} for width {width}")
     lines = [".names " + " ".join([*ins, out])]
-    for i, bit in enumerate(table):
+    for i, bit in enumerate(table[::-1]):
         if bit == "1":
-            pattern = "".join("1" if (i >> k) & 1 else "0" for k in range(width))
+            pattern = _pattern(i, width)
             lines.append(f"{pattern} 1" if pattern else "1")
     return lines
 

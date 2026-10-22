@@ -44,26 +44,55 @@ def match_words(cell: FinalCell, words: Sequence[WordCell]) -> list[WordCell]:
     return sorted(hits, key=lambda w: (-len(w.spans), w.id))
 
 
-def module_path(spans: Sequence[Span], instances: Sequence[InstanceSite], top: str) -> str:
-    """``top/<i1>/<i2>``: the chain of instance sites whose spans are in the list (spec 5.2)."""
-    have = set(spans)
-    used: set[int] = set()
-    path = [top]
-    current = top
-    while True:
-        step = next(
-            (
-                i
-                for i, site in enumerate(instances)
-                if i not in used and site.parent_module == current and site.span in have
-            ),
-            None,
+def _reachable(instances: Sequence[InstanceSite], top: str) -> set[str]:
+    """Modules instantiated, directly or not, from the top (unused modules are left out)."""
+    seen = {top}
+    todo = [top]
+    while todo:
+        cur = todo.pop()
+        for site in instances:
+            if site.parent_module == cur and site.module not in seen:
+                seen.add(site.module)
+                todo.append(site.module)
+    return seen
+
+
+def _chain(sites: Sequence[InstanceSite]) -> list[InstanceSite]:
+    """The sites linked parent to child, outermost first (a site whose parent is no child)."""
+    children = {s.module for s in sites}
+    chain = [s for s in sites if s.parent_module not in children][:1]
+    while chain:
+        nxt = next(
+            (s for s in sites if s.parent_module == chain[-1].module and s not in chain), None
         )
-        if step is None:
-            return "/".join(path)
-        used.add(step)
-        path.append(instances[step].name)
-        current = instances[step].module
+        if nxt is None:
+            break
+        chain.append(nxt)
+    return chain
+
+
+def module_path(spans: Sequence[Span], instances: Sequence[InstanceSite], top: str) -> str:
+    """``top/<i1>/<i2>``, outermost first (spec 5.2).
+
+    Odin III lists only the innermost instantiation span on a flattened cell, so the outer
+    instances are found by climbing from it: one instantiating site is taken, several give
+    ``*`` (the path above is ambiguous; no instance is guessed).
+    """
+    have = set(spans)
+    hit = [s for s in instances if s.span in have]
+    chain = _chain(hit)
+    if not chain:
+        return top
+    reach = _reachable(instances, top)
+    names = [s.name for s in chain]
+    cur = chain[0].parent_module
+    while cur != top:
+        parents = [s for s in instances if s.module == cur and s.parent_module in reach]
+        if len(parents) != 1:
+            return "/".join([top, "*", *names])
+        names.insert(0, parents[0].name)
+        cur = parents[0].parent_module
+    return "/".join([top, *names])
 
 
 def _split_bus(name: str) -> tuple[str, int] | None:

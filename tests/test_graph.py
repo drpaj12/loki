@@ -55,7 +55,7 @@ class GraphTest(unittest.TestCase):
         nodes = {n["id"]: n for n in g["nodes"]}
         f = nodes["n4"]["features"]
         got = (f["fan_in"], f["fan_out"], f["lut_width"], f["lut_table"])
-        self.assertEqual(got, (2, 1, 2, "8"))
+        self.assertEqual(got, (2, 1, 2, "1"))
         self.assertEqual(nodes["n5"]["features"]["lut_table"], "6")
         self.assertEqual(nodes["n6"]["features"]["fan_out"], 2)  # PI A reads: both LUTs
         edges = {(e["src"], e["dst"], e["pin"]) for e in g["edges"]}
@@ -67,7 +67,7 @@ class GraphTest(unittest.TestCase):
     def test_lut_table_hex(self) -> None:
         self.assertEqual(lut_table_hex("1001000000001001"), "9009")
         self.assertEqual(lut_table_hex("1"), "1")
-        self.assertEqual(lut_table_hex("0010"), "4")
+        self.assertEqual(lut_table_hex("0010"), "2")
 
     def test_graph_validates(self) -> None:
         self.assertEqual(validate_graph(graph_of(chain())), [])

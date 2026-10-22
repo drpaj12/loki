@@ -46,6 +46,19 @@ class LabelsTest(unittest.TestCase):
             InstanceSite(mid, "m1", "mid", "top"),
         )
         self.assertEqual(module_path((DEF, leaf, mid), sites, "top"), "top/m1/l1")
+        # Odin III lists only the innermost instantiation span: climb to the one parent.
+        self.assertEqual(module_path((DEF, leaf), sites, "top"), "top/m1/l1")
+
+    def test_ambiguous_parent_is_star(self) -> None:
+        mid1, mid2 = Span("/p/a.v", 20, 1, 20, 9), Span("/p/a.v", 21, 1, 21, 9)
+        leaf = Span("/p/a.v", 30, 1, 30, 9)
+        sites = (
+            InstanceSite(leaf, "l1", "leaf", "mid"),
+            InstanceSite(mid1, "m1", "mid", "top"),
+            InstanceSite(mid2, "m2", "mid", "top"),
+            InstanceSite(leaf, "dead", "leaf", "unused"),
+        )
+        self.assertEqual(module_path((DEF, leaf), sites, "top"), "top/*/l1")
 
     def test_match_order_and_primary(self) -> None:
         eq = word(1, "$eq", (EQ,))

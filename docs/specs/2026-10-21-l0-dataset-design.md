@@ -120,6 +120,13 @@ re-checks each as a test, and a changed fact stops the build.
   the **instantiation span** after it (probed: `sub u1` at line 6, `sub u2` at line 7 gave
   `[2:14-2:19, 6:7-6:31]` and `[2:14-2:19, 7:7-7:31]`). Two instances of one module are
   therefore told apart by their full span list, not by the first span.
+- **Nested instances list only the innermost instantiation span** (probed by plan Task 6,
+  `tests/data/nested.v` and `nested2.v`: `top -> mid m1 -> leaf l1` gave `[leaf def, l1]`, not
+  `[leaf def, l1, m1]`; with `m1` and `m2` both instances of `mid`, the cells of `m1.l1` and
+  `m2.l1` have identical span lists). The outer instance path is not in the sources. Net aliases
+  carry `m1.l1.y[0]` before `lower`, but the final cells do not; no Odin III call gives the chain
+  (open question for the controller: record the full instance chain in provenance).
+- `lower` names its gates `<output wire>.<gate><n>` (`y1.xor0`), not by the word cell's id.
 - `flatten` leaves unused modules (the instantiated module `sub`) in the design: Loki reads only
   the top.
 - Net names are mostly empty after `lower` and `abc`; a primary output bit's net keeps an alias
@@ -133,8 +140,11 @@ before `flatten`, from the module hierarchy under the top (`Node.type_name` is a
 is `top/<i1>/<i2>` where `i1`, `i2` are the instance names whose spans appear in the cell's span
 list, ordered outermost first, found by walking from the top: an instance site belongs to the
 chain when its span is in the list and its parent is the previous element. A cell with no
-instance span has path `<top>`. Plan Task 6 fixes the span order inside the list with a two-level
-nested test; the algorithm sorts by the chain, not by list position.
+instance span has path `<top>`. Because nested flattening keeps only the innermost instantiation
+span (section 5.1), the path is completed by climbing from the outermost listed site: while the
+current module is not the top, the sites that instantiate it (from modules reachable from the top)
+are taken; exactly one gives its name, otherwise the unknown prefix is the single element `*`
+(`top/*/l1`: no instance is guessed). The algorithm sorts by the chain, not by list position.
 
 ### 5.3 The join: final cell to construct cells
 
@@ -198,7 +208,11 @@ Berkeley/VPR BLIF: `.model top`, `.inputs` (PI nets in port order), `.outputs`, 
 - an output bit whose net is also an input or another output bit's net: a buffer
   `.names <net> <po pseudo name>` with row `1 1`, and that name is listed in `.outputs`.
 
-The LUT table order convention is fixed by plan Task 4 against Odin III's own `write_blif`.
+LUT table order (decided in plan Task 4 step 6 against Odin III's own `write_blif`, three micros
+equivalent): the `LUT` string reads like a binary number, `A[0]` the least significant input; its last
+character is the output for all inputs 0, so character position `p` is the output for table index
+`2**W - 1 - p`. The plan's two candidate orders (`index_lsb_first`, `index_msb_first` by string
+position) both disagreed with Odin III.
 
 ### 6.3 `netlist.v`
 
@@ -228,6 +242,8 @@ all names `n<k>`; no `// file:line` comments (an imported netlist has none).
   text. One edge per (driver cell, sink pin) pair; `net` is the carrying net's `n<k>`.
 - `pin` names: LUT `I0`..`I5` (input position in the cover's order), flip-flop `D`, `CLK`
   (`EN` for latches), PO `I`, hard cell the formal name with index, `a[3]`.
+- `labels` hold the `labels.csv` columns except `node_id`, `kind` and `cell_type` (as in the
+  example above; `cell_type` is only in the CSV).
 - `features` (numbers only): `fan_in` (connected input pins), `fan_out` (sink pins on its output
   nets), `level` (longest combinational path from a PI, flip-flop output or constant; flip-flops,
   PIs and constants are 0), `lut_width` (0 if not a LUT), `lut_table` (hex of the table, MSB
@@ -312,7 +328,7 @@ ports (`WR_DATA`, `RD_DATA`, `RD_ADDR`, `WR_ADDR`), and hard cells.
 $lt $le $gt $ge`, bitwise `$and $or $xor $xnor $not`, reductions `$reduce_and $reduce_or
 $reduce_xor $reduce_xnor $reduce_bool`, `$logic_not $logic_and $logic_or`, muxes `$mux $pmux
 $bmux $demux` (their data ports), storage `$dff` family and latches (data port `D`),
-constants. A type found in a snapshot and in no list stops the build for that design with
+constants (`$_CONST0_`, `$_CONST1_`, `$_CONSTX_`). A type found in a snapshot and in no list stops the build for that design with
 `fail: unlisted word type <type>`; the list is closed on purpose.
 
 **7.4 Seeds.** A word cell is `control` by seed when it is an **FSM state register**: a storage
@@ -333,10 +349,10 @@ and `datapath` together, or any `mixed`, gives `mixed`; `unknown` matches are ig
 are unknown; no match gives `unknown`. PI and PO nodes get `io`, constants without a match
 `const`.
 
-**7.6 FSM flag.** `fsm` is true when the snapshot cell or its output wire carries the attribute
-`fsm_encoding` that Odin III's `fsm` pass leaves (plan Task 6 finds the exact carrier with a
-two-state micro and pins it; if no carrier survives, `fsm` is false everywhere and the dataset
-documents it, open question 3).
+**7.6 FSM flag.** `fsm` is true when the snapshot cell carries the string attribute `odin3_fsm_encoding` (value
+e.g. `one-hot`) that Odin III's `fsm` pass leaves on the state register's node and wire (probed in
+plan Task 6, `tests/data/fsm2.v`; the older name `fsm_encoding` is only the input attribute).
+`snapshot.FSM_CARRIER` records it. `$dlatch` does not occur: the flow reads with `--nolatches`.
 
 ## 8. Components and package layout
 

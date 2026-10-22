@@ -52,7 +52,7 @@ NEUTRAL: frozenset[str] = frozenset(
         "$mux", "$pmux", "$bmux", "$demux",
         "$dff", "$dffe", "$adff", "$adffe", "$sdff", "$sdffe", "$sdffce", "$dffsr", "$dffsre",
         "$aldff", "$aldffe", "$dlatch", "$adlatch", "$dlatchsr",
-        "$const",
+        "$const", "$_CONST0_", "$_CONST1_", "$_CONSTX_",
     }
 )
 
