@@ -9,10 +9,17 @@ from typing import Any
 
 from loki.build import FloorResult, build_floor, floor_failures, main
 from loki.equiv import EquivResult
-from loki.schemas import validate_graph, validate_key, validate_labels_csv, validate_meta
+from loki.schemas import (
+    validate_graph,
+    validate_key,
+    validate_labels_csv,
+    validate_meta,
+    validate_words,
+)
 from tests.helpers import DATA, can_run_f2, can_run_flow, f2_arch, micro, odin3_root, vtr_arch
 
-FILES = ("netlist.blif", "netlist.v", "graph.json", "labels.csv", "key.json", "meta.json")
+FILES = ("netlist.blif", "netlist.v", "graph.json", "labels.csv", "key.json", "meta.json",
+         "words.json")
 KEYWORDS = {"module", "endmodule", "input", "output", "wire", "assign", "reg", "always",
             "posedge", "negedge", "begin", "end", "if", "else"}
 
@@ -60,6 +67,10 @@ class BuildTest(unittest.TestCase):
             kinds = [n["kind"] for n in graph["nodes"]]
             self.assertEqual((kinds.count("pi"), kinds.count("po"), kinds.count("lut")), (8, 3, 5))
             self.assertEqual(meta["unmatched"], 0)
+            words = load(out, "words.json")
+            self.assertEqual(validate_words(words), [])
+            self.assertEqual([w["type"] for w in words["words"]
+                              if w["type"] in ("$eq", "$gt", "$lt")], ["$eq", "$gt", "$lt"])
 
     @unittest.skipUnless(can_run_flow(), "needs a VTR architecture")
     def test_f1_hard_cells_and_declared_ports(self) -> None:
