@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loki"
+version = "0.1.0"
+description = "Loki III: reverse engineering of structural netlists (part of Yggdrasil III)"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = ["odin3"]
+
+[project.scripts]
+loki = "loki.cli:main"
+
+[project.entry-points."wyrd.steps"]
+loki-dataset = "loki.step:DatasetStep"
+
+[tool.setuptools.packages.find]
+include = ["loki*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"

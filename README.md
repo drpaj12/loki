@@ -9,3 +9,11 @@ Loki III is part of **Yggdrasil III** (the project / world tree), the suite of O
 Town game). Loki III depends on the `odin3` Python package and never changes the Odin III core.
 
 License: MIT.
+
+## Development
+
+    python3 -m venv .venv && .venv/bin/pip install ruff mypy cffi
+    .venv/bin/python -m unittest discover -s tests -t . -v
+    .venv/bin/ruff check . && .venv/bin/mypy --strict loki tests
+
+See `CLAUDE.md` for the Odin III environment variables.
