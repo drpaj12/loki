@@ -120,18 +120,22 @@ def proof_label(h: Hypothesis) -> str:
     return "none"
 
 
+def role_label(rh: Hypothesis) -> str:
+    """The predicted role of one ``role`` hypothesis (spec 7.10): ``mixed``, ``control`` when its
+    probability is at least 0.5, else ``datapath``."""
+    if rh.features.get("role_prop") == "mixed":
+        return "mixed"
+    return "control" if rh.log_odds >= 0 else "datapath"
+
+
 def role_of(h: Hypothesis, overlay: Overlay) -> str:
     """Majority role (``control``, ``datapath``, ``mixed``) of the cells of ``h`` from the
     ``role`` hypotheses (spec 7.10); empty when none covers a cell."""
     counts: dict[str, int] = {}
     for rh in overlay.by_kind("role"):
-        if not rh.cells <= h.cells or rh.status in ("refuted", "rejected"):
-            continue
-        if rh.features.get("role_prop") == "mixed":
-            role = "mixed"
-        else:
-            role = "control" if rh.log_odds >= 0 else "datapath"
-        counts[role] = counts.get(role, 0) + 1
+        if rh.cells <= h.cells and rh.status not in ("refuted", "rejected"):
+            role = role_label(rh)
+            counts[role] = counts.get(role, 0) + 1
     if not counts:
         return ""
     return sorted(counts, key=lambda r: (-counts[r], r))[0]
