@@ -278,7 +278,7 @@ family weight is 1.0.
 Detectors report **features as bin labels** (strings), never LLRs; the framework turns a feature
 into an LLR through the calibration table (`llr` of that bin, 0 for an unseen bin). Proofs and
 simulation add the fixed records of 6.2. All evidence is an `Evidence` record, so the report can
-explain every number. Each feature belongs to one family (`FEATURE_FAMILY` in `loki/re/bayes.py`):
+explain every number. Each feature belongs to one family (`family_of` in `loki/re/bayes.py`):
 `npn_*` to `npn`, `wl_*` to `wl`, features read from L2 outputs (partitions, graphlet orbits) to
 `l2`, every other feature to `struct`.
 
