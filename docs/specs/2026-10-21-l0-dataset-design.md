@@ -294,11 +294,12 @@ must not read it.
 ### 6.7 `meta.json`
 
 `{"schema":1, "design", "floor", "odin3_version", "abi_version", "script": [..the run_script text..],
-"loki_version", "counts": {"nodes", "pi", "po", "lut", "ff", "const", "hard", "edges"},
-"unmatched": n, "loops_cut": n, "equiv": {"writer": {"status": "...", "tool_exit": n, "mode":
-"full|soft-only"}, "anon": {...}}}`. `script` shows the commands with file names reduced to base names and
-the architecture reduced to its stem (`f1-*`) or `<arch>` (`f2`, `f3`: they do not depend on it), so f2 files
-are byte-equal across architectures. There is no timing field (it would break byte-identical rebuilds);
+"loki_version", "counts": {"nodes", "pi", "po", "lut", "ff", "const", "hard", "gate",
+"edges"}, "unmatched": n, "loops_cut": n, "equiv": {"writer": {"status": "...", "tool_exit": n,
+"mode": "full|soft-only"}, "anon": {...}}}`. `script` shows the commands with file names reduced
+to base names and the architecture reduced to its stem (`f1-*`) or `<arch>` (`f2`), and omitted for
+`f3` (it reads no architecture), so f2 files are byte-equal across architectures and f3 files do not
+change with one. There is no timing field (it would break byte-identical rebuilds);
 `metrics.json` of the step run holds seconds.
 
 ### 6.8 `design.json`
@@ -459,9 +460,10 @@ section 10.
 `<odin3_root>/tools/equiv-check/equiv-check A B` (exit 0 equivalent, 1 not, 2 error, 4 unproven,
 5 hard). Two comparisons per (design, floor), recorded in `meta.json` `equiv`:
 
-1. `writer`: Odin III's own `write_blif --vtr` of the final design against Loki's BLIF written
-   with the original port names (the same writer with the identity naming). Proves Loki's writer
-   preserves function.
+1. `writer`: Odin III's own `write_blif --vtr` of the final design (floor F3: `write_blif
+   --gates-as-names`, the plain dialect, because `--vtr` refuses library gates) against Loki's BLIF
+   written with the original port names (the same writer with the identity naming). Proves Loki's
+   writer preserves function.
 2. `anon`: the reference BLIF (identity naming) against `deanonymise(netlist.blif, key.json)`,
    which maps the port signals back to the original port-bit names. Proves the anonymisation and
    the key.
@@ -499,8 +501,8 @@ build is byte-identical. F1 is built for the same designs: no `differs`.
 
 ## 12. Not in L0
 
-The hypothesis search (L1), clustering and graph models (L2), any model training, F3 before
-gate mapping merges, the VTR set (task 13, after the micros and VerilogEval work), SystemVerilog
+The hypothesis search (L1), clustering and graph models (L2), any model training, the VTR set
+(task 13, after the micros and VerilogEval work), SystemVerilog
 support (an Odin III front end, ADR D11), a Liberty reader, fine-grained per-gate provenance
 inside ABC cones, GUI.
 

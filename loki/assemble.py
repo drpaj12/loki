@@ -174,7 +174,11 @@ def _nodes_of(floor_dir: Path) -> int:
 
 
 def _record_failures(entry: DesignEntry, failed: list[tuple[str, str]]) -> None:
-    """A run that is not ok fails the floors of its architecture that no ok run supplied."""
+    """A run that is not ok fails the floors of its architecture that no ok run supplied.
+
+    F3 is not recorded: a failed f3 run leaves no manifest entry. That is a known gap, owned by
+    Task 13 of the plan (no schema change; all current F3 runs are ok or skipped).
+    """
     for arch, message in failed:
         for floor in (f"f1-{short_arch(arch)}", "f2"):
             if floor not in entry.floors:
