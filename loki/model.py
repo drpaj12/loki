@@ -92,3 +92,4 @@ class Snapshot:
     words: tuple[WordCell, ...]
     instances: tuple[InstanceSite, ...]
     top: str
+    po_nets: frozenset[int] = frozenset()

@@ -187,7 +187,7 @@ def validate_meta(obj: object) -> list[str]:
     """Errors of a meta.json object (spec 6.7)."""
     errs: list[str] = []
     req = ("schema", "design", "floor", "odin3_version", "abi_version", "script", "loki_version",
-           "counts", "unmatched", "loops_cut", "equiv", "seconds")
+           "counts", "unmatched", "loops_cut", "equiv")
     d = _closed(obj, "meta", req, (), errs)
     if d is None:
         return errs
@@ -213,7 +213,7 @@ def _equiv_errors(equiv: object, errs: list[str]) -> None:
         errs.append("meta: equiv must be an object")
         return
     for name, res in equiv.items():
-        r = _closed(res, f"meta.equiv.{name}", ("status", "tool_exit"), ("detail",), errs)
+        r = _closed(res, f"meta.equiv.{name}", ("status", "tool_exit"), ("detail", "mode"), errs)
         if r is not None:
             _typed(r, "status", str, f"meta.equiv.{name}", errs)
             _typed(r, "tool_exit", int, f"meta.equiv.{name}", errs)

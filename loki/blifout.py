@@ -43,11 +43,11 @@ def _port_owners(nl: Netlist) -> dict[int, str]:
 
 
 def identity_naming(nl: Netlist) -> Naming:
-    """Original port-bit names on port nets, ``w<id>`` on other nets, ``c<id>`` on cells."""
+    """Original port-bit names on port nets, ``w<id>`` on other nets, no ``.cname`` lines."""
     owners = _port_owners(nl)
     return Naming(
         net=lambda i: owners.get(i, f"w{i}"),
-        cell=lambda c: f"c{c.id}",
+        cell=lambda c: "",
         po_buffer=lambda name: name,
     )
 
@@ -154,7 +154,8 @@ def _cell_lines(cell: FinalCell, naming: Naming) -> list[str]:
         lines = _latch_lines(cell, naming)
     else:
         lines = _subckt_lines(cell, naming)
-    return [*lines, f".cname {naming.cell(cell)}"]
+    name = naming.cell(cell)
+    return [*lines, f".cname {name}"] if name else lines
 
 
 def _group(cell: FinalCell) -> int:
@@ -175,7 +176,31 @@ def write_blif(nl: Netlist, naming: Naming) -> str:
     for net, buf in buffers:
         lines.extend([f".names {net} {buf}", "1 1"])
     lines.append(".end")
+    lines.extend(_black_box_models(nl))
     return "\n".join(lines) + "\n"
+
+
+def _formals(name: str, width: int) -> list[str]:
+    return [name] if width == 1 else [f"{name}[{i}]" for i in range(width)]
+
+
+def _black_box_models(nl: Netlist) -> list[str]:
+    """One ``.blackbox`` model per hard cell type used, as Odin III's write_blif writes them."""
+    shapes: dict[str, dict[str, dict[str, int]]] = {}
+    for c in logic_cells(nl):
+        if c.kind != "hard":
+            continue
+        shape = shapes.setdefault(c.type, {"in": {}, "out": {}})
+        for side, ports in (("in", c.inputs), ("out", c.outputs)):
+            for p in ports:
+                shape[side][p.name] = max(shape[side].get(p.name, 0), p.width)
+    lines: list[str] = []
+    for typ in sorted(shapes):
+        ins = [b for n, w in shapes[typ]["in"].items() for b in _formals(n, w)]
+        outs = [b for n, w in shapes[typ]["out"].items() for b in _formals(n, w)]
+        lines.extend([f".model {typ}", ".inputs " + " ".join(ins), ".outputs " + " ".join(outs),
+                      ".blackbox", ".end"])
+    return lines
 
 
 def _signal_map(key: dict[str, object], outputs: set[str]) -> dict[str, str]:
@@ -192,15 +217,19 @@ _SPLIT = re.compile(r"(\s+)")
 
 
 def deanonymise(blif: str, key: dict[str, object]) -> str:
-    """Map port signals of an anonymised BLIF back to original port-bit names."""
+    """Map port signals of an anonymised BLIF back to original port-bit names; drop ``.cname``."""
     outputs: set[str] = set()
     for line in blif.splitlines():
+        if line.startswith(".end"):
+            break
         if line.startswith(".outputs"):
             outputs = set(line.split()[1:])
     mapping = _signal_map(key, outputs)
     out: list[str] = []
     for line in blif.splitlines():
-        if line.startswith(".cname") or line.startswith(".model"):
+        if line.startswith(".cname"):
+            continue
+        if line.startswith(".model"):
             out.append(line)
             continue
         out.append("".join(_map_token(tok, mapping) for tok in _SPLIT.split(line)))

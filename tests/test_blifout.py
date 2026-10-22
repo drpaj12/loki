@@ -60,8 +60,8 @@ class BlifTest(unittest.TestCase):
                    [Port("Q", 1, (5,))])
         nl = netlist([one, zero, pos, neg], 5, [PortBit("c", "in", 3), PortBit("q", "out", 4)])
         text = write_blif(nl, identity_naming(nl))
-        self.assertIn(".names w1\n1\n.cname c20\n", text)
-        self.assertIn(".names w2\n.cname c21\n", text)
+        self.assertIn(".names w1\n1\n.names w2\n", text)
+        self.assertNotIn(".cname", text)
         self.assertIn(".latch w1 q re c 3\n", text)
         self.assertIn(".latch w2 w5 fe c 3\n", text)
 
@@ -70,7 +70,11 @@ class BlifTest(unittest.TestCase):
                    [Port("cout", 1, (4,))])
         nl = netlist([add], 4, [PortBit("x", "in", 1)])
         text = write_blif(nl, identity_naming(nl))
-        self.assertIn(".subckt adder a[0]=x a[1]=w2 b[0]=w3 cout=w4\n.cname c30\n", text)
+        self.assertIn(".subckt adder a[0]=x a[1]=w2 b[0]=w3 cout=w4\n", text)
+        anon = write_blif(nl, anon_naming(number(nl), nl))
+        self.assertIn(".subckt adder a[0]=n0 a[1]=n1 b[0]=n2 cout=n3\n.cname n4\n", anon)
+        model = ".model adder\n.inputs a[0] a[1] b[0] b[1]\n.outputs cout\n.blackbox\n.end"
+        self.assertIn(model, anon)
 
     def test_output_aliases_buffered(self) -> None:
         nl = Netlist(

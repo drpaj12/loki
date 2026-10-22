@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import tempfile
+from pathlib import Path
 from typing import Any
 
 from loki.model import FinalCell, Net, Netlist, PortBit
@@ -51,9 +53,30 @@ def _net_names(net: Any) -> tuple[str, ...]:
     return tuple(n for n in [net.name, *net.aliases()] if n)
 
 
+def declared_port_names(design: Any) -> tuple[list[str], list[str]]:
+    """Input and output port-bit names as Odin III's own ``write_blif --vtr`` prints them.
+
+    The binding does not expose a port wire's declared range (``output [7:1] leds`` has bits 7
+    to 1), so the BLIF header is the reference for the bit indices (open question 1).
+    """
+    with tempfile.TemporaryDirectory(prefix="loki-ports-") as tmp:
+        path = Path(tmp) / "ports.blif"
+        design.run_script(f'write_blif --vtr "{path}"')
+        text = path.read_text(encoding="utf-8").replace("\\\n", " ")
+    found: dict[str, list[str]] = {".inputs": [], ".outputs": []}
+    for line in text.splitlines():
+        head, _, rest = line.partition(" ")
+        if head == ".end":
+            break
+        if head in found:
+            found[head].extend(rest.split())
+    return found[".inputs"], found[".outputs"]
+
+
 def _port_bits(
-    module: Any, extra: list[int], next_net: int
+    module: Any, extra: list[int], next_net: int, declared: tuple[list[str], list[str]]
 ) -> tuple[list[PortBit], int]:
+    names = {"in": iter(declared[0]), "out": iter(declared[1])}
     bits: list[PortBit] = []
     for mp in module.ports():
         typ = str(mp.node.type_name)
@@ -70,8 +93,10 @@ def _port_bits(
                 extra.append(net_id)
             else:
                 net_id = int(net.id)
-            name = f"{mp.wire.name}[{bit}]" if len(pins) > 1 else str(mp.wire.name)
-            bits.append(PortBit(name, direction, net_id, spans))
+            default = f"{mp.wire.name}[{bit}]" if len(pins) > 1 else str(mp.wire.name)
+            bits.append(PortBit(next(names[direction], default), direction, net_id, spans))
+    if any(next(it, None) is not None for it in names.values()):
+        raise Unsupported("port names of write_blif do not match the module ports")
     return bits, next_net
 
 
@@ -83,7 +108,9 @@ def extract_netlist(design: Any, top_name: str) -> Netlist:
     )
     all_nets = {int(n.id): Net(int(n.id), _net_names(n)) for n in module.nets()}
     extra: list[int] = []
-    bits, _ = _port_bits(module, extra, max(all_nets, default=0) + 1)
+    bits, _ = _port_bits(
+        module, extra, max(all_nets, default=0) + 1, declared_port_names(design)
+    )
     used = {n for c in cells for p in (*c.inputs, *c.outputs) for n in p.nets if n}
     used.update(pb.net for pb in bits)
     nets = {i: all_nets.get(i, Net(i, ())) for i in sorted(used)}

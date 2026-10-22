@@ -40,8 +40,11 @@ def take_snapshot(design: Any, instances: tuple[InstanceSite, ...] = ()) -> Snap
     """Every live word-level node of the top module, ports skipped."""
     module = design.top()
     words: list[WordCell] = []
+    po_nets: set[int] = set()
     for node in module.nodes():
         typ = str(node.type_name)
+        if typ == "$port_out":
+            po_nets.update(n for n in (pin_net_id(p) for p in node.pins()) if n)
         if typ.startswith("$port_"):
             continue
         words.append(
@@ -56,7 +59,7 @@ def take_snapshot(design: Any, instances: tuple[InstanceSite, ...] = ()) -> Snap
                 fsm=node.attr(FSM_ATTR) is not None,
             )
         )
-    return Snapshot(tuple(words), instances, str(module.name))
+    return Snapshot(tuple(words), instances, str(module.name), frozenset(po_nets))
 
 
 def take_instances(design: Any) -> tuple[InstanceSite, ...]:

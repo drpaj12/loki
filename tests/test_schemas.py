@@ -101,7 +101,7 @@ class SchemasTest(unittest.TestCase):
                 "schema": 1, "design": "d", "floor": "f2", "odin3_version": "1", "abi_version": 1,
                 "script": ["a"], "loki_version": "0.1.0",
                 "counts": {k: 0 for k in schemas._COUNTS}, "unmatched": 0, "loops_cut": 0,
-                "equiv": {"writer": {"status": "equivalent", "tool_exit": 0}}, "seconds": 1.5}
+                "equiv": {"writer": {"status": "equivalent", "tool_exit": 0}}}
         self.assertEqual(validate_meta(meta), [])
         meta["extra"] = 1
         self.assertTrue(validate_meta(meta))

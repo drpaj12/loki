@@ -280,7 +280,11 @@ must not read it.
 
 `{"schema":1, "design", "floor", "odin3_version", "abi_version", "script": [..the run_script text..],
 "loki_version", "counts": {"nodes", "pi", "po", "lut", "ff", "const", "hard", "edges"},
-"unmatched": n, "loops_cut": n, "equiv": {"status": "...", "tool_exit": n}, "seconds": x}`.
+"unmatched": n, "loops_cut": n, "equiv": {"writer": {"status": "...", "tool_exit": n, "mode":
+"full|soft-only"}, "anon": {...}}}`. `script` shows the commands with file names reduced to base names and
+the architecture reduced to its stem (`f1-*`) or `<arch>` (`f2`, `f3`: they do not depend on it), so f2 files
+are byte-equal across architectures. There is no timing field (it would break byte-identical rebuilds);
+`metrics.json` of the step run holds seconds.
 
 ### 6.8 `design.json`
 
