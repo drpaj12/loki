@@ -1058,7 +1058,7 @@ The recommendations as written:
 6. **Metric choices** (Jaccard 0.5 for matching, Larsen-Aone F for hierarchy, NMI secondary) and
    the default LLR table are agent defaults. Recommend keeping them until the first baseline.
 
-## 18. Open questions on features A and B (2026-10-21, for Peter)
+## 18. Open questions on features A and B (Peter accepted every recommendation, 2026-10-21)
 
 1. **numpy.** The request said "pure Python + numpy, no new dependency", but numpy is only in L2's
    optional `analysis` extra; L1's runtime is the standard library plus `odin3`. Recommend:

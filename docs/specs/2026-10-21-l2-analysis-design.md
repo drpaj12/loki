@@ -543,7 +543,7 @@ designs (GDV similarity, graph comparison); other GNN architectures, hyperparame
 neighbour sampler; reading a BLIF directly (L2 reads `graph.json`; open question 2); the F3 gate floor
 before gate mapping lands (the code is floor-generic); the P1 placement experiment.
 
-## 14. Open questions (Peter accepted every recommendation below, 2026-10-21)
+## 14. Open questions (Peter accepted every recommendation below, including items 8-11, 2026-10-21)
 
 1. **L1 evidence interface.** L1's spec was absent. Recommendation: L1 consumes `Partition` as defined in
    section 6 (key `"<method>:<hash8>"`, `members(c)` as candidate blocks). If L1 needs another shape, add an
