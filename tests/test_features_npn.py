@@ -11,6 +11,7 @@ from loki.features.npn import (
     npn_class,
     shrink_support,
     stats,
+    transforms,
 )
 from tests.features_fixtures import table_of
 
@@ -124,6 +125,11 @@ class NpnTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             npn_brute(table_of(7, lambda v: sum(v) & 1), 7)
         self.assertEqual(npn_class(table_of(8, lambda v: v[2] & v[7]), 8), NAMED["and2"])
+
+    def test_transforms_count_is_stable(self) -> None:
+        self.assertEqual(transforms(XOR6, 6), 92160)
+        self.assertEqual(transforms(XOR6, 6), 92160)
+        self.assertEqual(transforms(0b1000, 2), 1)
 
     def test_npn_stats(self) -> None:
         npn_class(XOR6, 6)

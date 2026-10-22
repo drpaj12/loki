@@ -236,29 +236,40 @@ class Overlay:
         derived: list[Evidence] = []
         h.prior_log_odds = calib.prior(h.detector, h.kind)
         derived.append(Evidence(round, "prior", f"{h.detector}/{h.kind}", "", h.prior_log_odds))
-        feat = 0.0
         for name, bin_ in sorted(h.features.items()):
             raw = calib.feature_llr(h.kind, name, bin_)
             w = calib.weight(family_of(name))
-            feat += w * raw
             derived.append(Evidence(round, "feature", name, bin_, w * raw))
-        pos = neg = 0.0
         for cid in h.children:
             child = self.hyps[cid]
             if child.status in ("confirmed", "committed"):
-                pos += bayes.CHILD_LLR
                 derived.append(Evidence(round, "child", cid, child.status, bayes.CHILD_LLR))
             elif child.status == "refuted":
-                neg += bayes.CHILD_NEG
                 derived.append(Evidence(round, "child", cid, "refuted", bayes.CHILD_NEG))
+        h.evidence = kept + derived
+        h.log_odds = self._total(h)
+
+    @staticmethod
+    def _total(h: Hypothesis) -> float:
+        """Log-odds from the records of ``h``: prior, the capped feature and child sum, the
+        fixed records, and the proof floor (spec 6.2)."""
+        feat = pos = neg = extra = 0.0
+        for e in h.evidence:
+            if e.source == "feature" and not e.name.startswith(_DOC):
+                feat += e.llr
+            elif e.source == "child":
+                if e.llr > 0:
+                    pos += e.llr
+                else:
+                    neg += e.llr
+            elif e.source != "prior":
+                extra += e.llr
         struct = feat + min(pos, bayes.CHILD_CAP) + neg
         struct = max(-bayes.STRUCT_CAP, min(bayes.STRUCT_CAP, struct))
-        extra = sum(e.llr for e in kept)
-        h.evidence = kept + derived
         log_odds = h.prior_log_odds + struct + extra
         if h.proof is not None and h.proof.get("verdict") == "equivalent":
             log_odds = max(log_odds, bayes.PROOF_LO)
-        h.log_odds = log_odds
+        return log_odds
 
     def apply_verdict(self, hid: str, v: Verdict, round: int) -> None:
         """Record a prover verdict (spec 6.2): equivalent confirms, differs refutes for good."""
@@ -282,6 +293,37 @@ class Overlay:
             h.status = "refuted"
         elif llr:
             h.log_odds += llr
+
+    # -- proof transfer (spec 8.1) -----------------------------------------------------------
+    def apply_transfer(self, hid: str, src: str, round: int) -> None:
+        """``hid`` is proved by the exact proof of ``src`` through a matching cone."""
+        h = self.hyps[hid]
+        proof = self.hyps[src].proof
+        template = proof["template"] if proof is not None else ""
+        h.evidence.append(Evidence(round, "transfer", src, "equivalent", 0.0))
+        h.proof = {"engine": "transfer", "verdict": "equivalent", "template": template,
+                   "cex": "", "from": src}
+        h.log_odds = max(h.log_odds, bayes.PROOF_LO)
+        if h.status in ("open", "rejected"):
+            h.status = "confirmed"
+
+    def revoke_transfers(self, src: str, round: int) -> list[str]:
+        """Withdraw every transfer from ``src`` (a failed spot check): the records get the value
+        ``revoked``, confirmed hypotheses return to ``open`` and their log-odds are recomputed
+        without the proof. Returns the revoked ids in id order."""
+        revoked: list[str] = []
+        for h in self.all():
+            if h.proof is None or h.proof.get("engine") != "transfer" or h.proof["from"] != src:
+                continue
+            for e in h.evidence:
+                if e.source == "transfer" and e.name == src and e.value == "equivalent":
+                    e.value = "revoked"
+            h.proof = None
+            if h.status == "confirmed":
+                h.status = "open"
+            h.log_odds = self._total(h)
+            revoked.append(h.id)
+        return revoked
 
     # -- competition ------------------------------------------------------------------------
     def compete(self, round: int) -> None:

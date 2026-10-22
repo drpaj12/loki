@@ -331,6 +331,14 @@ with index) and the net id. L1 builds it from `FnGraph` (`structural.feature_gra
 L2's `graphio.to_feature_graph` gives the same from its `Graph`. On F1 and F2 the `FnGraph` and
 `graph.json` routes give the same nodes, tables and edges, up to the PI/PO node names (a test pins
 it on an L0 micro). F3 differs until L0 writes gate tables (open question 18.8).
+`type` is the cell kind (hard cells: the Odin III type), because `graph.json` holds no cell types;
+only LUTs carry a `table` (a constant's value is not in `graph.json`, so both routes leave it
+out); hard-cell input pins use the formal port names (`Cell.in_pins`, `name[bit]` for buses), and
+flip-flop and latch extra inputs are `I<k>`. L1 keeps `latch` as its own kind, which `graph.json`
+cannot tell from `ff` (it writes the latch enable as pin `EN` of an `ff`): the two routes differ
+on latch designs only. In the role rules a forcing input needs a LUT of at least two inputs (with
+one input every value forces), and an enable inside the same LUT as a synchronous reset is not a
+hold path, so it stays `signal` (the limit L2 spec 8.1 states for merged resets).
 
 **Role flags.** `loki.features.roles.classify_nets` implements L2 spec 8.1's rules once (per net:
 `const`, `clock`, `reset`, `enable` or `signal`; `SignalConfig(min_fanout=16, dominance=0.8)`) and

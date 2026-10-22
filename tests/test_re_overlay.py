@@ -46,6 +46,63 @@ class OverlayTest(unittest.TestCase):
         self.assertEqual(weighted, [1.5])
         self.assertEqual(sum(1 for e in h.evidence if e.source == "prior"), 1)
 
+    def test_weighted_rescore(self) -> None:
+        ov = Overlay()
+        h = ov.add(cand("adder", {1}, features={"npn_sum": "all"}), "arith", 1)
+        calib = Calib("", {}, {"adder/npn_sum": {"all": 2.30}}, "t", {"npn": 0.5})
+        ov.rescore(calib, 1)
+        self.assertAlmostEqual(h.log_odds, 1.15)
+        rec = next(e for e in h.evidence if e.name == "npn_sum")
+        self.assertAlmostEqual(rec.llr, 1.15)
+        big = Calib("", {}, {"adder/npn_sum": {"all": 20.0}}, "t", {"npn": 0.5})
+        ov.rescore(big, 2)
+        self.assertEqual(h.log_odds, STRUCT_CAP)
+        none = Calib("", {}, {"adder/npn_sum": {"all": 2.30}}, "t", {"npn": 0.0})
+        ov.rescore(none, 3)
+        self.assertEqual(h.log_odds, 0.0)
+
+    def test_apply_transfer_confirms(self) -> None:
+        ov = Overlay()
+        src = ov.add(cand("adder", {1}, {"w": 1}), "arith", 1)
+        h = ov.add(cand("adder", {2}, {"w": 2}), "arith", 1)
+        ov.apply_verdict(src.id, EQUIV, 1)
+        ov.apply_transfer(h.id, src.id, 2)
+        self.assertEqual(h.status, "confirmed")
+        self.assertGreaterEqual(h.log_odds, 9.21)
+        assert h.proof is not None
+        self.assertEqual(h.proof["engine"], "transfer")
+        self.assertEqual(h.proof["from"], src.id)
+        self.assertEqual(h.proof["verdict"], "equivalent")
+        self.assertEqual([(e.source, e.name, e.value) for e in h.evidence
+                          if e.source == "transfer"], [("transfer", "h1", "equivalent")])
+        ov.rescore(CALIB, 3)
+        self.assertGreaterEqual(h.log_odds, 9.21)
+        self.assertEqual(h.status, "confirmed")
+
+    def test_revoke_transfers(self) -> None:
+        ov = Overlay()
+        calib = Calib("", {"arith/adder": 1.0}, {"adder/f": {"x": 2.0}}, "t")
+        src = ov.add(cand("adder", {1}, {"w": 1}, {"f": "x"}), "arith", 1)
+        a = ov.add(cand("adder", {2}, {"w": 2}, {"f": "x"}), "arith", 1)
+        b = ov.add(cand("adder", {3}, {"w": 3}, {"f": "x"}), "arith", 1)
+        other = ov.add(cand("adder", {4}, {"w": 4}, {"f": "x"}), "arith", 1)
+        ov.rescore(calib, 1)
+        for h in (src, other):
+            ov.apply_verdict(h.id, EQUIV, 1)
+        for h in (a, b):
+            ov.apply_transfer(h.id, src.id, 2)
+        self.assertEqual(ov.revoke_transfers(src.id, 3), [a.id, b.id])
+        for h in (a, b):
+            self.assertEqual(h.status, "open")
+            self.assertIsNone(h.proof)
+            self.assertAlmostEqual(h.log_odds, 3.0)
+            self.assertEqual([e.value for e in h.evidence if e.source == "transfer"], ["revoked"])
+        ov.rescore(calib, 4)
+        self.assertAlmostEqual(a.log_odds, 3.0)
+        self.assertEqual((src.status, other.status), ("confirmed", "confirmed"))
+        self.assertGreaterEqual(src.log_odds, 9.21)
+        self.assertEqual(ov.revoke_transfers(src.id, 5), [])
+
     def test_proof_sets_confirmed(self) -> None:
         ov = Overlay()
         h = ov.add(cand("adder", {1}), "arith", 1)

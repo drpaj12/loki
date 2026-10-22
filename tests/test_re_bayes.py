@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from loki.re import bayes
-from loki.re.bayes import DEFAULTS, Calib, family_of, load_calib, logit, sigmoid
+from loki.re.bayes import DEFAULTS, Calib, family_of, load_calib, logit, sigmoid, wl_npn_bin
 
 
 class BayesTest(unittest.TestCase):
@@ -27,6 +27,45 @@ class BayesTest(unittest.TestCase):
         self.assertEqual(
             [family_of(f) for f in ("npn_sum", "wl_depth", "l2_part", "k", "table")],
             ["npn", "wl", "l2", "struct", "struct"])
+
+    def test_new_constants(self) -> None:
+        self.assertEqual((bayes.TRANSFER_ROUND, bayes.CALIB_WL_DEPTH), (2, 2))
+        self.assertEqual((bayes.NODE_MIN_COUNT, bayes.CALIB_FOLDS), (5, 2))
+        self.assertEqual(len(bayes.WEIGHT_GRID), 11)
+        self.assertEqual((bayes.WEIGHT_GRID[0], bayes.WEIGHT_GRID[3], bayes.WEIGHT_GRID[10]),
+                         (0.0, 0.3, 1.0))
+
+    def test_node_score_backoff(self) -> None:
+        calib = Calib("", {}, {}, "t", node_llr={"adder": {"1:b": 0.7, "0:c": -0.2}})
+        self.assertEqual(calib.node_score("adder", ("2:a", "1:b", "0:c")), 0.7)
+        self.assertEqual(calib.node_score("adder", ("2:a", "0:c")), -0.2)
+        self.assertIsNone(calib.node_score("adder", ("2:a",)))
+        self.assertIsNone(calib.node_score("mux", ("1:b",)))
+        self.assertIsNone(DEFAULTS.node_score("adder", ("0:c",)))
+
+    def test_wl_npn_bins(self) -> None:
+        cases = [(-3.0, "--"), (-2.0, "-"), (-1.0, "-"), (-0.5, "0"), (0.0, "0"), (0.5, "0"),
+                 (0.6, "+"), (2.0, "+"), (2.1, "++")]
+        for value, want in cases:
+            self.assertEqual(wl_npn_bin(value), want, value)
+        self.assertEqual(wl_npn_bin(None), "unseen")
+
+    def test_calib_new_fields_roundtrip(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "c.json"
+            path.write_text(json.dumps({
+                "schema": 1, "floor": "f2",
+                "node_llr": {"adder": {"2:abc": 0.5, "0:def": {"pos": 6, "neg": 1, "llr": -1.5}}},
+                "weights": {"npn": 0.3, "wl": 0.0},
+                "reliability": {"ece": 0.04},
+            }), encoding="utf-8")
+            calib = load_calib(path)
+        self.assertEqual(calib.node_llr, {"adder": {"2:abc": 0.5, "0:def": -1.5}})
+        self.assertEqual((calib.weight("npn"), calib.weight("wl"), calib.weight("struct")),
+                         (0.3, 0.0, 1.0))
+        self.assertEqual(calib.node_score("adder", ("2:zzz", "0:def")), -1.5)
+        self.assertEqual(DEFAULTS.node_llr, {})
+        self.assertEqual(DEFAULTS.weights, {})
 
     def test_calib_default_and_file(self) -> None:
         self.assertIs(load_calib(None), DEFAULTS)

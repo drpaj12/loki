@@ -32,6 +32,7 @@ class NpnClass:
 
 
 _STATS = {"distinct_tables": 0, "worst_enum": 0, "inexact": 0}
+_COUNTS: dict[tuple[int, int], int] = {}
 
 
 def stats() -> dict[str, int]:
@@ -237,9 +238,16 @@ def npn_class(table: int, width: int) -> NpnClass:
     if k > MAX_WIDTH:
         raise ValueError(f"support of {k} inputs exceeds {MAX_WIDTH}")
     canon, count = _canonical(t, k)
+    _COUNTS[(table, width)] = count
     _STATS["distinct_tables"] += 1
     _STATS["worst_enum"] = max(_STATS["worst_enum"], count)
     return NpnClass(k, canon, True)
+
+
+def transforms(table: int, width: int) -> int:
+    """How many transforms ``npn_class(table, width)`` examined (the same on every run)."""
+    npn_class(table, width)
+    return _COUNTS[(table, width)]
 
 
 def _normalised(t: int, k: int) -> bool:

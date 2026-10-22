@@ -12,7 +12,10 @@ _PORT_OUT = "$port_out"
 
 @dataclass(frozen=True)
 class Cell:
-    """A level-0 cell. ``id`` is the node ID (the cell id used everywhere in L1)."""
+    """A level-0 cell. ``id`` is the node ID (the cell id used everywhere in L1).
+
+    ``in_pins`` names the pins of ``ins`` (formal name, ``name[bit]`` for buses) for hard cells
+    only; it is empty for every other kind."""
 
     id: int
     name: str
@@ -25,6 +28,7 @@ class Cell:
     clock: int
     line: int
     params: dict[str, int | str]
+    in_pins: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -125,6 +129,7 @@ def _read_cell(node: Any, names: dict[int, str]) -> Cell:
     kind = _kind(typ, params)
     ins: list[int] = []
     outs: list[int] = []
+    in_pins: list[str] = []
     clock = 0
     for port in node.ports():
         nets = tuple(_net_id(p) for p in port.pins)
@@ -138,6 +143,11 @@ def _read_cell(node: Any, names: dict[int, str]) -> Cell:
             outs.extend(nets)
         else:
             ins.extend(nets)
+            if kind == "hard":
+                in_pins.extend(
+                    str(port.name) if len(nets) == 1 else f"{port.name}[{bit}]"
+                    for bit in range(len(nets))
+                )
     table = 0
     width = 0
     if kind in ("lut", "const"):
@@ -145,7 +155,7 @@ def _read_cell(node: Any, names: dict[int, str]) -> Cell:
         table = cover_to_table(str(params["COVER"]), width)
     src = node.sources()
     return Cell(int(node.id), str(node.name), kind, typ, tuple(ins), tuple(outs), table, width,
-                clock, int(src[0].line) if src else 0, params)
+                clock, int(src[0].line) if src else 0, params, tuple(in_pins))
 
 
 def _port_nets(module: Any, names: dict[int, str]) -> tuple[tuple[int, ...], tuple[int, ...]]:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -18,6 +19,11 @@ PROVE_P = 0.2
 REJECT_P = 0.01
 MAX_PROOFS = 200
 MAX_ROUNDS = 8
+TRANSFER_ROUND = 2
+CALIB_WL_DEPTH = 2
+NODE_MIN_COUNT = 5
+CALIB_FOLDS = 2
+WEIGHT_GRID = tuple(i / 10 for i in range(11))
 SCHEMA = 1
 
 
@@ -52,6 +58,7 @@ class Calib:
     llr: dict[str, dict[str, float]]
     source: str
     weights: dict[str, float] = field(default_factory=dict)
+    node_llr: dict[str, dict[str, float]] = field(default_factory=dict)
 
     def prior(self, detector: str, kind: str) -> float:
         """Prior log-odds of ``kind`` proposed by ``detector`` (0.0 when unseen)."""
@@ -65,6 +72,14 @@ class Calib:
         """Weight of a feature family (1.0 without calibration)."""
         return self.weights.get(family, 1.0)
 
+    def node_score(self, kind: str, keys: Sequence[str]) -> float | None:
+        """The node LLR of the first key present in ``node_llr[kind]`` (None when none is)."""
+        table = self.node_llr.get(kind, {})
+        for key in keys:
+            if key in table:
+                return table[key]
+        return None
+
 
 def family_of(feature: str) -> str:
     """The feature family: ``npn``, ``wl``, ``l2`` or ``struct`` (spec 6.4)."""
@@ -72,6 +87,21 @@ def family_of(feature: str) -> str:
         if feature.startswith(prefix):
             return prefix[:-1]
     return "struct"
+
+
+def wl_npn_bin(mean_llr: float | None) -> str:
+    """Bin of the mean node LLR of a hypothesis (spec 6.7 item 1); ``None`` is ``unseen``."""
+    if mean_llr is None:
+        return "unseen"
+    if mean_llr < -2.0:
+        return "--"
+    if mean_llr < -0.5:
+        return "-"
+    if mean_llr <= 0.5:
+        return "0"
+    if mean_llr <= 2.0:
+        return "+"
+    return "++"
 
 
 _K_BINS = {"2": 0.0, "3-4": 0.69, "5-8": 1.39, "9+": 2.08}
@@ -149,4 +179,8 @@ def load_calib(path: Path | None) -> Calib:
         for k, bins in obj.get("llr", {}).items()
     }
     weights = {str(k): float(v) for k, v in obj.get("weights", {}).items()}
-    return Calib(str(obj.get("floor", "")), priors, llr, str(path), weights)
+    node_llr = {
+        str(k): {str(b): _num(v, "llr", f"{path}: node_llr {k}/{b}") for b, v in keys.items()}
+        for k, keys in obj.get("node_llr", {}).items()
+    }
+    return Calib(str(obj.get("floor", "")), priors, llr, str(path), weights, node_llr)
