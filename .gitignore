@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+datasets/l0/designs/
+datasets/l0/runs/
+datasets/l0/wyrd.db
+dataset/
+*.egg-info/
+.code-review-graph/
+datasets/l0/wyrd.toml
+datasets/l0/.wyrd.lock

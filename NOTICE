@@ -1,0 +1,3 @@
+Loki III fetches benchmark designs but does not redistribute them: VerilogEval (MIT, Copyright NVIDIA
+Research Projects, via the NMSU-PEARL fork pinned by Gate-Breaker) and Gate-Breaker (BSD-3-Clause).
+Each fetched design keeps its own licence; the dataset manifest records the source commit and licence.
