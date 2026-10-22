@@ -11,6 +11,12 @@ from loki.schemas import SCHEMA
 CONST_TYPES = frozenset({"$const", "$_CONST0_", "$_CONST1_", "$_CONSTX_"})
 
 
+def _params(word: WordCell) -> dict[str, int | str]:
+    """The word's integer parameters only: Odin III's memory cells carry the HDL memory name in
+    the string parameter ``MEMID``, and no original name may leave key.json."""
+    return {k: v for k, v in word.params.items() if not isinstance(v, str)}
+
+
 def _const_nets(snap: Snapshot) -> frozenset[int]:
     """Nets driven by a constant cell; net 0 (unconnected) counts as constant too."""
     nets = {0}
@@ -63,7 +69,7 @@ def build_words(
         {
             "id": w.id,
             "type": w.type,
-            "params": dict(w.params),
+            "params": _params(w),
             "fsm": w.fsm,
             "role": word_roles.get(w.id, "unknown"),
             "const_ports": _const_ports(w, const),

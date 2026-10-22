@@ -11,11 +11,11 @@ SPAN = (Span("/p/d.v", 3, 1, 3, 9),)
 
 def word(
     wid: int, typ: str, ins: dict[str, tuple[int, ...]], outs: dict[str, tuple[int, ...]],
-    name: str = "", fsm: bool = False,
+    name: str = "", fsm: bool = False, params: dict[str, int | str] | None = None,
 ) -> WordCell:
     return WordCell(
-        id=wid, type=typ, name=name, params={"Y_WIDTH": 5}, spans=SPAN,
-        inputs=tuple(Port(k, len(v), v) for k, v in ins.items()),
+        id=wid, type=typ, name=name, params={"Y_WIDTH": 5} if params is None else params,
+        spans=SPAN, inputs=tuple(Port(k, len(v), v) for k, v in ins.items()),
         outputs=tuple(Port(k, len(v), v) for k, v in outs.items()), fsm=fsm,
     )
 
@@ -65,6 +65,19 @@ class BuildWordsTest(unittest.TestCase):
     def test_no_original_names(self) -> None:
         self.assertNotIn("secret_add", json.dumps(self.build()))
         self.assertNotIn("/p/d.v", json.dumps(self.build()))
+
+    def test_mem_name_param_dropped(self) -> None:
+        """Odin III ``$mem``/``$memrd``/``$memwr`` hold the HDL memory name in the string
+        parameter ``MEMID``; words.json keeps integer parameters only (L0 anonymisation)."""
+        mem = word(
+            11, "$mem", {"ADDR": (1,)}, {"RD_DATA": (20,)}, name="secret_mem",
+            params={"MEMID": "secret_mem", "ABITS": 1, "WIDTH": 8},
+        )
+        obj = build_words(Snapshot((mem,), (), "top"), {}, numbering(), {11: "datapath"})
+        words = obj["words"]
+        assert isinstance(words, list)
+        self.assertEqual(words[0]["params"], {"ABITS": 1, "WIDTH": 8})
+        self.assertNotIn("secret_mem", json.dumps(obj))
 
 
 class ValidateWordsTest(unittest.TestCase):
