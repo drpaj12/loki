@@ -849,6 +849,10 @@ semi-canonical form, itself deterministic).
 
 - `design.v`: `write_verilog` of the final level: hierarchical, one module per committed piece,
   with the `loki_*` attributes of 9.3. Uncommitted logic stays as `$sop` assigns in its parent.
+  Odin III's own proof attributes (`\odin3:cone_check`, `\odin3:cone_key`, `\odin3:cone_hash`,
+  `\odin3:cone_cell`) can also appear on the modules and nets the prove step ran on: the ABI
+  has no attribute-remove, so they stay in the committed level. They name no original signal;
+  a tool that reads `design.v` back ignores them.
 - `overlay.json` (5).
 - `report.json`, schema 1: `input` (`path`, `sha256`, `floor`), `seed`, `calib` (`path`, `sha256`
   or `null`), `versions` (`loki`, `odin3`, `abi`), `rounds` (per round: `new`, `proved`
