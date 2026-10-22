@@ -26,3 +26,15 @@ See `CLAUDE.md` for the Odin III environment variables.
     loki check dataset
 
 See `docs/runbook-l0.md`.
+
+## L1: `loki re` (Bayesian hypotheses)
+
+    loki re dataset/<design>/f2/netlist.blif --floor f2 --calib calib/f2.json --out out/<design>
+    loki calibrate --dataset dataset --floor f2 --split train --out calib/f2.json
+    loki re-project --dataset dataset --floors f2 --split test --calib calib --out datasets/l1 [--features none]
+    wyrd run --project datasets/l1 --jobs 3 && loki score-all datasets/l1/runs --dataset dataset \
+        --out datasets/l1-scores [--compare <runs made with --features none>]
+    LOKI_DATASET=$PWD/dataset python -m unittest tests.test_acceptance_l1 -v      # L1 exit test
+
+`calib/f2.json` (train split) is committed. Details in `docs/runbook-l1.md`, first numbers in
+`docs/results-l1.md`.
