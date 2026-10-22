@@ -50,6 +50,7 @@ class Hypothesis:
     evidence: list[Evidence] = field(default_factory=list)
     status: str = "open"
     proof: dict[str, str] | None = None
+    proved_claim: Claim | None = None
     conflicts: tuple[str, ...] = ()
     commit: dict[str, str] | None = None
 
@@ -166,13 +167,24 @@ class Overlay:
         h = self.hyps[hid]
         h.nets.update({k: tuple(v) for k, v in cand.nets.items()})
         h.features.update(cand.features)
-        if cand.claim is not None:
-            h.claim = cand.claim
+        if cand.claim is not None and cand.claim != h.claim:
+            self._set_claim(h, cand.claim)
         for child in cand.children:
             self._link(hid, child)
         text = ",".join(f"{k}={v}" for k, v in sorted(cand.features.items()))
         h.evidence.append(Evidence(round, "feature", _DOC + detector, text, 0.0))
         return h
+
+    @staticmethod
+    def _set_claim(h: Hypothesis, claim: Claim) -> None:
+        """A proof holds for the claim that was proved: a different claim clears it (``add`` may
+        replace ``h.claim`` because the merge key has no nets)."""
+        if h.proof is not None or h.proved_claim is not None:
+            h.proof = None
+            h.proved_claim = None
+            if h.status == "confirmed":
+                h.status = "open"
+        h.claim = claim
 
     def _link(self, parent: str, child: str) -> None:
         p, c = self.hyps[parent], self.hyps[child]
@@ -283,6 +295,7 @@ class Overlay:
         if v.verdict in ("equivalent", "differs", "unproven"):
             h.proof = {"engine": v.engine, "verdict": v.verdict, "template": template,
                        "cex": _cex_text(v.cex), "from": ""}
+            h.proved_claim = h.claim
         if v.verdict == "equivalent":
             h.log_odds = max(h.log_odds, bayes.PROOF_LO)
             if h.status in ("open", "rejected"):
@@ -303,6 +316,7 @@ class Overlay:
         h.evidence.append(Evidence(round, "transfer", src, "equivalent", 0.0))
         h.proof = {"engine": "transfer", "verdict": "equivalent", "template": template,
                    "cex": "", "from": src}
+        h.proved_claim = h.claim
         h.log_odds = max(h.log_odds, bayes.PROOF_LO)
         if h.status in ("open", "rejected"):
             h.status = "confirmed"
@@ -319,6 +333,7 @@ class Overlay:
                 if e.source == "transfer" and e.name == src and e.value == "equivalent":
                     e.value = "revoked"
             h.proof = None
+            h.proved_claim = None
             if h.status == "confirmed":
                 h.status = "open"
             h.log_odds = self._total(h)

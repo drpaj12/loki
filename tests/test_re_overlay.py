@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from loki.re.bayes import STRUCT_CAP, Calib
+from loki.re.bayes import PROOF_LO, STRUCT_CAP, Calib
 from loki.re.claims import Claim
 from loki.re.detectors import Candidate
 from loki.re.overlay import KINDS, Evidence, KindSpec, Overlay, register_kind
@@ -60,6 +60,28 @@ class OverlayTest(unittest.TestCase):
         none = Calib("", {}, {"adder/npn_sum": {"all": 2.30}}, "t", {"npn": 0.0})
         ov.rescore(none, 3)
         self.assertEqual(h.log_odds, 0.0)
+
+    def test_claim_change_drops_proof(self) -> None:
+        """A proof belongs to the claim it proved. ``Overlay.add`` may replace ``h.claim`` (the
+        merge key has no nets), so a changed claim must clear the proof and its PROOF_LO floor."""
+        ov = Overlay()
+        first = Claim("add", (("Y_WIDTH", 2),), (("A", (1, 2)),), (("Y", (5, 6)),))
+        second = Claim("add", (("Y_WIDTH", 2),), (("A", (3, 4)),), (("Y", (5, 6)),))
+        cand = Candidate("adder", frozenset({9, 10}), {"Y": (5, 6)}, {"w": 2}, {}, first)
+        h = ov.add(cand, "arith", 1)
+        ov.apply_verdict(h.id, EQUIV, 1)
+        assert h.proof is not None
+        self.assertEqual(h.proof["verdict"], "equivalent")
+        self.assertEqual(h.status, "confirmed")
+        ov.add(cand, "arith", 2)  # the same claim again: the proof stands
+        self.assertIsNotNone(h.proof)
+        ov.add(Candidate("adder", frozenset({9, 10}), {"Y": (5, 6)}, {"w": 2}, {}, second),
+               "arith", 3)
+        self.assertIsNone(h.proof)
+        self.assertIsNone(h.proved_claim)
+        self.assertEqual(h.status, "open")
+        ov.rescore(CALIB, 3)
+        self.assertLess(h.log_odds, PROOF_LO)
 
     def test_apply_transfer_confirms(self) -> None:
         ov = Overlay()
