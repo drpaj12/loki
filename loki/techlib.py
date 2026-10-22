@@ -25,6 +25,8 @@ class LibCell:
     outputs: tuple[str, ...]
     functions: dict[str, str] = field(default_factory=dict)
     sequential: bool = False
+    seq_kind: str = ""  # re | fe | ah | al, from the ``seq`` line
+    clock: str = ""  # clock (level-sensitive: enable) input of the ``seq`` line
 
 
 @dataclass(frozen=True)
@@ -151,26 +153,44 @@ class _Builder:
     outputs: list[str] = field(default_factory=list)
     functions: dict[str, str] = field(default_factory=dict)
     sequential: bool = False
+    seq_kind: str = ""
+    clock: str = ""
 
     def line(self, text: str) -> None:
         for part in text.split(";"):
             words = part.split()
             if not words:
                 continue
-            if words[0] == "in":
-                self.inputs.append(words[1])
-            elif words[0] == "out":
-                self.outputs.append(words[1])
-            elif words[0] == "fn":
+            kw = words[0]
+            if kw in ("in", "out"):
+                if len(words) < 2:
+                    raise TechlibError(f"cell {self.name}: '{kw}' line has no port name")
+                (self.inputs if kw == "in" else self.outputs).append(words[1])
+            elif kw == "fn":
                 lhs, _, rhs = part.strip()[2:].partition("=")
+                if not lhs.strip() or not rhs.strip():
+                    raise TechlibError(f"cell {self.name}: malformed 'fn' line {part.strip()!r}")
                 self.functions[lhs.strip()] = rhs.strip()
-            elif words[0] == "seq":
+            elif kw == "seq":
                 self.sequential = True
+                self._seq(words)
+            elif kw == "area":
+                continue  # a mapping cost, not used by L0
+            else:
+                raise TechlibError(f"cell {self.name}: unknown keyword {kw!r}")
+
+    def _seq(self, words: list[str]) -> None:
+        edges = {"posedge": "re", "negedge": "fe", "high": "ah", "low": "al"}
+        at = words.index("@") if "@" in words else -1
+        if at < 0 or len(words) < at + 3 or words[at + 1] not in edges:
+            raise TechlibError(f"cell {self.name}: 'seq' line has no '@ edge clock'")
+        self.seq_kind = edges[words[at + 1]]
+        self.clock = words[at + 2]
 
     def done(self) -> LibCell:
         return LibCell(
             self.name, self.kind, tuple(self.inputs), tuple(self.outputs),
-            dict(self.functions), self.sequential,
+            dict(self.functions), self.sequential, self.seq_kind, self.clock,
         )
 
 
@@ -185,8 +205,12 @@ def parse_techlib(text: str) -> TechLib:
             continue
         words = line.split()
         if words[0] == "library" and cur is None:
+            if len(words) < 2:
+                raise TechlibError("malformed 'library' line")
             name = words[1]
         elif words[0] == "cell":
+            if len(words) < 3:
+                raise TechlibError(f"malformed 'cell' line {line!r}")
             cur = _Builder(words[1], words[2])
         elif cur is None:
             continue

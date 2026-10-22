@@ -125,13 +125,21 @@ def _const_lines(cell: FinalCell, naming: Naming) -> list[str]:
     return lines
 
 
-def _latch_lines(cell: FinalCell, naming: Naming) -> list[str]:
-    kind = _LATCH.get(cell.type)
+def _latch_lines(cell: FinalCell, naming: Naming, lib: TechLib | None) -> list[str]:
+    """A state cell as ``.latch``; a library cell's edge and clock come from its ``seq`` line."""
+    libcell = lib.cells.get(cell.type) if lib is not None else None
+    kind: str | None
+    if libcell is not None and libcell.seq_kind:
+        kind = libcell.seq_kind
+        clock_ports: tuple[str, ...] = (libcell.clock,) if libcell.clock else _CLOCK_PORTS
+    else:
+        kind = _LATCH.get(cell.type)
+        clock_ports = _CLOCK_PORTS
     if kind is None:
-        raise ValueError(f"unsupported storage cell type {cell.type}")
+        raise ValueError(f"unsupported storage cell type {cell.type}: no edge in the library")
     d = _single(_port(cell, ("D",)), naming)
     q = _single(_port(cell, ("Q",)), naming)
-    clk = _single(_port(cell, _CLOCK_PORTS), naming)
+    clk = _single(_port(cell, clock_ports), naming)
     return [f".latch {d} {q} {kind} {clk} 3"]
 
 
@@ -162,7 +170,7 @@ def _cell_lines(cell: FinalCell, naming: Naming, lib: TechLib | None) -> list[st
     elif cell.type in _CONSTS:
         lines = _const_lines(cell, naming)
     elif cell.kind == "ff":
-        lines = _latch_lines(cell, naming)
+        lines = _latch_lines(cell, naming, lib)
     elif cell.kind == "gate":
         if lib is None:
             raise ValueError(f"gate cell {cell.type} needs the technology library")
