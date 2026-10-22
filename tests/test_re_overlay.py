@@ -281,6 +281,16 @@ class OverlayTest(unittest.TestCase):
         self.assertEqual(got2, ["h1", "h4"])
         self.assertEqual(rival.status, "rejected")
 
+    def test_select_skips_live_inside_committed(self) -> None:
+        """A live hypothesis wholly inside a committed piece cannot commit: the piece absorbed
+        its cells, so commit would fail "footprint not found" and spend a retry."""
+        ov = Overlay()
+        big = ov.add(cand("adder", {1, 2, 3, 4}), "arith", 1)
+        inner = ov.add(cand("comparator", {2, 3}), "arith", 1)
+        big.p_comp, big.status = 1.0, "committed"
+        inner.p_comp = 0.99
+        self.assertEqual(ov.select_commits(1), [])
+
     def test_weak_child_does_not_block_parent(self) -> None:
         """A child that cannot commit (p below COMMIT_P, e.g. a register no proof can raise) must
         not hold its proven parent back for ever (found on a 10-bit counter, Task 16)."""

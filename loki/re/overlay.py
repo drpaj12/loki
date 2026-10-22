@@ -426,13 +426,16 @@ class Overlay:
 
     # -- commit selection ---------------------------------------------------------------------
     def select_commits(self, round: int = 0) -> list[Hypothesis]:
-        """Greedy commit selection (spec 9.2 step 6); losers become rejected or alternative."""
+        """Greedy commit selection (spec 9.2 step 6); losers become rejected or alternative.
+        A cell absorbed by a committed piece cannot be committed again, so a live hypothesis
+        wholly inside a committed piece is skipped: the piece took its cells."""
         committed = self.committed()
         cands = [
             h for h in self.all()
             if KINDS[h.kind].commit != "no" and h.status in _LIVE and h.p_comp >= bayes.COMMIT_P
             and self._children_ready(h)
             and not any(self._relation(h, c) == "conflict" for c in committed)
+            and not any(h.cells < c.cells for c in committed)
         ]
         cands.sort(key=lambda h: (-h.p_comp, -KINDS[h.kind].rank, -len(h.cells), _num(h.id)))
         chosen: list[Hypothesis] = []
