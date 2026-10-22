@@ -1,4 +1,4 @@
-"""The ``loki`` command: bench init, assemble, check, re, score, score-all."""
+"""The ``loki`` command: bench, assemble, check, re, score, score-all, calibrate, re-project."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from typing import Any
 
 from loki.assemble import assemble, check_dataset, dataset_warnings
 from loki.bench import SUITES, write_project
+from loki.re_project import write_re_project
 from loki.schemas import FLOORS, dump_json
 from loki.score.calibrate import calibrate, write_calib
 from loki.score.metrics import aggregate, compare, score_run
@@ -51,6 +52,12 @@ def _parser() -> argparse.ArgumentParser:
     cal.add_argument("--out", required=True)
     cal.add_argument("--odin3-root", default="")
     cal.add_argument("--seed", type=int, default=1)
+    rp = sub.add_parser("re-project", help="write a Wyrd project that runs loki re on a dataset")
+    rp.add_argument("--dataset", required=True)
+    rp.add_argument("--floors", required=True, help="comma-separated, e.g. f2,f1-k6")
+    rp.add_argument("--split", default="test", choices=("train", "test"))
+    rp.add_argument("--calib", required=True, help="directory of <floor>.json files")
+    rp.add_argument("--out", required=True)
     sub.add_parser("re", help="reverse-engineer a netlist (loki re --help)", add_help=False)
     return ap
 
@@ -115,6 +122,12 @@ def _run(args: argparse.Namespace) -> int:
         return 0
     if args.cmd == "score-all":
         return _score_all(args)
+    if args.cmd == "re-project":
+        toml = write_re_project(
+            Path(args.dataset), [f for f in args.floors.split(",") if f], args.split,
+            Path(args.calib), Path(args.out))
+        print(f"wrote {toml}")
+        return 0
     if args.cmd == "calibrate":
         root = args.odin3_root or os.environ.get("ODIN3_ROOT", "")
         obj = calibrate(
