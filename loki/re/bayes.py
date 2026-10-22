@@ -164,6 +164,13 @@ def _num(value: object, key: str, where: str) -> float:
     return float(value)
 
 
+def require_floor(calib: Calib, floor: str) -> None:
+    """Refuse a calibration fitted on another floor (``DEFAULTS`` names none). An f2 table on
+    an f3 run would be applied silently otherwise (spec 6.3)."""
+    if calib.floor and calib.floor != floor:
+        raise ValueError(f"calibration {calib.source} is for floor {calib.floor}, run is {floor}")
+
+
 def load_calib(path: Path | None) -> Calib:
     """``DEFAULTS`` for ``None``; else a calibration file of schema 1 (spec 6.3)."""
     if path is None:

@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 import unittest
@@ -112,6 +113,13 @@ class LoopTest(unittest.TestCase):
         ja, jb = a.overlay.to_json(a.graph), b.overlay.to_json(b.graph)
         self.assertEqual(dump_json(ja), dump_json(jb))
         self.assertEqual(a.rounds, b.rounds)
+
+    def test_calib_floor_mismatch_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "calib.json"
+            path.write_text(json.dumps({"schema": 1, "floor": "f3"}), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                run_re(opts(RE / "mux1.blif", calib=path))
 
     def test_keep_levels(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

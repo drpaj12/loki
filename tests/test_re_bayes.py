@@ -50,6 +50,15 @@ class BayesTest(unittest.TestCase):
             self.assertEqual(wl_npn_bin(value), want, value)
         self.assertEqual(wl_npn_bin(None), "unseen")
 
+    def test_calib_floor_mismatch_refused(self) -> None:
+        """A calibration file names its floor ("f2"); running it on another floor must be
+        refused, not silently applied (an f2 table on an f3 run)."""
+        calib = Calib("f2", {}, {}, "t")
+        bayes.require_floor(calib, "f2")
+        bayes.require_floor(Calib("", {}, {}, "d"), "f3")  # DEFAULTS: no floor to check
+        with self.assertRaises(ValueError):
+            bayes.require_floor(calib, "f3")
+
     def test_calib_new_fields_roundtrip(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "c.json"

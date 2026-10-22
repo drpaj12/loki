@@ -84,6 +84,7 @@ class _Run:
         self.level0 = load_level0(opts.netlist, floor, root, opts.techlib)
         self.graph = from_design(self.level0)
         self.calib: Calib = load_calib(opts.calib)
+        bayes.require_floor(self.calib, floor)
         self.sf: StructFeatures | None = (
             None if opts.features == "none" else build_features(self.graph)
         )
