@@ -4,6 +4,11 @@ Status: decisions approved by Peter, 2026-10-21 (section 2, items 1 to 7, verbat
 else is an agent default he may override. Open questions are section 17. This file is for his
 review.
 
+Amended 2026-10-21 (branch `docs/wl-npn`) with two features Peter approved that day: colour
+refinement (1-WL, feature A) and functional node features (NPN classes, feature B), section 6.7,
+used by the detectors (7.4 to 7.6), the provers (8.1), calibration (12.5) and scoring (12.5). Their
+open questions are section 18.
+
 ## 1. Goal
 
 L1 reverse-engineers one anonymous structural netlist (any L0 floor: F1 LUT + hard blocks, F2 LUT,
@@ -143,7 +148,9 @@ single positive literals of distinct non-`T` inputs; `None` otherwise), `maj3` (
 under any input/output negation). `npn_sig(table, width) -> tuple`: a signature invariant under
 input permutation and output negation: `(len(support), min(ones, 2^w - ones), sorted per-input
 (|f0|, |f1|) cofactor-ones pairs with each pair sorted)`. It is a hash for "isomorphic slices",
-not a canonical form.
+not a canonical form. The exact NPN class is `loki.features.npn` (6.7, feature B); with the
+structural features on it replaces `npn_sig` where slices are grouped (7.4), and `npn_sig` stays
+for `--features none`.
 
 ## 5. The overlay data model (`loki.re.overlay`)
 
@@ -151,7 +158,7 @@ not a canonical form.
 @dataclass
 class Evidence:
     round: int
-    source: str        # "prior", "feature", "child", "cone_check", "truth_table", "sim", "hard", "competition"
+    source: str        # "prior", "feature", "child", "cone_check", "truth_table", "sim", "hard", "competition", "transfer"
     name: str          # feature or detector name
     value: str         # bin label, verdict, or child id
     llr: float         # natural-log likelihood ratio added; 0.0 for records that only document
@@ -174,7 +181,7 @@ class Hypothesis:
     p_comp: float                    # probability after competition (6.5)
     evidence: list[Evidence]
     status: str                      # open confirmed refuted rejected committed alternative
-    proof: dict[str, str] | None     # {"engine", "verdict", "template", "cex"}
+    proof: dict[str, str] | None     # {"engine", "verdict", "template", "cex", "from"}; engine "transfer" (8.1) names its source in "from"
     conflicts: tuple[str, ...]
     commit: dict[str, str] | None    # {"round", "module", "instance", "form"}
 ```
@@ -229,6 +236,9 @@ committed hypothesis is materialised (section 9.3); `no` kinds are evidence and 
 ### 6.2 Log-odds
 
 Natural logs throughout. `L(h) = prior_log_odds(h) + sum(evidence llr)`, `p(h) = 1 / (1 + e^-L)`.
+Feature LLRs are weighted by family (6.4, 6.7 item 5): the feature part of the sum is
+`sum_f w_f * (sum of the feature LLRs of family f)`, with `w_f` from the calibration file (1.0
+without one); `STRUCT_CAP` applies to the weighted feature sum plus the child sum.
 Constants (agent defaults, in `loki/re/bayes.py`):
 
 | Name | Value | Meaning |
@@ -254,17 +264,23 @@ Constants (agent defaults, in `loki/re/bayes.py`):
 - `llr["<kind>/<feature>"]["<bin>"] = {"pos", "neg", "llr"}`: `llr = ln(((pos + 1) / (POS + B)) /
   ((neg + 1) / (NEG + B)))`, `POS`/`NEG` the totals of true/false candidates of that kind, `B` the
   number of bins seen.
+- `node_llr`, `weights` and `reliability` (6.7 items 1 and 5): the node-level table per kind, the
+  weight per feature family, and the reliability curve of the out-of-fold predictions.
 
 With no calibration file (`--calib none`), `loki/re/bayes.py` `DEFAULTS` applies: prior log-odds
 0 for every kind and the feature table of section 7 (each detector lists its default LLRs).
 Hypotheses whose kinds have no feature evidence then move only by proofs, simulation and children.
+Without a calibration file there is no node table (every `wl_npn` bin is `unseen`, LLR 0) and every
+family weight is 1.0.
 
 ### 6.4 Evidence
 
 Detectors report **features as bin labels** (strings), never LLRs; the framework turns a feature
 into an LLR through the calibration table (`llr` of that bin, 0 for an unseen bin). Proofs and
 simulation add the fixed records of 6.2. All evidence is an `Evidence` record, so the report can
-explain every number.
+explain every number. Each feature belongs to one family (`FEATURE_FAMILY` in `loki/re/bayes.py`):
+`npn_*` to `npn`, `wl_*` to `wl`, features read from L2 outputs (partitions, graphlet orbits) to
+`l2`, every other feature to `struct`.
 
 ### 6.5 Competition (exact rule)
 
@@ -293,6 +309,147 @@ Parent links come from detectors (a `mux` word lists its `mux_bit` slices; a `re
 re-score: each `confirmed` or `committed` child adds `CHILD_LLR` to the parent (total capped),
 each `refuted` child adds `CHILD_NEG`. This is "a confirmed child raises its parent's prior" along
 bits -> bus -> word op -> datapath unit.
+
+### 6.7 Structural and functional features (A: colour refinement, B: NPN classes)
+
+Approved by Peter, 2026-10-21. Package `loki.features` (plan Task 5a): standard library only
+(`hashlib`; no numpy, so L1's no-new-runtime-dependency rule holds; open question 18.1), and
+independent of `loki.re` and `loki.analysis`, so L2 runs the same code on `graph.json` (L2 spec
+4.1). L1 computes the features once per run on level 0 (`loki.re.structural`, plan Task 5b) and
+hands them to detectors as `RoundContext.features` (7.1); later rounds reuse the level-0 values for
+level-0 cells, and committed pieces keep their existing keys.
+
+**Feature graph.** `FeatureGraph` has one node per level-0 cell plus PI and PO pseudo-nodes (as in
+L0's `graph.json`; ids are the cell labels of section 5 and `pi:<net>`, `po:<net>`), each with
+`kind` (`pi po lut ff latch const hard gate`), `type`, `width` and `table` (the `Cell.table`
+convention of section 4; -1 when none), and directed edges driver to sink carrying the sink pin
+name of L0 spec 6.4 (`I<k>` for LUT input `k`, `D`, `CLK`, `EN`, `I` on a PO, hard formal names
+with index) and the net id. L1 builds it from `FnGraph` (`structural.feature_graph`), L2 from
+`graph.json` (`graphio.to_feature_graph`); on F1 and F2 both give the same nodes, tables and edges
+(a test pins it on an L0 micro). F3 differs until L0 writes gate tables (open question 18.8).
+
+**Role flags.** `loki.features.roles.classify_nets` implements L2 spec 8.1's rules once (per net:
+`const`, `clock`, `reset`, `enable` or `signal`; `SignalConfig(min_fanout=16, dominance=0.8)`) and
+the per-node flags of L2 spec 8.2 (`clock_domain`, `has_reset`, `const_inputs`, `enable`); L2's
+`classify_signals` delegates to it (open question 18.3). Edges of non-`signal` nets are removed from
+the refinement graph and kept in the start colours, as L2 removes them from the graphlet counting
+graph.
+
+**A. Colour refinement (1-WL), `loki.features.wl`.** Deterministic directed colour refinement:
+
+- Start colour `c_0(v) = H(start_label(v))`. `start_label` joins: `kind`; `type`; for a LUT either
+  its width and exact table (variant `table`) or the NPN class key of B (variant `npn`); the role
+  flags `clocked` (`clock_domain > 0`), `has_reset`, `enable`; and the constant inputs (variant
+  `table`: the sorted `<pin>=<value>` pairs; variant `npn`: their count, capped at 3).
+- Round `r + 1`: `c_{r+1}(v) = H(c_r(v), sorted multiset of (pin label, c_r(u)) over in-edges
+  u -> v, sorted multiset of (pin label, c_r(w)) over out-edges v -> w)`. Direction `in` drops the
+  out part, `out` the in part, `both` keeps both. The pin label is the sink pin name where pins are
+  ordered (LUT `I<k>` in variant `table`, `D`, `CLK`, `EN`, hard pins); LUT inputs in variant `npn`
+  all get the label `I`, because the NPN class is invariant under input permutation and pin
+  positions mean nothing there.
+- `H` = SHA-256 of a canonical UTF-8 encoding (fields joined by `|`, multisets as sorted lists),
+  first 16 hex digits. Colours are strings, identical across runs, machines and designs; the
+  cross-design keys of item 1 need this, which per-graph renumbering would not give. No soundness
+  argument rests on `H` being collision-free (proof transfer checks structure, 8.1).
+- Rounds: up to `WL_ROUNDS = 4` (h), or until stable. Because `c_r` is hashed into `c_{r+1}`,
+  colours only split, so a round that does not raise the number of colours leaves the partition
+  unchanged: that round is `stable_round`. Output: per node its colour in every round, per round
+  the colour classes (colour to sorted node indices), and `stable_round` (or `None`).
+- Variants L1 computes: `table/in` (the proof-transfer filter, item 4), `npn/in` (bus slices, item
+  3), `npn/both` (calibration keys, item 1). L2 exports `npn/both`, and `table/both` on request.
+- **Quotient.** `stable_partition` computes the coarsest equitable partition that refines the start
+  colours (pin-labelled edges, both directions) by partition refinement with the "process the
+  smaller half" rule (Berkholz, Bonsma and Grohe, "Tight lower and upper bounds for the complexity
+  of canonical colour refinement", ESA 2013 and Theory of Computing Systems 2017), O((n + m) log n)
+  in total; classes are numbered by their lowest node index (canonical within one graph, not across
+  graphs). `quotient` returns per class its size and start label, and per (class C, class D, pin
+  label) the number of such edges each node of D receives from C (well defined because the
+  partition is equitable). A test checks that `refine` run to stability and `stable_partition` give
+  the same partition on random small graphs.
+- **Cost.** `refine` is O((n + m) log n) per round (one sort of each node's multisets, one hash per
+  node), memory O(n h + m). Budgets, pure Python, estimates to be measured (plan Task 5a on a
+  100k-node, 300k-edge synthetic netlist; L2 plan Task 15 on the L2 scale fixture): one variant,
+  4 rounds, at 100k nodes 30 s and 1 GB; `stable_partition` at 100k nodes 60 s and 1 GB; at 820k
+  nodes eight times these. A miss is reported with its numbers, not hidden (open question 18.1).
+
+**B. Functional node features, `loki.features.npn`.** The NPN class (input negation, input
+permutation, output negation) of each LUT function, and of each gate, which level 0 holds as a
+`$sop` table (decision 1):
+
+- The table is first shrunk to its support (inputs it does not depend on are removed), so a LUT6
+  used as an AND2 is in the AND2 class. The class key is `"<support size>:<canonical table hex>"`.
+- **Method: an exact canonical form for every k <= 6.** The canonical form is the smallest table in
+  `N ∩ orbit(f)`, where `orbit(f)` is the NPN orbit of `f` and `N` the set of *normalised* tables:
+  at most `2^(k-1)` ones; for every input, the 1-cofactor has at least as many ones as the
+  0-cofactor; inputs ordered by non-decreasing 1-cofactor ones count. `N` is defined by properties
+  of the table alone, so `N ∩ orbit(f)` is the same set for every member of the orbit and its
+  minimum is an exact canonical form. Enumeration: the allowed output phases (both only when the
+  ones count is exactly `2^(k-1)`); for each, the allowed input phases (both only for a tied input);
+  for each, every input order consistent with the sort, permuting only within tie groups. Inputs
+  that are symmetric in the phase-assigned table (swapping two of them leaves it unchanged) are
+  kept in one order, since their permutations give the same table. For k <= 4 the plain
+  enumeration of all `k! 2^k 2` transforms (at most 768) is the test oracle.
+- **Cost.** A table whose inputs have distinct cofactor counts needs 1 or 2 transforms. The worst
+  case (k = 6, all inputs tied, no symmetry, both output phases) is `2 * 2^6 * 6! = 92,160`
+  transforms, estimated at 0.1 to 0.5 s in CPython (each transform a few big-integer operations,
+  stepped in Gray-code order). Results are cached by `(width, table)` and a netlist has few
+  distinct tables, so a design pays once per distinct table. `NPN_ENUM_MAX = 100000` lies above the
+  worst case, so every class is exact. If plan Task 5a's budget test fails, k = 6 falls back to a
+  documented semi-canonical form (the first normalised table found instead of the smallest:
+  deterministic, but two NPN-equivalent tables with ties may get different keys), the class is
+  marked `exact = false` and the report says so (open question 18.6).
+- Named classes `NAMED`, computed from their tables at import: `const`, `buf`, `and2`, `xor2`,
+  `and3`, `xor3`, `maj3`, `mux2` (3 inputs), `and4`, `xor4`, `mux4` (6 inputs); every other class
+  is `other` in feature bins.
+
+**How the Bayesian flow uses A and B.**
+
+1. **Learned likelihoods.** `loki calibrate` (12.5) learns, per kind `K`, a node-level table over
+   keys `"<d>:<c_d(v)>"` (the `npn/both` colour at round `d`; its start label carries the NPN class
+   of B): `pos` counts level-0 logic cells inside the footprint of an L0 instance of `K`'s scored
+   types (12.2), `neg` the other logic cells; `node_llr[K][key] = ln(((pos + 1) / (POS + B_d)) /
+   ((neg + 1) / (NEG + B_d)))`, the Laplace form of 6.3 with `B_d` the number of keys at round
+   `d`, for example `ln(P(key | adder cell) / P(key | not adder cell))`. Keys with `pos + neg <
+   NODE_MIN_COUNT = 5` are dropped. Lookup backs off from `d = CALIB_WL_DEPTH = 2` to 1 and 0; no
+   key with enough counts gives `unseen`. A hypothesis of kind `K` gets the feature `wl_npn`, the
+   bin of the mean node LLR over its logic cells: `--` (< -2), `-` (-2 to -0.5), `0` (-0.5 to
+   0.5), `+` (0.5 to 2), `++` (> 2), `unseen`. The bin table of 6.3 then learns the
+   hypothesis-level LLR of each bin. This extends the default LLR table (section 17 item 6): with
+   `--calib none` every `wl_npn` bin is `unseen` and adds 0, so the defaults are unchanged.
+2. **NPN evidence before proofs.** Cut functions in the classes `xor2`, `xor3`, `maj3`, `mux2`,
+   `mux4` are cheap, strong evidence: `arith` reads the class of each sum bit over its cut and of
+   each carry net (7.5: `npn_sum`, `npn_carry`; subtractor bits fall in the same classes because
+   NPN absorbs the negations) and counts `xor2` cells under a comparator (`npn_xor2`); `mux` reads
+   the class of each `mux_bit` cell (7.6: `npn_class`). Proofs are spent in `p_comp` order and
+   only above `PROVE_P` (9.2 step 4), so chains whose bits are not adder-shaped drop below it
+   without a SAT call. The ablation (12.5) reports the proof calls with and without.
+3. **Bus and slice priors.** `k` slices in one colour class (`npn/in`, round 0) that share a
+   control are the `bus` detector's isomorphic slices, found in one pass over the classes (7.4)
+   instead of pairwise tests. The bus's log-odds rise with the class evidence through features:
+   `k` (as before), `ctrl_fanout_exact` (shared control) and `wl_depth` (the deepest round at which
+   all slices still share one colour). Calibration learns their LLRs, which in log-odds form is a
+   prior that rises with class size and shared-control evidence. A word `mux` built on a bus
+   copies its `wl_depth` bin.
+4. **Proof transfer across a colour class.** One proof serves every member of a class whose cone
+   matches the proved one; section 8.1 states the rule and exactly when it is sound.
+5. **Correlated evidence.** WL colours, graphlet orbits (when L2 outputs are read) and NPN classes
+   describe overlapping structure, while odds updates assume independent evidence. Calibration
+   fits one weight `w_f` in `[0, 1]` per feature family (6.4: `struct`, `wl`, `npn`, `l2`) on the
+   train split by 2-fold cross-fitting over designs (`CALIB_FOLDS = 2`, fold = first byte of
+   `sha256(design id)` mod 2): the tables learned on one fold score the hypotheses of the other,
+   then coordinate ascent over `WEIGHT_GRID` = 0.0, 0.1, ..., 1.0 (three sweeps, families in name
+   order, ties to the larger weight) maximises the Bernoulli log-likelihood of the match labels
+   under `sigmoid(prior + sum_f w_f s_f + child)`. The final tables are refitted on the whole train
+   split. The calibration file stores `weights` and `reliability` (10 equal-width bins of the
+   out-of-fold `p`: mean predicted, observed match rate, count; and the expected calibration error
+   `ece`); `loki score-all` writes the same curves for the test split (12.5).
+6. **Ablation.** `loki re --features none` turns A and B off (no structural features, no
+   transfers, bus grouping by `npn_sig`); `loki score-all --compare` reports precision and recall
+   with and without them (12.5).
+
+Constants (agent defaults; `loki/features/__init__.py` for the first and last, `loki/re/bayes.py`
+for the rest): `WL_ROUNDS = 4`, `TRANSFER_ROUND = 2`, `CALIB_WL_DEPTH = 2`, `NODE_MIN_COUNT = 5`,
+`CALIB_FOLDS = 2`, `WEIGHT_GRID = (0.0, 0.1, ..., 1.0)`, `NPN_ENUM_MAX = 100000`.
 
 ## 7. Detectors
 
@@ -325,6 +482,7 @@ class RoundContext:
     calib: Calib
     fsm_marks: Mapping[frozenset[int], str] = {}   # fsm_detect results of this level (7.8)
     unmap: tuple[UnmapRecord, ...] = ()           # unmap attributes read on F1 (7.2)
+    features: StructFeatures | None = None         # level-0 structural features (6.7); None with --features none
 ```
 
 Rules: `propose` is pure with respect to its inputs (no Odin III calls; proofs are the
@@ -387,15 +545,18 @@ Exact tests over its function `f` (enumeration, at most 4096 patterns):
 ### 7.4 `bus` (k isomorphic slices sharing a control)
 
 Slices are level-0 cells not absorbed in a committed piece, or committed pieces (instances) in
-later rounds. Group slices by key: for cells `(kind, npn_sig, len(ins))`, for pieces
-`(kind, canonical params)`. In each group, for each net `s` read by `>= 2` members, take the
+later rounds. Group slices by key: for cells their colour class at round 0 of the `npn/in`
+refinement (6.7 item 3: kind, NPN class with its support size, role flags), or `(kind, npn_sig,
+len(ins))` with `--features none`; for pieces `(kind, canonical params)`. In each group, for each net `s` read by `>= 2` members, take the
 members reading `s`; the **controls** are the nets read by all of them; the remaining (data)
 inputs must be pairwise disjoint across members, else no bus. `k >= 2` gives a `bus` with
 `nets["slice<i>"]` per slice and `nets["ctrl"]`. Bit order: the chain order when an `arith` or
 `seqfn` hypothesis relates the slices (`order_source = "chain"`), else ascending lowest data-input
 net id (`"net_id"`, a heuristic). Features: `k` bins `2` (0), `3-4` (+0.69), `5-8` (+1.39),
 `9+` (+2.08); `ctrl_fanout_exact` (`yes`: every reader of the control is a member, +1.10; `no`
--0.69); `data_from_bus` (`none`, `some`, `all`: +1.10). Buses are non-exclusive and are not
+-0.69); `data_from_bus` (`none`, `some`, `all`: +1.10); `wl_depth` (the deepest round `r <=
+WL_ROUNDS` at which all slices share one `npn/in` colour: `0` (0), `1` (+0.41), `2-3` (+0.69), `4`
+(+1.10); `n/a` with features off, 0). Buses are non-exclusive and are not
 committed as pieces; a bus with `p_comp >= COMMIT_P` writes `loki_bus = "h<k>[<bit>]"` on its
 output nets (section 9.3).
 
@@ -422,6 +583,16 @@ that hold. A net `z` whose support `S` has `2 <= |S| <= 16` and whose function o
 Features: `width` bins as `bus.k`; `out_reads` (`y` read by a register or primary output: `yes`
 +0.69). Arithmetic and comparators are expected to be decided by proof.
 
+**NPN evidence** (6.7 item 2; off with `--features none`). For bit `i >= 1` a *carry net* `c_i` is
+a net that is not a chain member and whose support is `S(y_{i-1})` (bit 0 has none; for
+`adder_cin` it is the carry-in). `npn_sum` is the share of bits whose function over the cut `(p_i,
+q_i, c_i)` (bit 0: `(p_0, q_0)`) is in class `xor3` (bit 0: `xor2`), computed by simulating the cone
+over the cut and counted only when that cone has no side inputs: `all` +2.30, `half` (>= 0.5)
++0.69, `low` -0.69, `no_cut` (no carry nets, a LUT-packed chain) 0. `npn_carry` is the share of
+carry nets `c_{i+1}` whose function over `(p_i, q_i, c_i)` is in class `maj3` (bit 0: `and2`):
+`all` +1.39, `half` +0.41, `low` -0.69, `no_cut` 0. Comparators: `npn_xor2` (`yes`: at least
+`k / 2` cells of the cone are in class `xor2`, +0.69).
+
 ### 7.6 `mux` (mux trees)
 
 Bit level: a cell with a `mux` fact (select set `T`, data leaves) gives `mux_bit` with claim
@@ -431,7 +602,8 @@ a disjoint select set, read only by it, is composed; a maximal composition of `>
 order), claim `muxn`. Word level: a `bus` whose slices are `mux_bit`s (or `mux_tree`s) of one
 select set gives `mux` of `WIDTH = k` (2:1: claim `mux2`, provable by `cone_check $mux`; N:1:
 claim `muxn` per bit). Children: the slices. Features: `width` bins as `bus.k`; `sel_shared`
-(`yes` +0.69).
+(`yes` +0.69); `npn_class` on `mux_bit` (the cell's class: `mux2` or `mux4` +0.69, `other` 0, a mux
+merged with other logic in one LUT); a word `mux` copies its bus's `wl_depth` bin (7.4).
 
 ### 7.7 `seqfn` (counters: FF + incrementer feedback; shift registers, LFSRs)
 
@@ -526,6 +698,46 @@ The framework tries `ConeCheckProver` first when the op is one of its ops and th
 PROOF_LO)` and status `confirmed`; `differs` sets `-inf` and `refuted`; `unproven` from
 `cone_check` (timeout) adds 0 and is counted in `report.timeouts`.
 
+### 8.1 Proof transfer across a colour class (6.7 item 4)
+
+**Groups.** Open hypotheses with a claim are grouped by `(kind, claim op, canonical params, tuple
+over the claim's output nets of c_r(driver cell))`, `c_r` the `table/in` colour at round
+`TRANSFER_ROUND = 2`. When a member `h0` gets `equivalent` from an exact prover (`cone_check`, or
+`TruthTableProver` in its exhaustive mode; never a sampled `unproven`), every other member `h` of
+its group, in id order, is tried with `cone_match`.
+
+**`cone_match(graph, c0, c)`** walks both claims' level-0 cones in lockstep from the outputs and
+keeps a map `M` from `c0`'s nets to `c`'s nets: claim output and input nets are paired by port and
+bit; for every paired net that is not a claim input, both drivers must be cells of equal kind,
+width and exact table, and their input nets are paired pin by pin; `M` must stay one-to-one in both
+directions; neither cone may have a side input; both cones have the same number of cells. Cost
+O(cone size).
+
+**Effect.** A match makes `h` `confirmed`, `L := max(L, PROOF_LO)`, with `Evidence(source=
+"transfer", name=h0.id, value="equivalent")` and `proof = {"engine": "transfer", "verdict":
+"equivalent", "template": <h0's template>, "from": h0.id}`; a committed instance gets `loki_proof =
+"derived"`. **Spot check:** in each group with at least one transfer, the transferred member with
+the lowest id is also proved for real in the same round (it counts against `MAX_PROOFS`). If that
+proof is not `equivalent`, every transfer from `h0` is revoked (the records get value `revoked`
+and re-scoring skips them; the hypotheses return to `open`) and `report.features.transfer_failures`
+counts it. Acceptance requires 0 (section 15).
+
+**When transfer is sound.** A successful `cone_match` is an isomorphism of the two cones that keeps
+pin order, cell functions and the claim's port binding, so `h`'s cone computes the same function
+of its claim inputs as `h0`'s cone of its own, and `h0`'s exact proof of `REFS[op]` with the same
+params proves `h`'s claim. Conditions: (a) the match; (b) an exact proof for `h0`; (c) the same op,
+params and port widths; (d) cones at level 0 without side inputs.
+
+**When it is not.** Equal colours alone never transfer a proof, even with exact tables in the
+start colours and a refinement depth that covers the whole cone: 1-WL sees the unfolding tree,
+not the cone, so reconvergent fan-out is invisible (a cell `g(x, x)` and a cell `g(y, z)` whose
+inputs `x`, `y`, `z` share one colour get one colour, yet compute different functions of their
+sources), and the 64-bit hash can collide. Colours of the `npn` variant never transfer (permuted or
+negated inputs change the claim's binding). A sampled proof never transfers. The colour group is a
+filter that makes the search near linear; `cone_match` is what makes the transfer sound. Raise at
+commit still runs its own `cone_check` (9.3), so a transfer saves the prove step, not the commit
+check.
+
 ## 9. The round loop (`loki.re.loop`)
 
 ### 9.1 Start
@@ -548,7 +760,9 @@ if hard cells and floor f1-*: run "unmap" on working (gated); hard hypotheses co
 2. **Propose.** Each detector in order; candidates merge into the overlay (5).
 3. **Score.** Prior (calibration, `"<detector>/<kind>"`), feature LLRs, child effects, `STRUCT_CAP`.
 4. **Prove.** Hypotheses with a claim, status `open`, never proved with this claim, and
-   `p_comp >= PROVE_P`, ordered by `p_comp` desc then id, at most `MAX_PROOFS`.
+   `p_comp >= PROVE_P`, ordered by `p_comp` desc then id, at most `MAX_PROOFS`. After a member of a
+   transfer group (8.1) is proved `equivalent`, the other members get `cone_match` instead of a
+   proof, plus the spot check.
 5. **Re-score and compete** (6.5); mark `rejected`.
 6. **Select commits.** Kinds with a commit form, status `open` or `confirmed`, `p_comp >=
    COMMIT_P`, every exclusive child already committed, no conflict with a committed hypothesis.
@@ -565,7 +779,8 @@ if hard cells and floor f1-*: run "unmap" on working (gated); hard hypotheses co
 
 For the selected hypotheses, in the selection order, on the new working copy:
 
-1. **Raise** when the kind's form is `raise+submod`, the proof engine was `cone_check`, and every
+1. **Raise** when the kind's form is `raise+submod`, the proof engine was `cone_check` (or
+   `transfer` from a `cone_check` proof, 8.1), and every
    node of the group at this level is a leaf cell (no instance): set `lk<k>=1` on the group,
    `odin3:bind` on its boundary nets (found by name, `Module.net(name)`), run `cone_check` (the
    same session, immediately before, as `raise` requires), then `raise` with the same options.
@@ -575,7 +790,7 @@ For the selected hypotheses, in the selection order, on the new working copy:
 3. **Submod.** One `submod -attr loki_sm`. Each piece becomes module `<kind>_h<k>` with instance
    `<kind>_h<k>_i`.
 4. **Tag.** On the instance: `loki_hid`, `loki_kind`, `loki_conf` (`p_comp`, 4 decimals),
-   `loki_proof` (`equivalent`, `unproven`, `none`), `loki_role`, `loki_fn` (the recovered function
+   `loki_proof` (`equivalent`, `derived`, `unproven`, `none`), `loki_role`, `loki_fn` (the recovered function
    as text, such as `Y = A + B`, `Q <= (Q == 9) ? 0 : Q + 1`, `fsm: 5 states`). On the module:
    `loki_kind`, `loki_fn`. On bus output nets: `loki_bus`.
 
@@ -598,7 +813,9 @@ come from the deterministic candidate order (7.1); randomness only through
 JSON through L0's `schemas.dump_json`, floats as `round(x, 6)`, infinities as the strings `"inf"`
 and `"-inf"`; timings only in `timing.json`. The one exception is a `cone_check` timeout, which
 depends on the machine: the report counts `timeouts`, and the determinism tests use designs whose
-proofs finish far inside the limit. `--seed` defaults to 1.
+proofs finish far inside the limit. `--seed` defaults to 1. Structural features (6.7) are
+deterministic too: colours are SHA-256 based and NPN classes exact (or the documented
+semi-canonical form, itself deterministic).
 
 ## 11. Outputs (decision 6)
 
@@ -614,10 +831,13 @@ proofs finish far inside the limit. `--seed` defaults to 1.
   hypothesis: `hid`, `kind`, `module`, `instance`, `p`, `proof`, `fn`, `cells`, `children`),
   `buses` (`hid`, `width`, `order_source`, `nets`), `roles` (`datapath`, `control`, `mixed` counts),
   `fsms` (`hid`, `states`, `reset_state`, `transitions`), `unmap` (`ok`, `unavailable`, `n/a`),
-  `fsm_detect` (`applied`, `not-applicable`), `final_equiv`, `timeouts`.
+  `fsm_detect` (`applied`, `not-applicable`), `final_equiv`, `timeouts`, and `features`
+  (`enabled`; `wl`: per variant `stable_round` and classes per round; `npn`: `distinct_tables`,
+  `classes`, `exact`, `worst_enum`; `transfers`; `transfer_failures`). Each round also lists
+  `engines` (`cone_check`, `truth_table`, `transfer` counts).
 - `report.md`: generated from `report.json` only: a summary table, a pieces table (module,
   kind, confidence, proof, function), FSM transition tables, buses, and the round log.
-- `timing.json`: seconds per round and per prover call.
+- `timing.json`: seconds per round and per prover call, and of the feature build (6.7).
 
 ## 12. Scoring against L0 (decision 7)
 
@@ -693,15 +913,24 @@ table (`scores.md`, `scores.json`) with micro-averaged precision, recall, F1, AP
 hierarchy numbers, and the Gate-Breaker classes (VerilogEval `fsm`, `count`, `lfsr` problems)
 listed per design.
 
+With the structural features (6.7), `loki calibrate` also writes `node_llr` (item 1), `weights` and
+the train `reliability` curve (item 5), using 2-fold cross-fitting over the train designs.
+`loki score-all` adds per kind the reliability curve of `p_comp` on the test split (10 equal-width
+bins: mean predicted, observed match rate, count) and `ece`. `loki score-all --compare DIR` takes a
+second set of runs of the same designs made with `--features none` and writes `ablation.md` and
+`ablation.json`: per floor and kind precision, recall, F1 and AP with and without the features and
+their difference, plus proof calls by engine, transfers and `transfer_failures`.
+
 ## 13. CLI and the Wyrd III step
 
 ```
 loki re <netlist> --floor {f1-k6,f1-earch,f2,f3,auto} [--odin3-root DIR] [--techlib L]
         [--calib FILE|none] [--out DIR] [--seed N] [--max-rounds R] [--timeout S]
         [--time-budget S] [--detectors a,b,...] [--keep-levels DIR] [--no-commit]
+        [--features all|none]
         [--score-dataset D --score-design ID]   (also write score.json and metrics.json)
 loki score <re_out_dir> --dataset D --design ID --floor F [--score-p P]
-loki score-all <dir of runs> --dataset D --out DIR
+loki score-all <dir of runs> --dataset D --out DIR [--compare <dir of runs with --features none>]
 loki calibrate --dataset D --floor F --split train --out FILE
 loki re-project --dataset D --floors f2,... --split test --calib DIR --out datasets/l1
 ```
@@ -727,11 +956,18 @@ whose `files` is that floor's `netlist.blif`, `[recipe.re] steps = [{ use = "lok
 ```
 loki/
   odin.py            (L0) still the only importer of odin3
+  features/          (6.7; stdlib only; shared with L2)
+    __init__.py      WL_ROUNDS, NPN_ENUM_MAX, FEATURES_VERSION
+    graph.py         FeatureGraph, validate_feature_graph
+    roles.py         SignalConfig, NetRoles, classify_nets, restrict, is_forcing, is_hold
+    npn.py           NpnClass, npn_class, shrink_support, NAMED, class_name
+    wl.py            WLConfig, WLResult, refine, classes, stable_partition, Quotient, quotient
   re/
     __init__.py
     normalise.py     load_level0(path, floor, odin3_root, techlib) -> Design
     fngraph.py       Cell, FnGraph, from_design, cover_to_table
     fnfacts.py       FnFacts, facts, npn_sig, cofactor
+    structural.py    feature_graph, StructFeatures, build_features, cone_match
     sim.py           simulate, support, cone
     claims.py        Claim, REFS
     provers.py       Verdict, ConeCheckProver, TruthTableProver, parse_cex, prove
@@ -766,13 +1002,17 @@ On L0's 12-micro subset (L0 plan Task 11 `SUBSET`), floor F2, default calibratio
 3. `bm_DL_2_1_mux`: a `mux` committed and matching `$mux`;
 4. `bm_DL_4_bit_comparator`: at least one `comparator` proved `equivalent`;
 5. `bm_DL_4_bit_shift_register`: a `shift_reg` of width 4;
-6. `bm_DL_Dff_w_synch_reset`: an `ff_srst` on every flip-flop of the register.
+6. `bm_DL_Dff_w_synch_reset`: an `ff_srst` on every flip-flop of the register;
+7. every run: `report.features.transfer_failures == 0`, and the structural features of a second
+   run are identical (part of item 1's byte identity).
 
 Then the VerilogEval test split at F2 with calibration from the train split: no run `fail`s; the
 `scores.md` table is committed to `docs/results-l1.md` as the baseline, with the Gate-Breaker
 failure designs (`Prob035_count1to10`, `Prob040_count10`, `Prob037_review2015_count1k`,
 `Prob082_lfsr32`, `Prob110_fsm2`, `Prob119_fsm3`) listed with what L1 recovered. No precision
-threshold gates the exit: the first numbers are the result.
+threshold gates the exit: the first numbers are the result. The test split is also run with
+`--features none`, and the `score-all --compare` ablation table goes into `docs/results-l1.md`
+next to the baseline.
 
 ## 16. Not in L1
 
@@ -780,7 +1020,9 @@ LLM steps; e-graphs (alternatives stay on the overlay); signed arithmetic and co
 multipliers and dividers from soft logic; memories from soft logic (LUT RAM); bounded sequential
 equivalence; proofs in parallel processes; the `write_json` bulk loader for VTR-size inputs (the
 binding path is used; L2 or later); vector ports and net renaming in the output; GUI; any Odin III
-core change (the gaps of 3.2 are open questions, not workarounds in the core).
+core change (the gaps of 3.2 are open questions, not workarounds in the core); NPN classes of
+cuts wider than 6 inputs; colours of committed pieces (later rounds reuse level-0 colours); typed
+graphlets and the GNN (L2).
 
 ## 17. Decisions (Peter, 2026-10-21: "all good with the ideas")
 
@@ -813,3 +1055,37 @@ The recommendations as written:
    attribute.
 6. **Metric choices** (Jaccard 0.5 for matching, Larsen-Aone F for hierarchy, NMI secondary) and
    the default LLR table are agent defaults. Recommend keeping them until the first baseline.
+
+## 18. Open questions on features A and B (2026-10-21, for Peter)
+
+1. **numpy.** The request said "pure Python + numpy, no new dependency", but numpy is only in L2's
+   optional `analysis` extra; L1's runtime is the standard library plus `odin3`. Recommend:
+   `loki.features` uses the standard library only (`hashlib`), the L2 adapters turn its results
+   into numpy arrays, and only if the measured budgets of 6.7 fail does an optional numpy path
+   behind the `analysis` extra follow, with a test that it gives identical colours.
+2. **Proof transfer by colour alone is unsound.** Equal 1-WL colours, even with exact tables in the
+   start colours and a depth covering the cone, do not imply isomorphic cones (reconvergent
+   fan-out, hash collisions). Recommend: transfer only after `cone_match` (8.1), with the colour
+   group as a filter and one spot check per group; a failed spot check is a bug, counted, and fails
+   acceptance.
+3. **One signal classifier.** L1 needs the role flags before L2 exists. Recommend: the rules of L2
+   spec 8.1 live once in `loki.features.roles` (L1 plan Task 5a) and L2's `classify_signals`
+   delegates to it; if the pure-Python version misses L2's 60 s budget at 820k nodes, L2 keeps its
+   numpy grouping of edges by net and shares only the per-net rule functions.
+4. **Node-level likelihoods.** Recommend: the mean member LLR, binned (6.7 item 1), 2-fold
+   cross-fitting within the train split, backoff from round 2 to 0, `NODE_MIN_COUNT = 5`; the test
+   split is never used for calibration.
+5. **Correlated evidence.** Recommend one weight per family on a 0.1 grid (6.7 item 5), keeping
+   `STRUCT_CAP`; if the test `ece` exceeds 0.1 after the first baseline, replace the weights by a
+   logistic-regression stack over the family sums, as its own change.
+6. **NPN for k = 6.** Recommend the exact signature-pruned canonical form (6.7 B, worst case 92,160
+   transforms per distinct table, cached); the semi-canonical fallback only if plan Task 5a's
+   budget test fails, marked `exact = false` in the report. Calibration keys stay deterministic
+   either way, and proof transfer never uses NPN classes.
+7. **Raise after a transfer.** `raise` needs a `cone_check` right before it (9.3), so transfers
+   save the prove step, not the commit check. Recommend keeping that rule and measuring the saved
+   calls in the ablation (12.5) before any change.
+8. **F3 consistency with L2.** L0's `graph.json` has no `lut_table` for `gate` nodes, while L1
+   reads F3 gates as `$sop` tables, so L1 and L2 colours differ on F3. Recommend: L0 Task 12 also
+   writes the gate's function table into `lut_table` of `gate` nodes; until then F3 colours are
+   compared within L1 only.
