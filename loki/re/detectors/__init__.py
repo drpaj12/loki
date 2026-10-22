@@ -29,6 +29,8 @@ _BUILTINS: dict[str, tuple[str, str]] = {
     "mux": ("loki.re.detectors.mux", "MuxDetector"),
     "seqfn": ("loki.re.detectors.seqfn", "SeqfnDetector"),
     "fsm": ("loki.re.detectors.fsm", "FsmDetector"),
+    "unit": ("loki.re.detectors.unit", "UnitDetector"),
+    "role": ("loki.re.detectors.role", "RoleDetector"),
 }
 
 K_EDGES = (2, 3, 5, 9)

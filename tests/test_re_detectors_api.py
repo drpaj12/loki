@@ -64,7 +64,7 @@ class ApiTest(unittest.TestCase):
         with mock.patch.object(importlib.metadata, "entry_points", fake_eps):
             got = load_detectors(["bus", "fake"])
             self.assertEqual([d.name for d in got], ["bus", "fake"])
-            self.assertEqual([d.name for d in load_detectors(None)][-1], "bus")
+            self.assertEqual([d.name for d in load_detectors(None)][-1], "role")
 
     def test_bin_count(self) -> None:
         self.assertEqual([k_bin(n) for n in (2, 3, 4, 5, 8, 9, 40)],
