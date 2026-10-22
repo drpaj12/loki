@@ -10,12 +10,9 @@ from wyrd.model import Metric, RunSpec, StepSpec
 from wyrd.settings import Settings
 from wyrd.steps import arch_xml, finite_number, read_json_object
 
+from loki.schemas import short_arch
+
 _FLOORS = ("f1", "f2", "f3")
-
-
-def short_arch(arch: str) -> str:
-    """The architecture's lower-case prefix before the first ``_`` (spec 3)."""
-    return arch.split("_")[0].lower()
 
 
 def expand_floor(floor: str, arch: str) -> str:

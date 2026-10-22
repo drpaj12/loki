@@ -80,6 +80,16 @@ class AssembleTest(unittest.TestCase):
         self.assertEqual(names["micro_b"]["floors"]["f2"]["status"], "fail")
         self.assertEqual(check_dataset(out), [])
 
+    def test_failed_run_recorded_beside_ok_run(self) -> None:
+        self.proj.add_run("micro_a", "EArch", "ok", ["f1-earch", "f2"])
+        self.proj.add_run("micro_a", K6, "fail", ["f2"])
+        out = self.tmp / "dataset"
+        floors = designs_of(assemble(self.proj.save(), out))[0]["floors"]
+        self.assertEqual(floors["f1-k6"]["status"], "fail")
+        self.assertIn("status fail", floors["f1-k6"]["message"])
+        self.assertEqual((floors["f2"]["status"], floors["f1-earch"]["status"]), ("ok", "ok"))
+        self.assertEqual(check_dataset(out), [])
+
     def test_f2_from_first_arch(self) -> None:
         earch = self.proj.add_run("micro_a", "EArch", "ok", ["f1-earch", "f2"])
         (earch / "f2" / "from.txt").write_text("EArch", encoding="utf-8")

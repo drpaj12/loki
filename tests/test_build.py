@@ -127,6 +127,17 @@ class BuildTest(unittest.TestCase):
             self.assertEqual(skipped["floors"], {"f2": res.reason})
             self.assertNotIn(str(DATA), res.reason)
 
+    def test_floor_result_change_clears_the_other_record(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            self.assertEqual(build(micro("bm_DL_4_bit_comparator"), out).status, "ok")
+            self.assertEqual(build(DATA / "sv_always_comb.v", out).status, "skipped")
+            self.assertFalse((out / "d" / "f2").exists())
+            self.assertIn("f2", load(out, "skipped.json", floor="")["floors"])
+            self.assertEqual(build(micro("bm_DL_4_bit_comparator"), out).status, "ok")
+            self.assertFalse((out / "d" / "skipped.json").exists())
+            self.assertTrue((out / "d" / "f2" / "graph.json").is_file())
+
     def test_main_exit_codes_and_metrics(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "dataset"

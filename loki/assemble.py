@@ -21,6 +21,7 @@ from loki.schemas import (
     SPLIT_SEED,
     dump_json,
     equiv_warnings,
+    short_arch,
     split_of,
     validate_design,
     validate_graph,
@@ -113,16 +114,18 @@ class _Source:
     design_dir: Path
 
 
-def _ok_sources(project: Path) -> tuple[dict[str, list[_Source]], dict[str, list[str]]]:
-    """Per design: dataset dirs of ok runs (arch order), and messages of runs that are not ok."""
+def _ok_sources(
+    project: Path,
+) -> tuple[dict[str, list[_Source]], dict[str, list[tuple[str, str]]]]:
+    """Per design: dataset dirs of ok runs (arch order), and (arch, message) of runs not ok."""
     ok: dict[str, list[_Source]] = {}
-    bad: dict[str, list[str]] = {}
+    bad: dict[str, list[tuple[str, str]]] = {}
     for key, design, arch, status, run_dir in _runs(project):
         steps = _dataset_dirs(run_dir)
         if status == "ok" and steps:
             ok.setdefault(design, []).append(_Source(arch, steps[0] / "dataset" / design))
         elif status != "ok":
-            bad.setdefault(design, []).append(f"run {key[:12]} ({arch}) status {status}")
+            bad.setdefault(design, []).append((arch, f"run {key[:12]} ({arch}) status {status}"))
     for srcs in ok.values():
         srcs.sort(key=lambda s: s.arch)
     return ok, bad
@@ -170,6 +173,14 @@ def _nodes_of(floor_dir: Path) -> int:
     return int(meta["counts"]["nodes"])
 
 
+def _record_failures(entry: DesignEntry, failed: list[tuple[str, str]]) -> None:
+    """A run that is not ok fails the floors of its architecture that no ok run supplied."""
+    for arch, message in failed:
+        for floor in (f"f1-{short_arch(arch)}", "f2"):
+            if floor not in entry.floors:
+                entry.floors[floor] = {"status": "fail", "message": message}
+
+
 def assemble(project: Path, out: Path) -> dict[str, object]:
     """Copy the floors of ok runs into ``out`` and write ``manifest.json``; returns it."""
     ok, bad = _ok_sources(project)
@@ -190,8 +201,7 @@ def assemble(project: Path, out: Path) -> dict[str, object]:
             version = version or str(_read_json(src_dir / "meta.json")["odin3_version"])
         for floor, reason in skipped.items():
             entry.floors[floor] = {"status": "skipped", "reason": reason}
-        if not entry.floors:
-            entry.floors["f2"] = {"status": "fail", "message": "; ".join(bad[design])}
+        _record_failures(entry, bad.get(design, []))
         entries[design] = entry
     manifest = build_manifest(entries, version)
     (out / "manifest.json").write_text(dump_json(manifest), encoding="utf-8")

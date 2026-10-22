@@ -208,6 +208,11 @@ def validate_meta(obj: object) -> list[str]:
     return errs
 
 
+def short_arch(arch: str) -> str:
+    """The architecture's lower-case prefix before the first ``_`` (spec 3)."""
+    return arch.split("_")[0].lower()
+
+
 EQUIV_WARN_STATUSES = ("unproven", "skipped:blackbox-names")
 
 

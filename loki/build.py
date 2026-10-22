@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import sys
 import tempfile
 import time
@@ -61,6 +62,22 @@ def _counts(graph: dict[str, Any]) -> dict[str, int]:
     counts["nodes"] = len(graph["nodes"])
     counts["edges"] = len(graph["edges"])
     return counts
+
+
+def _clear_floor(design_dir: Path, floor: str) -> None:
+    """Remove the records of an earlier run of this floor: its directory and skipped entry."""
+    shutil.rmtree(design_dir / floor, ignore_errors=True)
+    path = design_dir / "skipped.json"
+    if not path.is_file():
+        return
+    floors = json.loads(path.read_text(encoding="utf-8")).get("floors", {})
+    if floor not in floors:
+        return
+    del floors[floor]
+    if floors:
+        path.write_text(dump_json({"schema": SCHEMA, "floors": floors}), encoding="utf-8")
+    else:
+        path.unlink()
 
 
 def _write_skipped(design_dir: Path, floor: str, reason: str) -> None:
@@ -127,6 +144,7 @@ def build_floor(
         raise ValueError(f"unknown floor {floor!r}")
     files = [f.resolve() for f in files]
     design_dir = out_dir / design
+    _clear_floor(design_dir, floor)
     try:
         odin, instances = open_front(floor, files, top, arch_xml, None)
     except OdinSkip as skip:
