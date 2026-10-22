@@ -10,7 +10,7 @@ from loki.build import build_floor, cmos6_path
 from loki.model import FinalCell, Net, Netlist, Port, PortBit
 from loki.odin import floor_script
 from loki.techlib import TechlibError, load_techlib, parse_techlib
-from tests.helpers import have_f3, micro, odin3_root
+from tests.helpers import have_f3, micro, odin3_root, vtr_arch
 
 GATES = {"BUF", "INV", "NAND2", "NOR2"}
 
@@ -65,6 +65,38 @@ class TechlibTest(unittest.TestCase):
         with self.assertRaises(TechlibError):
             parse_techlib(text).cover("M")
 
+    def test_seq_edges(self) -> None:
+        text = "library t\n"
+        for cell, edge, clk in (("P", "posedge", "C"), ("N", "negedge", "C"),
+                                ("H", "high", "E"), ("L", "low", "E")):
+            text += (f"cell {cell} gate\n  in {clk} 1 ; in D 1 ; out Q 1\n"
+                     f"  seq Q <= D @ {edge} {clk} init x\nend\n")
+        lib = parse_techlib(text)
+        self.assertEqual([lib.cells[c].seq_kind for c in "PNHL"], ["re", "fe", "ah", "al"])
+        self.assertEqual([lib.cells[c].clock for c in "PNHL"], ["C", "C", "E", "E"])
+
+    def test_bad_cell_lines(self) -> None:
+        for text in ("library t\ncell M gate\n  din A 1\nend\n",
+                     "library t\ncell M gate\n  in\nend\n",
+                     "library t\ncell M\nend\n",
+                     "library\n"):
+            with self.assertRaises(TechlibError, msg=text):
+                parse_techlib(text)
+
+    def test_latch_edge_from_library(self) -> None:
+        """The .latch edge and clock come from the cell's seq line, not a hardcoded DFF map."""
+        lib = parse_techlib(
+            "library t\ncell DFF gate\n  in CK 1 ; in D 1 ; out Q 1\n"
+            "  seq Q <= D @ negedge CK init x\nend\n"
+        )
+        dff = FinalCell(
+            11, "ff", "DFF", "", {}, (),
+            (Port("CK", 1, (4,)), Port("D", 1, (3,))), (Port("Q", 1, (5,)),),
+        )
+        nl = Netlist("t", {i: Net(i, ()) for i in range(1, 6)}, (dff,),
+                     (PortBit("d", "in", 3), PortBit("ck", "in", 4), PortBit("q", "out", 5)))
+        self.assertIn(".latch d q fe ck 3", write_blif(nl, identity_naming(nl), lib))
+
     def test_gate_names_blif(self) -> None:
         """Gates are written as .names of their function; a DFF as .latch."""
         root = odin3_root()
@@ -103,17 +135,52 @@ class F3Test(unittest.TestCase):
             self.assertEqual(meta["equiv"]["anon"]["status"], "equivalent")
             self.assertEqual(meta["equiv"]["writer"]["mode"], "full")
             key = json.loads((fdir / "key.json").read_text(encoding="utf-8"))
+            ports = key["ports"]
+            self.assertEqual(
+                [p["orig"] for p in ports if p["dir"] == "in"],
+                [f"A[{i}]" for i in range(4)] + [f"B[{i}]" for i in range(4)],
+            )
+            self.assertEqual(
+                [p["orig"] for p in ports if p["dir"] == "out"], ["AeqB", "AgtB", "AltB"]
+            )
             types = {c["type"] for c in key["cells"].values()}
             self.assertEqual(types - {"$_CONST1_"}, types & GATES)
             self.assertTrue(types & GATES)
             rows = list(csv.DictReader(io.StringIO((fdir / "labels.csv").read_text("utf-8"))))
+            bus_bits = {(r["bus_name"], int(r["bit_index"])) for r in rows if r["kind"] == "pi"}
+            self.assertEqual(bus_bits, {(n, i) for n in ("A", "B") for i in range(4)})
             gate_rows = [r for r in rows if r["kind"] == "gate"]
             self.assertTrue(gate_rows)
+            gate_buses = {
+                (r["bus_name"], int(r["bit_index"])) for r in gate_rows if r["bus_name"]
+            }
+            self.assertEqual(gate_buses, {("AeqB", 0), ("AgtB", 0), ("AltB", 0)})
             for r in gate_rows:  # provenance is per cone (gatemap G-2), so a count above 1 is fine
                 self.assertGreaterEqual(int(r["n_construct_cells"]), 1, r)
                 self.assertTrue(r["hdl_file"], r)
             self.assertIn(max(int(r["n_construct_cells"]) for r in gate_rows), range(2, 99))
             self.assertEqual(meta["unmatched"], 0)
+
+    def test_f3_ignores_arch(self) -> None:
+        """F3 reads no arch: the floor files are byte-identical for any arch_xml (spec 3)."""
+        root = odin3_root()
+        assert root is not None
+        k6_tiny = root / "tests" / "golden" / "projects" / "odin2_arch" / "arch" / "k6_tiny.xml"
+        other = vtr_arch("EArch")
+        if not k6_tiny.is_file() or other is None:
+            self.skipTest("needs two architecture files")
+        name = "bm_DL_4_bit_comparator"
+        with tempfile.TemporaryDirectory() as tmp:
+            outs = []
+            for i, arch in enumerate((None, k6_tiny, other)):
+                out = Path(tmp) / f"out{i}"
+                res = build_floor(name, [micro(name)], None, "f3", arch, out, root)
+                self.assertEqual((res.status, res.reason), ("ok", ""), arch)
+                outs.append(out / name / "f3")
+            for fname in sorted(p.name for p in outs[0].iterdir()):
+                want = (outs[0] / fname).read_bytes()
+                for other_out in outs[1:]:
+                    self.assertEqual(want, (other_out / fname).read_bytes(), fname)
 
     def test_f3_flip_flops(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

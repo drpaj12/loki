@@ -35,11 +35,16 @@ back to Odin III's placeholder architecture (floor F2 only records the path).
   `test_extract`, `test_snapshot`, `test_blif_vs_odin`, `test_rules_registry`, `test_odin_facts`
   (except the two hardmap probes), and `test_build` (except the F1 hard-cell test). These use the
   binding, ABC and `equiv-check` from the checkout; without ABC (`ODIN3_ABC`, `build/*/third_party/abc/abc`,
-  `$VTR_ROOT/build/abc/abc` or `abc` on `PATH`) they skip.
+  `$VTR_ROOT/build/abc/abc` or `abc` on `PATH`) they skip. From `test_f3`: `ScriptTest` and the
+  text-only `TechlibTest` tests (`test_function_subset`, `test_bad_function`, `test_seq_edges`,
+  `test_bad_cell_lines`, `test_latch_edge_from_library`).
 - Local only (skip in CI, need a real VTR architecture via `VTR_ROOT`, gated on
   `can_run_flow()`): `test_acceptance_micros` (all three tests), `test_build`
   `test_f1_hard_cells_and_declared_ports`, `test_odin_facts` `test_hardmap_keeps_spans` and
   `test_hard_port_names`, and the network-only `test_bench` fetch (`LOKI_NETWORK=1`).
+- Local only, gated on `have_f3()`: `test_f3` `F3Test` and the cmos6 tests (`test_cmos6_covers`,
+  `test_gate_names_blif`). CI's pinned Odin III v1.0.0 wheel has no `lib/cmos6.o3lib` and no
+  `dfflibmap` pass, so these skip there.
 
 ## Real output, 2026-10-22 (Odin III main 158ced05, library 1.0.0, 3 jobs)
 
@@ -61,3 +66,20 @@ Odin III's reader rejects (`odin3: ODIN3_ERR_PARSE ... too many parameter values
 
 Acceptance (`tests.test_acceptance_micros`): every built floor has `writer` and `anon` equivalence
 `equivalent` (no `unproven`), label coverage over `lut` and `ff` nodes 9121 / 9121 (threshold 0.95).
+
+## Real output, F3 (Odin III d7defba, library 1.0.0, 2026-10-22)
+
+Odin III commit: `d7defba` (gate-mapping main). The release library and Python binding were built at
+2026-10-22 09:21/09:20 EDT, 35 minutes after that commit; the checkout later moved to `94cece22`
+(docs and submod changes only, no F3 path). The binding reports `read_techlib`, `dfflibmap` and
+`abc --gates`, and `lib/cmos6.o3lib` is present.
+
+`tests.test_acceptance_micros.AcceptanceF3Test.test_all_micros_f3`: 65 ok, 3 skipped, 0
+non-equivalent; gate and `ff` label coverage 45673 / 45673; every floor's labels row count equals its
+graph node count; `loki check` on all 68 assembled designs has 0 errors; three rebuilt designs are
+byte-identical; F3 files are byte-identical for any `arch_xml` (F3 reads no architecture).
+
+The three skips are Odin III front-end parse failures (`ODIN3_ERR_PARSE ... unresolved_module`), not
+Loki defects: `micro_adder_hard_block` and `micro_hard_adder_cin_propagation` (module `adder`) and
+`micro_multiply_hard_block` (module `multiply`). The third appeared between Odin III `158ced05` (the
+previous L0 run) and the gate-mapping main; it is an open item for Peter.
