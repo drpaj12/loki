@@ -324,9 +324,11 @@ L0's `graph.json`; ids are the cell labels of section 5 and `pi:<net>`, `po:<net
 `kind` (`pi po lut ff latch const hard gate`), `type`, `width` and `table` (the `Cell.table`
 convention of section 4; -1 when none), and directed edges driver to sink carrying the sink pin
 name of L0 spec 6.4 (`I<k>` for LUT input `k`, `D`, `CLK`, `EN`, `I` on a PO, hard formal names
-with index) and the net id. L1 builds it from `FnGraph` (`structural.feature_graph`), L2 from
-`graph.json` (`graphio.to_feature_graph`); on F1 and F2 both give the same nodes, tables and edges
-(a test pins it on an L0 micro). F3 differs until L0 writes gate tables (open question 18.8).
+with index) and the net id. L1 builds it from `FnGraph` (`structural.feature_graph`);
+`loki.features.graph.from_graph_json` builds it from a `graph.json` object (standard library), and
+L2's `graphio.to_feature_graph` gives the same from its `Graph`. On F1 and F2 the `FnGraph` and
+`graph.json` routes give the same nodes, tables and edges, up to the PI/PO node names (a test pins
+it on an L0 micro). F3 differs until L0 writes gate tables (open question 18.8).
 
 **Role flags.** `loki.features.roles.classify_nets` implements L2 spec 8.1's rules once (per net:
 `const`, `clock`, `reset`, `enable` or `signal`; `SignalConfig(min_fanout=16, dominance=0.8)`) and
@@ -588,7 +590,7 @@ a net that is not a chain member and whose support is `S(y_{i-1})` (bit 0 has no
 `adder_cin` it is the carry-in). `npn_sum` is the share of bits whose function over the cut `(p_i,
 q_i, c_i)` (bit 0: `(p_0, q_0)`) is in class `xor3` (bit 0: `xor2`), computed by simulating the cone
 over the cut and counted only when that cone has no side inputs: `all` +2.30, `half` (>= 0.5)
-+0.69, `low` -0.69, `no_cut` (no carry nets, a LUT-packed chain) 0. `npn_carry` is the share of
++0.69, `low` -1.39, `no_cut` (no carry nets, a LUT-packed chain) 0. `npn_carry` is the share of
 carry nets `c_{i+1}` whose function over `(p_i, q_i, c_i)` is in class `maj3` (bit 0: `and2`):
 `all` +1.39, `half` +0.41, `low` -0.69, `no_cut` 0. Comparators: `npn_xor2` (`yes`: at least
 `k / 2` cells of the cone are in class `xor2`, +0.69).
@@ -958,7 +960,7 @@ loki/
   odin.py            (L0) still the only importer of odin3
   features/          (6.7; stdlib only; shared with L2)
     __init__.py      WL_ROUNDS, NPN_ENUM_MAX, FEATURES_VERSION
-    graph.py         FeatureGraph, validate_feature_graph
+    graph.py         FeatureGraph, validate_feature_graph, from_graph_json
     roles.py         SignalConfig, NetRoles, classify_nets, restrict, is_forcing, is_hold
     npn.py           NpnClass, npn_class, shrink_support, NAMED, class_name
     wl.py            WLConfig, WLResult, refine, classes, stable_partition, Quotient, quotient
@@ -967,7 +969,7 @@ loki/
     normalise.py     load_level0(path, floor, odin3_root, techlib) -> Design
     fngraph.py       Cell, FnGraph, from_design, cover_to_table
     fnfacts.py       FnFacts, facts, npn_sig, cofactor
-    structural.py    feature_graph, StructFeatures, build_features, cone_match
+    structural.py    feature_graph, StructFeatures, build_features, cone_match, transfer_key
     sim.py           simulate, support, cone
     claims.py        Claim, REFS
     provers.py       Verdict, ConeCheckProver, TruthTableProver, parse_cex, prove
