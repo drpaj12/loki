@@ -80,19 +80,32 @@ class BuildTest(unittest.TestCase):
     def test_no_original_names_outside_labels(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp)
-            build(micro("bm_DL_4_bit_comparator"), out)
-            fdir = out / "d" / "f2"
-            graph = load(out, "graph.json")
-            for node in graph["nodes"]:
-                node.pop("labels")  # labels are the answer key (bus names); see Deviations
-            visible = [
-                (fdir / "netlist.blif").read_text(encoding="utf-8"),
-                (fdir / "netlist.v").read_text(encoding="utf-8"),
-                json.dumps(graph),
-            ]
-            for text in visible:
-                for name in ("AeqB", "AgtB", "A[0]", "B[3]"):
-                    self.assertNotIn(name, text)
+            for micro_name in ("bm_DL_4_bit_comparator", "bm_DL_74381_ALU"):
+                build(micro(micro_name), out, design=micro_name)
+                fdir = out / micro_name / "f2"
+                key = load(out, "key.json", micro_name)
+                names = {n for net in key["nets"].values() for n in net["names"]}
+                names |= {c["name"] for c in key["cells"].values()}
+                names |= {p["orig"] for p in key["ports"]}
+                names = {n for n in names if re.search(r"[A-Za-z]", n)}
+                self.assertTrue(names, micro_name)
+                graph = load(out, "graph.json", micro_name)
+                for node in graph["nodes"]:  # answer-key label fields may carry names
+                    for field in ("bus_name", "module_path"):
+                        node["labels"].pop(field)
+                text_csv = (fdir / "labels.csv").read_text(encoding="utf-8")
+                rows = list(csv.reader(io.StringIO(text_csv)))
+                skip = [rows[0].index("bus_name"), rows[0].index("module_path")]
+                for row in rows[1:]:
+                    for i in skip:
+                        row[i] = ""
+                visible = {f.name: f.read_text(encoding="utf-8") for f in fdir.iterdir()}
+                visible.pop("key.json")
+                visible["graph.json"] = json.dumps(graph)
+                visible["labels.csv"] = "\n".join(",".join(r) for r in rows)
+                for fname, text in visible.items():
+                    for name in sorted(names):
+                        self.assertNotIn(name, text, f"{micro_name}/{fname}")
 
     def test_verilog_names(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

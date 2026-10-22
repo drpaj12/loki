@@ -33,6 +33,67 @@ def _input_nets(c: FinalCell) -> list[int]:
     return [n for p in c.inputs for n in p.nets if n]
 
 
+def _sccs(nodes: set[int], succs: dict[int, set[int]]) -> list[list[int]]:
+    """Strongly connected components of the graph induced on ``nodes`` (iterative Tarjan)."""
+    index: dict[int, int] = {}
+    low: dict[int, int] = {}
+    on_stack: set[int] = set()
+    stack: list[int] = []
+    comps: list[list[int]] = []
+    for root in sorted(nodes):
+        if root in index:
+            continue
+        index[root] = low[root] = len(index)
+        stack.append(root)
+        on_stack.add(root)
+        work = [(root, iter(sorted(succs[root] & nodes)))]
+        while work:
+            node, it = work[-1]
+            nxt = next(it, None)
+            if nxt is not None:
+                if nxt not in index:
+                    index[nxt] = low[nxt] = len(index)
+                    stack.append(nxt)
+                    on_stack.add(nxt)
+                    work.append((nxt, iter(sorted(succs[nxt] & nodes))))
+                elif nxt in on_stack:
+                    low[node] = min(low[node], index[nxt])
+                continue
+            work.pop()
+            if work:
+                parent = work[-1][0]
+                low[parent] = min(low[parent], low[node])
+            if low[node] == index[node]:
+                comp = []
+                while True:
+                    member = stack.pop()
+                    on_stack.discard(member)
+                    comp.append(member)
+                    if member == node:
+                        break
+                comps.append(comp)
+    return comps
+
+
+def _cut_node(preds: dict[int, set[int]], level: dict[int, int]) -> int:
+    """Lowest cell id of the first strongly connected component that is a source of the rest.
+
+    Every unlevelled cell waits on another, so the remaining graph holds a cycle; a source
+    component (nothing unlevelled feeds it) is such a cycle, so cutting inside it never cuts a
+    cell that merely sits downstream of a loop.
+    """
+    rest = {cid for cid in preds if cid not in level}
+    succs: dict[int, set[int]] = {cid: set() for cid in rest}
+    for cid in rest:
+        for p in preds[cid] & rest:
+            succs[p].add(cid)
+    comps = _sccs(rest, succs)
+    comp_of = {m: i for i, comp in enumerate(comps) for m in comp}
+    fed = {comp_of[c] for cid in rest for c in succs[cid] if comp_of[c] != comp_of[cid]}
+    sources = [comp for i, comp in enumerate(comps) if i not in fed]
+    return min(min(comp) for comp in sources)
+
+
 def levels(nl: Netlist) -> tuple[dict[int, int], int]:
     """Level per cell id (longest combinational path) and the number of loops cut."""
     cells = {c.id: c for c in logic_cells(nl)}
@@ -53,7 +114,7 @@ def levels(nl: Netlist) -> tuple[dict[int, int], int]:
     while len(level) < len(cells):
         if not ready:
             loops += 1
-            cut = min(cid for cid in preds if cid not in level)
+            cut = _cut_node(preds, level)
             pending[cut] = 0
             heapq.heappush(ready, cut)
         cid = heapq.heappop(ready)
@@ -122,7 +183,7 @@ def _sink_counts(nl: Netlist) -> dict[int, int]:
 
 
 def _features(
-    node: _Node, level: int, sinks: dict[int, int]
+    node: _Node, level: int, sinks: dict[int, int], driven: set[int]
 ) -> dict[str, object]:
     c = node.cell
     feats: dict[str, object] = {
@@ -130,10 +191,10 @@ def _features(
         "is_seq": 0, "is_const": 0, "hard_ports": 0,
     }
     if c is None:
-        feats["fan_in"] = 1 if node.kind == "po" else 0
+        feats["fan_in"] = 1 if node.kind == "po" and node.in_net in driven else 0
         feats["fan_out"] = sinks.get(node.in_net, 0) if node.kind == "pi" else 0
         return feats
-    feats["fan_in"] = len(_input_nets(c))
+    feats["fan_in"] = sum(1 for n in _input_nets(c) if n in driven)
     feats["fan_out"] = sum(sinks.get(n, 0) for p in c.outputs for n in p.nets if n)
     feats["is_seq"] = 1 if c.kind == "ff" else 0
     feats["is_const"] = 1 if c.kind == "const" else 0
@@ -197,6 +258,7 @@ def build_graph(
     level, loops = levels(nl)
     drivers = _drivers(nl)
     sinks = _sink_counts(nl)
+    driven = set(_net_driver_ids(nl, num))
     nodes = _nodes(nl, num)
     if len(labels) != len(nodes):
         raise ValueError("labels do not match the graph nodes")
@@ -215,7 +277,7 @@ def build_graph(
             {
                 "id": node.nid,
                 "kind": node.kind,
-                "features": _features(node, lv, sinks),
+                "features": _features(node, lv, sinks, driven),
                 "labels": _label_dict(lab),
             }
         )

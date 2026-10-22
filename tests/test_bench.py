@@ -27,6 +27,10 @@ def fake_odin3(root: Path) -> Path:
     return root
 
 
+def clean_git(args: list[str], cwd: Path | None = None) -> str:
+    return "" if args[:1] == ["status"] else VERILOG_EVAL["commit"]
+
+
 class BenchTest(unittest.TestCase):
     def test_design_id(self) -> None:
         self.assertEqual(design_id(Path("/x/bm_a.v"), "micro"), "micro_bm_a")
@@ -73,9 +77,34 @@ class BenchTest(unittest.TestCase):
             (cache / ".git").mkdir()
             fake = [cache / f"p{i}_ref.sv" for i in range(155)]
             with (
-                mock.patch.object(bench, "_git", return_value=VERILOG_EVAL["commit"]),
+                mock.patch.object(bench, "_git", side_effect=clean_git),
                 mock.patch.object(bench, "_ve_files", return_value=fake),
                 self.assertRaisesRegex(RuntimeError, "156"),
+            ):
+                fetch_verilog_eval(cache)
+
+    def test_verilog_eval_dirty_cache(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / ".git").mkdir()
+            replies = [VERILOG_EVAL["commit"], " M x_ref.sv"]
+            with (
+                mock.patch.object(bench, "_git", side_effect=replies),
+                self.assertRaisesRegex(RuntimeError, "local changes"),
+            ):
+                fetch_verilog_eval(Path(tmp))
+
+    def test_verilog_eval_rejects_symlinks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = Path(tmp)
+            (cache / ".git").mkdir()
+            target = cache / "real.sv"
+            target.write_text("x", encoding="utf-8")
+            link = cache / "p0_ref.sv"
+            link.symlink_to(target)
+            with (
+                mock.patch.object(bench, "_git", side_effect=clean_git),
+                mock.patch.object(bench, "_ve_files", return_value=[link]),
+                self.assertRaisesRegex(RuntimeError, "symbolic links"),
             ):
                 fetch_verilog_eval(cache)
 

@@ -44,12 +44,14 @@ def _ve_files(cache: Path) -> list[Path]:
 def fetch_verilog_eval(cache: Path) -> list[Path]:
     """Clone the pinned VerilogEval commit into ``cache`` (a new directory) and list its refs.
 
-    The download is data: nothing in it is executed. Raises RuntimeError unless it holds 156
-    reference designs.
+    The download is data: nothing in it is executed. A reused cache must be clean. Raises
+    RuntimeError on local changes, symbolic links, or unless it holds 156 reference designs.
     """
     if (cache / ".git").is_dir():
         if _git(["rev-parse", "HEAD"], cache) != VERILOG_EVAL["commit"]:
             raise RuntimeError(f"{cache} holds another commit than {VERILOG_EVAL['commit']}")
+        if _git(["status", "--porcelain"], cache):
+            raise RuntimeError(f"{cache} has local changes; remove it to fetch again")
     else:
         if cache.exists() and any(cache.iterdir()):
             raise RuntimeError(f"{cache} is not empty and not a clone")
@@ -57,6 +59,9 @@ def fetch_verilog_eval(cache: Path) -> list[Path]:
         _git(["clone", "--filter=blob:none", "--no-checkout", VERILOG_EVAL["url"], str(cache)])
         _git(["checkout", "--quiet", VERILOG_EVAL["commit"]], cache)
     files = _ve_files(cache)
+    links = [f.name for f in files if f.is_symlink()]
+    if links:
+        raise RuntimeError(f"{cache} holds symbolic links: {', '.join(links[:3])}")
     if len(files) != VE_COUNT:
         raise RuntimeError(f"expected {VE_COUNT} VerilogEval designs, found {len(files)}")
     return files

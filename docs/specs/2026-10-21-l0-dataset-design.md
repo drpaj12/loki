@@ -251,11 +251,12 @@ all names `n<k>`; no `// file:line` comments (an imported netlist has none).
   (`EN` for latches), PO `I`, hard cell the formal name with index, `a[3]`.
 - `labels` hold the `labels.csv` columns except `node_id`, `kind` and `cell_type` (as in the
   example above; `cell_type` is only in the CSV).
-- `features` (numbers only): `fan_in` (connected input pins), `fan_out` (sink pins on its output
+- `features` (numbers only): `fan_in` (input pins connected to a driven net), `fan_out` (sink pins on its output
   nets), `level` (longest combinational path from a PI, flip-flop output or constant; flip-flops,
   PIs and constants are 0), `lut_width` (0 if not a LUT), `lut_table` (hex of the table, MSB
   first, `""` if not a LUT), `is_seq`, `is_const`, `hard_ports` (pin count of a hard cell, else 0).
-  The `level` computation cuts combinational loops at the node with the lowest ID and counts them
+  The `level` computation cuts each combinational loop at the node with the lowest ID inside a
+  strongly connected component that no other unlevelled component feeds, and counts the cuts
   in `meta.json` `loops_cut`.
 - `labels` are the `labels.csv` columns (6.5) except `node_id`, `kind`.
 - PI nodes: `construct_type` `$port_in`, role `io`, bus and bit from the port. PO nodes likewise

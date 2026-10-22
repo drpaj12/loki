@@ -38,6 +38,17 @@ class GraphTest(unittest.TestCase):
         self.assertGreaterEqual(loops, 1)
         self.assertEqual(set(lv), {10, 11})
 
+    def test_loop_is_cut_inside_the_cycle_not_downstream(self) -> None:
+        nets = {i: Net(i, ()) for i in (1, 2, 3, 4)}
+        cells = (
+            lut_cell(5, [3], 4, "01"),  # downstream of the cycle, lowest id
+            lut_cell(10, [1, 3], 2, "0110"),
+            lut_cell(11, [2], 3, "01"),
+        )
+        nl = Netlist("t", nets, cells, (PortBit("A", "in", 1),))
+        lv, loops = levels(nl)
+        self.assertEqual((lv, loops), ({10: 1, 11: 2, 5: 3}, 1))
+
     def test_ff_breaks_levels(self) -> None:
         nets = {i: Net(i, ()) for i in (1, 2, 3, 4)}
         ff = FinalCell(12, "ff", "$_DFF_P_", "", {}, (), (Port("C", 1, (1,)), Port("D", 1, (3,))),
@@ -71,6 +82,14 @@ class GraphTest(unittest.TestCase):
 
     def test_graph_validates(self) -> None:
         self.assertEqual(validate_graph(graph_of(chain())), [])
+
+    def test_fan_in_counts_only_driven_nets(self) -> None:
+        nets = {i: Net(i, ()) for i in (1, 2, 3)}
+        cell = lut_cell(10, [1, 2], 3, "0001")  # net 2 has no driver
+        pbs = (PortBit("A", "in", 1), PortBit("X", "out", 3))
+        g = graph_of(Netlist("top", nets, (cell,), pbs))
+        feats = {n["id"]: n["features"] for n in g["nodes"]}
+        self.assertEqual(feats["n3"]["fan_in"], 1)
 
     def test_label_mismatch_raises(self) -> None:
         nl = chain()
