@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import os
+import shutil
 from pathlib import Path
 
 from loki.anon import build_key, number
@@ -89,13 +90,28 @@ def f2_arch() -> Path | None:
 
 
 def can_run_flow() -> bool:
-    """Odin III plus a real VTR architecture (hard-block floors, the acceptance runs)."""
-    return odin_available() and vtr_arch() is not None
+    """Odin III, ABC for equiv-check and a real VTR architecture (hard floors, acceptance)."""
+    root = odin3_root()
+    return odin_available() and root is not None and abc_available(root) and vtr_arch() is not None
+
+
+def abc_available(root: Path) -> bool:
+    """True when equiv-check under root can find ABC (its own search order, equiv_check.py)."""
+    env = os.environ.get("ODIN3_ABC")
+    if env:
+        return os.access(env, os.X_OK)
+    if any(os.access(p, os.X_OK) for p in root.glob("build/*/third_party/abc/abc")):
+        return True
+    vtr = os.environ.get("VTR_ROOT")
+    if vtr and os.access(Path(vtr) / "build" / "abc" / "abc", os.X_OK):
+        return True
+    return shutil.which("abc") is not None
 
 
 def can_run_f2() -> bool:
-    """Odin III binding, its checkout and an F2 architecture file (runs in CI)."""
-    return odin_available() and odin3_root() is not None and f2_arch() is not None
+    """Odin III binding, its checkout with ABC for equiv-check, and an F2 architecture file."""
+    root = odin3_root()
+    return odin_available() and root is not None and abc_available(root) and f2_arch() is not None
 
 
 def fake_netlist() -> Netlist:

@@ -27,13 +27,15 @@ Acceptance test (about one minute): `.venv/bin/python -m unittest tests.test_acc
 ## Which tests run where
 
 CI (`.github/workflows/ci.yml`) installs the Odin III v1.0.0 wheel, checks out the odin3 v1.0.0
-sources for `ODIN3_ROOT` and pins Wyrd to commit 11ee708. There is no VTR, so `f2_arch()` falls
+sources for `ODIN3_ROOT`, builds ABC at the odin3 v1.0.0 submodule commit (cached) for `ODIN3_ABC`,
+and pins Wyrd to commit 11ee708. There is no VTR, so `f2_arch()` falls
 back to Odin III's placeholder architecture (floor F2 only records the path).
 
 - Run in CI and locally: every pure unit test, plus the Odin III tests gated on `can_run_f2()`:
   `test_extract`, `test_snapshot`, `test_blif_vs_odin`, `test_rules_registry`, `test_odin_facts`
   (except the two hardmap probes), and `test_build` (except the F1 hard-cell test). These use the
-  binding, ABC and `equiv-check` from the checkout.
+  binding, ABC and `equiv-check` from the checkout; without ABC (`ODIN3_ABC`, `build/*/third_party/abc/abc`,
+  `$VTR_ROOT/build/abc/abc` or `abc` on `PATH`) they skip.
 - Local only (skip in CI, need a real VTR architecture via `VTR_ROOT`, gated on
   `can_run_flow()`): `test_acceptance_micros` (all three tests), `test_build`
   `test_f1_hard_cells_and_declared_ports`, `test_odin_facts` `test_hardmap_keeps_spans` and
