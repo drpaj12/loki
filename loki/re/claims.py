@@ -81,23 +81,33 @@ def _muxn_dont_care(p: Params, i: Ins) -> bool:
     return i["S"] >= _w(p, "N")
 
 
+def _opt(params: Params, name: str, default: int) -> int:
+    return _w(params, name) if name in params else default
+
+
+def _on(i: Ins, port: str, active: int) -> bool | None:
+    """Whether the optional 1-bit input ``port`` is at its active level (None: no such input)."""
+    return None if port not in i else (i[port] & 1) == active
+
+
 def _counter(p: Params, i: Ins) -> dict[str, int]:
-    """Next state of a counter. Optional inputs ``EN`` (default 1) and ``RST`` (default 0).
+    """Next state of a counter. Optional inputs ``EN`` and ``RST`` (active level ``en_active``
+    and ``rst_active``, both default 1; reset wins over enable).
 
     Parameters: ``width``, ``dir`` (``up`` or ``down``), ``modulus`` (0 for ``2**width``),
-    ``rst_value``. Reset wins over enable.
+    ``rst_value``, and ``wrap`` (the state after the last one when counting up, default 0).
     """
     width = _w(p, "width")
     q = i["Q"]
-    if i.get("RST", 0):
+    if _on(i, "RST", _opt(p, "rst_active", 1)):
         return {"D": _w(p, "rst_value") & _mask(width)}
-    if not i.get("EN", 1):
+    if _on(i, "EN", _opt(p, "en_active", 1)) is False:
         return {"D": q}
     mod = _w(p, "modulus")
     if p["dir"] == "down":
         nxt = (mod - 1 if mod else _mask(width)) if q == 0 else q - 1
     else:
-        nxt = 0 if mod and q == mod - 1 else (q + 1) & _mask(width)
+        nxt = _opt(p, "wrap", 0) if mod and q == mod - 1 else (q + 1) & _mask(width)
     return {"D": nxt & _mask(width)}
 
 
@@ -105,7 +115,7 @@ def _shift(p: Params, i: Ins) -> dict[str, int]:
     """Next state of a shift register with serial input ``X`` (and optional ``EN``)."""
     width = _w(p, "width")
     q = i["Q"]
-    if not i.get("EN", 1):
+    if _on(i, "EN", _opt(p, "en_active", 1)) is False:
         return {"D": q}
     x = i["X"] & 1
     if p["dir"] == "l":
@@ -114,9 +124,11 @@ def _shift(p: Params, i: Ins) -> dict[str, int]:
 
 
 def _lfsr(p: Params, i: Ins) -> dict[str, int]:
-    """Fibonacci LFSR: shift left, the new bit 0 is the parity of ``Q & taps``."""
+    """Fibonacci LFSR: shift left, the new bit 0 is the parity of ``Q & taps`` (optional ``EN``)."""
     width = _w(p, "width")
     q = i["Q"]
+    if _on(i, "EN", _opt(p, "en_active", 1)) is False:
+        return {"D": q}
     fb = bin(q & _w(p, "taps")).count("1") & 1
     return {"D": ((q << 1) | fb) & _mask(width)}
 
