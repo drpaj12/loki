@@ -65,6 +65,17 @@ def _num(hid: str) -> int:
     return int(hid[1:])
 
 
+def round_rejections(overlay: Overlay, r: int) -> int:
+    """Hypotheses rejected in round ``r``: a competition or commit record of that round on a
+    hypothesis rejected now. Not the cumulative count (spec 11 ``rounds.rejected``)."""
+    return sum(
+        1
+        for h in overlay.all()
+        if h.status == "rejected"
+        and any(e.round == r and e.source in ("competition", "commit") for e in h.evidence)
+    )
+
+
 class _Run:
     """State of one ``run_re``: the levels, the overlay and the per-run counters."""
 
@@ -280,7 +291,7 @@ class _Run:
         change = max(change, self.score(r))
         self.overlay.compete(r)
         committed = self.select_and_commit(r) if self.opts.commit else []
-        rejected = sum(1 for h in self.overlay.all() if h.status == "rejected")
+        rejected = round_rejections(self.overlay, r)
         record: dict[str, object] = {
             "round": r, "new": new, "proved": counts["proved"], "committed": committed,
             "rejected": rejected, "engines": counts["engines"],

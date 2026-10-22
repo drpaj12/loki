@@ -7,8 +7,10 @@ from unittest import mock
 
 from loki.re import provers
 from loki.re.claims import Claim
+from loki.re.detectors import Candidate
 from loki.re.fngraph import FnGraph
-from loki.re.loop import ReOptions, RunResult, run_re
+from loki.re.loop import ReOptions, RunResult, round_rejections, run_re
+from loki.re.overlay import Evidence, Overlay
 from loki.re.provers import Verdict
 from loki.schemas import dump_json
 from tests.helpers import DATA, can_run_f2, odin3_root, odin_available
@@ -47,6 +49,23 @@ def engines(res: RunResult) -> dict[str, int]:
 def transfers_of(res: RunResult, kind: str) -> int:
     return sum(1 for h in of_kind(res, kind) for e in h.evidence if e.source == "transfer"
                and e.value == "equivalent")
+
+
+class RoundRejectionsTest(unittest.TestCase):
+    def test_counts_only_the_round(self) -> None:
+        """Spec 11 rounds.rejected is the round's new rejections, not the cumulative count."""
+        ov = Overlay()
+        a = ov.add(Candidate("adder", frozenset({1, 2}), {}, {}, {}), "arith", 1)
+        b = ov.add(Candidate("adder", frozenset({3, 4}), {}, {}, {}), "arith", 1)
+        c = ov.add(Candidate("adder", frozenset({5, 6}), {}, {}, {}), "arith", 1)
+        a.status, b.status, c.status = "rejected", "rejected", "rejected"
+        a.evidence.append(Evidence(1, "competition", "p_comp", "low", 0.0))
+        b.evidence.append(Evidence(2, "commit", "error", "footprint", 0.0))
+        c.evidence.append(Evidence(1, "competition", "p_comp", "low", 0.0))
+        c.status = "open"  # reopened: not rejected now
+        self.assertEqual(round_rejections(ov, 1), 1)
+        self.assertEqual(round_rejections(ov, 2), 1)
+        self.assertEqual(round_rejections(ov, 3), 0)
 
 
 @unittest.skipUnless(can_run_f2(), "needs Odin III, ABC and an F2 architecture")
