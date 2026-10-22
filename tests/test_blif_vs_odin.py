@@ -8,12 +8,12 @@ from loki.blifout import LUT_ROW_ORDER, identity_naming, write_blif
 from loki.equiv import check_equiv
 from loki.extract import extract_netlist
 from loki.odin import open_front
-from tests.helpers import can_run_flow, micro, odin3_root, vtr_arch
+from tests.helpers import can_run_f2, f2_arch, micro, odin3_root
 
 NAMES = ("bm_DL_4_bit_comparator", "bm_DL_four_bit_adder_continuous_assign", "bm_DL_74381_ALU")
 
 
-@unittest.skipUnless(can_run_flow() and odin3_root() is not None, "needs Odin III and VTR")
+@unittest.skipUnless(can_run_f2(), "needs Odin III")
 class BlifVsOdinTest(unittest.TestCase):
     def test_lut_order_matches_write_blif(self) -> None:
         root = odin3_root()
@@ -21,7 +21,7 @@ class BlifVsOdinTest(unittest.TestCase):
         self.assertEqual(LUT_ROW_ORDER, "string_msb_first")
         for name in NAMES:
             with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
-                design, _ = open_front("f2", [micro(name)], None, vtr_arch(), None)
+                design, _ = open_front("f2", [micro(name)], None, f2_arch(), None)
                 design.run_script("lower; abc --lut 6")
                 nl = extract_netlist(design, name)
                 ours = write_blif(nl, identity_naming(nl))

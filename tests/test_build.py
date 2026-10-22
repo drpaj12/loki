@@ -10,7 +10,7 @@ from typing import Any
 from loki.build import FloorResult, build_floor, floor_failures, main
 from loki.equiv import EquivResult
 from loki.schemas import validate_graph, validate_key, validate_labels_csv, validate_meta
-from tests.helpers import DATA, can_run_flow, micro, odin3_root, vtr_arch
+from tests.helpers import DATA, can_run_f2, can_run_flow, f2_arch, micro, odin3_root, vtr_arch
 
 FILES = ("netlist.blif", "netlist.v", "graph.json", "labels.csv", "key.json", "meta.json")
 KEYWORDS = {"module", "endmodule", "input", "output", "wire", "assign", "reg", "always",
@@ -20,7 +20,8 @@ KEYWORDS = {"module", "endmodule", "input", "output", "wire", "assign", "reg", "
 def build(path: Path, out: Path, floor: str = "f2", design: str = "d") -> FloorResult:
     root = odin3_root()
     assert root is not None
-    return build_floor(design, [path], None, floor, vtr_arch(), out, root)
+    arch = vtr_arch() if floor.startswith("f1") else f2_arch()
+    return build_floor(design, [path], None, floor, arch, out, root)
 
 
 def load(out: Path, name: str, design: str = "d", floor: str = "f2") -> Any:
@@ -38,7 +39,7 @@ class FloorFailureTest(unittest.TestCase):
         self.assertEqual(floor_failures(r), ["b=error", "c=differs"])
 
 
-@unittest.skipUnless(can_run_flow() and odin3_root() is not None, "needs Odin III and VTR")
+@unittest.skipUnless(can_run_f2(), "needs Odin III")
 class BuildTest(unittest.TestCase):
     def test_f2_comparator(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -60,6 +61,7 @@ class BuildTest(unittest.TestCase):
             self.assertEqual((kinds.count("pi"), kinds.count("po"), kinds.count("lut")), (8, 3, 5))
             self.assertEqual(meta["unmatched"], 0)
 
+    @unittest.skipUnless(can_run_flow(), "needs a VTR architecture")
     def test_f1_hard_cells_and_declared_ports(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp)
@@ -128,7 +130,7 @@ class BuildTest(unittest.TestCase):
     def test_main_exit_codes_and_metrics(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "dataset"
-            arch = str(vtr_arch())
+            arch = str(f2_arch())
             argv = ["--design", "d", "--files", str(DATA / "sv_always_comb.v"), "--top", "",
                     "--arch-xml", arch, "--floors", "f2", "--out", str(out)]
             self.assertEqual(main(argv), 0)

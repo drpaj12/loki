@@ -9,13 +9,13 @@ from loki import snapshot
 from loki.labels import module_path
 from loki.odin import floor_script, open_front
 from loki.snapshot import take_snapshot
-from tests.helpers import DATA, can_run_flow, micro, odin3_root, vtr_arch
+from tests.helpers import DATA, can_run_f2, can_run_flow, f2_arch, micro, vtr_arch
 
 COMPARATOR = "bm_DL_4_bit_comparator"
 
 
 def front(path: Path, floor: str = "f2", arch: str | None = None) -> tuple[Any, Any, Any]:
-    arch_xml = vtr_arch(arch) if arch else vtr_arch()
+    arch_xml = vtr_arch(arch) if arch else f2_arch()
     design, instances = open_front(floor, [path], None, arch_xml, None)
     return design, instances, take_snapshot(design, instances)
 
@@ -32,7 +32,7 @@ def spans_of(node: Any) -> tuple[Any, ...]:
     return snapshot.node_spans(node)
 
 
-@unittest.skipUnless(can_run_flow() and odin3_root() is not None, "needs Odin III and VTR")
+@unittest.skipUnless(can_run_f2(), "needs Odin III")
 class OdinFactsTest(unittest.TestCase):
     def test_sources_have_columns(self) -> None:
         _, _, snap = front(micro(COMPARATOR))
@@ -116,6 +116,7 @@ class OdinFactsTest(unittest.TestCase):
         self.assertEqual(len(flagged), 1)
         self.assertTrue(flagged[0].type.startswith("$dff"))
 
+    @unittest.skipUnless(can_run_flow(), "needs a VTR architecture")
     def test_hardmap_keeps_spans(self) -> None:
         d, _, snap = front(micro("bm_base_multiply"), "f1-k6", "k6_frac_N10_frac_chain_mem32K_40nm")
         run(d, "hardmap")
@@ -125,6 +126,7 @@ class OdinFactsTest(unittest.TestCase):
         for h in hard:
             self.assertIn(spans_of(h), word_spans, h.type_name)
 
+    @unittest.skipUnless(can_run_flow(), "needs a VTR architecture")
     def test_hard_port_names(self) -> None:
         d, _, _ = front(micro("bm_base_multiply"), "f1-k6", "k6_frac_N10_frac_chain_mem32K_40nm")
         run(d, "hardmap")

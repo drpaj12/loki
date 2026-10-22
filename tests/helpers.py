@@ -72,8 +72,30 @@ def micro(name: str) -> Path:
     return root / "tests" / "micro" / "verilog" / "micro" / f"{name}.v"
 
 
+def f2_arch() -> Path | None:
+    """The VPR architecture for soft-logic floors: the VTR one, else Odin III's placeholder.
+
+    Floor F2 only records the path (Odin III does no VPR XML import), so the placeholder under
+    ``$ODIN3_ROOT/tests/golden`` serves when VTR is absent (CI).
+    """
+    real = vtr_arch()
+    if real is not None:
+        return real
+    root = odin3_root()
+    if root is None:
+        return None
+    path = root / "tests" / "golden" / "projects" / "odin2_arch" / "arch" / "k6_tiny.xml"
+    return path if path.is_file() else None
+
+
 def can_run_flow() -> bool:
+    """Odin III plus a real VTR architecture (hard-block floors, the acceptance runs)."""
     return odin_available() and vtr_arch() is not None
+
+
+def can_run_f2() -> bool:
+    """Odin III binding, its checkout and an F2 architecture file (runs in CI)."""
+    return odin_available() and odin3_root() is not None and f2_arch() is not None
 
 
 def fake_netlist() -> Netlist:

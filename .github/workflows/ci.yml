@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: pip install ruff mypy cffi "wyrd @ git+https://github.com/drpaj12/wyrd"
+      - run: pip install ruff mypy cffi "wyrd @ git+https://github.com/drpaj12/wyrd@11ee708790f05a4830ffa9172ea56e509115c33b"
       - run: ruff check .
       - run: mypy --strict loki tests
 
@@ -37,7 +37,7 @@ jobs:
           repository: drpaj12/odin3
           ref: v1.0.0
           path: odin3-src
-      - run: pip install cffi "$ODIN3_WHEEL" "wyrd @ git+https://github.com/drpaj12/wyrd"
+      - run: pip install cffi "$ODIN3_WHEEL" "wyrd @ git+https://github.com/drpaj12/wyrd@11ee708790f05a4830ffa9172ea56e509115c33b"
       - run: pip install .
       - run: python -m unittest discover -s tests -t . -v
         env:

@@ -5,13 +5,13 @@ import unittest
 from loki.odin import OdinSkip, open_front
 from loki.rules import CONTROL_PORTS, DATA_FORCED, NEUTRAL
 from loki.snapshot import take_snapshot
-from tests.helpers import DATA, can_run_flow, odin3_root, vtr_arch
+from tests.helpers import DATA, can_run_f2, f2_arch, odin3_root
 
 
-@unittest.skipUnless(can_run_flow() and odin3_root() is not None, "needs Odin III and VTR")
+@unittest.skipUnless(can_run_f2(), "needs Odin III")
 class RegistryTest(unittest.TestCase):
     def test_control_ports_exist(self) -> None:
-        d, inst = open_front("f2", [DATA / "ctrl_ports.v"], None, vtr_arch(), None)
+        d, inst = open_front("f2", [DATA / "ctrl_ports.v"], None, f2_arch(), None)
         snap = take_snapshot(d, inst)
         checked = set()
         for w in snap.words:
@@ -32,7 +32,7 @@ class RegistryTest(unittest.TestCase):
         self.assertEqual(len(micros), 68)
         for path in micros:
             try:
-                d, inst = open_front("f2", [path], None, vtr_arch(), None)
+                d, inst = open_front("f2", [path], None, f2_arch(), None)
             except OdinSkip:
                 unread.append(path.name)
                 continue

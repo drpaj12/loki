@@ -24,6 +24,21 @@ Wyrd installed in the same virtual environment as Loki.
 
 Acceptance test (about one minute): `.venv/bin/python -m unittest tests.test_acceptance_micros -v`.
 
+## Which tests run where
+
+CI (`.github/workflows/ci.yml`) installs the Odin III v1.0.0 wheel, checks out the odin3 v1.0.0
+sources for `ODIN3_ROOT` and pins Wyrd to commit 11ee708. There is no VTR, so `f2_arch()` falls
+back to Odin III's placeholder architecture (floor F2 only records the path).
+
+- Run in CI and locally: every pure unit test, plus the Odin III tests gated on `can_run_f2()`:
+  `test_extract`, `test_snapshot`, `test_blif_vs_odin`, `test_rules_registry`, `test_odin_facts`
+  (except the two hardmap probes), and `test_build` (except the F1 hard-cell test). These use the
+  binding, ABC and `equiv-check` from the checkout.
+- Local only (skip in CI, need a real VTR architecture via `VTR_ROOT`, gated on
+  `can_run_flow()`): `test_acceptance_micros` (all three tests), `test_build`
+  `test_f1_hard_cells_and_declared_ports`, `test_odin_facts` `test_hardmap_keeps_spans` and
+  `test_hard_port_names`, and the network-only `test_bench` fetch (`LOKI_NETWORK=1`).
+
 ## Real output, 2026-10-22 (Odin III main 158ced05, library 1.0.0, 3 jobs)
 
 `wyrd run`: 136 runs (68 designs x 2 architectures), all `ok`, 71 s wall time.
