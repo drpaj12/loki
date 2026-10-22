@@ -5,6 +5,12 @@ Status: decisions approved by Peter, 2026-10-21 (section 2, items 1 to 5), with 
 ORCA as the default graphlet backend, and Peter's global-signal classification before counting (section 8).
 Nothing is left open except the questions of section 14, each with a recommendation.
 
+Amended 2026-10-21 (branch `docs/wl-npn`) with two features Peter approved that day, built in Loki III
+L1 (`loki.features`, L1 spec 6.7, L1 plan Task 5a) because L1 is built before L2: colour refinement
+(1-WL colours) and functional node features (NPN classes). L2 consumes them: the shared signal
+classifier (8.1), structural features and GSN-style vectors (4.1), the PyG export (5), the graphlet
+features (8.6) and a 1-WL baseline for the GNN (9). New open questions are section 14, items 8 to 11.
+
 ## 1. Goal
 
 L2 turns a netlist graph into things L1 (the Bayesian hypothesis flow) and Peter can use: exports for
@@ -59,6 +65,9 @@ numpy 2.5.4, torch 2.14.1 cpu, torch_geometric 2.8.1) on a synthetic netlist-lik
 | Graphlets, ORCA, size 4, `--removal none` (mcml 287k nodes / LU64PEEng) | 56 s, 0.56 GB / 12 min 54 s, 1.49 GB (spike) | mcml 3 min; LU64PEEng 30 min, 3 GB |
 | Graphlets, ORCA, size 5, `--removal none` | mcml did not finish in 30 min (spike) | refused without `--force` |
 | Global-signal classification, 820k nodes | not measured | 60 s, 2 GB |
+| Colour refinement, one variant, 4 rounds (`loki.features.wl.refine`, pure Python) | not measured | 30 s, 1 GB (L1 spec 6.7 estimate); 820k nodes 240 s, 8 GB |
+| Coarsest equitable partition (`stable_partition`) | not measured | 60 s, 1 GB; 820k nodes 480 s, 8 GB |
+| NPN classes of all distinct LUT tables (`npn_class`, cached) | not measured | 60 s, 0.5 GB |
 
 Rules:
 
@@ -107,6 +116,37 @@ L1 supplies its node ids this way). Unknown ids or an empty region raise `Region
 `--region`: `cone:<id>[,<id>...]:<in|out|both>:<depth|all>`, `cluster:<partition.json>:<int>`,
 `nodes:<file with one id per line>`.
 
+### 4.1 Structural features from `loki.features` (`loki.analysis.structural`)
+
+L1's `loki.features` (L1 spec 6.7) is standard-library code shared by L1 and L2. L2 adapts a `Graph`
+with `to_feature_graph(g)` (`loki.analysis.graphio`; node order and ids of `graph.json`, `lut_table` hex
+to an integer table, pins and nets as in the file; it equals `loki.features.graph.from_graph_json` on the
+same file, a test pins it) and computes:
+
+- **role flags** with `loki.features.roles.classify_nets` (section 8.1);
+- **WL colours** with `loki.features.wl.refine`, default variant `npn/both` (`--wl-variant
+  table/both` on request), `WL_ROUNDS = 4` rounds: per node the colour of rounds 0 to 4 (16-hex
+  SHA-256 strings, comparable across designs), the `stable_round`, and with `--quotient` the coarsest
+  equitable partition and its quotient graph;
+- **NPN classes** with `loki.features.npn.npn_class` for every node with a LUT table (exact canonical
+  form, key `"<support size>:<hex>"`; nodes without a table get the empty key).
+
+Numeric ids: `hash64(s)` = the first 8 bytes of `sha256(s)` as a signed big-endian int64 (0 for the empty
+string), so WL colours and NPN keys have ids comparable across designs and exports without a shared
+vocabulary. **GSN-style vector** of a node (after Bouritsas, Frasca, Zafeiriou and Bronstein, "Improving
+Graph Neural Network Expressivity via Subgraph Isomorphism Counting", IEEE TPAMI 2023, arXiv:2006.09252):
+its graphlet orbit counts (8.4, when an orbit file exists), its four role flags (8.2), its NPN class id and
+its WL colour ids per round. Counts and flags are numeric columns; NPN and WL ids are categorical and are
+never fed to a model as numbers (the GNN embeds them, section 9; clustering does not use them).
+
+Output: `<out>/<design>/<floor>/structural/structural-<variant>.npz` (arrays `wl` int64 (N, 5) of
+`hash64` colour ids, `npn` int64 (N,), `roles` int64 (N, 4), `node_ids`; with `--quotient` also
+`stable_class` int64 (N,)) and `structural-<variant>.json` (`{"schema": 1, "kind": "structural",
+"design", "floor", "variant", "rounds", "stable_round", "classes_per_round", "npn": {"distinct_tables",
+"classes", "exact", "worst_enum"}, "npn_keys", "colours", "quotient", "graph_sha256", "seconds",
+"versions"}`): `npn_keys` (per node) and `colours` (per round, per node) hold the strings behind the ids;
+`quotient` is `{"n_classes", "edges"}` or `null`. `seconds` is excluded from the determinism test.
+
 ## 5. Exports (`loki.analysis.export`)
 
 Written for the whole graph or a region into `<out>/<design>/<floor>/export/` (`stem` is `whole` or
@@ -117,7 +157,7 @@ Written for the whole graph or a region into `<out>/<design>/<floor>/export/` (`
 | edge list | `<stem>.edges.tsv` | `src<TAB>dst` per directed edge, ids as in `graph.json`, sorted as in `graph.json`; header-free |
 | edge list nodes | `<stem>.nodes.tsv` | `id<TAB>kind<TAB>feature...` with a header row; labels appended when present |
 | GraphML | `<stem>.graphml` | `networkx.DiGraph` through `networkx.write_graphml`; node attributes = features and labels (strings and numbers; empty strings kept), edge attributes `pin`, `net`; graph attributes `design`, `floor` |
-| PyG | `<stem>.pt` | a plain dict saved with `torch.save`: `x` (float32 N x F), `edge_index` (int64 2 x E, driver to sink), `node_ids` (list of str), `feature_names` (list), `hard_types` (list), `y_construct_type` and `y_role` (int64 N, -1 where unlabelled) when labels exist, `vocab` (the two label vocabularies), `design`, `floor`, `split` (when taken from a dataset). `load_pyg(path) -> torch_geometric.data.Data` builds the `Data` object. |
+| PyG | `<stem>.pt` | a plain dict saved with `torch.save`: `x` (float32 N x F), `edge_index` (int64 2 x E, driver to sink), `node_ids` (list of str), `feature_names` (list), `hard_types` (list), `y_construct_type` and `y_role` (int64 N, -1 where unlabelled) when labels exist, `vocab` (the two label vocabularies), `design`, `floor`, `split` (when taken from a dataset); the structural block of 4.1 unless `--no-structural`: `gsn_roles` (int64 N x 4), `gsn_npn` (int64 N), `gsn_wl` (int64 N x 5), `npn_keys` (list of str), `wl_variant`, and `gsn_orbits` (int64 N x 15 or 73) with `gsn_orbits_source` (backend and removal) only when an orbit file for the graph exists (export never runs a graphlet backend). `load_pyg(path) -> torch_geometric.data.Data` builds the `Data` object. |
 
 A plain dict, not a pickled `Data`, is saved because torch 2.6+ defaults to `weights_only=True` loading.
 The label vocabularies of an export of one design come from that design alone (class indices are not
@@ -220,7 +260,9 @@ Before counting, nets that carry a global signal are classified by role from `gr
 edges are removed from the counting graph and kept as node features (Peter, 2026-10-21: a node with a
 clock is a specialised node type). `classify_signals(g, cfg) -> SignalInfo` groups edges by `net` (the
 driver, the sink pins). `SignalConfig(min_fanout=16, dominance=0.8)`; clock and constant detection need no
-fan-out threshold.
+fan-out threshold. The rules below are implemented once, in `loki.features.roles` (L1 spec 6.7, L1 plan
+Task 5a; L1 needs them first, for its start colours); `classify_signals` adapts the `Graph` with
+`to_feature_graph` (4.1), calls `classify_nets` and builds the arrays of `SignalInfo` (open question 10).
 
 | Class | Rule |
 |---|---|
@@ -330,7 +372,8 @@ and `graphlets-<backend>-<removal>.json`: `{"schema":1, "kind":"graphlets", "des
 the only non-deterministic key and is excluded from the determinism test. The feature block
 (`graphlet_features(orbits, roles)`): `log1p` of the orbits then per-column standardisation, constant
 columns dropped, then `roles` appended as is (`clock_domain` as the domain id; clustering treats it as a
-number, models may one-hot it). Clustering and the GNN accept it with `--features node,graphlet`; if
+number, models may one-hot it). `gsn_features(orbits, roles, structural)` returns that numeric block plus
+the categorical block (NPN id and WL ids per round, section 4.1) for the GNN. Clustering and the GNN accept it with `--features node,graphlet`; if
 the orbit file for that graph, backend and removal is missing the runner computes it first.
 
 ## 9. GNN baseline (`loki.analysis.gnn`, extra `loki[gnn]`)
@@ -377,6 +420,20 @@ computed on the same nodes: `majority` (most common train class) and `logreg` (f
 `sklearn.linear_model.LogisticRegression(max_iter=1000, random_state=seed)`), so the graph's value is
 visible. Floats rounded to 4 decimals.
 
+**1-WL baseline** (Peter, 2026-10-21: the GNN must beat WL-colour classification on L0 labels). Baseline
+`wl` predicts, for each node, the majority train class of its WL colour (variant `npn/both`), backing off
+from round 4 to round 0 when a colour has fewer than `min_count` train nodes, and to the `majority` class
+when no round qualifies. It is computed on the same nodes and written as `baselines.wl` next to the others;
+`metrics.json` adds `beats_wl` (test `macro_f1` of the GNN greater than that of `wl`). Message-passing GNNs
+of this kind are at most as discriminating as 1-WL (Xu, Hu, Leskovec and Jegelka, "How Powerful are Graph
+Neural Networks?", ICLR 2019; Morris et al., AAAI 2019), so the GNN can only win by generalising better
+than a colour lookup; on small datasets the lookup may win, which is a finding (open question 8).
+
+**Structural inputs** (optional, `--features node,graphlet,wl,npn`): `graphlet` appends the numeric block
+of 8.6; `wl` and `npn` add embeddings (size 8) of the NPN id and the round-2 WL id over a train vocabulary
+(ids with at least `min_count` train nodes, the rest `__other__`), concatenated to the input of the first
+layer. The default stays `node` so the baseline numbers do not move.
+
 Honest limit stated in every `metrics.json` (`"note"`): a LUT merges the logic of several constructs; its
 label is the primary construct (L0 spec 5.3), so accuracy has a ceiling below 1.
 
@@ -386,10 +443,11 @@ label is the primary construct (L0 spec 5.3), so accuracy has a ceiling below 1.
 
 ```
 loki/analysis/
-  __init__.py     KINDS = ("export","cluster","graphlets","gnn"); MissingExtra; require(extra)
+  __init__.py     KINDS = ("export","cluster","graphlets","gnn","structural"); MissingExtra; require(extra)
   graphio.py      Graph, load_graph, featurize, undirected_adjacency, iter_dataset, DatasetEntry
   region.py       Region, RegionError, cone, from_partition, from_nodes, parse_region
   partition.py    Partition, load_partition, write_partition, quality
+  structural.py   hash64, StructuralArrays, run_structural, load_structural, gsn_features   (4.1; plan Task 10a)
   export.py       export_graph(graph, region, formats, out) -> list[Path]; load_pyg
   cluster.py      cluster_kmeans, cluster_affinity, cluster_spectral, cluster_louvain, run_cluster
   graphlets/
@@ -413,14 +471,16 @@ turns it into exit code 3. mypy `--strict` needs these libraries installed in CI
 
 ```
 common:   (--graph graph.json | --dataset DIR --design ID --floor F) --out DIR --seed N
-export:   --format edgelist,graphml,pyg   [--region SPEC]
+export:   --format edgelist,graphml,pyg   [--region SPEC] [--no-structural]
+structural: [--wl-variant npn/both|table/both] [--rounds N] [--quotient]   (no Wyrd step: export and gnn
+          compute it when needed; the kind exists to inspect and cache it)
 cluster:  --method kmeans|affinity|spectral|louvain|all  [--k N|auto] [--resolution X] [--max-points N]
           [--features node[,graphlet]] [--backend B]
 graphlets:--backend ext|own|default  [--size 4|5] [--removal global|none] [--hub-threshold N]
           [--min-fanout N] [--force] [--graphlet-tool PATH] [--licence]
 tools:    loki tools fetch-orca        (download, verify, build ORCA into the cache; not an analyze kind)
 gnn:      --dataset DIR --floor F [--model sage|gcn] [--target construct_type|role] [--epochs N]
-          [--hidden N] [--min-count N]           (no --design: whole dataset)
+          [--hidden N] [--min-count N] [--features node[,graphlet][,wl][,npn]]   (no --design: whole dataset)
 ```
 Exit codes: 0 ok; 1 analysis failure (`ClusterError`, backend failure, invalid input); 2 usage; 3 missing
 extra or backend unavailable.
@@ -452,6 +512,7 @@ entry). `collect` reads `<step_dir>/metrics.json` (numbers only, e.g. cluster: `
 <out>/<design>/<floor>/export/       whole.edges.tsv whole.nodes.tsv whole.graphml whole.pt  region-<h>.*
 <out>/<design>/<floor>/partition/    <method>-<hash8>.json
 <out>/<design>/<floor>/graphlets/    orbits-<backend>-<removal>.npz graphlets-<backend>-<removal>.json
+<out>/<design>/<floor>/structural/   structural-<variant>.npz structural-<variant>.json
 <out>/gnn/                           config.json vocab.json model.pt metrics.json predictions-<design>.csv
 <out>/metrics.json                   numbers for the Wyrd step
 ```
@@ -461,12 +522,14 @@ Analyses never write into the L0 dataset directory (L0's `loki check` stays vali
 
 Using an L0 dataset built from the micros for F2 when Odin III is present, else the synthetic fixture
 dataset (tests/analysis_fixtures.py): (1) `loki analyze export --format edgelist,graphml,pyg` on a design
-and on a cone region; the PyG dict loads and `x.shape[1] == len(feature_names)`; (2) `cluster --method
+and on a cone region; the PyG dict loads and `x.shape[1] == len(feature_names)`, and `gsn_wl`, `gsn_npn`,
+`gsn_roles` have N rows; `loki analyze structural` twice gives byte-identical JSON; (2) `cluster --method
 all` writes four partitions that `load_partition` reads, `assignment` covers every node, a second run is
 byte-identical; (3) `graphlets` (ORCA; skips when `loki tools fetch-orca` has not been run) on the small designs gives
 orbits equal to the brute-force oracle of plan Task 9 (the test helper `brute_orbits`), with clock domains
 and reset flags matching the known micros of section 8.1; (4) `gnn` on the dataset: test accuracy greater than the majority baseline on
-the fixture dataset (planted signal) and `metrics.json` complete; (5) each of the four runs as a Wyrd step
+the fixture dataset (planted signal) and `metrics.json` complete, with `baselines.wl` and `beats_wl`; on a
+real L0 micros dataset (`$LOKI_L0_DATASET`) `beats_wl` is asserted (open question 8); (5) each of the four runs as a Wyrd step
 through `get_step` and `command` (skips without Wyrd). The scale test (`LOKI_SCALE=1`) builds the synthetic
 100k-node graph and checks the section 3 budgets (time and `resource.getrusage` peak RSS); with
 `LOKI_SCALE=2` it uses an 820k-node, 1.6M-edge graph and the golden LU64PEEng `graph.json` when
@@ -475,12 +538,12 @@ through `get_step` and `command` (skips without Wyrd). The scale test (`LOKI_SCA
 ## 13. Not in L2
 
 Hypothesis scoring (L1); directed graphlets and typed (coloured) graphlets where a node's role is part of the
-subgraph (ORCA has no colours; later option); 5-node orbits in the own backend; graphlet-based distance between
+subgraph (ORCA has no colours; later option, for which WL or NPN classes would be the natural colours); 5-node orbits in the own backend; graphlet-based distance between
 designs (GDV similarity, graph comparison); other GNN architectures, hyperparameter search, GPU; the
 neighbour sampler; reading a BLIF directly (L2 reads `graph.json`; open question 2); the F3 gate floor
 before gate mapping lands (the code is floor-generic); the P1 placement experiment.
 
-## 14. Open questions (Peter accepted every recommendation below, 2026-10-21)
+## 14. Open questions (Peter accepted every recommendation below, including items 8-11, 2026-10-21)
 
 1. **L1 evidence interface.** L1's spec was absent. Recommendation: L1 consumes `Partition` as defined in
    section 6 (key `"<method>:<hash8>"`, `members(c)` as candidate blocks). If L1 needs another shape, add an
@@ -511,3 +574,18 @@ before gate mapping lands (the code is floor-generic); the P1 placement experime
    to 820k (Louvain about 5 min); `LOKI_SCALE=2` checks them. Recommendation: if Louvain exceeds
    15 minutes there, run it on the graph with the global signals removed (section 8.3), which is cheaper and
    closer to the logical structure.
+
+New with the features of 2026-10-21 (not yet accepted; recommendations given):
+
+8. **"GNN must beat 1-WL" as a gate.** A message-passing GNN is at most as discriminating as 1-WL, so a colour
+   lookup can beat it on small datasets such as the micros. Recommendation: `beats_wl` is computed and reported
+   always; the acceptance test asserts it on the real micros dataset only; if it fails there, the result is a
+   finding for Peter (with the GNN rerun on `--features node,graphlet,wl,npn`), not a silent pass and not a
+   change to the baseline.
+9. **Categorical ids.** WL and NPN ids are `hash64` values, comparable across designs; the GNN maps them to a
+   train vocabulary. Recommendation: as section 9; clustering never uses them.
+10. **One classifier for L1 and L2.** The 8.1 rules live in `loki.features.roles` (pure Python). Recommendation:
+    `classify_signals` delegates; if the 820k-node budget of section 3 fails, L2 keeps its numpy grouping of
+    edges by net and calls only the per-net rule functions from `loki.features.roles`.
+11. **Which WL variant to export.** Recommendation: `npn/both` by default (it generalises across designs, since
+    permuted LUT inputs give one colour); `table/both` on request for exact-structure work.
