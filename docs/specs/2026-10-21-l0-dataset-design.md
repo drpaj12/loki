@@ -461,7 +461,9 @@ section 10.
 `status` is `equivalent`, `differs` (a build `fail`), `unproven`, `error` or
 `skipped:blackbox-names` (equiv-check exit 2 on a design with hard cells that it cannot match by
 name; both sides come from one writer so this is rare). Designs with hard blocks use
-`--match-unnamed`. `differs` anywhere fails the acceptance.
+`--match-unnamed`. `differs` and `error` fail the floor (a build `fail`) and the acceptance.
+`loki check` reports every status other than `equivalent`, `unproven` and
+`skipped:blackbox-names` as an error; those two are listed as warnings in the check output.
 
 ## 10. Invariants (`loki check`)
 
@@ -473,7 +475,9 @@ name; both sides come from one writer so this is rare). Designs with hard blocks
 5. `key.json` covers every net, cell and port name of the BLIF.
 6. Every node has a labels row (label coverage 100%); every non-const node has `hdl_file` and
    `hdl_line` unless its `construct_type` is empty and `role` is `unknown` (counted).
-7. `manifest.json` lists exactly the design directories present; the split of each design equals
+7. Every `meta.json` `equiv` status is `equivalent`, `unproven` or `skipped:blackbox-names`
+   (the last two are warnings).
+8. `manifest.json` lists exactly the design directories present; the split of each design equals
    the split rule.
 
 ## 11. Acceptance test (`tests/test_acceptance_micros.py`, local, skips without odin3)

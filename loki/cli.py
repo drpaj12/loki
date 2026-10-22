@@ -8,7 +8,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from loki.assemble import assemble, check_dataset
+from loki.assemble import assemble, check_dataset, dataset_warnings
 from loki.bench import SUITES, write_project
 
 
@@ -48,11 +48,17 @@ def _run(args: argparse.Namespace) -> int:
         print(f"assembled {count} designs into {args.out}")
         return 0
     errors = check_dataset(Path(args.dataset))
+    warnings = dataset_warnings(Path(args.dataset))
+    for line in warnings[:50]:
+        print(f"warning: {line}")
+    if len(warnings) > 50:
+        print(f"... and {len(warnings) - 50} more warnings")
     for line in errors[:50]:
         print(line)
     if len(errors) > 50:
         print(f"... and {len(errors) - 50} more")
-    print(f"loki check: {len(errors)} error(s)")
+    suffix = f", {len(warnings)} warning(s)" if warnings else ""
+    print(f"loki check: {len(errors)} error(s){suffix}")
     return 1 if errors else 0
 
 

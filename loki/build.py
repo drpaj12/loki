@@ -185,11 +185,16 @@ def _finish(
             "meta.json": dump_json(meta),
         },
     )
-    bad = [n for n, r in results.items() if r.status == "differs"]
+    bad = floor_failures(results)
     if bad:
-        reason = f"equivalence differs: {', '.join(bad)}"
+        reason = f"equivalence failed: {', '.join(bad)}"
         return FloorResult("fail", reason, counts, results, unmatched)
     return FloorResult("ok", "", counts, results, unmatched)
+
+
+def floor_failures(results: dict[str, EquivResult]) -> list[str]:
+    """``name=status`` of every equivalence check that failed the floor (differs or error)."""
+    return [f"{n}={r.status}" for n, r in results.items() if r.status in ("differs", "error")]
 
 
 def _is_unmatched(lab: Label) -> bool:

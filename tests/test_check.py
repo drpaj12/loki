@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from loki.assemble import DesignEntry, build_manifest, check_dataset
+from loki.assemble import DesignEntry, build_manifest, check_dataset, dataset_warnings
 from loki.schemas import dump_json
 from tests.helpers import write_fake_floor
 
@@ -89,6 +89,20 @@ class CheckTest(unittest.TestCase):
         path = self.floor / "labels.csv"
         self.assertIn("no hdl_file or hdl_line", self.errors())
         self.assertTrue(path.is_file())
+
+    def test_equiv_status_errors_and_warnings(self) -> None:
+        def status(value: str) -> None:
+            edit_json(self.floor / "meta.json", lambda m: m["equiv"]["writer"].update(status=value))
+
+        for bad in ("differs", "error"):
+            status(bad)
+            self.assertIn(f"status '{bad}' is not equivalent", self.errors())
+        for soft in ("unproven", "skipped:blackbox-names"):
+            status(soft)
+            self.assertEqual(check_dataset(self.root), [])
+            self.assertEqual(
+                dataset_warnings(self.root), [f"micro_a/f2: equiv writer: {soft}"]
+            )
 
     def test_unknown_key_in_graph(self) -> None:
         edit_json(self.floor / "graph.json", lambda g: g.update(extra=1))

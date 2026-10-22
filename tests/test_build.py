@@ -7,7 +7,8 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from loki.build import FloorResult, build_floor, main
+from loki.build import FloorResult, build_floor, floor_failures, main
+from loki.equiv import EquivResult
 from loki.schemas import validate_graph, validate_key, validate_labels_csv, validate_meta
 from tests.helpers import DATA, can_run_flow, micro, odin3_root, vtr_arch
 
@@ -24,6 +25,17 @@ def build(path: Path, out: Path, floor: str = "f2", design: str = "d") -> FloorR
 
 def load(out: Path, name: str, design: str = "d", floor: str = "f2") -> Any:
     return json.loads((out / design / floor / name).read_text(encoding="utf-8"))
+
+
+class FloorFailureTest(unittest.TestCase):
+    def test_differs_and_error_fail_the_floor(self) -> None:
+        r = {
+            "a": EquivResult("equivalent", 0, ""),
+            "b": EquivResult("error", 2, "x"),
+            "c": EquivResult("differs", 1, ""),
+            "d": EquivResult("unproven", 4, ""),
+        }
+        self.assertEqual(floor_failures(r), ["b=error", "c=differs"])
 
 
 @unittest.skipUnless(can_run_flow() and odin3_root() is not None, "needs Odin III and VTR")

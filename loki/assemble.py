@@ -20,6 +20,7 @@ from loki.schemas import (
     SCHEMA,
     SPLIT_SEED,
     dump_json,
+    equiv_warnings,
     split_of,
     validate_design,
     validate_graph,
@@ -240,6 +241,18 @@ def check_dataset(root: Path) -> list[str]:
     for name in sorted(present & set(listed)):
         _check_design(root / name, listed[name], errs)
     return errs
+
+
+def dataset_warnings(root: Path) -> list[str]:
+    """Equivalence entries that are unproven or skipped (spec 9), as ``design/floor: ...``."""
+    out: list[str] = []
+    for meta in sorted(root.glob("*/*/meta.json")):
+        try:
+            data = json.loads(meta.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        out += [f"{meta.parent.parent.name}/{meta.parent.name}: {w}" for w in equiv_warnings(data)]
+    return out
 
 
 def _check_design(ddir: Path, entry: dict[str, Any], errs: list[str]) -> None:

@@ -116,9 +116,7 @@ class AcceptanceTest(unittest.TestCase):
             self.assertEqual(failed, {})
             ok = {d: r for d, r in results.items() if r.status == "ok"}
             problems = equiv_problems(ok)
-            unproven = {p.split(":")[0] for p in problems if p.endswith(":unproven")}
-            self.assertEqual(len(problems), len([p for p in problems if p.endswith(":unproven")]))
-            self.assertLessEqual(len(unproven), 2, problems)
+            self.assertEqual(problems, [])
             for did in ok:
                 graph_rows = (built / did / "f2" / "labels.csv").read_text().count("\n") - 1
                 self.assertEqual(graph_rows, ok[did].counts["nodes"], did)

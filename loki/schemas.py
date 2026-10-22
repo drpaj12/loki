@@ -208,6 +208,21 @@ def validate_meta(obj: object) -> list[str]:
     return errs
 
 
+EQUIV_WARN_STATUSES = ("unproven", "skipped:blackbox-names")
+
+
+def equiv_warnings(meta: object) -> list[str]:
+    """Warnings for the equiv entries of a meta.json that are neither equivalent nor errors."""
+    equiv = meta.get("equiv") if isinstance(meta, dict) else None
+    if not isinstance(equiv, dict):
+        return []
+    return [
+        f"equiv {name}: {res['status']}"
+        for name, res in equiv.items()
+        if isinstance(res, dict) and res.get("status") in EQUIV_WARN_STATUSES
+    ]
+
+
 def _equiv_errors(equiv: object, errs: list[str]) -> None:
     if not isinstance(equiv, dict):
         errs.append("meta: equiv must be an object")
@@ -217,6 +232,11 @@ def _equiv_errors(equiv: object, errs: list[str]) -> None:
         if r is not None:
             _typed(r, "status", str, f"meta.equiv.{name}", errs)
             _typed(r, "tool_exit", int, f"meta.equiv.{name}", errs)
+            status = r.get("status")
+            if isinstance(status, str) and status != "equivalent" and (
+                status not in EQUIV_WARN_STATUSES
+            ):
+                errs.append(f"meta.equiv.{name}: status {status!r} is not equivalent")
 
 
 def validate_design(obj: object) -> list[str]:

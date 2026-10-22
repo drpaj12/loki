@@ -34,6 +34,19 @@ class CliTest(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertIn("key.json", text)
 
+    def test_check_lists_warnings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = make_dataset(Path(tmp))
+            meta = root / "micro_a" / "f2" / "meta.json"
+            meta.write_text(
+                meta.read_text(encoding="utf-8").replace('"equivalent"', '"unproven"', 1),
+                encoding="utf-8",
+            )
+            code, text = run(["check", str(root)])
+            self.assertEqual(code, 0, text)
+            self.assertIn("warning: micro_a/f2: equiv writer: unproven", text)
+            self.assertIn("0 error(s), 1 warning(s)", text)
+
     def test_bench_init_micro(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             odin = Path(tmp) / "odin3" / "tests" / "micro" / "verilog" / "micro"
