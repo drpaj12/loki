@@ -105,3 +105,62 @@ def make_ctx(
         overlay=overlay or Overlay(), rng=lambda p: random.Random(f"1:{p}"), calib=DEFAULTS,
         features=build_features(graph) if features else None,
     )
+
+
+def lut_fn(g: GB, fn: Callable[[Sequence[int]], int], ins: Sequence[int]) -> int:
+    """A LUT (at most six inputs) computing ``fn`` of the input bits."""
+    if len(ins) > 6:
+        raise ValueError("a LUT has at most six inputs")
+    return g.lut(table_of(len(ins), fn), ins)
+
+
+def _borrow(v: Sequence[int]) -> int:
+    """Borrow out of ``x - y - c`` for inputs ``(x, y[, c])``."""
+    c = v[2] if len(v) > 2 else 0
+    return ((1 - v[0]) & v[1]) | ((1 - (v[0] ^ v[1])) & c)
+
+
+def _parity(v: Sequence[int]) -> int:
+    return sum(v) & 1
+
+
+def _carry(v: Sequence[int]) -> int:
+    return int(sum(v) >= 2)
+
+
+def ripple(
+    g: GB, a: Sequence[int], b: Sequence[int], cin: int | None = None,
+    ops: Sequence[str] | None = None, sum_ids: bool = False,
+) -> tuple[list[int], list[int]]:
+    """A ripple of full adders (op ``add``), subtractors ``a - b`` (``sub``) or ``b - a``
+    (``rsub``) per bit, one LUT per sum and per carry. Returns (sum nets, carry nets), the last
+    carry being the carry-out."""
+    ys: list[int] = []
+    carries: list[int] = []
+    c = cin
+    for i, (x, y) in enumerate(zip(a, b, strict=True)):
+        op = "add" if ops is None else ops[i]
+        ins = [x, y] if c is None else [x, y, c]
+        if op == "rsub":
+            ins = [y, x] + ins[2:]
+        ys.append(g.lut(table_of(len(ins), _parity), ins))
+        fn = _borrow if op in ("sub", "rsub") else _carry
+        c = g.lut(table_of(len(ins), fn), ins)
+        carries.append(c)
+    return ys, carries
+
+
+def _sum_bit(i: int) -> Callable[[Sequence[int]], int]:
+    """Bit ``i`` of ``A + B`` for inputs ``a[0..i], b[0..i]``."""
+
+    def fn(v: Sequence[int]) -> int:
+        lo = sum(v[j] << j for j in range(i + 1))
+        hi = sum(v[i + 1 + j] << j for j in range(i + 1))
+        return ((lo + hi) >> i) & 1
+
+    return fn
+
+
+def packed_adder(g: GB, a: Sequence[int], b: Sequence[int]) -> list[int]:
+    """Sum bits as one LUT each over all lower operand bits (at most three bits)."""
+    return [lut_fn(g, _sum_bit(i), [*a[: i + 1], *b[: i + 1]]) for i in range(len(a))]

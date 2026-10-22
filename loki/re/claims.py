@@ -62,6 +62,10 @@ def _eq_const(p: Params, i: Ins) -> dict[str, int]:
     return {"Y": int(i["A"] == _w(p, "C"))}
 
 
+def _ne_const(p: Params, i: Ins) -> dict[str, int]:
+    return {"Y": int(i["A"] != _w(p, "C"))}
+
+
 def _mux2(_p: Params, i: Ins) -> dict[str, int]:
     return {"Y": i["B"] if i["S"] else i["A"]}
 
@@ -128,6 +132,7 @@ REFS: dict[str, Ref] = {
     "gt": _cmp(lambda a, b: a > b),
     "ge": _cmp(lambda a, b: a >= b),
     "eq_const": _eq_const,
+    "ne_const": _ne_const,
     "mux2": _mux2,
     "muxn": _muxn,
     "counter": _counter,

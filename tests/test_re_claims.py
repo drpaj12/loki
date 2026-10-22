@@ -14,6 +14,7 @@ class ClaimsTest(unittest.TestCase):
                                ("le", 3, 3, 1), ("gt", 2, 3, 0), ("ge", 2, 3, 0)):
             self.assertEqual(REFS[op]({}, {"A": a, "B": b}), {"Y": want}, op)
         self.assertEqual(REFS["eq_const"]({"C": 5}, {"A": 5}), {"Y": 1})
+        self.assertEqual(REFS["ne_const"]({"C": 5}, {"A": 5}), {"Y": 0})
         self.assertEqual(REFS["mux2"]({}, {"A": 1, "B": 2, "S": 1}), {"Y": 2})
         self.assertEqual(REFS["mux2"]({}, {"A": 1, "B": 2, "S": 0}), {"Y": 1})
 

@@ -25,6 +25,7 @@ ENTRY_GROUP = "loki.detectors"
 _BUILTINS: dict[str, tuple[str, str]] = {
     "ff_pattern": ("loki.re.detectors.ff_pattern", "FfPatternDetector"),
     "bus": ("loki.re.detectors.bus", "BusDetector"),
+    "arith": ("loki.re.detectors.arith", "ArithDetector"),
 }
 
 K_EDGES = (2, 3, 5, 9)

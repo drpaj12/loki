@@ -577,7 +577,11 @@ output nets (section 9.3).
 **Chains.** A chain is a sequence of nets `y_0..y_{k-1}` (`k >= 2`) with supports
 `S(y_0)` of size 2 (or 3: carry-in) and `S(y_i) = S(y_{i-1}) | {p_i, q_i}` with exactly two new
 sources. Found by indexing nets with a non-`None` support by size and testing supersets. Every
-ripple implementation (any LUT packing) has this property; it is a candidate only.
+ripple implementation (any LUT packing) has this property; it is a candidate only. A stage can hold
+several nets with one support (a sum and a carry net); taking every combination is exponential, so
+one chain is built per support sequence: at each stage the lowest-id net that flips when either new
+source flips (a sum bit), else the lowest-id net. The carry-in of a size-3 `S(y_0)` is its highest
+net id (a full adder is symmetric in its three inputs).
 
 **Orientation** (exact, two simulations per bit): with every other source 0, evaluate `y_{i+1}`
 for `(p_i, q_i) = (0, 1)` and `(1, 0)`. Both 0: symmetric bit (add). Exactly one 1: that
@@ -686,7 +690,7 @@ pieces get `loki_role` = the majority role of their cells.
 `Claim(op, params, inputs, outputs)`: `inputs` and `outputs` are tuples of `(port, nets)` in
 template port order, nets LSB first. `REFS[op](params, ins: dict[str, int]) -> dict[str, int]`
 is the reference function over unsigned integers: `add`, `add_cin`, `sub`, `eq ne lt le gt ge`,
-`eq_const` (`Y = A == C`), `mux2` (`Y = S ? B : A`), `muxn` (`Y = D[S]`; select values `>= N` are
+`eq_const` (`Y = A == C`), `ne_const` (`Y = A != C`, for the `or_like` form of 7.5), `mux2` (`Y = S ? B : A`), `muxn` (`Y = D[S]`; select values `>= N` are
 don't-care), `counter`, `shift`, `lfsr`. Signed operations are not in L1.
 
 Provers return `Verdict(verdict, engine, detail, cex)` with `verdict` in `equivalent differs
