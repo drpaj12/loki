@@ -76,6 +76,7 @@ class PortBit:
     name: str
     direction: str
     net: int
+    spans: tuple[Span, ...] = ()
 
 
 @dataclass(frozen=True)
