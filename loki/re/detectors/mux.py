@@ -16,6 +16,7 @@ from loki.re.fnfacts import facts
 from loki.re.overlay import Hypothesis
 
 _MAX_DEPTH = 8
+LONE_FROM_ROUND = 2
 
 
 @dataclass(frozen=True)
@@ -189,6 +190,32 @@ def _words(ctx: RoundContext) -> list[Candidate]:
         cand = _word(bus, hyps, sel, n)
         if cand is not None:
             out.append(cand)
+    if ctx.round >= LONE_FROM_ROUND:
+        out.extend(_lone_words(ctx))
+    return out
+
+
+def _lone_words(ctx: RoundContext) -> list[Candidate]:
+    """WIDTH 1 words for 2:1 ``mux_bit`` cells that no bus slice and no tree covers."""
+    taken: set[int] = set()
+    for tree in _live(ctx, "mux_tree"):
+        taken |= tree.cells
+    for bus in _live(ctx, "bus"):
+        for name, nets in bus.nets.items():
+            if name.startswith("slice"):
+                taken |= {ctx.graph.driver[n] for n in nets if n in ctx.graph.driver}
+    out: list[Candidate] = []
+    for h in _live(ctx, "mux_bit"):
+        if len(h.nets.get("D", ())) != 2 or h.cells & taken:
+            continue
+        a, b = h.nets["D"]
+        sel, y = h.nets["S"], h.nets["Y"]
+        claim = Claim("mux2", (("WIDTH", 1),), (("A", (a,)), ("B", (b,)), ("S", sel)), (("Y", y),))
+        feats = {"width": "1", "sel_shared": "no", "wl_depth": "n/a"}
+        out.append(Candidate(
+            "mux", h.cells, {"A": (a,), "B": (b,), "S": sel, "Y": y}, {"WIDTH": 1, "N": 2},
+            feats, claim, (h.id,),
+        ))
     return out
 
 

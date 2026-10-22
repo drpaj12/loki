@@ -1,5 +1,6 @@
 import unittest
 from collections.abc import Sequence
+from dataclasses import replace
 
 from loki.re.detectors import Candidate
 from loki.re.detectors.bus import BusDetector
@@ -194,6 +195,39 @@ class WordTest(unittest.TestCase):
         )
         ov.add(bus, "bus", 1)
         self.assertEqual(of_kind(MuxDetector().propose(make_ctx(graph, ov)), "mux"), [])
+
+    def test_lone_mux_bit_word_from_round_2(self) -> None:
+        """L1 spec 15 pin 3: a lone 2:1 mux LUT (no bus) becomes a WIDTH 1 word in round 2."""
+        g = GB()
+        a, b, s = g.pi("a"), g.pi("b"), g.pi("s")
+        y = g.lut(MUX, (a, b, s))
+        graph = g.build((y,))
+        ov = Overlay()
+        det = MuxDetector()
+        commit_all(ov, of_kind(det.propose(make_ctx(graph)), "mux_bit"))
+        self.assertEqual(of_kind(det.propose(make_ctx(graph, ov)), "mux"), [])
+        got = of_kind(det.propose(replace(make_ctx(graph, ov), round=2)), "mux")
+        self.assertEqual(len(got), 1)
+        c = got[0]
+        self.assertEqual(c.params["WIDTH"], 1)
+        self.assertEqual(
+            (c.nets["A"], c.nets["B"], c.nets["S"], c.nets["Y"]), ((a,), (b,), (s,), (y,)))
+        assert c.claim is not None
+        self.assertEqual(c.claim.op, "mux2")
+        self.assertEqual(len(c.children), 1)
+
+    def test_bus_slice_gets_no_lone_word(self) -> None:
+        g = GB()
+        s = g.pi("s")
+        outs = mux_bank(g, 3, s)
+        graph = g.build(tuple(outs))
+        ov = Overlay()
+        det = MuxDetector()
+        commit_all(ov, of_kind(det.propose(make_ctx(graph)), "mux_bit"))
+        for c in BusDetector().propose(make_ctx(graph)):
+            ov.add(c, "bus", 1)
+        got = of_kind(det.propose(replace(make_ctx(graph, ov), round=2)), "mux")
+        self.assertEqual([c.params["WIDTH"] for c in got], [3])
 
 
 if __name__ == "__main__":

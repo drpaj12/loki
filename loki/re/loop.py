@@ -312,7 +312,7 @@ class _Run:
         with tempfile.TemporaryDirectory(prefix="loki-re-") as tmp:
             out = Path(tmp) / "final.blif"
             with mod.default().capture_log():
-                copy.run_script(f'flatten; lower; write_blif "{out}"')
+                copy.run_script(f'flatten; lower; write_blif --gates-as-names "{out}"')
             text = out.read_text(encoding="utf-8")
         copy.close()
         src = self.opts.netlist.read_text(encoding="utf-8")

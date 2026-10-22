@@ -199,7 +199,8 @@ class CompareTest(unittest.TestCase):
     def test_comparator_from_buses(self) -> None:
         g, a, b, z = self._lt()
         graph = g.build([z])
-        got = by_kind(ArithDetector().propose(make_ctx(graph, self._buses(a, b))), "comparator")
+        got = [c for c in by_kind(ArithDetector().propose(make_ctx(graph, self._buses(a, b))),
+                                  "comparator") if c.nets["Y"] == (z,)]
         self.assertEqual(len(got), 12)
         self.assertEqual({str(c.params["op"]) for c in got}, {"eq", "ne", "lt", "le", "gt", "ge"})
         self.assertTrue(all(c.claim is not None for c in got))
@@ -215,6 +216,31 @@ class CompareTest(unittest.TestCase):
         none = by_kind(ArithDetector().propose(
             make_ctx(graph, self._buses(a, b), features=False)), "comparator")
         self.assertTrue(all("npn_xor2" not in c.features for c in none))
+
+    def test_comparator_without_buses(self) -> None:
+        """L1 spec 15 pin 4: a LUT-packed comparator has no per-bit cells, so no ``bus``
+        hypotheses; the operand words are read off the function of the output."""
+        for xor in (False, True):
+            g, a, b, z = self._lt(xor)
+            got = [c for c in by_kind(ArithDetector().propose(make_ctx(g.build([z]))), "comparator")
+                   if c.nets["Y"] == (z,)]
+            self.assertTrue(got)
+            self.assertTrue(all(c.params["pairing"] == "fwd" for c in got))
+            ops = {str(c.params["op"]) for c in got}
+            self.assertEqual(ops, {"eq"} if xor else {"gt"})
+            for c in got:
+                assert c.claim is not None
+                ins = dict(c.claim.inputs)
+                self.assertEqual(sorted((*ins["A"], *ins["B"])), sorted((*a, *b)))
+                if not xor:
+                    self.assertEqual({tuple(ins["A"]), tuple(ins["B"])}, {tuple(a), tuple(b)})
+
+    def test_no_derived_comparator_for_and_or_parity(self) -> None:
+        for fn in (lambda v: int(all(v)), lambda v: int(any(v)), lambda v: sum(v) & 1):
+            g = GB()
+            z = lut_fn(g, fn, g.pis_n(4, "x"))
+            got = by_kind(ArithDetector().propose(make_ctx(g.build([z]))), "comparator")
+            self.assertEqual(got, [])
 
     def test_eq_const(self) -> None:
         for c, op, kind_fn in (

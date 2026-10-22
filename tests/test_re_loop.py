@@ -61,6 +61,13 @@ class LoopTest(unittest.TestCase):
         self.assertEqual(res.final_equiv["status"], "equivalent")
         self.assertEqual(res.notes["unmap"], "n/a")
 
+    def test_lone_mux_committed_and_equivalent(self) -> None:
+        """L1 spec 15 pin 3: a lone 2:1 mux is committed as a WIDTH 1 ``mux``; the final BLIF
+        keeps its ``$_MUX_`` gate as ``.names`` so equiv-check can read it."""
+        res = run_re(opts(RE / "mux1.blif"))
+        self.assertEqual([h.status for h in of_kind(res, "mux")], ["committed"])
+        self.assertEqual(res.final_equiv["status"], "equivalent")
+
     def test_constant_only_design(self) -> None:
         res = run_re(opts(RE / "zero.blif"))
         self.assertEqual(len(res.rounds), 1)

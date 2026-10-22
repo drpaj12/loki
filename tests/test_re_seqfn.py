@@ -151,6 +151,36 @@ class ShiftLfsrTest(unittest.TestCase):
         self.assertEqual((got[0].params["x"], got[0].params["en"]), (x, en))
         self.assertTrue(proves(g, got[0]))
 
+    def test_shift_register_parallel_load(self) -> None:
+        """L1 spec 15 pin 5: ``muxdff`` stages (load ``r`` when ``ld``, else shift) are still a
+        shift register; the load mode is part of the claim."""
+        g = GB()
+        clk, x, ld = g.pi("clk"), g.pi("x"), g.pi("ld")
+        r = g.pis_n(4, "r")
+        qs = [g.net() for _ in range(4)]
+        for i in range(4):
+            src = x if i == 0 else qs[i - 1]
+            g.ff(g.lut(table_of(3, lambda v: v[1] if v[2] else v[0]), (src, r[i], ld)), clk, qs[i])
+        got = propose(g)
+        self.assertEqual([c.kind for c in got], ["shift_reg"])
+        c = got[0]
+        self.assertEqual((c.params["width"], c.params["x"]), (4, x))
+        self.assertEqual((c.nets["LOAD"], c.nets["P"]), ((ld,), tuple(r)))
+        self.assertTrue(proves(g, c))
+
+    def test_shift_register_load_wrong_data_not_proved(self) -> None:
+        g = GB()
+        clk, x, ld = g.pi("clk"), g.pi("x"), g.pi("ld")
+        r = g.pis_n(3, "r")
+        qs = [g.net() for _ in range(3)]
+        for i in range(3):
+            src = x if i == 0 else qs[i - 1]
+            data = r[(i + 1) % 3]
+            g.ff(g.lut(table_of(3, lambda v: v[1] if v[2] else v[0]), (src, data, ld)), clk, qs[i])
+        got = propose(g, "shift_reg")
+        self.assertTrue(all(c.nets.get("P") == tuple(r[(i + 1) % 3] for i in range(3))
+                            for c in got))
+
     def test_lfsr_taps(self) -> None:
         g = GB()
         lfsr(g, g.pi("clk"), 5, (2, 4))

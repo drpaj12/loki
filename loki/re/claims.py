@@ -112,9 +112,12 @@ def _counter(p: Params, i: Ins) -> dict[str, int]:
 
 
 def _shift(p: Params, i: Ins) -> dict[str, int]:
-    """Next state of a shift register with serial input ``X`` (and optional ``EN``)."""
+    """Next state of a shift register with serial input ``X`` and optional ``EN``; an optional
+    ``LOAD`` (active level ``load_active``) loads the parallel word ``P`` and wins over ``EN``."""
     width = _w(p, "width")
     q = i["Q"]
+    if _on(i, "LOAD", _opt(p, "load_active", 1)):
+        return {"D": i["P"]}
     if _on(i, "EN", _opt(p, "en_active", 1)) is False:
         return {"D": q}
     x = i["X"] & 1

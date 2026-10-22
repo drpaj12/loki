@@ -9,7 +9,7 @@ that flips whenever either new source flips (a sum bit), else the first net by i
 from __future__ import annotations
 
 import random
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 from loki.features.npn import NAMED, NpnClass, npn_class
 from loki.re.claims import Claim
@@ -282,10 +282,11 @@ def _bus_words(ctx: RoundContext) -> list[tuple[int, ...]]:
     return sorted(words)
 
 
-def _comparators(ctx: RoundContext, index: Index) -> list[Candidate]:
+def _comparators(ctx: RoundContext, index: Index) -> tuple[list[Candidate], set[int]]:
     view = ctx.view
     words = _bus_words(ctx)
     out: list[Candidate] = []
+    covered: set[int] = set()
     for i, a in enumerate(words):
         for b in words[i + 1:]:
             if len(a) != len(b) or set(a) & set(b):
@@ -297,12 +298,16 @@ def _comparators(ctx: RoundContext, index: Index) -> list[Candidate]:
             for z in index.get(support, ()):
                 if z in a or z in b:
                     continue
-                out.extend(_compare_cands(ctx, a, b, z))
-    return out
+                found = _compare_cands(ctx, a, b, z)
+                out.extend(found)
+                if found:
+                    covered.add(z)
+    return out, covered
 
 
 def _compare_cands(
-    ctx: RoundContext, a: tuple[int, ...], b: tuple[int, ...], z: int
+    ctx: RoundContext, a: tuple[int, ...], b: tuple[int, ...], z: int,
+    ops: Sequence[str] = COMPARE_OPS, pairings: Sequence[str] = ("fwd", "rev"),
 ) -> list[Candidate]:
     g = ctx.graph
     cut = frozenset((*a, *b))
@@ -316,7 +321,9 @@ def _compare_cands(
         xor2 = "yes" if 2 * hits >= k else "no"
     out: list[Candidate] = []
     for pairing, word_b in (("fwd", b), ("rev", b[::-1])):
-        for op in COMPARE_OPS:
+        if pairing not in pairings:
+            continue
+        for op in ops:
             claim = Claim(
                 op, (("A_WIDTH", k), ("B_WIDTH", k), ("Y_WIDTH", 1)),
                 (("A", a), ("B", word_b)), (("Y", (z,)),),
@@ -328,6 +335,101 @@ def _compare_cands(
                 "comparator", frozenset(cells), {"A": a, "B": word_b, "Y": (z,)},
                 {"op": op, "pairing": pairing, "width": k}, feats, claim,
             ))
+    return out
+
+
+def _forced(table: int, region: int, x_mask: int, y_mask: int) -> tuple[int, int] | None:
+    """``(c1, c2)`` when ``table`` is the constant ``c1`` on ``region`` with ``x=1, y=0`` and the
+    constant ``c2`` with ``x=0, y=1``; ``None`` otherwise."""
+    out: list[int] = []
+    for m in (region & x_mask & ~y_mask, region & y_mask & ~x_mask):
+        got = table & m
+        if got == m:
+            out.append(1)
+        elif got == 0:
+            out.append(0)
+        else:
+            return None
+    return out[0], out[1]
+
+
+def _decode_words(table: int, m: int) -> tuple[list[int], list[int]] | None:
+    """Pair the ``m`` variables of ``table`` as ``(a_i, b_i)`` by the forcing rule of a
+    comparator: for the most significant remaining pair the output is constant when the two bits
+    differ (the same constant for ``eq``/``ne``, opposite ones for an order). Returns variable
+    indices (``a``, ``b``, LSB first), where ``a`` is the operand that wins when it is 1 and the
+    other differs; ``None`` when the pairing fails."""
+    cols = [_column(i, m) for i in range(m)]
+    left = list(range(m))
+    region = (1 << (1 << m)) - 1
+    pairs: list[tuple[int, int]] = []
+    ordered: bool | None = None
+    while left:
+        found: tuple[int, int, bool] | None = None
+        for i, x in enumerate(left):
+            for y in left[i + 1:]:
+                got = _forced(table, region, cols[x], cols[y])
+                if got is None or (ordered is not None and (got[0] != got[1]) != ordered):
+                    continue
+                found = (x, y, got[0] == 1) if got[0] != got[1] else (x, y, True)
+                ordered = got[0] != got[1]
+                break
+            if found:
+                break
+        if found is None:
+            return None
+        x, y, x_wins = found
+        pairs.append((x, y) if x_wins else (y, x))
+        left = [v for v in left if v not in (x, y)]
+        region &= ~cols[x] & ~cols[y]
+    if ordered:
+        pairs.reverse()
+    else:
+        pairs.sort()
+    return [a for a, _ in pairs], [b for _, b in pairs]
+
+
+def _ref_table(op: str, a: Sequence[int], b: Sequence[int], m: int) -> int:
+    fns: dict[str, Callable[[int, int], bool]] = {
+        "eq": lambda x, y: x == y, "ne": lambda x, y: x != y, "lt": lambda x, y: x < y,
+        "le": lambda x, y: x <= y, "gt": lambda x, y: x > y, "ge": lambda x, y: x >= y,
+    }
+    fn = fns[op]
+    out = 0
+    for pat in range(1 << m):
+        av = sum(((pat >> v) & 1) << i for i, v in enumerate(a))
+        bv = sum(((pat >> v) & 1) << i for i, v in enumerate(b))
+        if fn(av, bv):
+            out |= 1 << pat
+    return out
+
+
+def _derived_comparators(ctx: RoundContext, index: Index, covered: set[int]) -> list[Candidate]:
+    """Comparators whose operand words are read off the function of ``z`` (no ``bus`` slices:
+    a LUT-packed comparator has no per-bit cells). Only the ops whose truth table matches are
+    offered, so the prover is not spent on guesses."""
+    g, view = ctx.graph, ctx.view
+    out: list[Candidate] = []
+    for support, nets in sorted(index.items(), key=lambda kv: sorted(kv[0])):
+        m = len(support)
+        if m % 2 or m < 4 or m > CONST_SUPPORT_MAX:
+            continue
+        srcs = sorted(support)
+        for z in nets:
+            if z in covered:
+                continue
+            cells, side = cone(g, frozenset(srcs), [z], _stop(view))
+            if side:
+                continue
+            table = simulate(g, cells, {s: _column(i, m) for i, s in enumerate(srcs)}, 1 << m)[z]
+            dec = _decode_words(table, m)
+            if dec is None:
+                continue
+            a = tuple(srcs[v] for v in dec[0])
+            b = tuple(srcs[v] for v in dec[1])
+            ops = tuple(op for op in COMPARE_OPS if _ref_table(op, dec[0], dec[1], m) == table)
+            if ops:
+                out.extend(_compare_cands(ctx, a, b, z, ops, ("fwd",)))
     return out
 
 
@@ -375,6 +477,8 @@ class ArithDetector:
             cand = _chain_candidate(ctx, chain, index)
             if cand is not None:
                 out.append(cand)
-        out.extend(_comparators(ctx, index))
+        from_buses, covered = _comparators(ctx, index)
+        out.extend(from_buses)
+        out.extend(_derived_comparators(ctx, index, covered))
         out.extend(_eq_consts(ctx, index))
         return sorted_candidates(out)

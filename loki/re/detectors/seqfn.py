@@ -365,15 +365,43 @@ class _Base:
         gate = _gate(cvals, active, len(self.t.controls))
         return gate if gate is not None else False
 
+    def _load(self, rest: list[int]) -> tuple[int, int, tuple[int, ...]] | None:
+        """The load mode of a shift register: every control value of ``rest`` loads a constant
+        whose bit ``i`` is one control bit ``p_i``. Returns ``(j, polarity, p)`` where control
+        bit ``j`` has value ``polarity`` exactly on ``rest``; ``p`` holds the control indices."""
+        gate = _gate(sorted(self.labels), set(rest), len(self.t.controls))
+        if gate is None:
+            return None
+        by = rows_by_control(self.t)
+        const = {c: by[c][min(by[c])] for c in rest}
+        data: list[int] = []
+        for i in range(self.k):
+            hit = [
+                j for j in range(len(self.t.controls))
+                if j != gate[0] and all(_bit(c, j) == _bit(const[c], i) for c in rest)
+            ]
+            if len(hit) != 1:
+                return None
+            data.append(hit[0])
+        return gate[0], gate[1], tuple(data)
+
     def shift(self) -> list[Candidate]:
         cvals = sorted(self.labels)
         active = {c for c in cvals if self.labels[c] in ("shift-l", "shift-r")}
         kinds = {self.labels[c] for c in active}
         if not active or len(kinds) != 1:
             return []
-        gate = self._idle(active)
-        if gate is False:
-            return []
+        rest = [c for c in cvals if c not in active]
+        load = None
+        gate: tuple[int, int] | None | bool = None
+        if rest and all(self.labels[c] == "load-const" for c in rest):
+            load = self._load(rest)
+            if load is None:
+                return []
+        else:
+            gate = self._idle(active)
+            if gate is False:
+                return []
         en = gate if isinstance(gate, tuple) else None
         by = rows_by_control(self.t)
         left = kinds == {"shift-l"}
@@ -382,8 +410,11 @@ class _Base:
             first = by[c][min(by[c])]
             xs[c] = first & 1 if left else _bit(first, self.k - 1)
         xj = None
+        skip = -1 if load is None else load[0]
         for j in range(len(self.t.controls)):
-            if (en is None or j != en[0]) and all(_bit(c, j) == xs[c] for c in active):
+            if (en is None or j != en[0]) and j != skip and all(
+                _bit(c, j) == xs[c] for c in active
+            ):
                 xj = j
                 break
         if xj is None:
@@ -398,8 +429,16 @@ class _Base:
         if e:
             ins.append(("EN", (e,)))
             nets["EN"] = (e,)
-        cparams = (("dir", params["dir"]), ("en_active", active_lvl), ("width", self.k))
-        claim = Claim("shift", cparams, tuple(ins), (("D", self.d),))
+        cparams: list[tuple[str, int | str]] = [
+            ("dir", params["dir"]), ("en_active", active_lvl), ("width", self.k)
+        ]
+        if load is not None:
+            ld, p = self.net(load[0]), tuple(self.net(j) for j in load[2])
+            params.update({"load": ld, "load_active": load[1]})
+            cparams.append(("load_active", load[1]))
+            ins += [("LOAD", (ld,)), ("P", p)]
+            nets.update({"LOAD": (ld,), "P": p})
+        claim = Claim("shift", tuple(cparams), tuple(ins), (("D", self.d),))
         return [Candidate("shift_reg", self.cells, nets, params, {"table": self.table}, claim)]
 
     def lfsr(self) -> list[Candidate]:

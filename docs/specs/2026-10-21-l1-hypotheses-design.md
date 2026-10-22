@@ -596,7 +596,12 @@ equal width `k` (or one bus and a chain's operands) gives one `comparator` candi
 `eq ne lt le gt ge`, with both pairings (`B` in bus order and reversed); the prover keeps the ones
 that hold. A net `z` whose support `S` has `2 <= |S| <= 16` and whose function over `S` is
 `and_like` (or `or_like`) gives `eq_const` (`ne` for `or_like`) with `C` the on-minterm.
-Features: `width` bins as `bus.k`; `out_reads` (`y` read by a register or primary output: `yes`
+**Derived operand words (deviation, Task 16):** a LUT-packed comparator has no per-bit cells, so
+the bus detector finds no `A`, `B`. For a net `z` of even support `2k` (`4 <= 2k <= 16`) not
+covered by the bus rule, the words are read off its truth table: for the most significant
+remaining pair `(x, y)`, `z` is constant on `x=1, y=0` and on `x=0, y=1` (the same constant:
+`eq`/`ne`; different: an order, `A` is the side that wins); repeat on `x=y=0`. Only the ops whose
+reference table equals `z`'s are offered (pairing `fwd`). Features: `width` bins as `bus.k`; `out_reads` (`y` read by a register or primary output: `yes`
 +0.69). Arithmetic and comparators are expected to be decided by proof.
 
 **NPN evidence** (6.7 item 2; off with `--features none`). For bit `i >= 1` a *carry net* `c_i` is
@@ -619,7 +624,9 @@ order), claim `muxn`. Word level: a `bus` whose slices are `mux_bit`s (or `mux_t
 select set gives `mux` of `WIDTH = k` (2:1: claim `mux2`, provable by `cone_check $mux`; N:1:
 claim `muxn` per bit). Children: the slices. Features: `width` bins as `bus.k`; `sel_shared`
 (`yes` +0.69); `npn_class` on `mux_bit` (the cell's class: `mux2` or `mux4` +0.69, `other` 0, a mux
-merged with other logic in one LUT); a word `mux` copies its bus's `wl_depth` bin (7.4).
+merged with other logic in one LUT); a word `mux` copies its bus's `wl_depth` bin (7.4). **Lone mux (deviation, Task 16):** from round 2,
+a 2:1 `mux_bit` that is no bus slice and lies in no `mux_tree` gives a `mux` of `WIDTH = 1` (claim
+`mux2`; features `width` `1`, `sel_shared` `no`), so a single multiplexer commits.
 
 ### 7.7 `seqfn` (counters: FF + incrementer feedback; shift registers, LFSRs)
 
@@ -636,7 +643,9 @@ set `E` where `g` is one constant `r`; `M` = `max(E) + 1` when `r = 0`), `load-c
 `shift-r` (`g = (q << 1 | x)` or `(q >> 1 | x << k-1)` with `x` a control), `linear`
 (`g(a ^ b) = g(a) ^ g(b) ^ g(0)` on every tested pair). A group where some control value gives
 `inc`/`dec`/`modulo` and the others give `hold` or `load-const` is a `counter` (params `dir`,
-`width`, `modulus` or 0, `en`, `rst`, `rst_value`); `shift-*` gives `shift_reg`; `linear` with
+`width`, `modulus` or 0, `en`, `rst`, `rst_value`); `shift-*` gives `shift_reg` (control values that are not shift modes are all `hold`, or all
+`load-const` where the constant's bit `i` is one control bit `p_i`: the claim then carries `LOAD`
+and `P`, and `LOAD` wins); `linear` with
 feedback taps gives `lfsr` (params `taps`). The claim (op `counter`, `shift`, `lfsr`) is the
 classified next-state function with the Q nets as inputs and the D nets as outputs; in the exact
 case the prover confirms it, in the sampled case it adds `SIM_LLR` at best. A counter whose only
@@ -816,7 +825,8 @@ without it, once.
 
 ### 9.4 Final check
 
-For F2 and F3: copy the final level, `flatten; lower; write_blif`, and run L0's
+For F2 and F3: copy the final level, `flatten; lower; write_blif --gates-as-names` (`lower` leaves `$_MUX_` and
+other gate cells that `equiv-check` cannot read as subcircuits; found by acceptance, Task 16), and run L0's
 `loki.equiv.check_equiv` against the input BLIF; the result is `report.final_equiv`. F1 records
 `skipped:hard` (decision 2). `differs` is a bug: the run exits 1.
 
@@ -1014,11 +1024,16 @@ On L0's 12-micro subset (L0 plan Task 11 `SUBSET`), floor F2, default calibratio
 
 1. every design: `loki re` exit 0, `final_equiv` `equivalent`, a second run byte-identical;
 2. `bm_DL_four_bit_adder_continuous_assign`: an `adder` (or `adder_cin`) of width 4 committed with
-   a proof and matching L0's `$add` (Jaccard >= 0.5);
-3. `bm_DL_2_1_mux`: a `mux` committed and matching `$mux`;
+   a proof, its footprint matching the design's logic nodes (Jaccard >= 0.5; the micro is
+   gate-level `^ & |`, so L0 holds no `$add` word to match);
+3. `bm_DL_2_1_mux`: a `mux` (WIDTH 1, from the lone-`mux_bit` rule of 7.6) committed and matching
+   `$mux`;
 4. `bm_DL_4_bit_comparator`: at least one `comparator` proved `equivalent`;
-5. `bm_DL_4_bit_shift_register`: a `shift_reg` of width 4;
-6. `bm_DL_Dff_w_synch_reset`: an `ff_srst` on every flip-flop of the register;
+5. `bm_DL_4_bit_shift_register`: a `shift_reg` of width 4 (the stages load in parallel: the
+   claim carries the `LOAD`/`P` mode, 7.7);
+6. `bm_DL_Dff_w_synch_reset`: an `ff_srst` (not rejected) on every flip-flop of the register;
+   with default priors a lone reset has `p_comp` 0.25 (`rst_fanout` bin `1`, -1.10), so a threshold
+   needs calibrated priors;
 7. every run: `report.features.transfer_failures == 0`, and the structural features of a second
    run are identical (part of item 1's byte identity).
 
