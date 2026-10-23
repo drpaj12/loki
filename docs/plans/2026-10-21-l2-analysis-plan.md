@@ -64,7 +64,7 @@
 
 **Interfaces:**
 - Consumes: `make_graph`, `write_graph`, `make_dataset`, `star_graph` (Task 1); `loki.schemas.validate_graph`.
-- Produces: `@dataclass(frozen=True) Graph(design: str, floor: str, node_ids: tuple[str, ...], kind: tuple[str, ...], num: dict[str, np.ndarray], src: np.ndarray, dst: np.ndarray, pin: tuple[str, ...], net: tuple[str, ...], labels: dict[str, np.ndarray] | None, sha256: str)` with `n_nodes`, `n_edges`, `index() -> dict[str, int]`, `induced(node_ids: Sequence[str]) -> Graph` (spec 4);
+- Produces: `@dataclass(frozen=True) Graph(design: str, floor: str, node_ids: tuple[str, ...], kind: tuple[str, ...], num: dict[str, np.ndarray], table: tuple[int, ...], src: np.ndarray, dst: np.ndarray, pin: tuple[str, ...], net: tuple[str, ...], labels: dict[str, np.ndarray] | None, sha256: str)` (`table` is the integer `lut_table` per node, -1 when absent; the JSON file form stays hex) with `n_nodes`, `n_edges`, `index() -> dict[str, int]`, `induced(node_ids: Sequence[str]) -> Graph` (spec 4);
   `load_graph(path: Path) -> Graph` (validates, raises `ValueError` listing validator errors);
   `@dataclass(frozen=True) FeatureMatrix(names: tuple[str, ...], x: np.ndarray, hard_types: tuple[str, ...])`;
   `featurize(g: Graph, hard_types: Sequence[str] | None = None) -> FeatureMatrix` (spec 4: 8 numeric, 7 kind, 4 floor, T+1 hard type; `hard_types=None` derives sorted types from `g.labels["cell_type"]` of kind `hard` nodes; x is float32);

@@ -14,6 +14,8 @@ from loki import __version__
 from loki.schemas import SCHEMA, SPLIT_SEED, dump_json, split_of
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import numpy as np
 
 
@@ -154,6 +156,104 @@ def make_graph(
     pairs.sort(key=lambda p: (int(p[0][1:]), int(p[1][1:]), p[2]))
     edges = [{"src": src, "dst": dst, "net": net[src], "pin": pin} for src, dst, pin in pairs]
     return {"schema": SCHEMA, "design": design, "floor": floor, "nodes": nodes, "edges": edges}
+
+
+def _table(width: int, fn: Callable[[list[int]], int]) -> int:
+    """Truth table over ``width`` inputs; input ``i`` is bit ``i`` of the address."""
+    return sum(fn([(x >> i) & 1 for i in range(width)]) << x for x in range(1 << width))
+
+
+def make_sync_design(
+    n_ff: int = 20,
+    reset: bool = False,
+    enable: bool = False,
+    clocks: int = 1,
+    consts: bool = False,
+) -> dict[str, object]:
+    """A valid ``graph.json`` object: ``n_ff`` flip-flops, each behind one D-LUT (L2 Task 9).
+
+    PIs ``clk0``..``clk<clocks-1>`` spread the flip-flops over the clock domains; ``rst`` with
+    ``reset``, ``en`` with ``enable``, and data PIs: two shared ones (``d0``/``d1``) in the plain
+    design, so each has fan-out ``n_ff``, and one ``d<i>`` per flip-flop otherwise. The D-LUT is a
+    width-2 XOR of the two data PIs, ``!rst & d`` with ``reset``, ``en ? d : q`` with ``enable``
+    (``q`` the flip-flop's own output net), and ``rst ? 0 : (en ? d : q)`` with both. ``consts``
+    adds one ``const`` node feeding every D-LUT through an extra, function-neutral input.
+    """
+    if n_ff < 0 or clocks < 1:
+        raise ValueError("n_ff must be >= 0 and clocks >= 1")
+    order: list[str] = []
+    kind: dict[str, str] = {}
+
+    def add(node_kind: str) -> str:
+        nid = f"n{len(order)}"
+        order.append(nid)
+        kind[nid] = node_kind
+        return nid
+
+    clk_ids = [add("pi") for _ in range(clocks)]
+    rst = add("pi") if reset else ""
+    en = add("pi") if enable else ""
+    const = add("const") if consts else ""
+    shared = not reset and not enable
+    data = [add("pi") for _ in range(2 if shared else n_ff)]
+    pairs: list[tuple[str, str, str]] = []
+    tables: dict[str, tuple[int, int]] = {}
+    for i in range(n_ff):
+        ff = add("ff")
+        dl = add("lut")
+        if reset and enable:
+            ins = [data[i], en, ff, rst]
+            table = _table(4, lambda v: 0 if v[3] else (v[0] if v[1] else v[2]))
+        elif reset:
+            ins = [data[i], rst]
+            table = _table(2, lambda v: v[0] & (1 - v[1]))
+        elif enable:
+            ins = [data[i], en, ff]
+            table = _table(3, lambda v: v[0] if v[1] else v[2])
+        else:
+            ins = [data[0], data[1]]
+            table = _table(2, lambda v: v[0] ^ v[1])
+        width = len(ins)
+        if consts:
+            ins.append(const)
+            table |= table << (1 << width)
+            width += 1
+        pairs.extend((src, dl, f"I{k}") for k, src in enumerate(ins))
+        pairs.append((dl, ff, "D"))
+        pairs.append((clk_ids[i % clocks], ff, "CLK"))
+        tables[dl] = (width, table)
+
+    fan_in: dict[str, int] = dict.fromkeys(order, 0)
+    fan_out: dict[str, int] = dict.fromkeys(order, 0)
+    drivers: dict[str, list[str]] = {nid: [] for nid in order}
+    for src, dst, _pin in pairs:
+        fan_out[src] += 1
+        fan_in[dst] += 1
+        drivers[dst].append(src)
+    level: dict[str, int] = {nid: 0 for nid in order if kind[nid] != "lut"}
+    for nid in order:
+        if kind[nid] == "lut":
+            level[nid] = max(level[src] for src in drivers[nid]) + 1
+    net_of = {nid: f"n{len(order) + i}" for i, nid in enumerate(order)}
+    nodes: list[dict[str, object]] = []
+    for nid in order:
+        width, table = tables.get(nid, (0, 0))
+        nodes.append(
+            {
+                "id": nid,
+                "kind": kind[nid],
+                "features": _features(
+                    fan_in=fan_in[nid], fan_out=fan_out[nid], level=level[nid],
+                    lut_width=width, lut_table=format(table, "x") if kind[nid] == "lut" else "",
+                    is_seq=int(kind[nid] == "ff"), is_const=int(kind[nid] == "const"),
+                ),
+                "labels": dict(_EMPTY_LABELS),
+            }
+        )
+    pairs.sort(key=lambda p: (int(p[0][1:]), int(p[1][1:]), p[2]))
+    edges = [{"src": src, "dst": dst, "net": net_of[src], "pin": pin}
+             for src, dst, pin in pairs]
+    return {"schema": SCHEMA, "design": "sync", "floor": "f2", "nodes": nodes, "edges": edges}
 
 
 def write_graph(dir: Path, obj: dict[str, object]) -> Path:

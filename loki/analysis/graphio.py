@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from loki.analysis import require
+from loki.features.graph import FeatureGraph, make_feature_graph
 from loki.schemas import FLOORS, KINDS, LABEL_COLUMNS, validate_graph
 
 if TYPE_CHECKING:
@@ -46,7 +47,8 @@ class Graph:
     """One ``graph.json`` in numpy form (L2 spec 4).
 
     ``src`` and ``dst`` are indices into ``node_ids`` (driver to sink, one per ``edges`` item,
-    parallel edges kept). ``num`` holds :data:`NUMERIC_FEATURES` as int64 arrays. ``labels`` maps
+    parallel edges kept). ``num`` holds :data:`NUMERIC_FEATURES` as int64 arrays and ``table``
+    the integer ``lut_table`` of every node (-1 when the node has no table). ``labels`` maps
     each label column of the file to an array (text columns as strings, the rest int64), or is
     ``None`` when every label object of the file is empty (see :func:`_label_columns`); ``None``
     does not mean the label objects are absent, because a valid ``graph.json`` always writes them.
@@ -57,6 +59,7 @@ class Graph:
     node_ids: tuple[str, ...]
     kind: tuple[str, ...]
     num: dict[str, npt.NDArray[Any]]
+    table: tuple[int, ...]
     src: npt.NDArray[Any]
     dst: npt.NDArray[Any]
     pin: tuple[str, ...]
@@ -103,6 +106,7 @@ class Graph:
             node_ids=tuple(self.node_ids[int(row)] for row in rows),
             kind=tuple(self.kind[int(row)] for row in rows),
             num={name: values[rows] for name, values in self.num.items()},
+            table=tuple(self.table[int(row)] for row in rows),
             src=remap[self.src[edge_mask]],
             dst=remap[self.dst[edge_mask]],
             pin=tuple(self.pin[int(edge)] for edge in edges),
@@ -143,6 +147,7 @@ def load_graph(path: Path) -> Graph:
         node_ids=node_ids,
         kind=tuple(str(node["kind"]) for node in nodes),
         num=num,
+        table=tuple(_int_table(node["features"]["lut_table"]) for node in nodes),
         src=np.asarray([index[str(edge["src"])] for edge in edges], dtype=np.int32),
         dst=np.asarray([index[str(edge["dst"])] for edge in edges], dtype=np.int32),
         pin=tuple(str(edge["pin"]) for edge in edges),
@@ -150,6 +155,12 @@ def load_graph(path: Path) -> Graph:
         labels=_label_columns(nodes),
         sha256=hashlib.sha256(raw).hexdigest(),
     )
+
+
+def _int_table(lut_table: object) -> int:
+    """``lut_table`` hex (L0 spec 6.4, MSB first) as an integer; ``""`` gives -1."""
+    text = str(lut_table)
+    return int(text, 16) if text else -1
 
 
 def _label_columns(nodes: Sequence[dict[str, Any]]) -> dict[str, npt.NDArray[Any]] | None:
@@ -240,6 +251,25 @@ def _hard_vocabulary(g: Graph, hard_types: Sequence[str] | None) -> tuple[str, .
     found = {str(cells[row]) for row, kind in enumerate(g.kind) if kind == "hard"}
     found -= {"", _UNKNOWN}
     return tuple(sorted(found))
+
+
+def to_feature_graph(g: Graph) -> FeatureGraph:
+    """The :mod:`loki.features` feature graph of ``g`` (spec 4.1).
+
+    Node order and ids are ``graph.json``'s; ``type`` is the kind (the file holds no cell types);
+    ``lut_table`` hex becomes an integer table (``""`` gives -1); pins and nets are as in the
+    file. Equal to :func:`loki.features.graph.from_graph_json` on the same file, which a test
+    pins; both raise ``ValueError`` for a net not named ``n<k>``.
+    """
+    nodes = [
+        (g.node_ids[row], g.kind[row], g.kind[row], int(g.num["lut_width"][row]), g.table[row])
+        for row in range(g.n_nodes)
+    ]
+    edges = [
+        (int(g.src[e]), int(g.dst[e]), g.pin[e], int(g.net[e][1:]))
+        for e in range(g.n_edges)
+    ]
+    return make_feature_graph(nodes, edges)
 
 
 def undirected_edges(g: Graph) -> tuple[npt.NDArray[Any], npt.NDArray[Any]]:
