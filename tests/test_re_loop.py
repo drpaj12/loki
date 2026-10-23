@@ -1,4 +1,6 @@
+import importlib
 import json
+import math
 import os
 import tempfile
 import unittest
@@ -20,6 +22,12 @@ RE = DATA / "re"
 HARD = (
     ".model h\n.inputs a b cin\n.outputs s cout\n"
     ".subckt adder a=a b=b cin=cin cout=cout sumout=s\n.end\n"
+)
+# An adder with a constant carry-in and a multiply: ``unmap`` recovers a ``$add`` and a ``$mul``.
+MIX = (
+    ".model mix\n.inputs a b d\n.outputs s co p\n.names k\n"
+    ".subckt adder a=a b=b cin=k cout=co sumout=s\n"
+    ".subckt multiply a[0]=d b[0]=d out[0]=p\n.end\n"
 )
 
 
@@ -216,16 +224,64 @@ class LoopTest(unittest.TestCase):
         first = res.rounds[0]
         self.assertEqual(first["transfer_failures"], 1)
 
-    def test_f1_without_unmap(self) -> None:
+    def test_f1_declined_adder(self) -> None:
+        """A real carry-in is not recovered: ``unmap`` runs, the hard cell stays and its
+        ``hard_add`` is open with the ``declined_chain`` evidence (spec 7.2)."""
         root = odin3_root()
         assert root is not None
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "h.blif"
             path.write_text(HARD, encoding="utf-8")
             res = run_re(opts(path, floor="f1-k6", techlib=root / "lib" / "vtr.o3lib"))
-        self.assertEqual(res.notes["unmap"], "unavailable")
+        self.assertEqual(res.notes["unmap"], "ok")
         self.assertEqual(res.final_equiv["status"], "skipped:hard")
-        self.assertEqual(res.overlay.committed(), [])
+        got = of_kind(res, "hard_add")
+        self.assertEqual([h.features.get("declined_chain") for h in got], ["yes"])
+        self.assertEqual([h.status for h in got], ["committed"])
+
+    def test_f1_unmap_failure_falls_back_and_discards(self) -> None:
+        """Spec 7.2/9.1: a *failed* ``unmap`` is not the pass-absent case, so the working copy is
+        discarded (the binding contract: a failed pass may have mutated it) and the run starts
+        again from level 0; the cells stay opaque and the report says ``unmap: unavailable``."""
+        root = odin3_root()
+        assert root is not None
+        mod = importlib.import_module("odin3")
+        real = mod.Design.run_pass
+        failed: list[Any] = []
+
+        def fake(design: Any, name: str, args: str = "") -> None:
+            if name == "unmap":
+                failed.append(design)
+                raise mod.Odin3Error("odin3_design_run_pass", 1, "unmap")
+            real(design, name, args)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "mix.blif"
+            path.write_text(MIX, encoding="utf-8")
+            with mock.patch.object(mod.Design, "run_pass", fake):
+                res = run_re(opts(path, floor="f1-k6", techlib=root / "lib" / "vtr.o3lib"))
+        self.assertEqual(res.notes["unmap"], "unavailable")
+        self.assertEqual([h for h in res.overlay.all() if h.kind.startswith("hard_")], [])
+        self.assertEqual(res.final_equiv["status"], "skipped:hard")
+        self.assertEqual(len(failed), 1)
+        self.assertIsNone(failed[0].ptr)
+        self.assertIsNot(res.final, failed[0])
+
+    def test_f1_recovered_hard_cells_commit(self) -> None:
+        """An adder with a constant carry-in and a multiply are recovered: both are confirmed
+        at probability 1 and committed as ``hard_*`` pieces (plan Task 17)."""
+        root = odin3_root()
+        assert root is not None
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "mix.blif"
+            path.write_text(MIX, encoding="utf-8")
+            res = run_re(opts(path, floor="f1-k6", techlib=root / "lib" / "vtr.o3lib"))
+        self.assertEqual(res.notes["unmap"], "ok")
+        got = [h for h in res.overlay.all() if h.kind.startswith("hard_")]
+        self.assertEqual(sorted(h.kind for h in got), ["hard_add", "hard_mul"])
+        self.assertEqual([h.status for h in got], ["committed", "committed"])
+        self.assertTrue(all(h.log_odds == math.inf for h in got))
+        self.assertEqual(sum(len(h.cells) for h in got), 2)
 
 
 @unittest.skipUnless(odin_available(), "needs Odin III")

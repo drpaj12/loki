@@ -18,6 +18,7 @@ from loki.re.claims import Claim
 from loki.re.commit import commit, module_name, reject_failed
 from loki.re.detectors import Detector, RoundContext, check_candidate, load_detectors
 from loki.re.detectors.fsm import fsm_detect_marks
+from loki.re.detectors.hard import HardDetector, UnmapRecord
 from loki.re.fngraph import FnGraph, from_design
 from loki.re.normalise import floor_from_path, load_level0
 from loki.re.overlay import Hypothesis, Overlay
@@ -94,11 +95,32 @@ class _Run:
         self.proved: dict[str, Claim] = {}
         self.cc: ConeCheckProver | None = None
         self.notes: dict[str, str] = {}
+        self.unmap: tuple[UnmapRecord, ...] = ()
         self.timeouts = 0
         self.transfers = 0
         self.transfer_failures = 0
         self.prove_seconds: list[float] = []
         self.round_seconds: list[float] = []
+        self.start_unmap()
+
+    def start_unmap(self) -> None:
+        """Spec 9.1: on F1 with hard cells, run ``unmap`` on the working copy (gated) and read its
+        facts; without the pass the cells stay opaque and the report says ``unavailable``. A failed
+        pass discards the working copy (the binding contract: it may have mutated the design)."""
+        hard = any(c.kind == "hard" for c in self.graph.cells.values())
+        if not (self.floor.startswith("f1-") and hard):
+            self.notes["unmap"] = "n/a"
+            return
+        try:
+            with odin_module().default().capture_log():
+                self.working.run_pass("unmap")
+        except odin_module().Odin3Error:
+            self.working.close()
+            self.working = self.level0.copy()
+            self.notes["unmap"] = "unavailable"
+            return
+        self.notes["unmap"] = "ok"
+        self.unmap = tuple(HardDetector.read_unmap(self.working, self.graph))
 
     # -- helpers ------------------------------------------------------------------------------
     def rng(self, purpose: str) -> random.Random:
@@ -130,7 +152,8 @@ class _Run:
             self.working, self.graph, self.overlay)
         return RoundContext(
             round=r, floor=self.floor, graph=self.graph, view=view, overlay=self.overlay,
-            rng=self.rng, calib=self.calib, fsm_marks=self.fsm_marks(), features=self.sf,
+            rng=self.rng, calib=self.calib, fsm_marks=self.fsm_marks(), unmap=self.unmap,
+            features=self.sf,
         )
 
     # -- steps ----------------------------------------------------------------------------------
@@ -140,6 +163,8 @@ class _Run:
             for cand in det.propose(ctx):
                 check_candidate(det, cand)
                 self.overlay.add(cand, det.name, r)
+            if isinstance(det, HardDetector):
+                det.confirm(self.overlay, r)
         return len(self.overlay.hyps) - before
 
     def node_features(self) -> None:
@@ -354,8 +379,6 @@ def run_re(opts: ReOptions) -> RunResult:
         root = Path(os.environ["ODIN3_ROOT"])
     start = time.monotonic()
     run = _Run(opts, floor, root)
-    hard = any(c.kind == "hard" for c in run.graph.cells.values())
-    run.notes["unmap"] = "unavailable" if floor.startswith("f1-") and hard else "n/a"
     run.notes["features"] = "off" if run.sf is None else "on"
     try:
         rounds, stop = run.loop()

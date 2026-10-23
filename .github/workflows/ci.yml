@@ -5,11 +5,11 @@ on:
   pull_request:
 
 env:
-  # L1 needs the v1.0.2 passes (read_blif, write_blif --gates-as-names, abc --gates, dfflibmap),
-  # so the test jobs build Odin III from source at this commit instead of installing the v1.0.0
-  # wheel. ABC_COMMIT is third_party/abc at that commit (cmake/abc_pin.cmake checks it).
-  ODIN3_COMMIT: d7defba70678e49580e507997b7dac488617df2b
-  ABC_COMMIT: a3001b72edc5de22442e942165487fddf150e3d0  # odin3 d7defba third_party/abc
+  # L1 needs the v1.0.4 passes (read_blif, write_blif --gates-as-names, abc --gates, dfflibmap
+  # and unmap), so the test jobs build Odin III from source at this commit instead of installing
+  # the v1.0.0 wheel. ABC_COMMIT is third_party/abc at that commit (cmake/abc_pin.cmake checks it).
+  ODIN3_COMMIT: 80e89ff631e95d719284dac8785752b2a689c6f7
+  ABC_COMMIT: a3001b72edc5de22442e942165487fddf150e3d0  # odin3 80e89ff third_party/abc
 
 jobs:
   lint:

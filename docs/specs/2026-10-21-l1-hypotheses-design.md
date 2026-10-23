@@ -518,14 +518,23 @@ Default feature LLRs (used without calibration) are given below per detector; ev
 
 ### 7.2 `hard` (decision 2; gated on Odin III `unmap`, plan Task 17)
 
-On F1 the working level is the output of `unmap` (unmap spec, `bc9e5799`; section 9.1). Its
-contract as L1 uses it: hard cells of `lib/vtr.o3lib` become `$add`/`$sub` (carry chains, C-n),
-`$mul` (M-n, split multipliers regrouped by their exact pattern) and `$mem` (R-n); each new cell
-has one DERIVED provenance record whose parents are the replaced cells' IMPORTED records (P-1), so
-`sources()` gives their BLIF lines; it carries the string attribute `unmap` = the rule (P-2).
-Cells `unmap` declines carry `unmap_note` = `<kind>:<reason>` (P-3); ambiguous candidate sets
-(RAM width or replica slices with different origin, R-6, R-7: always the case for a BLIF input,
-whose `.subckt` lines are separate records) carry `unmap_cand` = `<kind>:<N>` on every member.
+On F1 the working level is the output of `unmap` (Odin III v1.0.4, PR #259, 2026-10-23; section
+9.1). Its contract as L1 uses it, checked on the merged pass: hard cells of `lib/vtr.o3lib` become
+`$add`/`$sub` (carry chains, C-n), `$mul` (M-n, split multipliers regrouped by their exact
+pattern) and `$mem` (R-n). The recovered `$add` and `$mul` have ports `A`, `B`, `Y` (a chain's
+carry-in is a constant captured when the cell is made; there is no `CI` port), the `$mem` has
+`RD_CLK`, `RD_EN`, `RD_ADDR`, `RD_DATA`, `WR_CLK`, `WR_EN`, `WR_ADDR`, `WR_DATA` and integer
+parameters `WIDTH`, `ABITS` and `SIZE`. Each new cell has one DERIVED provenance record whose
+parents are the replaced cells' IMPORTED records (P-1), so `sources()` gives their BLIF lines; it
+carries the string attribute `unmap` = the rule (P-2): `chain`, `mul`, `mul.p1`, `mul.p2`, `ram`,
+`ram.width`, `ram.replica`, `ram.depth`. Cells `unmap` declines carry `unmap_note` =
+`<kind>:<reason>` (P-3), the reasons being `adder`: `cin_x`, `cin_open`, `cin_carry`, `cin_signal`
+(a real carry-in signal, unmap open question 2), `lone_head`, `cycle`, `cout_sub`,
+`carry_in_one`; `mul`: `width`, `shared`; `ram`: `abits`, `depth`. Ambiguous candidate sets (RAM
+width or replica slices with different origin, R-6, R-7) carry `unmap_cand` = `<kind>:<N>` on
+every member. A BLIF input gives every hard cell its own IMPORTED record, so R-6 and R-7 never
+merge and every group of RAM cells with equal control nets is a candidate set; R-8 needs one
+shared origin (`unmap_origin`), which a BLIF never has. A second `unmap` changes nothing (S-7).
 
 - Every node with an `unmap` attribute gives `hard_add` (`$add`, `$sub`), `hard_mul` or
   `hard_mem`, status `confirmed`, log-odds `+inf` (probability 1), evidence `("hard", "unmap",
@@ -534,10 +543,11 @@ whose `.subckt` lines are separate records) carry `unmap_cand` = `<kind>:<N>` on
 - **Ambiguous groupings, decided by L1 clustering:** the nodes sharing one `unmap_cand` value
   give one `hard_group` candidate (params `kind`, `members`, the summed `WIDTH`, slices in node-ID
   order); feature `shared_ctrl` (`all`: every `clk`, `addr`, `we` net shared, +4.61; `addr_only`
-  +1.10); the bus detector's `k` bins apply too. Its children are the members' `hard_mem`.
-- A declined `adder` chain (`unmap_note` `adder:<reason>`, such as a real carry-in, unmap open
-  question 2) is followed `cout` to `cin` and gives a `hard_add` candidate with status `open`
-  and feature `declined_chain = yes` (+4.61), not probability 1.
+  +1.10; `none`, 0); the bus detector's `k` bins apply too. Its children are the members'
+  `hard_mem`.
+- A declined `adder` chain (`unmap_note` `adder:<reason>`, such as `adder:cin_signal`) gives a
+  `hard_add` candidate with status `open` and feature `declined_chain = yes` (+4.61), not
+  probability 1.
 - Before `unmap` exists on Odin III `main`, F1 runs with hard cells as opaque sources and no
   `hard` hypotheses; the report says `unmap: unavailable`. `unmap` is never run with
   `--no-regroup`.

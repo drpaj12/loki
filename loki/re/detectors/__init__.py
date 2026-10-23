@@ -8,12 +8,13 @@ import json
 import random
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from loki.re.claims import Claim
 
 if TYPE_CHECKING:
     from loki.re.bayes import Calib
+    from loki.re.detectors.hard import UnmapRecord
     from loki.re.fngraph import FnGraph
     from loki.re.overlay import Hypothesis
     from loki.re.structural import StructFeatures
@@ -23,6 +24,7 @@ DETECTOR_ORDER = ("hard", "ff_pattern", "mux", "arith", "seqfn", "fsm", "bus", "
 ENTRY_GROUP = "loki.detectors"
 # Built-in detectors that exist so far: name -> (module, class). Later tasks add their line.
 _BUILTINS: dict[str, tuple[str, str]] = {
+    "hard": ("loki.re.detectors.hard", "HardDetector"),
     "ff_pattern": ("loki.re.detectors.ff_pattern", "FfPatternDetector"),
     "bus": ("loki.re.detectors.bus", "BusDetector"),
     "arith": ("loki.re.detectors.arith", "ArithDetector"),
@@ -72,7 +74,7 @@ class RoundContext:
     rng: Callable[[str], random.Random]
     calib: Calib
     fsm_marks: Mapping[frozenset[int], str] = field(default_factory=dict)
-    unmap: tuple[Any, ...] = ()
+    unmap: tuple[UnmapRecord, ...] = ()
     features: StructFeatures | None = None
 
 
