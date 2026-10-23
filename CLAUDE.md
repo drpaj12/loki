@@ -42,6 +42,20 @@ L1 commands (details in `docs/runbook-l1.md`; sweeps and `LOKI_SCALE=1` run thro
 
 Refit `calib/f2.json` after any detector or commit-rule change.
 
+L2 analysis (`loki analyze`; commands, citations and the output tree in `README.md`):
+
+    .venv/bin/pip install -e . --no-deps && .venv/bin/pip install numpy scipy scikit-learn networkx  # analysis
+    .venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu && .venv/bin/pip install torch_geometric  # gnn
+    .venv/bin/loki tools fetch-orca
+    .venv/bin/loki analyze export|structural|cluster|graphlets|gnn ... --out out
+    .venv/bin/python -m unittest tests.test_acceptance_l2 -v          # spec 12 exit test
+    LOKI_SCALE=1 .venv/bin/python -m unittest tests.test_scale_l2 -v  # spec 3 budgets
+
+The scale test runs each analysis in a fresh process and asserts twice the spec 3 time and
+peak-RSS budget; `LOKI_SCALE=2` switches to the 820k-node graph (and `$LOKI_BIG_GRAPH`'s
+golden `graph.json`). Run it alone: the ORCA rows on the big graph can exceed the WSL VM's
+memory when Odin III sweeps run at the same time.
+
 ## Rules
 
 - Python 3.11+, no 3.12-only syntax. Runtime dependency: the `odin3` wheel only, imported through
