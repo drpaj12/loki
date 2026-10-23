@@ -160,6 +160,19 @@ class _Registers(unittest.TestCase):
             BACKENDS[instance.name] = instance
             self.addCleanup(BACKENDS.pop, instance.name, None)
 
+    def register(self, name: str, counter: _FakeCounter) -> None:
+        """Register ``counter`` under ``name`` for this test, restoring the previous entry."""
+        previous = BACKENDS.get(name)
+        BACKENDS[name] = counter
+
+        def restore() -> None:
+            if previous is None:
+                BACKENDS.pop(name, None)
+            else:
+                BACKENDS[name] = previous
+
+        self.addCleanup(restore)
+
 
 @skip_without("numpy", "networkx")
 class OracleTests(unittest.TestCase):
@@ -254,24 +267,34 @@ class OracleTests(unittest.TestCase):
         self.assertEqual(orbits.dtype, np.int64)
 
 
+def _class_pairs(g: Graph, names: list[str], wanted: str) -> set[tuple[int, int]]:
+    """The unique undirected pairs (no self-loop) of the edges classified as ``wanted``."""
+    pairs: set[tuple[int, int]] = set()
+    for edge, name in enumerate(names):
+        if name != wanted:
+            continue
+        u, v = int(g.src[edge]), int(g.dst[edge])
+        if u != v:
+            pairs.add((min(u, v), max(u, v)))
+    return pairs
+
+
+@skip_without("numpy")
 class CountingGraphTests(_Registers):
     """The counting graph of spec 8.3: class removal, the hub fallback and the projection."""
 
     def test_counting_graph_global_removes_non_signal(self) -> None:
         """No clock and no reset edge remains; removed edges are counted; all nodes stay."""
-        from collections import Counter
-
         g = _load(make_sync_design(n_ff=20, reset=True, clocks=2))
         counting = counting_graph(g)
         self.assertIsInstance(counting, CountingGraph)
         self.assertEqual(counting.n, g.n_nodes)
         info = classify_signals(g)
         names = [CLASS_NAMES[int(cls)] for cls in info.edge_class]
-        counts = Counter(names)
-        self.assertEqual(counting.removed_edges["clock"], counts["clock"])
-        self.assertEqual(counting.removed_edges["reset"], counts["reset"])
-        self.assertEqual(counts["clock"], 20)
-        self.assertEqual(counts["reset"], 20)
+        self.assertEqual(counting.removed_edges["clock"], len(_class_pairs(g, names, "clock")))
+        self.assertEqual(counting.removed_edges["reset"], len(_class_pairs(g, names, "reset")))
+        self.assertEqual(list(names).count("clock"), 20)
+        self.assertEqual(list(names).count("reset"), 20)
         self.assertEqual(counting.removed_edges["hub"], 0)
         self.assertEqual(counting.dropped_hubs, [])
         pairs = _pairs(counting.src, counting.dst)
@@ -290,6 +313,26 @@ class CountingGraphTests(_Registers):
         self.assertEqual(counting.dst.size, 0)
         self.assertEqual(counting.dropped_hubs, [(g.node_ids[0], 10)])
         self.assertEqual(counting.removed_edges["hub"], 10)
+
+    def test_removed_edges_share_undirected_unit(self) -> None:
+        """Two clock edges into one FF drop one undirected pair, the unit the hub fallback uses."""
+        obj = make_sync_design(n_ff=2, clocks=1)
+        edges = obj["edges"]
+        assert isinstance(edges, list)
+        clock = next(edge for edge in edges if isinstance(edge, dict) and edge["pin"] == "CLK")
+        edges.append(dict(clock))
+        g = _load(obj)
+        info = classify_signals(g)
+        clock_edges = sum(1 for cls in info.edge_class if CLASS_NAMES[int(cls)] == "clock")
+        self.assertEqual(clock_edges, 3)
+        counting = counting_graph(g)
+        self.assertEqual(counting.removed_edges["clock"], 2)
+
+    def test_negative_hub_threshold_raises(self) -> None:
+        """A negative threshold is rejected instead of silently disabling the fallback."""
+        g = _load(star_graph(2))
+        with self.assertRaises(ValueError):
+            counting_graph(g, hub_threshold=-1)
 
     def test_removal_none_keeps_everything(self) -> None:
         """``none`` keeps the whole projection, removes nothing and still computes the roles."""
@@ -363,6 +406,7 @@ class CountingGraphTests(_Registers):
         np.testing.assert_array_equal(x[:, 2:], roles)
 
 
+@skip_without("numpy")
 class RunnerTests(_Registers):
     """``run_graphlets``, ``load_orbits`` and backend selection with fake backends."""
 
@@ -371,6 +415,7 @@ class RunnerTests(_Registers):
         import numpy as np
 
         g = _load(make_sync_design(n_ff=4, reset=True))
+        counting = counting_graph(g)
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "graphlets"
             path = run_graphlets(g, "fake", out)
@@ -404,6 +449,7 @@ class RunnerTests(_Registers):
             )
             self.assertEqual(record["clock_domains"], 1)
             self.assertEqual(record["n_nodes"], g.n_nodes)
+            self.assertEqual(record["n_edges"], counting.src.size)
             self.assertEqual(record["graph_sha256"], g.sha256)
             self.assertEqual(
                 record["tool"],
@@ -436,6 +482,87 @@ class RunnerTests(_Registers):
     def test_default_backend_is_ext(self) -> None:
         """The spike's decision: ORCA is the default backend (spec 8.5)."""
         self.assertEqual(DEFAULT_BACKEND, "ext")
+
+    def test_get_backend_default_and_unknown(self) -> None:
+        """``get_backend`` resolves "default" to ``DEFAULT_BACKEND`` and rejects an unknown name."""
+        counter = _FakeCounter()
+        self.register(DEFAULT_BACKEND, counter)
+        self.assertIs(get_backend("default"), counter)
+        self.assertIs(get_backend(DEFAULT_BACKEND), counter)
+        with self.assertRaises(ValueError) as caught:
+            get_backend("no-such-backend")
+        self.assertIn("no-such-backend", str(caught.exception))
+
+    def test_alias_backend_names_files_by_registry_key(self) -> None:
+        """A counter whose name differs from its registry key writes and reads the key's file."""
+        self.register(DEFAULT_BACKEND, _FakeCounter())
+        g = _load(star_graph(2))
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            path = run_graphlets(g, DEFAULT_BACKEND, out)
+            self.assertEqual(path.name, f"graphlets-{DEFAULT_BACKEND}-global.json")
+            self.assertEqual(
+                sorted(p.name for p in out.iterdir()),
+                [
+                    f"graphlets-{DEFAULT_BACKEND}-global.json",
+                    f"orbits-{DEFAULT_BACKEND}-global.npz",
+                ],
+            )
+            record = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(record["backend"], DEFAULT_BACKEND)
+            self.assertEqual(record["tool"]["name"], _FakeCounter.name)
+            orbits, _roles = load_orbits(g, "default", "global", out)
+            self.assertEqual(orbits.shape, (g.n_nodes, N_ORBITS[4]))
+            self.assertTrue(run_graphlets(g, "default", out).is_file())
+
+    def test_orbit_file_stores_size(self) -> None:
+        """The npz records its graphlet size; ``load_orbits`` checks the width against it."""
+        import numpy as np
+
+        g = _load(star_graph(2))
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            run_graphlets(g, "fake", out, size=5)
+            npz_path = out / "orbits-fake-global.npz"
+            with np.load(npz_path) as data:
+                self.assertEqual(int(np.asarray(data["size"])), 5)
+                self.assertEqual(np.asarray(data["orbits"]).shape, (g.n_nodes, N_ORBITS[5]))
+            orbits, _roles = load_orbits(g, "fake", "global", out)
+            self.assertEqual(orbits.shape, (g.n_nodes, N_ORBITS[5]))
+            np.savez(
+                npz_path,
+                orbits=np.zeros((g.n_nodes, N_ORBITS[5]), dtype=np.int64),
+                roles=np.zeros((g.n_nodes, 4), dtype=np.int64),
+                node_ids=np.asarray(g.node_ids),
+                size=np.int64(4),
+            )
+            with self.assertRaises(ValueError):
+                load_orbits(g, "fake", "global", out)
+            np.savez(
+                npz_path,
+                orbits=np.zeros((g.n_nodes, 14), dtype=np.int64),
+                roles=np.zeros((g.n_nodes, 4), dtype=np.int64),
+                node_ids=np.asarray(g.node_ids),
+            )
+            with self.assertRaises(ValueError):
+                load_orbits(g, "fake", "global", out)
+
+    def test_load_orbits_rejects_other_node_ids(self) -> None:
+        """An npz written for another graph of the same node count is rejected."""
+        import numpy as np
+
+        g = _load(star_graph(2))
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            np.savez(
+                out / "orbits-fake-global.npz",
+                orbits=np.zeros((g.n_nodes, N_ORBITS[4]), dtype=np.int64),
+                roles=np.zeros((g.n_nodes, 4), dtype=np.int64),
+                node_ids=np.asarray([f"m{row}" for row in range(g.n_nodes)]),
+                size=np.int64(4),
+            )
+            with self.assertRaises(ValueError):
+                load_orbits(g, "fake", "global", out)
 
     def test_unavailable_backend_message(self) -> None:
         """An unavailable backend names itself and carries its reason."""

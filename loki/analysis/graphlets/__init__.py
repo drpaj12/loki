@@ -70,13 +70,22 @@ class GraphletCounter(Protocol):
 BACKENDS: dict[str, GraphletCounter] = {}
 
 
+def _backend_key(name: str) -> str:
+    """The registry key a backend spelling resolves to: ``"default"`` is :data:`DEFAULT_BACKEND`.
+
+    File names and the JSON ``backend`` use this key, so a registered counter whose own ``name``
+    differs from its registry key still reads back the file it wrote.
+    """
+    return DEFAULT_BACKEND if name == "default" else name
+
+
 def get_backend(name: str) -> GraphletCounter:
     """The registered counter ``name`` (spec 8.5); ``"default"`` is :data:`DEFAULT_BACKEND`.
 
     An unknown name raises ``ValueError``; a registered backend that reports itself unavailable
     raises :class:`BackendUnavailable` carrying its reason.
     """
-    resolved = DEFAULT_BACKEND if name == "default" else name
+    resolved = _backend_key(name)
     counter = BACKENDS.get(resolved)
     if counter is None:
         known = ", ".join(sorted(BACKENDS)) if BACKENDS else "none registered"
@@ -93,7 +102,8 @@ class CountingGraph:
 
     ``src``/``dst`` are int32 indices into the original ``node_ids`` (``src < dst``, each edge
     once, no self-loops); removed nodes stay as all-zero rows. ``removed_edges`` has the class
-    names and ``hub``; ``dropped_hubs`` lists ``(node_id, degree)`` in node order.
+    names and ``hub``, every value counting undirected projected edges (one unit, so Task 13's
+    total sums them); ``dropped_hubs`` lists ``(node_id, degree)`` in node order.
     """
 
     n: int
@@ -134,24 +144,28 @@ def counting_graph(
     of a node whose remaining degree exceeds ``hub_threshold``, listing ``(node_id, degree)``.
     ``none`` keeps every edge. Both are simple undirected projections with every node kept, and
     the signal info is computed for either because the role features are never removed.
-    ``removed_edges`` counts the directed edges dropped per class and, under ``hub``, the
-    undirected edges dropped by the fallback.
+    ``removed_edges`` counts undirected projected edges only: each class counts the unique
+    ``src < dst`` pairs it drops and ``hub`` the pairs the fallback drops. A negative
+    ``hub_threshold`` raises ``ValueError`` instead of silently disabling the fallback.
     """
     require("analysis")
     import numpy as np
 
     if removal not in _REMOVALS:
         raise ValueError(f"unknown removal {removal!r}: use 'global' or 'none'")
+    if hub_threshold < 0:
+        raise ValueError(f"hub_threshold must be >= 0, got {hub_threshold}")
     info = classify_signals(g, cfg)
     removed = dict.fromkeys((*_CLASSES, _HUB), 0)
     mask = np.ones(g.n_edges, dtype=bool)
     if removal == "global":
         for name in _CLASSES:
-            removed[name] = int(np.count_nonzero(info.edge_class == CLASS_NAMES.index(name)))
+            class_mask = info.edge_class == CLASS_NAMES.index(name)
+            removed[name] = int(_projection(g.n_nodes, g.src, g.dst, class_mask)[0].size)
         mask = info.edge_class == _SIGNAL
     src, dst = _projection(g.n_nodes, g.src, g.dst, mask)
     dropped: list[tuple[str, int]] = []
-    if removal == "global" and hub_threshold >= 0 and src.size:
+    if removal == "global" and src.size:
         degree = np.bincount(np.concatenate([src, dst]), minlength=g.n_nodes)
         hubs = np.flatnonzero(degree > hub_threshold)
         if hubs.size:
@@ -251,11 +265,13 @@ def run_graphlets(
 ) -> Path:
     """Count orbits of ``g`` and write the npz and JSON of spec 8.6 into ``out_dir``.
 
-    Files are ``orbits-<backend>-<removal>.npz`` and ``graphlets-<backend>-<removal>.json``;
-    the JSON path is returned. ``n_nodes`` and ``n_edges`` describe the counting graph that was
-    counted (``n_nodes`` always equals the graph's, because removed nodes keep a zero row).
-    ``size == 5`` with ``removal == "none"`` is refused unless ``force`` (measured: the full
-    5-node mcml did not finish in 30 min, spec 8.3).
+    Files are ``orbits-<backend>-<removal>.npz`` and ``graphlets-<backend>-<removal>.json``,
+    where ``<backend>`` is the registry key (``"default"`` resolves to :data:`DEFAULT_BACKEND`);
+    the JSON path is returned. The npz stores the graphlet ``size``, so :func:`load_orbits` can
+    check the orbit width against :data:`N_ORBITS`. ``n_nodes`` and ``n_edges`` describe the
+    counting graph that was counted (``n_nodes`` always equals the graph's, because removed
+    nodes keep a zero row). ``size == 5`` with ``removal == "none"`` is refused unless ``force``
+    (measured: the full 5-node mcml did not finish in 30 min, spec 8.3).
     """
     require("analysis")
     import numpy as np
@@ -269,7 +285,8 @@ def run_graphlets(
             "5-node orbits on the full graph did not finish in 30 min; "
             "use --removal global or --force"
         )
-    counter = get_backend(backend)
+    resolved = _backend_key(backend)
+    counter = get_backend(resolved)
     if size > counter.max_size:
         raise BackendUnavailable(
             f"graphlet backend {counter.name!r} counts at most {counter.max_size}-node graphlets"
@@ -287,19 +304,20 @@ def run_graphlets(
     if info is None:
         raise RuntimeError("the counting graph carries no signal info")
     out_dir.mkdir(parents=True, exist_ok=True)
-    stem = f"{counter.name}-{removal}"
+    stem = f"{resolved}-{removal}"
     np.savez(
         out_dir / f"orbits-{stem}.npz",
         orbits=orbits,
         roles=info.roles,
         node_ids=np.asarray(g.node_ids),
+        size=np.int64(size),
     )
     record: dict[str, object] = {
         "schema": _SCHEMA,
         "kind": _KIND,
         "design": g.design,
         "floor": g.floor,
-        "backend": counter.name,
+        "backend": resolved,
         "tool": _tool_info(counter),
         "size": int(size),
         "n_orbits": N_ORBITS[size],
@@ -334,21 +352,32 @@ def load_orbits(
     """Orbits and roles of a previous :func:`run_graphlets` run (spec 8.6), by file name.
 
     A missing file raises ``FileNotFoundError`` (the caller computes it first); arrays whose
-    node count differs from ``g`` raise ``ValueError``.
+    node count differs from ``g``, a stored ``node_ids`` that differs from ``g``, or an orbit
+    width that does not match the stored graphlet ``size`` (or any size of :data:`N_ORBITS`
+    for files written before the size was stored) raise ``ValueError``.
     """
     require("analysis")
     import numpy as np
 
-    name = DEFAULT_BACKEND if backend == "default" else backend
+    name = _backend_key(backend)
     path = out_dir / f"orbits-{name}-{removal}.npz"
-    data = np.load(path)
-    try:
+    with np.load(path) as data:
         orbits = np.asarray(data["orbits"])
         roles = np.asarray(data["roles"])
-    finally:
-        data.close()
+        node_ids = tuple(str(node_id) for node_id in np.asarray(data["node_ids"]).tolist())
+        size = int(np.asarray(data["size"])) if "size" in data.files else None
+    if node_ids != tuple(g.node_ids):
+        raise ValueError(f"{path}: node ids do not match the {g.n_nodes} nodes of the graph")
     if orbits.ndim != 2 or orbits.shape[0] != g.n_nodes:
         raise ValueError(f"{path}: orbits of shape {orbits.shape} do not match {g.n_nodes} nodes")
+    width = int(orbits.shape[1])
+    if size is not None:
+        if size not in N_ORBITS:
+            raise ValueError(f"{path}: stored graphlet size {size} is not one of {_SIZES}")
+        if width != N_ORBITS[size]:
+            raise ValueError(f"{path}: {width} orbit columns do not match size {size}")
+    elif width not in N_ORBITS.values():
+        raise ValueError(f"{path}: {width} orbit columns do not match sizes {_SIZES}")
     if roles.shape != (g.n_nodes, 4):
         raise ValueError(f"{path}: roles of shape {roles.shape} do not match {g.n_nodes} nodes")
     return orbits, roles
