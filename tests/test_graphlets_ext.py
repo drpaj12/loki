@@ -175,6 +175,23 @@ class PinnedTests(unittest.TestCase):
             self.assertEqual(calls[0][0], ["g++", "-O2", "-std=c++11", "-o", "orca", "orca.cpp"])
             self.assertEqual(calls[0][1]["cwd"], dest)
 
+            with mock.patch("loki.tools.ORCA_SHA256", digest):
+                with self.assertRaises(RuntimeError) as caught_compile:
+                    fetch_orca(
+                        dest / "no-compiler", downloader=download, compiler="no-such-compiler"
+                    )
+                self.assertIn("cannot run the compiler", str(caught_compile.exception))
+                self.assertFalse((dest / "no-compiler" / "orca").exists())
+                failed = subprocess.CompletedProcess(["g++"], 1, "", "orca.cpp: error: boom\n")
+                with (
+                    mock.patch("loki.tools.subprocess.run", return_value=failed),
+                    self.assertRaises(RuntimeError) as caught_build,
+                ):
+                    fetch_orca(dest / "bad-build", downloader=download)
+                self.assertIn("failed (exit 1)", str(caught_build.exception))
+                self.assertIn("orca.cpp: error: boom", str(caught_build.exception))
+                self.assertFalse((dest / "bad-build" / "orca").exists())
+
     def test_cli_tools_fetch_orca_usage(self) -> None:
         """``loki tools`` without a subcommand is a usage error (exit 2)."""
         from loki.cli import main
@@ -269,7 +286,8 @@ class CounterTests(unittest.TestCase):
         find_orca() is not None, "ORCA is not installed: run loki tools fetch-orca"
     )
     def test_real_orca_matches_oracle(self) -> None:
-        """Ten random graphs: ORCA equals the oracle at size 4 and in the first 15 columns of 5."""
+        """Ten random graphs match the oracle at 4 and the first 15 of 5; a 3000-leaf star
+        keeps the hub's orbit 7 int64-exact at C(3000, 3) = 4495501000."""
         import numpy as np
 
         counter = OrcaCounter()
@@ -280,6 +298,12 @@ class CounterTests(unittest.TestCase):
             wide = counter.count(n, src, dst, size=5)
             self.assertEqual(wide.shape, (n, N_ORBITS[5]))
             np.testing.assert_array_equal(wide[:, :15], expected)
+        degree = 3000
+        src = np.zeros(degree, dtype=np.int32)
+        dst = np.arange(1, degree + 1, dtype=np.int32)
+        hub = counter.count(degree + 1, src, dst)
+        self.assertEqual(hub.dtype, np.int64)
+        self.assertEqual(int(hub[0][7]), degree * (degree - 1) * (degree - 2) // 6)
 
     def test_run_graphlets_with_fake_orca_end_to_end(self) -> None:
         """``run_graphlets(backend="ext")`` through the fake writes both files and pins the tool."""

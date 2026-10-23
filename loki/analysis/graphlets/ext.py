@@ -107,7 +107,8 @@ class OrcaCounter:
 
         The run writes the input file, runs ``orca node <size> <in> <out>`` in a temporary
         directory with an argv list (never a shell), discards stdout on success, and raises
-        ``RuntimeError`` with the last stderr lines on a non-zero exit or a timeout.
+        ``RuntimeError`` with the last stderr lines on a non-zero exit or a timeout; a tool that
+        cannot be executed at all (a non-executable cache binary) also raises ``RuntimeError``.
         """
         from loki.analysis.graphlets import (
             N_ORBITS,
@@ -134,6 +135,8 @@ class OrcaCounter:
                 raise RuntimeError(
                     f"ORCA did not finish within {self.timeout:g} s: {exc}"
                 ) from exc
+            except OSError as exc:
+                raise RuntimeError(f"{command[0]}: cannot run ORCA: {exc}") from exc
             if done.returncode != 0:
                 tail = done.stderr.splitlines()[-_STDERR_LINES:]
                 raise RuntimeError(
