@@ -849,8 +849,10 @@ other gate cells that `equiv-check` cannot read as subcircuits; found by accepta
 `skipped:hard` (decision 2). `differs` is a bug: the run exits 1.
 
 A gate-level `netlist.v` input (floor F3) is not BLIF text, so the check writes the level-0 design
-out with `write_blif --gates-as-names` and compares that BLIF with the final BLIF (`_Run.input_blif`;
-fixed in Loki issue #14, 2026-10-23). A BLIF input is still compared as given.
+out with the same `flatten; lower; write_blif --gates-as-names` rewrite as the final side and
+compares the two BLIFs (`_Run.input_blif`; fixed in Loki issue #14, 2026-10-23). Flattening both
+sides keeps a hierarchical input from reading as structurally different. A BLIF input is still
+compared as given.
 
 ## 10. Determinism
 

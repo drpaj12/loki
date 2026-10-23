@@ -294,6 +294,14 @@ class VerilogInputFinalCheckTest(unittest.TestCase):
         self.assertEqual(res.final_equiv["status"], "equivalent")
         self.assertEqual(res.final_equiv["tool_exit"], 0)
 
+    def test_hierarchical_verilog_input_checked(self) -> None:
+        """A multi-module ``.v`` input is checked after the same ``flatten; lower; write_blif``
+        rewrite as the final side, so a hierarchical input cannot read as structurally
+        different from the flattened final level."""
+        res = run_re(opts(RE / "multimod.v", floor="f3"))
+        self.assertEqual(res.final_equiv["status"], "equivalent")
+        self.assertEqual(res.final_equiv["tool_exit"], 0)
+
 
 @unittest.skipUnless(odin_available(), "needs Odin III")
 class NoToolTest(unittest.TestCase):
