@@ -23,6 +23,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install ruff mypy cffi "wyrd @ git+https://github.com/drpaj12/wyrd@11ee708790f05a4830ffa9172ea56e509115c33b"
+      # mypy sees the optional analysis and GNN libraries; torch comes from the CPU wheel index.
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install "numpy>=1.26" "scipy>=1.11" "scikit-learn>=1.5" "networkx>=3.3" "torch_geometric>=2.5"
       - run: ruff check .
       - run: mypy --strict loki tests
 
@@ -62,7 +65,11 @@ jobs:
           make -C abc-src -j4 ABC_USE_NO_READLINE=1 abc
           mkdir -p abc-bin && cp abc-src/abc abc-bin/abc
       - run: pip install cffi "wyrd @ git+https://github.com/drpaj12/wyrd@11ee708790f05a4830ffa9172ea56e509115c33b"
-      - run: pip install --no-deps .  # odin3 is the source checkout on PYTHONPATH, not a dist
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      # odin3 is the source checkout on PYTHONPATH, not a dist on an index, so the project is
+      # installed without dependencies and the [dev] extra's libraries are named here instead.
+      - run: pip install --no-deps ".[dev]"
+      - run: pip install "numpy>=1.26" "scipy>=1.11" "scikit-learn>=1.5" "networkx>=3.3" "torch_geometric>=2.5"
       - run: python -m unittest discover -s tests -t . -v
         env:
           ODIN3_ROOT: ${{ github.workspace }}/odin3-src
