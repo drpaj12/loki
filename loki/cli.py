@@ -1,5 +1,5 @@
 """The ``loki`` command: bench, assemble, check, re, score, score-all, calibrate, re-project,
-tools."""
+tools, analyze."""
 
 from __future__ import annotations
 
@@ -187,12 +187,16 @@ def _run(args: argparse.Namespace) -> int:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Exit 0 ok, 1 invariant errors, 2 usage. ``re`` is delegated to ``loki.re.main``."""
+    """Exit 0 ok, 1 invariant errors, 2 usage. ``re`` and ``analyze`` are delegated."""
     words = list(sys.argv[1:] if argv is None else argv)
     if words[:1] == ["re"]:
         from loki.re.main import main as re_main
 
         return re_main(words[1:])
+    if words[:1] == ["analyze"]:
+        from loki.analysis.run import main as analyze_main
+
+        return analyze_main(words[1:])
     try:
         args = _parser().parse_args(words)
     except SystemExit as exc:

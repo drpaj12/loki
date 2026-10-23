@@ -45,13 +45,19 @@ _GRAPHLETS_DIR = "graphlets"
 
 
 def export_graph(
-    g: Graph, region: Region | None, formats: Sequence[str], out: Path
+    g: Graph,
+    region: Region | None,
+    formats: Sequence[str],
+    out: Path,
+    *,
+    include_structural: bool = True,
 ) -> list[Path]:
     """Export ``g`` or its induced region in every requested format into ``out``.
 
     ``formats`` is a subset of :data:`FORMATS`; an unknown name raises ``ValueError`` before
-    anything is written. The returned paths are sorted and the export is deterministic byte for
-    byte.
+    anything is written. ``include_structural`` reaches the PyG payload: ``False``
+    (``--no-structural``) leaves out the spec-4.1 block. The returned paths are sorted and the
+    export is deterministic byte for byte.
     """
     require("analysis")
     chosen = tuple(formats)
@@ -73,7 +79,8 @@ def export_graph(
     if "pyg" in chosen:
         paths.append(
             write_pyg(
-                target, _with_suffix(stem, ".pt"), orbits_dir=out.parent / _GRAPHLETS_DIR
+                target, _with_suffix(stem, ".pt"), orbits_dir=out.parent / _GRAPHLETS_DIR,
+                include_structural=include_structural,
             )
         )
     return sorted(paths)
@@ -196,13 +203,24 @@ def pyg_dict(
 
 
 def write_pyg(
-    g: Graph, path: Path, split: str | None = None, *, orbits_dir: Path | None = None
+    g: Graph,
+    path: Path,
+    split: str | None = None,
+    *,
+    orbits_dir: Path | None = None,
+    include_structural: bool = True,
 ) -> Path:
-    """Save :func:`pyg_dict` of ``g`` at ``path`` with ``torch.save`` and return ``path``."""
+    """Save :func:`pyg_dict` of ``g`` at ``path`` with ``torch.save`` and return ``path``.
+
+    ``include_structural`` is forwarded to :func:`pyg_dict`; ``False`` writes no structural key
+    (the export ``--no-structural`` flag).
+    """
     require("gnn")
     torch: Any = importlib.import_module("torch")
     path.parent.mkdir(parents=True, exist_ok=True)
-    torch.save(pyg_dict(g, split, orbits_dir=orbits_dir), path)
+    torch.save(
+        pyg_dict(g, split, include_structural, orbits_dir=orbits_dir), path
+    )
     return path
 
 
