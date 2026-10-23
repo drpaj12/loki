@@ -60,6 +60,8 @@ class RegionTest(unittest.TestCase):
         self.assertEqual(region.node_ids, ("c", "d"))
         self.assertEqual(region.spec, "cone:d:in:1")
         self.assertEqual(cone(self.chain, ["d"], "in", 2).node_ids, ("b", "c", "d"))
+        # From a non-sink node, ``in`` differs from ``both`` (which also reaches ``d``).
+        self.assertEqual(cone(self.chain, ["c"], "in", 1).node_ids, ("b", "c"))
 
     def test_cone_out_all(self) -> None:
         self.assertEqual(cone(self.chain, ["a"], "out", None).node_ids, ("a", "b", "c", "d"))
@@ -99,8 +101,11 @@ class RegionTest(unittest.TestCase):
             parse_region(self.chain, "cone:a:out:all").node_ids, ("a", "b", "c", "d")
         )
         self.assertEqual(parse_region(self.chain, "cone:a,b:both:0").node_ids, ("a", "b"))
+        reversed_order = parse_region(self.chain, "cone:b,a:both:0")
+        self.assertEqual(reversed_order.node_ids, ("a", "b"))
+        self.assertEqual(reversed_order.spec, "cone:a,b:both:0")
         nodes = self.dir / "ids.txt"
-        nodes.write_text("n5\nn0\nn5\n", encoding="utf-8")
+        nodes.write_text("n5\n\nn0\n\nn5\n", encoding="utf-8")
         region = parse_region(self.fixture, f"nodes:{nodes}")
         self.assertEqual(region.node_ids, ("n0", "n5"))
         self.assertEqual(region.spec, "nodes:n0,n5")
@@ -117,11 +122,13 @@ class RegionTest(unittest.TestCase):
             "cluster:only.json:x",
         )
         for spec in bad:
-            with self.subTest(spec=spec), self.assertRaises(ValueError):
+            with self.subTest(spec=spec), self.assertRaises(RegionError):
                 parse_region(self.chain, spec)
 
     def test_region_hash_stable(self) -> None:
         first = region_hash("cone:a:in:1")
+        # sha256("cone:a:in:1") first 8 hex: pins the algorithm, not only stability.
+        self.assertEqual(first, "5ffca7ba")
         self.assertEqual(first, region_hash("cone:a:in:1"))
         self.assertRegex(first, r"^[0-9a-f]{8}$")
         self.assertNotEqual(first, region_hash("cone:a:in:2"))

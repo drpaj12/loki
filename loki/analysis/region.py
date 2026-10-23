@@ -45,7 +45,14 @@ class RegionError(ValueError):
 
 @dataclass(frozen=True)
 class Region:
-    """A set of node ids of one graph (L2 spec 4), in graph order, and the spec that made it."""
+    """A set of node ids of one graph (L2 spec 4), in graph order, and the spec that made it.
+
+    ``spec`` is a canonical spelling, not the CLI spelling of :func:`parse_region`:
+    ``cone:<ids in graph order>:<direction>:<depth|all>``, ``nodes:<id>[,<id>...]`` or the
+    partition's ``cluster:<key>:<cluster>``. It is not re-parsable by design (``parse_region``
+    reads ``nodes:...`` as a file name) and its :func:`region_hash` can differ from the hash of
+    the CLI input that produced it.
+    """
 
     spec: str
     node_ids: tuple[str, ...]
