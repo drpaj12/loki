@@ -51,3 +51,51 @@ See `docs/runbook-l0.md`.
 
 `calib/f2.json` (train split) is committed. Details in `docs/runbook-l1.md`, first numbers in
 `docs/results-l1.md`.
+
+## L2: `loki analyze` (export, clustering, graphlets, GNN)
+
+Four plugin kinds read one L0 `graph.json` (or one dataset design) and write under `--out`:
+
+    loki analyze export --dataset dataset --design micro_bm_DL_2_1_mux --floor f2 \
+        --format edgelist,graphml,pyg --out out [--region cone:<id>:in:2] [--no-structural]
+    loki analyze cluster --dataset dataset --design micro_bm_DL_2_1_mux --floor f2 \
+        --method all [--k 8|auto] [--features node,graphlet] --out out
+    loki tools fetch-orca && loki analyze graphlets --dataset dataset --design micro_bm_DL_2_1_mux \
+        --floor f2 --backend ext [--size 4|5] [--removal global|none] --out out [--licence]
+    loki analyze gnn --dataset dataset --floor f2 --out out [--features node,graphlet,wl,npn]
+
+`loki analyze structural` computes and caches the structural arrays (1-WL colours, NPN classes,
+role flags) for inspection; `export` and `gnn` compute them when needed. `--graph graph.json`
+replaces the dataset options for export, structural, cluster and graphlets; `gnn` is
+dataset-only (spec 10). Exit codes: 0 ok, 1 analysis failure, 2 usage,
+3 missing extra or backend.
+
+Extras: the base install stays `odin3` only. `pip install 'loki[analysis]'` adds numpy, scipy,
+scikit-learn and networkx (export, cluster, graphlets, structural); `pip install 'loki[gnn]'`
+adds torch and torch_geometric (PyG export, GNN). Tests needing an extra skip without it.
+
+Output tree (`<out>`, spec 11):
+
+    <out>/<design>/<floor>/export/       whole.edges.tsv whole.nodes.tsv whole.graphml whole.pt  region-<h>.*
+    <out>/<design>/<floor>/partition/    <method>-<hash8>.json
+    <out>/<design>/<floor>/graphlets/    orbits-<backend>-<removal>.npz graphlets-<backend>-<removal>.json
+    <out>/<design>/<floor>/structural/   structural-<variant>.npz structural-<variant>.json
+    <out>/gnn/                           config.json vocab.json model.pt metrics.json predictions-<design>.csv
+    <out>/metrics.json                   numbers for the Wyrd step
+
+The GNN baseline follows GNN-RE (Alrahis et al., "GNN-RE: Graph Neural Networks for Reverse
+Engineering of Gate-Level Netlists", IEEE TCAD, doi:10.1109/TCAD.2021.3110807;
+github.com/DfX-NYUAD/GNN-RE) and the GNN4IC list (github.com/DfX-NYUAD/GNN4IC; Alrahis,
+Knechtel, Sinanoglu, "Graph Neural Networks: A Powerful and Versatile Tool for Advancing Design,
+Reliability, and Security of ICs", ASP-DAC 2023, arXiv:2211.16495); it is a baseline for the
+same task on L0 labels, not a re-implementation, and its numbers are not compared with theirs.
+
+Graphlet orbit counts use ORCA: Przulj, Bioinformatics 23(2):e177-e183, 2007,
+doi:10.1093/bioinformatics/btl301; Hocevar and Demsar, Bioinformatics 30(4):559-565, 2014,
+doi:10.1093/bioinformatics/btt717 (`loki analyze graphlets --licence` prints this citation).
+ORCA is GPL-3.0 and runs as a separate program, never linked or vendored; fetch and build the
+pinned source into `~/.cache/loki/tools/orca-e146a8b/` with `loki tools fetch-orca`.
+
+Acceptance and scale: `python -m unittest tests.test_acceptance_l2 -v` (spec 12; the GNN item
+uses `$LOKI_L0_DATASET` when set) and `LOKI_SCALE=1 python -m unittest tests.test_scale_l2 -v`
+(spec 3 budgets; run it alone, never beside Odin III sweeps).
