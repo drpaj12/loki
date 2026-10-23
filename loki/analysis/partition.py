@@ -15,6 +15,7 @@ import hashlib
 import json
 import statistics
 from dataclasses import dataclass
+from functools import cached_property
 from importlib import metadata
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -70,11 +71,19 @@ class Partition:
             if number == cluster
         )
 
+    @cached_property
+    def _rows(self) -> dict[str, int]:
+        """``node_ids`` row map, built once: L1 calls :meth:`cluster_of` for every node."""
+        rows: dict[str, int] = {}
+        for row, node_id in enumerate(self.node_ids):
+            rows.setdefault(node_id, row)
+        return rows
+
     def cluster_of(self, node_id: str) -> int:
         """The cluster number of ``node_id``; ``ValueError`` when the node is not in the record."""
         try:
-            row = self.node_ids.index(node_id)
-        except ValueError:
+            row = self._rows[node_id]
+        except KeyError:
             raise ValueError(f"node {node_id!r} is not in partition {self.key}") from None
         return self.assignment[row]
 
@@ -84,17 +93,22 @@ class Partition:
 
     @property
     def key(self) -> str:
-        """``<method>:<hash8>``, the evidence identity of spec 6."""
-        hash8 = partition_hash(self.method, self.params, self.seed, self.graph_sha256)
+        """``<method>:<hash8>``, the evidence identity of spec 6 (hashed over the stored params)."""
+        hash8 = partition_hash(
+            self.method, _rounded_dict(self.params), self.seed, self.graph_sha256
+        )
         return f"{self.method}:{hash8}"
 
 
 def partition_hash(method: str, params: dict[str, object], seed: int, graph_sha256: str) -> str:
     """First 8 hex of the sha256 of the canonical JSON of method/params/seed/graph hash (spec 6).
 
-    Canonical JSON here is compact with sorted keys, so one configuration has one name on every
-    machine. Pass JSON-ready params (:func:`make_partition` canonicalises them first): numpy
-    scalars do not serialise.
+    Canonical JSON here is compact with sorted keys:
+    ``json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)``.
+    It is deliberately not :func:`loki.schemas.dump_json` (indent 1 plus a trailing newline):
+    the hash covers exactly these bytes, so a second implementation can reproduce a key. Pass
+    JSON-ready params in their stored form (:func:`write_partition` and :attr:`Partition.key`
+    hash ``_rounded_dict`` output; numpy scalars do not serialise).
     """
     payload = {"method": method, "params": params, "seed": seed, "graph_sha256": graph_sha256}
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
@@ -112,10 +126,12 @@ def compute_quality(g: Graph, assignment: npt.NDArray[Any]) -> dict[str, object]
 
     ``modularity`` is computed on the undirected simple projection with
     ``networkx.community.modularity``; a projection with no edges gets ``0.0`` without the call
-    (networkx raises there). ``nmi_module_path``, ``ari_module_path`` and ``nmi_construct_type``
-    compare the partition with the ground truth over nodes of kind lut, ff, hard and gate; they
-    are ``None`` when the graph carries no labels, when those kinds hold fewer than two labelled
-    nodes, or when the partition has fewer than two nodes.
+    (networkx raises there). Numbers must be contiguous ``0..K-1``, as :func:`make_partition`
+    canonicalises them: negative numbers and gaps raise ``ValueError``. ``nmi_module_path``,
+    ``ari_module_path`` and ``nmi_construct_type`` compare the partition with the ground truth
+    over nodes of kind lut, ff, hard and gate; each is ``None`` when the graph carries no labels,
+    when its column is absent, when those kinds hold fewer than two labelled nodes, or when the
+    partition has fewer than two nodes.
     """
     require("analysis")
     import numpy as np
@@ -129,6 +145,8 @@ def compute_quality(g: Graph, assignment: npt.NDArray[Any]) -> dict[str, object]
     labels = tuple(int(number) for number in values.tolist())
     if any(number < 0 for number in labels):
         raise ValueError("assignment numbers must be >= 0")
+    if labels and max(labels) + 1 != len(set(labels)):
+        raise ValueError("assignment numbers must be 0..K-1 without gaps")
     sizes = _cluster_sizes(labels)
     quality: dict[str, object] = {
         "modularity": _modularity(g, labels, sizes),
@@ -188,7 +206,8 @@ def make_partition(
 def write_partition(p: Partition, out_dir: Path) -> Path:
     """Write ``<out_dir>/<method>-<hash8>.json`` (schema 1, deterministic); return the path."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    hash8 = partition_hash(p.method, p.params, p.seed, p.graph_sha256)
+    params = _rounded_dict(p.params)
+    hash8 = partition_hash(p.method, params, p.seed, p.graph_sha256)
     path = out_dir / f"{p.method}-{hash8}.json"
     obj: dict[str, object] = {
         "schema": _SCHEMA,
@@ -196,7 +215,7 @@ def write_partition(p: Partition, out_dir: Path) -> Path:
         "design": p.design,
         "floor": p.floor,
         "method": p.method,
-        "params": _rounded_dict(p.params),
+        "params": params,
         "seed": p.seed,
         "graph_sha256": p.graph_sha256,
         "n_nodes": len(p.node_ids),
@@ -216,9 +235,10 @@ def load_partition(path: Path) -> Partition:
     """Read a partition record and validate it (spec 6); ``ValueError`` on any inconsistency.
 
     Checked: the exact schema-1 key set, ``kind``, ``schema``, the types of every field, that
-    ``node_ids`` and ``assignment`` both hold ``n_nodes`` entries, that the numbers are 0..K-1
-    without gaps, and that ``n_clusters`` matches them. ``components`` is optional (``None``
-    when absent) so a hand-written record of the spec-6 example still loads.
+    ``node_ids`` and ``assignment`` both hold ``n_nodes`` entries, that ``node_ids`` are unique
+    (no id repeats, so ``cluster_of`` is unambiguous), that the numbers are 0..K-1 without gaps,
+    and that ``n_clusters`` matches them. ``components`` is optional (``None`` when absent) so a
+    hand-written record of the spec-6 example still loads.
     """
     data = _record(json.loads(path.read_text(encoding="utf-8")), path)
     node_ids = _texts(data, "node_ids", path)
@@ -226,6 +246,8 @@ def load_partition(path: Path) -> Partition:
     assignment = _integers(data, "assignment", path)
     if len(node_ids) != n_nodes:
         raise ValueError(f"{path}: node_ids holds {len(node_ids)} ids, n_nodes is {n_nodes}")
+    if len(set(node_ids)) != len(node_ids):
+        raise ValueError(f"{path}: node_ids holds duplicate ids")
     if len(assignment) != n_nodes:
         raise ValueError(
             f"{path}: assignment holds {len(assignment)} numbers, n_nodes is {n_nodes}"
@@ -374,8 +396,9 @@ def _record(obj: object, path: Path) -> dict[str, object]:
     unknown = sorted(key for key in data if key not in _REQUIRED_KEYS + _OPTIONAL_KEYS)
     if unknown:
         raise ValueError(f"{path}: unknown partition key(s): {', '.join(unknown)}")
-    if data["schema"] != _SCHEMA:
-        raise ValueError(f"{path}: unsupported partition schema {data['schema']!r}")
+    schema = data["schema"]
+    if not isinstance(schema, int) or isinstance(schema, bool) or schema != _SCHEMA:
+        raise ValueError(f"{path}: unsupported partition schema {schema!r}")
     if data["kind"] != _KIND:
         raise ValueError(f"{path}: kind is {data['kind']!r}, not {_KIND!r}")
     return data

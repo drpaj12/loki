@@ -193,6 +193,8 @@ class PartitionTest(unittest.TestCase):
             "nodes": dict(data, node_ids=data["node_ids"][:-1]),
             "clusters": dict(data, n_clusters=5),
             "kind": dict(data, kind="graph"),
+            "duplicate": dict(data, node_ids=[data["node_ids"][0]] * len(data["node_ids"])),
+            "schema_true": dict(data, schema=True),
         }
         for name, broken in cases.items():
             path = self.dir / f"{name}.json"
@@ -218,6 +220,14 @@ class PartitionTest(unittest.TestCase):
         self.assertEqual(parse_region(self.small, f"cluster:{path}:0").node_ids,
                          ("n0", "n1", "n2", "n4"))
 
+    def test_quality_rejects_gap(self) -> None:
+        import numpy as np
+
+        with self.assertRaises(ValueError):
+            compute_quality(self.small, np.asarray([0, 0, 2, 0, 2, 2, 2], dtype=np.int64))
+        with self.assertRaises(ValueError):
+            compute_quality(self.small, np.asarray([0, 0, -1, 0, 1, 1, 1], dtype=np.int64))
+
     def test_write_deterministic(self) -> None:
         p = make_partition(self.graph, "louvain", {"resolution": 1.0}, 0, _planted(self.graph))
         first = write_partition(p, self.dir / "a")
@@ -232,6 +242,18 @@ class PartitionTest(unittest.TestCase):
         text = write_partition(noisy, self.dir / "c").read_text(encoding="utf-8")
         self.assertIn("0.123457", text)
         self.assertNotIn("0.1234567", text)
+
+    def test_hand_built_params_hash_stored_form(self) -> None:
+        import numpy as np
+
+        p = make_partition(self.small, "louvain", {}, 0,
+                           np.asarray([0, 0, 0, 1, 0, 1, 1], dtype=np.int64))
+        noisy = replace(p, params={"resolution": 0.1234567890123})
+        path = write_partition(noisy, self.dir / "hand")
+        loaded = load_partition(path)
+        self.assertEqual(loaded.params, {"resolution": 0.123457})
+        self.assertEqual(path.name, f"louvain-{loaded.key[8:]}.json")
+        self.assertEqual(loaded.key, noisy.key)
 
     def test_single_node_graph(self) -> None:
         import numpy as np

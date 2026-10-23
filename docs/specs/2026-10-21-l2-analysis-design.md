@@ -178,7 +178,10 @@ load_partition(path) -> Partition      write_partition(partition, dir) -> Path
 ```
 
 File `<out>/<design>/<floor>/partition/<method>-<hash8>.json` (`hash8` = first 8 hex of sha256 of the
-canonical JSON of `{method, params, seed, graph_sha256}`, so one configuration has one file name):
+canonical JSON of `{method, params, seed, graph_sha256}`, so one configuration has one file name).
+The hash's canonical JSON is compact with sorted keys (`json.dumps(payload, sort_keys=True,
+separators=(",", ":"), ensure_ascii=False)`, not `dump_json`'s indented form), and it covers `params`
+as stored, floats rounded to 6 decimals:
 
 ```json
 {"schema": 1, "kind": "partition", "design": "micro_x", "floor": "f2", "method": "louvain",
@@ -198,7 +201,8 @@ both are `null` when the method did not look. `assignment` is aligned to `graph.
 projection (`networkx.community.modularity`; for 100k nodes this takes a few seconds). The `nmi_*` and
 `ari_*` keys (`sklearn.metrics.normalized_mutual_info_score`, `adjusted_rand_score`) compare the partition
 with the ground truth `module_path` and `construct_type` over nodes of kind `lut`, `ff`, `hard`, `gate`;
-they are `null` when the graph has no labels. They are a quality report for Peter and tests, never an
+each is `null` per column: when the graph has no labels, when that label column is absent, or when fewer
+than two nodes of kind `lut`, `ff`, `hard` or `gate` carry a label in it. They are a quality report for Peter and tests, never an
 input to a method. Pre-existing hierarchy (`module_path`) is exactly what L1 climbs, so these numbers
 are the L2 acceptance signal for "clusters recover modules".
 
@@ -241,9 +245,10 @@ is all identical rows AP gives one cluster; that is returned as is.
    if |L| > 5000 else "arpack", random_state=seed, drop_first=False)`, rows scaled to unit L2 norm
    (zero rows stay zero), then k-means (`n_init=3`, `random_state=seed`, `MiniBatchKMeans` above 20000 rows)
    with `n_clusters=min(k, |L|)`.
-4. Every other connected component becomes one cluster of its own (numbers after L's, by lowest node).
-   Hundreds of tiny components are normal in a netlist (constants, unused logic); the partition records
-   `"components": C`.
+4. Every other connected component becomes one cluster of its own, numbered after L's by its lowest node.
+   That order is provisional: `make_partition` relabels every number canonically 0..K-1 by lowest node
+   index (section 3), and that stored order is the final one. Hundreds of tiny components are normal in a
+   netlist (constants, unused logic); the partition records `"components": C`.
 Params recorded: `k`, `n_components`. (`sklearn.cluster.SpectralClustering` is not used: its sparse path
 is not tested at this scale and it hides the component handling.)
 
