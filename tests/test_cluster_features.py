@@ -81,6 +81,10 @@ class ClusterFeaturesTest(unittest.TestCase):
         self.assertEqual(resolve_k("auto", 4), 2)
         self.assertEqual(resolve_k(50, 10), 10)
         self.assertEqual(resolve_k("auto", 1), 1)
+        with self.assertRaises(ValueError):
+            resolve_k("bogus", 1)
+        with self.assertRaises(ValueError):
+            resolve_k(0, 1)
 
     def test_kmeans_separates_planted_blocks(self) -> None:
         import numpy as np
@@ -89,6 +93,8 @@ class ClusterFeaturesTest(unittest.TestCase):
         partition = cluster_kmeans(g, k=2)
         widths = np.asarray(g.num["lut_width"])
         assignment = np.asarray(partition.assignment)
+        self.assertEqual(partition.n_clusters, 2)
+        self.assertTrue(all(size > 0 for size in partition.sizes()))
         for width in (2, 3):
             rows = np.flatnonzero(widths == width)
             self.assertEqual(len(set(assignment[rows].tolist())), 1, f"width {width} split")
@@ -110,6 +116,32 @@ class ClusterFeaturesTest(unittest.TestCase):
         with mock.patch.object(cluster, "KMEANS_FULL_MAX", 10):
             large = cluster_kmeans(g, k=2)
         self.assertEqual(large.params["algorithm"], "minibatch")
+
+    def test_kmeans_records_convergence_warning(self) -> None:
+        import importlib
+        import warnings as warnings_module
+
+        g = _load(make_graph(20))
+        kmeans = importlib.import_module("sklearn.cluster").KMeans
+        exceptions = importlib.import_module("sklearn.exceptions")
+        real = kmeans.fit_predict
+
+        def warned_fit(model: Any, x: Any, y: Any = None) -> Any:
+            warnings_module.warn("planted", exceptions.ConvergenceWarning, stacklevel=2)
+            return real(model, x, y)
+
+        with mock.patch.object(kmeans, "fit_predict", new=warned_fit):
+            warned = cluster_kmeans(g, k=2)
+        self.assertIs(warned.params["convergence_warning"], True)
+
+        def quiet_fit(model: Any, x: Any, y: Any = None) -> Any:
+            import numpy as np
+
+            return np.zeros(len(x), dtype=np.int64)
+
+        with mock.patch.object(kmeans, "fit_predict", new=quiet_fit):
+            clean = cluster_kmeans(g, k=2)
+        self.assertIs(clean.params["convergence_warning"], False)
 
     def test_affinity_sampled_and_assigned(self) -> None:
         g = _load(make_graph(115))
@@ -162,6 +194,7 @@ class ClusterFeaturesTest(unittest.TestCase):
         partition = cluster_kmeans(one)
         self.assertEqual(partition.assignment, (0,))
         self.assertEqual(partition.n_clusters, 1)
+        self.assertIs(partition.params["convergence_warning"], False)
         const = _load(_flat_graph(5, "const"))
         kmeans = cluster_kmeans(const, k="auto")
         self.assertEqual(len(kmeans.assignment), 5)
@@ -180,6 +213,15 @@ class ClusterFeaturesTest(unittest.TestCase):
         self.assertEqual(wide.shape[1], base.shape[1] + extra.shape[1])
         self.assertEqual(base.dtype, np.float64)
         self.assertEqual(wide.dtype, np.float64)
+        features = cluster_kmeans(g, k=2, extra=extra).params["features"]
+        self.assertEqual(
+            features,
+            [
+                "fan_in", "fan_out", "level", "lut_width", "hard_ports", "lut_ones",
+                "kind:pi", "kind:po", "kind:lut", "kind:ff", "kind:const", "kind:hard",
+                "kind:gate", "extra:0", "extra:1",
+            ],
+        )
 
 
 if __name__ == "__main__":

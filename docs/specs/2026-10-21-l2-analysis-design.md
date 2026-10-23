@@ -220,8 +220,16 @@ one cluster. All methods number clusters canonically.
 ### 7.1 k-means (feature space)
 
 `sklearn.cluster.KMeans` when N <= 20000, else `MiniBatchKMeans`; `n_init=3`, `random_state=seed`.
-Space: standardised `log1p` features (section 4, without floor and hard-type columns) plus optional
-extra columns (graphlet signatures, section 8.6, passed in as an array). Params recorded: `k`, `features`.
+Space (section 4 minus the floor block, the hard-type one-hot and `is_seq`/`is_const`), in column
+order: the six numeric features `fan_in`, `fan_out`, `level`, `lut_width`, `hard_ports`, `lut_ones`,
+`log1p`-scaled and standardised with `StandardScaler` (a constant column stays, as zeros); the kind
+one-hot block; then optional extra columns (graphlet signatures, section 8.6, passed in as an
+array). `is_seq` and `is_const` are covered by the `ff` and `const` kind one-hot columns and are
+intentionally excluded (plan Task 7 pins the six-feature space). Params recorded: `k`, `features`
+(one name per space column, in order: the six numeric names, `kind:<kind>` per one-hot column,
+`extra:<i>` per extra column), `algorithm` (`"kmeans"`, `"minibatch"`, or `"none"` when fewer than
+two clusters were asked for or are possible) and `convergence_warning` (whether sklearn raised a
+`ConvergenceWarning`; always false for `"none"`).
 
 ### 7.2 Affinity propagation (feature space, on a sample)
 

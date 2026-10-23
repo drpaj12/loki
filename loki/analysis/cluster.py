@@ -1,9 +1,9 @@
 """Clustering methods: k-means and affinity propagation (L2 spec sections 7.1 and 7.2).
 
-Both work in one float64 space (:func:`cluster_space`): the six numeric features of spec 4
-without the floor and hard-type blocks, ``log1p``-scaled and standardised with
-``StandardScaler``, then the kind one-hot columns, then optional extra columns such as the
-graphlet signatures. Constant columns standardise to zeros and are kept, never dropped.
+Both work in one float64 space (:func:`cluster_space`): six numeric features of spec 4 (without
+the floor block, the hard-type one-hot and ``is_seq``/``is_const``), ``log1p``-scaled and
+standardised with ``StandardScaler``, then the kind one-hot columns, then optional extra columns
+such as the graphlet signatures. Constant columns standardise to zeros and are kept, never dropped.
 
 k-means sees the whole netlist: ``KMeans`` up to :data:`KMEANS_FULL_MAX` nodes,
 ``MiniBatchKMeans`` above. Affinity propagation would build a dense N x N similarity matrix, so
@@ -58,18 +58,21 @@ class ClusterError(RuntimeError):
 def resolve_k(k: int | str, n: int) -> int:
     """The cluster count for ``n`` nodes (spec 7).
 
-    ``"auto"`` is ``clip(round(sqrt(N / 2)), 2, 200)``; an integer must be at least 1. Both
-    are then capped at ``n``, and fewer than two nodes always give one cluster.
+    ``"auto"`` is ``clip(round(sqrt(N / 2)), 2, 200)``; an integer must be at least 1. ``k`` is
+    validated before the small-graph case, so an unknown string or an integer below 1 raises even
+    when ``n < 2``. Both forms are then capped at ``n``, and fewer than two nodes give one cluster.
     """
-    if n < 2:
-        return 1
     if isinstance(k, str):
         if k != "auto":
             raise ValueError(f"unknown k {k!r}: use an integer or 'auto'")
+        if n < 2:
+            return 1
         automatic = round(math.sqrt(n / 2.0))
         return min(max(automatic, _AUTO_MIN), _AUTO_MAX, n)
     if k < 1:
         raise ValueError(f"k must be >= 1, got {k}")
+    if n < 2:
+        return 1
     return min(k, n)
 
 
@@ -113,8 +116,10 @@ def cluster_kmeans(
 
     ``KMeans`` runs when the graph has at most :data:`KMEANS_FULL_MAX` nodes and
     ``MiniBatchKMeans`` above it, both with ``n_init=3`` and ``random_state=seed``. The params
-    record the resolved ``k``, the feature width and which algorithm ran (``"kmeans"``,
-    ``"minibatch"``, or ``"none"`` when fewer than two clusters were asked for or possible).
+    record the resolved ``k``, the feature column names (``"features"``), the algorithm that ran
+    (``"kmeans"``, ``"minibatch"``, or ``"none"`` when fewer than two clusters were asked for or
+    possible) and whether sklearn raised a ``ConvergenceWarning`` (``"convergence_warning"``,
+    always false for ``"none"``, which never calls sklearn).
     """
     require("analysis")
     import numpy as np
@@ -122,6 +127,7 @@ def cluster_kmeans(
     clusters = resolve_k(k, g.n_nodes)
     space = cluster_space(g, extra)
     algorithm = _kmeans_algorithm(g.n_nodes, clusters)
+    convergence_warning = False
     if algorithm == "none":
         assignment = np.zeros(g.n_nodes, dtype=np.int64)
     else:
@@ -130,9 +136,19 @@ def cluster_kmeans(
             model = module.MiniBatchKMeans(n_clusters=clusters, n_init=3, random_state=seed)
         else:
             model = module.KMeans(n_clusters=clusters, n_init=3, random_state=seed)
-        assignment = np.asarray(model.fit_predict(space), dtype=np.int64)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            assignment = np.asarray(model.fit_predict(space), dtype=np.int64)
+        exceptions = importlib.import_module("sklearn.exceptions")
+        convergence_warning = any(
+            issubclass(entry.category, exceptions.ConvergenceWarning) for entry in caught
+        )
+    extra_width = int(space.shape[1]) - len(_LOG_FEATURES) - len(KINDS)
     params: dict[str, object] = {
-        "k": clusters, "features": int(space.shape[1]), "algorithm": algorithm,
+        "k": clusters,
+        "features": _feature_names(extra_width),
+        "algorithm": algorithm,
+        "convergence_warning": convergence_warning,
     }
     return make_partition(g, _KMEANS_METHOD, params, seed, assignment)
 
@@ -225,6 +241,13 @@ def _kmeans_algorithm(n: int, clusters: int) -> str:
     if clusters < 2 or n < 2:
         return "none"
     return "minibatch" if n > KMEANS_FULL_MAX else "kmeans"
+
+
+def _feature_names(extra_width: int) -> list[str]:
+    """One name per :func:`cluster_space` column, in column order (the ``features`` param, 7.1)."""
+    names = list(_LOG_FEATURES) + [f"kind:{kind}" for kind in KINDS]
+    names.extend(f"extra:{column}" for column in range(extra_width))
+    return names
 
 
 def _extra_table(n: int, extra: npt.NDArray[Any] | None) -> npt.NDArray[Any] | None:
