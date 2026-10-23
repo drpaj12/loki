@@ -170,7 +170,8 @@ to it (open question 1):
 
 ```
 Partition (frozen): design, floor, method, params (dict), seed, graph_sha256, node_ids (tuple[str]),
-  assignment (tuple[int], one cluster number per node, 0..K-1, no gaps), quality (dict), versions (dict)
+  assignment (tuple[int], one cluster number per node, 0..K-1, no gaps), quality (dict), versions (dict),
+  sampled (dict | None, default None), components (int | None, default None)
   .n_clusters  .members(c) -> tuple[str]  .cluster_of(node_id) -> int  .sizes() -> list[int]
   .key -> str   # "<method>:<hash8>", the evidence identity
 load_partition(path) -> Partition      write_partition(partition, dir) -> Path
@@ -182,13 +183,18 @@ canonical JSON of `{method, params, seed, graph_sha256}`, so one configuration h
 ```json
 {"schema": 1, "kind": "partition", "design": "micro_x", "floor": "f2", "method": "louvain",
  "params": {"resolution": 1.0}, "seed": 0, "graph_sha256": "...", "n_nodes": 123, "n_clusters": 7,
- "assignment": [0, 0, 1, ...],
+ "node_ids": ["n0", "n1", "n2", ...], "assignment": [0, 0, 1, ...],
  "quality": {"modularity": 0.51, "size_min": 3, "size_median": 14, "size_max": 40,
              "nmi_module_path": 0.62, "ari_module_path": 0.4, "nmi_construct_type": 0.2},
- "sampled": null, "versions": {"numpy": "...", "networkx": "...", "scikit-learn": "..."}}
+ "sampled": null, "components": null,
+ "versions": {"numpy": "...", "networkx": "...", "scikit-learn": "..."}}
 ```
 
-`assignment` is aligned to `graph.json` node order. `modularity` is computed on the undirected simple
+`node_ids` holds the ids in `graph.json` order, so the record names its own nodes and
+`members(c)`/`cluster_of(id)` need no graph. `sampled` records a node sample the method worked on
+(affinity propagation) and `components` the connected component count spectral clustering measured;
+both are `null` when the method did not look. `assignment` is aligned to `graph.json` node order.
+`modularity` is computed on the undirected simple
 projection (`networkx.community.modularity`; for 100k nodes this takes a few seconds). The `nmi_*` and
 `ari_*` keys (`sklearn.metrics.normalized_mutual_info_score`, `adjusted_rand_score`) compare the partition
 with the ground truth `module_path` and `construct_type` over nodes of kind `lut`, `ff`, `hard`, `gate`;
