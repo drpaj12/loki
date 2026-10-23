@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import contextlib
 import hashlib
 import importlib
@@ -122,6 +123,41 @@ class AnalysisCliTest(unittest.TestCase):
             self.assert_numbers(metrics)
             self.assertEqual(metrics["files"], 4)
 
+    @skip_without("torch", "torch_geometric")
+    def test_export_dataset_split_key(self) -> None:
+        """A dataset export writes the manifest split (spec 5); a bare graph export omits it."""
+        torch: Any = importlib.import_module("torch")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dataset = make_dataset(root / "ds", designs=4)
+            out = root / "out"
+            code, _text, err = run(
+                ["export", "--dataset", str(dataset), "--design", "micro_a0",
+                 "--floor", "f2", "--format", "pyg", "--out", str(out)]
+            )
+            self.assertEqual(code, 0, err)
+            payload: Any = torch.load(
+                out / "micro_a0" / "f2" / "export" / "whole.pt", weights_only=True
+            )
+            manifest: Any = json.loads(
+                (dataset / "manifest.json").read_text(encoding="utf-8")
+            )
+            split = next(
+                entry["split"] for entry in manifest["designs"]
+                if entry["design"] == "micro_a0"
+            )
+            self.assertEqual(payload["split"], split)
+            plain = root / "plain"
+            code, _text, err = run(
+                ["export", "--graph", str(self.graph(root)), "--format", "pyg",
+                 "--out", str(plain)]
+            )
+            self.assertEqual(code, 0, err)
+            without: Any = torch.load(
+                plain / "d" / "f2" / "export" / "whole.pt", weights_only=True
+            )
+            self.assertNotIn("split", without)
+
     def test_export_region_cone(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -207,6 +243,39 @@ class AnalysisCliTest(unittest.TestCase):
             self.assertEqual(code, 3, err)
             self.assertIn("--force", err)
 
+    def test_backend_names_unknown_exit_2_own_exit_3(self) -> None:
+        """An unknown name is usage (2); the unbuilt optional own backend is unavailable (3)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = self.graph(root)
+            out = root / "out"
+            code, _text, err = run(
+                ["graphlets", "--graph", str(path), "--backend", "own", "--out", str(out)]
+            )
+            self.assertEqual(code, 3, err)
+            self.assertIn("'own' is not built", err)
+            self.assertNotIn("unknown graphlet backend", err)
+            code, _text, err = run(
+                ["cluster", "--graph", str(path), "--features", "node,graphlet",
+                 "--backend", "bogus", "--out", str(out)]
+            )
+            self.assertEqual(code, 2, err)
+            self.assertIn("unknown graphlet backend 'bogus'", err)
+
+    def test_backend_runtime_error_exit_1(self) -> None:
+        """A backend RuntimeError is one line on stderr and exit 1, never a traceback."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = self.graph(root)
+            counter = self.register_fake()
+            failure = RuntimeError("ORCA failed (exit 1): boom")
+            with mock.patch.object(counter, "count", side_effect=failure):
+                code, _text, err = run(
+                    ["graphlets", "--graph", str(path), "--out", str(root / "out")]
+                )
+            self.assertEqual(code, 1, err)
+            self.assertEqual(err.strip(), "loki analyze: ORCA failed (exit 1): boom")
+
     def test_graphlets_metrics_keys(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -249,6 +318,15 @@ class AnalysisCliTest(unittest.TestCase):
             for key in ("test_accuracy", "test_macro_f1", "baseline_majority_accuracy"):
                 self.assertIn(key, metrics)
             self.assertTrue((out / "gnn" / "config.json").is_file())
+
+    def test_public_run_gnn_delegates_to_runner(self) -> None:
+        """``loki.analysis.gnn.run_gnn`` is the spec-10 public entry point of the gnn kind."""
+        gnn: Any = importlib.import_module("loki.analysis.gnn")
+        runner: Any = importlib.import_module("loki.analysis.run")
+        args = argparse.Namespace()
+        with mock.patch.object(runner, "run_gnn", return_value=7) as handler:
+            self.assertEqual(gnn.run_gnn(args), 7)
+        handler.assert_called_once_with(args)
 
     def test_missing_extra_exit_3(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

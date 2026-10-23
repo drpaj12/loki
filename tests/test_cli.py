@@ -27,6 +27,12 @@ class CliTest(unittest.TestCase):
     def test_analyze_without_kind_exit_2(self) -> None:
         self.assertEqual(run(["analyze"])[0], 2)
 
+    def test_help_lists_analyze(self) -> None:
+        code, text = run(["--help"])
+        self.assertEqual(code, 0)
+        self.assertIn("analyze", text)
+        self.assertIn("re", text)
+
     def test_check_exit_codes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = make_dataset(Path(tmp))

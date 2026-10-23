@@ -50,6 +50,8 @@ if TYPE_CHECKING:
 #: Default graphlet removal and size of the feature blocks that cluster and gnn compute.
 _FEATURE_REMOVAL = "global"
 _FEATURE_SIZE = 4
+#: The backend names of spec 10; ``own`` is the optional own counter of spec 8.5 (later).
+_SPEC_BACKENDS = ("ext", "own", "default")
 
 
 class UsageError(ValueError):
@@ -131,10 +133,28 @@ def _design_dir(out: Path, g: Graph, name: str) -> Path:
     return out / g.design / g.floor / name
 
 
+def _check_backend(name: str) -> None:
+    """Refuse an unknown backend name (exit 2) and an unbuilt optional one (exit 3).
+
+    ``own`` is a spec-10 name for the optional own counter (spec 8.5, later), so asking for it
+    is not a usage error: it is unavailable until plan Tasks G-own-1 and G-own-2 land, like any
+    other backend that reports itself unavailable.
+    """
+    if name not in _SPEC_BACKENDS and name not in BACKENDS:
+        raise UsageError(f"unknown graphlet backend {name!r}: use ext, own or default")
+    resolved = DEFAULT_BACKEND if name == "default" else name
+    if resolved not in BACKENDS:
+        raise BackendUnavailable(
+            f"graphlet backend {resolved!r} is not built: the own backend is optional and "
+            "later (spec 8.5)"
+        )
+
+
 def _load_or_count_orbits(
     g: Graph, out: Path, backend: str, *, removal: str = _FEATURE_REMOVAL
 ) -> tuple[npt.NDArray[Any], npt.NDArray[Any]]:
     """The graph's orbits and roles, counted first with :func:`run_graphlets` when missing."""
+    _check_backend(backend)
     orbit_dir = _design_dir(out, g, "graphlets")
     try:
         return load_orbits(g, backend, removal, orbit_dir)
@@ -181,13 +201,14 @@ def _run_export(args: argparse.Namespace) -> int:
     formats = [part.strip() for part in str(args.format).split(",") if part.strip()]
     if not formats:
         raise UsageError("--format needs at least one of edgelist, graphml, pyg")
-    g, _split = resolve_input(args)
+    g, split = resolve_input(args)
     out = _out(args)
     region = None
     if args.region:
         region = parse_region(g, str(args.region))
     paths = export_graph(
         g, region, formats, _design_dir(out, g, "export"),
+        split=split or None,
         include_structural=not bool(args.no_structural),
     )
     write_metrics(out, {"files": len(paths)})
@@ -248,6 +269,7 @@ def _run_cluster(args: argparse.Namespace) -> int:
 
 def _run_graphlets(args: argparse.Namespace) -> int:
     require("analysis")
+    _check_backend(str(args.backend))
     g, _split = resolve_input(args)
     out = _out(args)
     cfg = SignalConfig(min_fanout=int(args.min_fanout))
@@ -271,7 +293,8 @@ def _run_graphlets(args: argparse.Namespace) -> int:
     return 0
 
 
-def _run_gnn(args: argparse.Namespace) -> int:
+def run_gnn(args: argparse.Namespace) -> int:
+    """``loki analyze gnn``: train and evaluate the spec-9 GNN on one dataset floor."""
     require("gnn")
     dataset = Path(str(args.dataset))
     floor = str(args.floor)
@@ -306,7 +329,7 @@ _HANDLERS: dict[str, Callable[[argparse.Namespace], int]] = {
     "structural": _run_structural,
     "cluster": _run_cluster,
     "graphlets": _run_graphlets,
-    "gnn": _run_gnn,
+    "gnn": run_gnn,
 }
 
 
@@ -384,6 +407,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     except UsageError as err:
         print(f"loki analyze: {err}", file=sys.stderr)
         return 2
+    except RuntimeError as err:
+        # A backend failure (OrcaCounter's non-zero exit or timeout) is an analysis failure:
+        # one line on stderr, not a traceback. MissingExtra and BackendUnavailable are
+        # RuntimeError subclasses and are caught above as exit 3.
+        print(f"loki analyze: {err}", file=sys.stderr)
+        return 1
     except (ClusterError, RegionError, ValueError, OSError) as err:
         print(f"loki analyze: {err}", file=sys.stderr)
         return 1

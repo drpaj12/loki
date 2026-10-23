@@ -50,12 +50,15 @@ def export_graph(
     formats: Sequence[str],
     out: Path,
     *,
+    split: str | None = None,
     include_structural: bool = True,
 ) -> list[Path]:
     """Export ``g`` or its induced region in every requested format into ``out``.
 
     ``formats`` is a subset of :data:`FORMATS`; an unknown name raises ``ValueError`` before
-    anything is written. ``include_structural`` reaches the PyG payload: ``False``
+    anything is written. ``split`` is the manifest split of a dataset input and reaches the PyG
+    payload (spec 5, mandatory for a dataset export); a bare ``graph.json`` passes ``None`` and
+    writes no ``split`` key. ``include_structural`` reaches the PyG payload: ``False``
     (``--no-structural``) leaves out the spec-4.1 block. The returned paths are sorted and the
     export is deterministic byte for byte.
     """
@@ -79,7 +82,7 @@ def export_graph(
     if "pyg" in chosen:
         paths.append(
             write_pyg(
-                target, _with_suffix(stem, ".pt"), orbits_dir=out.parent / _GRAPHLETS_DIR,
+                target, _with_suffix(stem, ".pt"), split, orbits_dir=out.parent / _GRAPHLETS_DIR,
                 include_structural=include_structural,
             )
         )

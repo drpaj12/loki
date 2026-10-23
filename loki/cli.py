@@ -64,6 +64,8 @@ def _parser() -> argparse.ArgumentParser:
     tsub = tools.add_subparsers(dest="tools_cmd", required=True)
     tsub.add_parser("fetch-orca", help="download, verify and build the ORCA graphlet counter")
     sub.add_parser("re", help="reverse-engineer a netlist (loki re --help)", add_help=False)
+    sub.add_parser("analyze", help="analyse a graph or dataset (loki analyze --help)",
+                   add_help=False)
     return ap
 
 
