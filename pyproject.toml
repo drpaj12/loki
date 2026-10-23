@@ -23,6 +23,10 @@ loki = "loki.cli:main"
 [project.entry-points."wyrd.steps"]
 loki-dataset = "loki.step:DatasetStep"
 loki-re = "loki.re_step:ReStep"
+loki-export = "loki.analysis.steps:ExportStep"
+loki-cluster = "loki.analysis.steps:ClusterStep"
+loki-graphlets = "loki.analysis.steps:GraphletStep"
+loki-gnn = "loki.analysis.steps:GnnStep"
 
 [tool.setuptools.packages.find]
 include = ["loki*"]
