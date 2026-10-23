@@ -1,3 +1,4 @@
+import importlib
 import json
 import math
 import os
@@ -237,6 +238,34 @@ class LoopTest(unittest.TestCase):
         got = of_kind(res, "hard_add")
         self.assertEqual([h.features.get("declined_chain") for h in got], ["yes"])
         self.assertEqual([h.status for h in got], ["committed"])
+
+    def test_f1_unmap_failure_falls_back_and_discards(self) -> None:
+        """Spec 7.2/9.1: a *failed* ``unmap`` is not the pass-absent case, so the working copy is
+        discarded (the binding contract: a failed pass may have mutated it) and the run starts
+        again from level 0; the cells stay opaque and the report says ``unmap: unavailable``."""
+        root = odin3_root()
+        assert root is not None
+        mod = importlib.import_module("odin3")
+        real = mod.Design.run_pass
+        failed: list[Any] = []
+
+        def fake(design: Any, name: str, args: str = "") -> None:
+            if name == "unmap":
+                failed.append(design)
+                raise mod.Odin3Error("odin3_design_run_pass", 1, "unmap")
+            real(design, name, args)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "mix.blif"
+            path.write_text(MIX, encoding="utf-8")
+            with mock.patch.object(mod.Design, "run_pass", fake):
+                res = run_re(opts(path, floor="f1-k6", techlib=root / "lib" / "vtr.o3lib"))
+        self.assertEqual(res.notes["unmap"], "unavailable")
+        self.assertEqual([h for h in res.overlay.all() if h.kind.startswith("hard_")], [])
+        self.assertEqual(res.final_equiv["status"], "skipped:hard")
+        self.assertEqual(len(failed), 1)
+        self.assertIsNone(failed[0].ptr)
+        self.assertIsNot(res.final, failed[0])
 
     def test_f1_recovered_hard_cells_commit(self) -> None:
         """An adder with a constant carry-in and a multiply are recovered: both are confirmed

@@ -5,12 +5,16 @@ control nets is ambiguous and every member carries ``unmap_cand`` (unmap R-6/R-7
 """
 
 import importlib
+import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
 
+from loki.re.detectors.hard import HardDetector
 from loki.re.fngraph import FnGraph, from_design
+from loki.re.normalise import load_level0
 from tests.helpers import odin3_root
 
 MIX = (
@@ -113,6 +117,115 @@ class UnmapFactsTest(unittest.TestCase):
                 design.run_pass("write_rtlil", f'"{second}"')
             self.assertEqual(first.read_bytes(), second.read_bytes())
         design.close()
+
+
+DATASET_ENV = "LOKI_L0_DATASET"
+FLOOR = "f1-k6"
+
+
+def l0_dataset() -> Path | None:
+    """``$LOKI_L0_DATASET`` (an assembled L0 dataset) when set."""
+    raw = os.environ.get(DATASET_ENV, "")
+    return Path(raw) if raw else None
+
+
+@unittest.skipUnless(
+    unmap_available() and odin3_root() is not None, "needs an Odin III build with `unmap`"
+)
+class DatasetFloorTest(unittest.TestCase):
+    """Plan Task 17 Step 1 on the L0 ``f1-k6`` BLIF of real dataset designs, not a synthetic one."""
+
+    root: Path
+    dataset: Path
+
+    def setUp(self) -> None:
+        dataset = l0_dataset()
+        if dataset is None:
+            self.skipTest(f"set {DATASET_ENV} to an assembled L0 dataset")
+        root = odin3_root()
+        assert root is not None
+        self.root, self.dataset = root, dataset
+
+    def _floors(self) -> list[tuple[str, Path]]:
+        """(design, netlist) of every dataset design whose ``f1-k6`` floor was built."""
+        manifest = json.loads((self.dataset / "manifest.json").read_text(encoding="utf-8"))
+        out: list[tuple[str, Path]] = []
+        for entry in manifest.get("designs", []):
+            if entry.get("floors", {}).get(FLOOR, {}).get("status") != "ok":
+                continue
+            path = self.dataset / str(entry.get("design", "")) / FLOOR / "netlist.blif"
+            if path.is_file():
+                out.append((str(entry.get("design", "")), path))
+        out.sort()
+        return out
+
+    def _unmapped(self, path: Path) -> tuple[Any, FnGraph]:
+        """The re level 0 of a dataset BLIF, its graph and the design after ``unmap``."""
+        design = load_level0(path, FLOOR, self.root, None)
+        self.addCleanup(design.close)
+        graph = from_design(design)
+        with importlib.import_module("odin3").default().capture_log():
+            design.run_pass("unmap")
+        return design, graph
+
+    def test_dataset_micro_with_adder_and_multiply(self) -> None:
+        """A dataset micro recovers ``$add``/``$sub`` from ``chain`` and ``$mul`` from ``mul``,
+        with the ``.subckt`` lines as their sources (plan Task 17 Step 1)."""
+        floors = self._floors()
+        if not floors:
+            self.skipTest("the dataset has no f1-k6 netlist.blif")
+        for _, path in floors:
+            text = path.read_text(encoding="utf-8")
+            if ".subckt adder" not in text or ".subckt multiply" not in text:
+                continue
+            design, graph = self._unmapped(path)
+            nodes = [n for n in design.top().nodes() if n.attr("unmap") is not None]
+            muls = [n for n in nodes if str(n.type_name) == "$mul"]
+            adds = [n for n in nodes if str(n.type_name) in ("$add", "$sub")]
+            if not (muls and adds):
+                continue
+            records = HardDetector.read_unmap(design, graph)
+            self.assertTrue([r for r in records if r.node_type == "$mul" and r.rule == "mul"])
+            self.assertTrue([r for r in records if r.node_type in ("$add", "$sub") and r.rule])
+            lines = text.splitlines()
+            add_lines = {
+                i for i, line in enumerate(lines, 1)
+                if line.startswith((".subckt adder", ".subckt subtract"))
+            }
+            mul_lines = {
+                i for i, line in enumerate(lines, 1) if line.startswith(".subckt multiply")
+            }
+            for node in muls:
+                self.assertEqual(node.attr("unmap"), "mul")
+                self.assertTrue(_source_lines(node))
+                self.assertLessEqual(set(_source_lines(node)), mul_lines)
+            for node in adds:
+                self.assertTrue(node.attr("unmap"))
+                self.assertLessEqual(set(_source_lines(node)), add_lines)
+            return
+        self.skipTest("no dataset f1-k6 micro recovered both an adder and a multiply")
+
+    def test_dataset_ram_micro(self) -> None:
+        """A dataset RAM micro's ``$mem`` cells carry ``unmap`` ``ram`` and ``unmap_cand``
+        ``ram:<N>`` (plan Task 17 Step 1); skips when the dataset has no RAM floor."""
+        path = next(
+            (
+                p for _, p in self._floors()
+                if any(
+                    line.startswith(".subckt") and "ram" in line.lower()
+                    for line in p.read_text(encoding="utf-8").splitlines()
+                )
+            ),
+            None,
+        )
+        if path is None:
+            self.skipTest("the dataset has no f1-k6 RAM micro")
+        design, _ = self._unmapped(path)
+        mems = [n for n in design.top().nodes() if str(n.type_name) == "$mem"]
+        self.assertTrue(mems)
+        for node in mems:
+            self.assertEqual(node.attr("unmap"), "ram")
+            self.assertTrue(str(node.attr("unmap_cand")).startswith("ram:"))
 
 
 if __name__ == "__main__":

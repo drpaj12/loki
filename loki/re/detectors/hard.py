@@ -54,12 +54,12 @@ def _nets(record: UnmapRecord, ports: tuple[str, ...]) -> tuple[int, ...]:
 
 
 def shared_ctrl(members: list[UnmapRecord]) -> str:
-    """``all`` when every member shares its clock, address and write-enable nets, ``addr_only``
-    when only the address nets are shared, else ``none`` (spec 7.2)."""
+    """``all`` when every member carries its clock, address and write-enable nets and shares them,
+    ``addr_only`` when only the address nets are shared, else ``none`` (spec 7.2)."""
 
     def shared(ports: tuple[str, ...]) -> bool:
-        first = _nets(members[0], ports)
-        return all(_nets(member, ports) == first for member in members[1:])
+        nets = _nets(members[0], ports)
+        return bool(nets) and all(_nets(member, ports) == nets for member in members[1:])
 
     if shared(CLK) and shared(ADDR) and shared(WE):
         return "all"

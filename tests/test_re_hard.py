@@ -10,7 +10,7 @@ from dataclasses import replace
 
 from loki.re.bayes import DEFAULTS
 from loki.re.detectors import RoundContext
-from loki.re.detectors.hard import HardDetector, UnmapRecord
+from loki.re.detectors.hard import HardDetector, UnmapRecord, shared_ctrl
 from loki.re.fngraph import FnGraph
 from loki.re.overlay import Overlay
 from tests.re_fixtures import GB, make_ctx
@@ -96,6 +96,30 @@ class HardDetectorTest(unittest.TestCase):
         self.assertEqual(h.features.get("declined_chain"), "yes")
         self.assertAlmostEqual(h.log_odds, 4.61)
         self.assertFalse([e for e in h.evidence if e.source == "hard"])
+
+    def test_shared_ctrl_requires_control_nets(self) -> None:
+        """Spec 7.2: an empty control set is ``none``, not vacuously ``all``."""
+        bare = UnmapRecord(
+            node_type="$add", rule="chain", note="", cand="", cells=frozenset({4}),
+            ports={"A": (1,), "B": (2,), "Y": (3,)},
+        )
+        self.assertEqual(shared_ctrl([bare, replace(bare, cells=frozenset({5}))]), "none")
+        addr: dict[str, tuple[int, ...]] = {"RD_ADDR": (3, 4)}
+        self.assertEqual(
+            shared_ctrl([replace(bare, ports=addr), replace(bare, ports=addr)]), "addr_only"
+        )
+
+    def test_group_without_control_nets_is_none(self) -> None:
+        """A ``hard_group`` whose members carry no CLK/ADDR/WE nets gets no control credit."""
+        rec = UnmapRecord(
+            node_type="$add", rule="chain", note="", cand="add:0", cells=frozenset({4}),
+            ports={"A": (1,), "B": (2,), "Y": (3,)},
+        )
+        other = replace(rec, cells=frozenset({5}), ports={"A": (6,), "B": (7,), "Y": (8,)})
+        ov = apply(HardDetector(), (rec, other))
+        groups = ov.by_kind("hard_group")
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(groups[0].features["shared_ctrl"], "none")
 
     def test_later_rounds_propose_nothing(self) -> None:
         rec = UnmapRecord(

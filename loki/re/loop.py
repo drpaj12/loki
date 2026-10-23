@@ -105,7 +105,8 @@ class _Run:
 
     def start_unmap(self) -> None:
         """Spec 9.1: on F1 with hard cells, run ``unmap`` on the working copy (gated) and read its
-        facts; without the pass the cells stay opaque and the report says ``unavailable``."""
+        facts; without the pass the cells stay opaque and the report says ``unavailable``. A failed
+        pass discards the working copy (the binding contract: it may have mutated the design)."""
         hard = any(c.kind == "hard" for c in self.graph.cells.values())
         if not (self.floor.startswith("f1-") and hard):
             self.notes["unmap"] = "n/a"
@@ -114,6 +115,8 @@ class _Run:
             with odin_module().default().capture_log():
                 self.working.run_pass("unmap")
         except odin_module().Odin3Error:
+            self.working.close()
+            self.working = self.level0.copy()
             self.notes["unmap"] = "unavailable"
             return
         self.notes["unmap"] = "ok"
