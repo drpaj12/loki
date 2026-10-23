@@ -58,8 +58,10 @@ class SignalsMicrosTest(unittest.TestCase):
         for name in DESIGNS:
             out = Path(tmp)
             result = build_floor(name, [micro(name)], None, "f2", arch, out, root)
+            if result.status == "skipped":
+                raise unittest.SkipTest(f"{name}: {result.reason}")
             if result.status != "ok":
-                raise unittest.SkipTest(f"{name}: {result.status} {result.reason}")
+                raise AssertionError(f"{name}: {result.status} {result.reason}")
             fdir = out / name / "f2"
             cls.graphs[name] = load_graph(fdir / "graph.json")
             cls.ports[name] = _port_nets(fdir)

@@ -87,10 +87,11 @@ Rules:
 ## 4. Graph model, features, regions (`loki.analysis.graphio`, `region`)
 
 `load_graph(path)` reads a `graph.json` (L0 spec 6.4, validated by `loki.schemas.validate_graph`) into a
-frozen `Graph`: `node_ids` (`n<k>` strings in file order), `kind`, numeric feature columns, directed edge
-arrays `src` and `dst` (indices into `node_ids`, driver to sink, one per `edges` item, parallel edges
-kept), `pin` and `net` per edge, optional `labels` (column name to array), `floor`, `design`, and
-`sha256` of the file bytes.
+frozen `Graph`: `node_ids` (`n<k>` strings in file order), `kind`, numeric feature columns, `table` (the
+integer `lut_table` of every node, -1 when the node has no table; the JSON file form stays the hex
+string), directed edge arrays `src` and `dst` (indices into `node_ids`, driver to sink, one per `edges`
+item, parallel edges kept), `pin` and `net` per edge, optional `labels` (column name to array), `floor`,
+`design`, and `sha256` of the file bytes.
 
 **Features** (`featurize`), all derived from the netlist, none from provenance labels. Columns, in order:
 
@@ -294,7 +295,8 @@ Task 5a; L1 needs them first, for its start colours); `classify_signals` adapts 
 LUT semantics use `lut_table` (hex, MSB first) with address bit k = input `I<k>` (L0 spec 6.4); the helper
 `lut_restrict(table, width, pin_index, value)` returns the restricted table and a test pins the
 convention against the L0 fixture (L0 Task 4 Step 6 fixes the bit order; this helper follows
-`loki.blifout.LUT_ROW_ORDER`). `SignalInfo` holds a per-edge class array and the per-node features of 8.2.
+`loki.blifout.LUT_ROW_ORDER`). `SignalInfo` holds a per-edge class array, one entry per `Graph` edge in
+`graph.json` order (an edge's class is the class of its `net`), and the per-node features of 8.2.
 A reset deasserted by a LUT that merges several resets, or a reset hidden in the data logic of a LUT of
 more than the D-LUT shape, is not found; those nets stay `signal` and the hub fallback (8.3) catches them
 if their fan-out is high. This is stated in the output (`classified`: counts per class).

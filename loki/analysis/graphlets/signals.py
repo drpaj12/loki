@@ -15,7 +15,7 @@ from loki.analysis import require
 from loki.analysis.graphio import Graph, to_feature_graph
 from loki.features.roles import CLASS_NAMES as CLASS_NAMES
 from loki.features.roles import SignalConfig as SignalConfig
-from loki.features.roles import classify_nets
+from loki.features.roles import classify_nets, restrict
 from loki.features.roles import is_forcing as _is_forcing
 from loki.features.roles import is_hold as _is_hold
 
@@ -75,10 +75,8 @@ def lut_restrict(bits: npt.NDArray[Any], width: int, k: int, value: int) -> npt.
     _check_bits(bits, width)
     if not 0 <= k < width or value not in (0, 1):
         raise ValueError(f"input {k} cannot take value {value} of width {width}")
-    addresses = np.arange(1 << (width - 1), dtype=np.int64)
-    low = (1 << k) - 1
-    full = ((addresses & ~low) << 1) | (value << k) | (addresses & low)
-    return np.asarray(bits[full])
+    table = restrict(_bits_int(bits, width), width, k, value)
+    return np.asarray([(table >> y) & 1 for y in range(1 << (width - 1))], dtype=np.uint8)
 
 
 def _bits_int(bits: npt.NDArray[Any], width: int) -> int:

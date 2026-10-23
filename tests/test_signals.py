@@ -7,8 +7,7 @@ import tempfile
 import unittest
 from collections.abc import Callable
 from pathlib import Path
-
-import numpy as np
+from typing import TYPE_CHECKING
 
 from loki.analysis.graphio import Graph, load_graph, to_feature_graph
 from loki.analysis.graphlets.signals import (
@@ -27,6 +26,9 @@ from loki.features.roles import classify_nets
 from loki.schemas import SCHEMA
 from tests.analysis_fixtures import _EMPTY_LABELS, make_graph, make_sync_design, write_graph
 from tests.helpers import skip_without
+
+if TYPE_CHECKING:
+    import numpy as np
 
 SIGNAL = CLASS_NAMES.index("signal")
 
@@ -98,6 +100,8 @@ def _net_class(g: Graph, info: SignalInfo, net: str) -> str:
 @skip_without("numpy")
 class SignalsTest(unittest.TestCase):
     def test_lut_convention(self) -> None:
+        import numpy as np
+
         self.assertEqual(LUT_ROW_ORDER, "string_msb_first")
         bits = lut_bits("8", 2)
         self.assertEqual(bits.dtype, np.uint8)
@@ -115,6 +119,8 @@ class SignalsTest(unittest.TestCase):
         self.assertFalse(is_hold(mux, 3, 0, 2))
 
     def test_clock_nets_and_domains(self) -> None:
+        import numpy as np
+
         g = _load(make_sync_design(clocks=2))
         info = classify_signals(g)
         self.assertEqual(info.classified["clock"], 2)
@@ -213,6 +219,8 @@ class SignalsTest(unittest.TestCase):
                 self.assertGreaterEqual(const_in, 1)
 
     def test_edge_class_aligned(self) -> None:
+        import numpy as np
+
         g = _load(make_sync_design(reset=True, enable=True, clocks=2))
         info = classify_signals(g)
         self.assertEqual(info.edge_class.shape, (g.n_edges,))
