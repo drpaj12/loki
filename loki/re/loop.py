@@ -343,6 +343,21 @@ class _Run:
                 return rounds, "fixed_point"
         return rounds, "max_rounds"
 
+    def input_blif(self, tmp: Path) -> str:
+        """The input side of the final check as BLIF (spec 9.4).
+
+        A BLIF input is compared as given. A gate-level ``.v`` input cannot be: ``equiv-check``
+        reads BLIF only, so the level-0 design (the netlist read back from the mapped Verilog) is
+        written out as BLIF and compared with the final BLIF (Loki issue #14)."""
+        if self.opts.netlist.suffix != ".v":
+            return self.opts.netlist.read_text(encoding="utf-8")
+        src = self.level0.copy()
+        out = tmp / "input.blif"
+        with odin_module().default().capture_log():
+            src.run_script(f'write_blif --gates-as-names "{out}"')
+        src.close()
+        return out.read_text(encoding="utf-8")
+
     def final_check(self) -> dict[str, object]:
         """Spec 9.4: flatten, lower, write the BLIF and compare it with the input."""
         if self.floor.startswith("f1-"):
@@ -356,8 +371,8 @@ class _Run:
             with mod.default().capture_log():
                 copy.run_script(f'flatten; lower; write_blif --gates-as-names "{out}"')
             text = out.read_text(encoding="utf-8")
+            src = self.input_blif(Path(tmp))
         copy.close()
-        src = self.opts.netlist.read_text(encoding="utf-8")
         res = check_equiv(src, text, self.root, False)
         return {"status": res.status, "tool_exit": res.tool_exit}
 

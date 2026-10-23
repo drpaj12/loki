@@ -30,10 +30,9 @@ Outputs in `--out`: `design.v`, `overlay.json`, `report.json`, `report.md`, `tim
 the structural features off (ablation). Exit codes: 0 done, 1 internal error or `final_equiv =
 differs`, 2 usage, 3 input unreadable.
 
-Known limitation (Loki issue #14): `loki re <netlist.v> --floor f3` normalises and runs (exit 0),
-but `report.final_equiv` is always `{"status": "error", "tool_exit": 2}`: the final check compares
-the raw Verilog text with the final BLIF and `equiv-check` reads BLIF only, and the reason is not
-in the report. Use the floor `netlist.blif` for a checked run.
+A gate-level `netlist.v` input (floor f3) is checked as the BLIF that level 0 writes out (the
+netlist read back from the mapped Verilog), because `equiv-check` reads BLIF only; a faithful
+rewrite gives `report.final_equiv` `equivalent` (fixed Loki issue #14).
 
 ## 3. Calibration (train split)
 
