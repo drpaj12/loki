@@ -10,6 +10,13 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 dependencies = ["odin3"]
 
+# The extras' library pins below are duplicated by hand in .github/workflows/ci.yml (the lint and
+# test jobs' pip install lines, because odin3 is not on an index there); keep the two in step.
+[project.optional-dependencies]
+analysis = ["numpy>=1.26", "scipy>=1.11", "scikit-learn>=1.5", "networkx>=3.3"]
+gnn = ["loki[analysis]", "torch>=2.3", "torch_geometric>=2.5"]
+dev = ["loki[analysis]", "loki[gnn]"]
+
 [project.scripts]
 loki = "loki.cli:main"
 

@@ -5,6 +5,8 @@ from __future__ import annotations
 import importlib
 import os
 import shutil
+import unittest
+from collections.abc import Callable
 from pathlib import Path
 
 from loki.anon import build_key, number
@@ -14,6 +16,22 @@ from loki.labels import build_labels, labels_to_csv
 from loki.model import FinalCell, Net, Netlist, Port, PortBit, Snapshot, Span
 from loki.schemas import dump_json
 from loki.words import build_words
+
+
+def have(module: str) -> bool:
+    """True when ``module`` imports, i.e. its optional extra is installed."""
+    try:
+        importlib.import_module(module)
+    except Exception:
+        return False
+    return True
+
+
+def skip_without(*modules: str) -> Callable[[Callable[..., object]], Callable[..., object]]:
+    """``unittest.skipUnless`` decorator skipping a test when any module is not importable."""
+    missing = [name for name in modules if not have(name)]
+    reason = "missing optional module(s): " + ", ".join(missing) if missing else ""
+    return unittest.skipUnless(not missing, reason)
 
 
 def odin_available() -> bool:
