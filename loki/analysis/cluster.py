@@ -1,14 +1,18 @@
-"""Clustering methods: k-means and affinity propagation (L2 spec sections 7.1 and 7.2).
+"""Clustering methods: k-means, affinity propagation, spectral and Louvain (L2 spec section 7).
 
-Both work in one float64 space (:func:`cluster_space`): six numeric features of spec 4 (without
-the floor block, the hard-type one-hot and ``is_seq``/``is_const``), ``log1p``-scaled and
-standardised with ``StandardScaler``, then the kind one-hot columns, then optional extra columns
-such as the graphlet signatures. Constant columns standardise to zeros and are kept, never dropped.
+k-means and affinity propagation work in one float64 space (:func:`cluster_space`): six numeric
+features of spec 4 (without the floor block, the hard-type one-hot and ``is_seq``/``is_const``),
+``log1p``-scaled and standardised with ``StandardScaler``, then the kind one-hot columns, then
+optional extra columns such as the graphlet signatures. Constant columns standardise to zeros and
+are kept, never dropped.
 
 k-means sees the whole netlist: ``KMeans`` up to :data:`KMEANS_FULL_MAX` nodes,
 ``MiniBatchKMeans`` above. Affinity propagation would build a dense N x N similarity matrix, so
 it runs on a seeded sample of at most ``max_points`` nodes and assigns every other node to the
-nearest exemplar in chunks of at most 10000 rows. Partitions are built by
+nearest exemplar in chunks of at most 10000 rows. Spectral clustering embeds the largest
+connected component and gives every other component one cluster of its own (spec 7.3); Louvain
+runs on the whole undirected projection (spec 7.4). :func:`run_cluster` runs a requested subset
+of :data:`METHODS` in table order and writes each partition. Partitions are built by
 :func:`loki.analysis.partition.make_partition`, which numbers clusters canonically.
 
 numpy, scipy and scikit-learn belong to the ``analysis`` extra and are imported inside the
@@ -24,16 +28,22 @@ import warnings
 from typing import TYPE_CHECKING, Any
 
 from loki.analysis import require
-from loki.analysis.partition import Partition, make_partition
+from loki.analysis.graphio import canonical_numbers, undirected_adjacency
+from loki.analysis.partition import Partition, make_partition, write_partition
 from loki.schemas import KINDS
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from pathlib import Path
+
     import numpy.typing as npt
 
     from loki.analysis.graphio import Graph
 
 #: Up to this many nodes k-means is exact; above it ``MiniBatchKMeans`` is used (spec 7.1).
 KMEANS_FULL_MAX = 20000
+#: The clustering methods :func:`run_cluster` knows, in the order it runs them (plan Task 8).
+METHODS: tuple[str, ...] = ("kmeans", "affinity", "spectral", "louvain")
 #: The six numeric clustering features, ``log1p``-scaled (spec 7.1: spec 4 without floor/hard).
 _LOG_FEATURES: tuple[str, ...] = (
     "fan_in", "fan_out", "level", "lut_width", "hard_ports", "lut_ones",
@@ -48,7 +58,11 @@ _AP_RETRY_DAMPING = 0.95
 _AP_RETRY_MAX_ITER = 400
 _KMEANS_METHOD = "kmeans"
 _AFFINITY_METHOD = "affinity"
+_SPECTRAL_METHOD = "spectral"
+_LOUVAIN_METHOD = "louvain"
 _NOT_CONVERGED = "affinity propagation did not converge"
+#: Largest-component size up to which the spectral embedding uses ``"arpack"`` (spec 7.3).
+_SPECTRAL_ARPACK_MAX = 5000
 
 
 class ClusterError(RuntimeError):
@@ -202,6 +216,103 @@ def cluster_affinity(
     )
 
 
+def cluster_spectral(
+    g: Graph, *, k: int | str = "auto", seed: int = 0
+) -> Partition:
+    """Spectral clustering on the largest connected component (spec 7.3).
+
+    The undirected projection is split into its connected components; the largest one (ties: the
+    one whose lowest node comes first) is embedded with ``sklearn.manifold.spectral_embedding``
+    using ``n_components=min(k, |L|-1)``, ``"arpack"`` up to :data:`_SPECTRAL_ARPACK_MAX` nodes
+    and ``"lobpcg"`` above, then k-means (``n_init=3``) splits the unit-L2 rows into
+    ``min(k, |L|)`` clusters. Zero embedding rows stay zero. Every other component becomes one
+    cluster of its own; hundreds of tiny components (constants, unused logic) are normal. A
+    largest component below three nodes, or fewer than two clusters asked for, makes every
+    component one cluster without an embedding. The params record the resolved ``k`` and the
+    ``n_components`` the embedding used (0 when it was skipped); the record also carries the
+    connected component count (``components``).
+    """
+    require("analysis")
+    import numpy as np
+
+    csgraph = importlib.import_module("scipy.sparse.csgraph")
+    clusters = resolve_k(k, g.n_nodes)
+    adjacency = undirected_adjacency(g)
+    count, raw = csgraph.connected_components(adjacency, directed=False)
+    labels = np.asarray(raw, dtype=np.int64)
+    assignment, n_components = _spectral_assignment(adjacency, labels, int(count), clusters, seed)
+    params: dict[str, object] = {"k": clusters, "n_components": n_components}
+    return make_partition(
+        g, _SPECTRAL_METHOD, params, seed, assignment, components=int(count)
+    )
+
+
+def cluster_louvain(
+    g: Graph, *, resolution: float = 1.0, seed: int = 0
+) -> Partition:
+    """Louvain communities on the undirected projection (spec 7.4).
+
+    ``networkx.community.louvain_communities`` runs on the ``networkx.Graph`` built from the
+    simple undirected projection with ``weight=None`` (every edge weight 1), the given
+    ``resolution`` and ``seed``. The result sets are numbered canonically; the params record
+    ``resolution``. There is no ``k``.
+    """
+    require("analysis")
+    import numpy as np
+
+    nx = importlib.import_module("networkx")
+    graph = nx.from_scipy_sparse_array(undirected_adjacency(g))
+    assignment = np.zeros(g.n_nodes, dtype=np.int64)
+    if g.n_nodes:
+        communities = nx.community.louvain_communities(
+            graph, weight=None, resolution=resolution, seed=seed
+        )
+        for number, community in enumerate(sorted(communities, key=min)):
+            assignment[sorted(community)] = number
+    params: dict[str, object] = {"resolution": resolution}
+    return make_partition(g, _LOUVAIN_METHOD, params, seed, canonical_numbers(assignment))
+
+
+def run_cluster(
+    g: Graph,
+    methods: Sequence[str],
+    out_dir: Path,
+    *,
+    k: int | str = "auto",
+    seed: int = 0,
+    resolution: float = 1.0,
+    max_points: int = 3000,
+    extra: npt.NDArray[Any] | None = None,
+) -> list[Path]:
+    """Run the requested clustering methods in :data:`METHODS` order and write each partition.
+
+    ``methods`` names a subset of :data:`METHODS` in any order; an unknown name raises
+    ``ValueError`` before anything runs or is written. Each partition is written to ``out_dir``
+    by :func:`loki.analysis.partition.write_partition` (``<method>-<hash8>.json``) and the paths
+    are returned in run order. ``k``, ``seed``, ``resolution`` and ``extra`` reach every method
+    that takes them; ``max_points`` only affinity propagation (spec 7).
+    """
+    unknown = [method for method in methods if method not in METHODS]
+    if unknown:
+        choices = ", ".join(METHODS)
+        raise ValueError(f"unknown clustering method {unknown[0]!r}: use one of {choices}")
+    wanted = set(methods)
+    paths: list[Path] = []
+    for method in METHODS:
+        if method not in wanted:
+            continue
+        if method == _KMEANS_METHOD:
+            partition = cluster_kmeans(g, k=k, seed=seed, extra=extra)
+        elif method == _AFFINITY_METHOD:
+            partition = cluster_affinity(g, seed=seed, max_points=max_points, extra=extra)
+        elif method == _SPECTRAL_METHOD:
+            partition = cluster_spectral(g, k=k, seed=seed)
+        else:
+            partition = cluster_louvain(g, resolution=resolution, seed=seed)
+        paths.append(write_partition(partition, out_dir))
+    return paths
+
+
 def assign_nearest(
     x: npt.NDArray[Any], centers: npt.NDArray[Any], chunk: int = 10000
 ) -> npt.NDArray[Any]:
@@ -241,6 +352,71 @@ def _kmeans_algorithm(n: int, clusters: int) -> str:
     if clusters < 2 or n < 2:
         return "none"
     return "minibatch" if n > KMEANS_FULL_MAX else "kmeans"
+
+
+def _spectral_assignment(
+    adjacency: Any,
+    labels: npt.NDArray[Any],
+    count: int,
+    clusters: int,
+    seed: int,
+) -> tuple[npt.NDArray[Any], int]:
+    """Assignment of spec 7.3 and the ``n_components`` its embedding used (0 when skipped)."""
+    import numpy as np
+
+    n_nodes = int(labels.size)
+    if count == 0:
+        return np.zeros(0, dtype=np.int64), 0
+    sizes = np.bincount(labels, minlength=count)
+    first = np.full(count, n_nodes, dtype=np.int64)
+    np.minimum.at(first, labels, np.arange(n_nodes, dtype=np.int64))
+    largest = int(min(range(count), key=lambda component: (
+        -int(sizes[component]), int(first[component])
+    )))
+    if sizes[largest] < 3 or clusters < 2:
+        return labels.astype(np.int64, copy=True), 0
+    rows = np.flatnonzero(labels == largest)
+    size = int(rows.size)
+    n_components = min(clusters, size - 1)
+    solver = "arpack" if size <= _SPECTRAL_ARPACK_MAX else "lobpcg"
+    manifold = importlib.import_module("sklearn.manifold")
+    embedding = np.asarray(
+        manifold.spectral_embedding(
+            adjacency[rows][:, rows],
+            n_components=n_components,
+            eigen_solver=solver,
+            random_state=seed,
+            drop_first=False,
+        ),
+        dtype=np.float64,
+    )
+    norms = np.linalg.norm(embedding, axis=1)
+    nonzero = norms > 0.0
+    embedding[nonzero] = embedding[nonzero] / norms[nonzero][:, None]
+    local = _embedding_kmeans(embedding, min(clusters, size), seed)
+    assignment = np.zeros(n_nodes, dtype=np.int64)
+    assignment[rows] = local
+    others = sorted(
+        (component for component in range(count) if component != largest),
+        key=lambda component: int(first[component]),
+    )
+    for offset, component in enumerate(others):
+        assignment[labels == component] = min(clusters, size) + offset
+    return assignment, n_components
+
+
+def _embedding_kmeans(
+    embedding: npt.NDArray[Any], clusters: int, seed: int
+) -> npt.NDArray[Any]:
+    """k-means over spectral embedding rows (``n_init=3``; minibatch above the node cap)."""
+    import numpy as np
+
+    module = importlib.import_module("sklearn.cluster")
+    if clusters <= KMEANS_FULL_MAX:
+        model = module.KMeans(n_clusters=clusters, n_init=3, random_state=seed)
+    else:
+        model = module.MiniBatchKMeans(n_clusters=clusters, n_init=3, random_state=seed)
+    return np.asarray(model.fit_predict(embedding), dtype=np.int64)
 
 
 def _feature_names(extra_width: int) -> list[str]:
