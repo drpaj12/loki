@@ -74,6 +74,9 @@ jobs:
       # These library pins duplicate pyproject.toml's [project.optional-dependencies]; keep the two
       # files in step when either changes.
       - run: pip install "numpy>=1.26" "scipy>=1.11" "scikit-learn>=1.5" "networkx>=3.3" "torch_geometric>=2.5"
+      # The real-ORCA test pins the default graphlet backend against the actual binary; the
+      # fetch verifies the pinned sha256 and builds it (~2 s), so the test runs instead of skipping.
+      - run: loki tools fetch-orca
       - run: python -m unittest discover -s tests -t . -v
         env:
           ODIN3_ROOT: ${{ github.workspace }}/odin3-src

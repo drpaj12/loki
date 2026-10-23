@@ -251,7 +251,7 @@ Approved by Peter, 2026-10-21. The algorithms live in Loki III L1's `loki.featur
 
 **Files:**
 - Create: `loki/analysis/graphlets/ext.py`, `loki/tools.py`, `tests/test_graphlets_ext.py`, `tests/data/fake_orca.py`
-- Modify: `loki/analysis/graphlets/__init__.py` (register `"ext"`), `loki/cli.py` (subcommand `tools fetch-orca`), `tests/test_cli.py`
+- Modify: `loki/analysis/graphlets/__init__.py` (register `"ext"`), `loki/cli.py` (subcommand `tools fetch-orca`); `tests/test_cli.py` is untouched (the usage test `test_cli_tools_fetch_orca_usage` lives in `tests/test_graphlets_ext.py`)
 
 **Interfaces:**
 - Consumes: Task 10 (`write_edge_file`, `read_orbit_file`, `BACKENDS`, `BackendUnavailable`).
