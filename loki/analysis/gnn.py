@@ -7,8 +7,10 @@ majority class, features-only logistic regression and the 1-WL colour lookup of 
 
 Labels are an answer key: only nodes of kind :data:`TRAIN_KINDS` with a non-empty target enter
 the vocabulary, the loss and the metrics; PI, PO and constants are trivially labelled and would
-inflate accuracy. The vocabulary and the scaler come from the train designs only, so a class
-first seen in a test design maps to ``__other__`` and the test data cannot move the scaler.
+inflate accuracy. The vocabulary comes from the train designs only, so a class first seen in a
+test design maps to ``__other__``. The scaler is fitted on the train nodes of spec 9, the
+``y >= 0`` rows of the train designs that the caller selects: a feature matrix has no kind
+column, so :func:`fit_scaler` cannot apply :data:`TRAIN_KINDS` itself. Test rows never reach it.
 
 An unlabelled graph is detected by the spec-9 rule "no node of :data:`TRAIN_KINDS` carries a
 non-empty ``construct_type``", not by ``Graph.labels is None`` (Task 2 documents ``None`` as
@@ -429,7 +431,8 @@ def baseline_wl(
     NPN column of :func:`gsn_features` is not part of the baseline). For a test node the lookup
     starts at the last round and backs off to round 0 when its colour has fewer than
     ``min_count`` train nodes; a node no round qualifies predicts the majority train class.
-    Only nodes with ``y >= 0`` are used.
+    Only nodes with ``y >= 0`` are used; an empty train or test side gives the zeros of
+    :func:`metrics` with the test side's ``n_nodes``.
     """
     require("analysis")
     import numpy as np
@@ -451,26 +454,24 @@ def baseline_wl(
     keep_train, keep_test = train >= 0, test >= 0
     train_ids, scored_train = train_ids[keep_train], train[keep_train]
     test_ids, scored_test = test_ids[keep_test], test[keep_test]
-    if scored_test.size == 0:
-        return _zero_metrics(0)
+    if scored_train.size == 0 or scored_test.size == 0:
+        return _zero_metrics(int(scored_test.size))
     predicted = np.full(scored_test.size, -1, dtype=np.int64)
-    if scored_train.size:
-        for column in range(test_ids.shape[1] - 1, -1, -1):
-            missing = np.flatnonzero(predicted < 0)
-            if missing.size == 0:
-                break
-            keys, majority, totals = _majority_by_id(train_ids[:, column], scored_train)
-            if keys.size == 0:
-                continue
-            values = test_ids[missing, column]
-            position = np.searchsorted(keys, values)
-            clipped = np.minimum(position, keys.size - 1)
-            found = (
-                (position < keys.size) & (keys[clipped] == values) & (totals[clipped] >= min_count)
-            )
-            predicted[missing[found]] = majority[clipped[found]]
+    for column in range(test_ids.shape[1] - 1, -1, -1):
+        missing = np.flatnonzero(predicted < 0)
+        if missing.size == 0:
+            break
+        keys, majority, totals = _majority_by_id(train_ids[:, column], scored_train)
+        if keys.size == 0:
+            continue
+        values = test_ids[missing, column]
+        position = np.searchsorted(keys, values)
+        clipped = np.minimum(position, keys.size - 1)
+        found = (
+            (position < keys.size) & (keys[clipped] == values) & (totals[clipped] >= min_count)
+        )
+        predicted[missing[found]] = majority[clipped[found]]
     unfilled = predicted < 0
     if unfilled.any():
-        fallback = int(np.argmax(np.bincount(scored_train))) if scored_train.size else 0
-        predicted[unfilled] = fallback
+        predicted[unfilled] = int(np.argmax(np.bincount(scored_train)))
     return metrics(scored_test, predicted)

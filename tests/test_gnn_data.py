@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from loki.analysis.gnn import (
+    LOG1P_COLUMNS,
     OTHER,
     TRAIN_KINDS,
     Prepared,
@@ -147,14 +148,23 @@ class GnnDataTest(unittest.TestCase):
 
         train_a = np.array([[0.0, 0, 0, 0, 0, 0, 0, 0], [3.0, 1, 3, 1, 0, 0, 2, 1]])
         train_b = np.array([[8.0, 0, 0, 0, 1, 0, 0, 0]])
+        test_rows = np.array([[1e6] * 8, [5e5] * 8])
         first = fit_scaler([train_a, train_b])
-        test_rows = np.array([[1e6] * 8])
-        changed = test_rows * 2
-        self.assertEqual(float(changed[0, 0]), 2e6)
+        # The caller passes the train rows only (agent default 1); changing the test rows
+        # between the two fits cannot move the mean or the std (the plan's assertion).
+        test_rows *= 2.0
         second = fit_scaler([train_a, train_b])
         self.assertEqual(set(first), {"mean", "std"})
         for key in ("mean", "std"):
             np.testing.assert_array_equal(first[key], second[key])
+        # The fitted values are the stats of the train rows alone, log1p first.
+        train = np.vstack([train_a, train_b])
+        for name in LOG1P_COLUMNS:
+            column = NUMERIC_FEATURES.index(name)
+            train[:, column] = np.log1p(train[:, column])
+        spread = train.std(axis=0)
+        np.testing.assert_allclose(first["mean"], train.mean(axis=0))
+        np.testing.assert_allclose(first["std"], np.where(spread == 0, 1.0, spread))
         self.assertEqual(first["mean"].shape, (len(NUMERIC_FEATURES),))
         log1p_fan_in = np.log1p([0.0, 3.0, 8.0])
         self.assertAlmostEqual(float(first["mean"][0]), float(log1p_fan_in.mean()), places=12)
@@ -165,8 +175,6 @@ class GnnDataTest(unittest.TestCase):
         constant = NUMERIC_FEATURES.index("is_const")
         self.assertEqual(float(first["mean"][constant]), 0.0)
         self.assertEqual(float(first["std"][constant]), 1.0)
-        with_test = fit_scaler([train_a, train_b, test_rows])
-        self.assertNotEqual(float(with_test["mean"][0]), float(first["mean"][0]))
 
     def test_majority_baseline_value(self) -> None:
         """The majority train class predicts every valid test node; ties pick the lowest id."""
@@ -212,13 +220,22 @@ class GnnDataTest(unittest.TestCase):
         self.assertGreaterEqual(float(logreg["accuracy"]), 0.9)
 
     def test_metrics_empty(self) -> None:
-        """No valid node gives zeros and ``n_nodes`` 0."""
+        """No valid node gives zeros and ``n_nodes`` 0; an empty side gives zeros too."""
         import numpy as np
 
         empty = np.zeros(0, dtype=np.int64)
         self.assertEqual(metrics(empty, empty), {"accuracy": 0.0, "macro_f1": 0.0, "n_nodes": 0})
         masked = metrics(np.array([-1, -1]), np.array([0, 1]))
         self.assertEqual(masked, {"accuracy": 0.0, "macro_f1": 0.0, "n_nodes": 0})
+        wl = np.array([[5, 6], [7, 8], [9, 10]], dtype=np.int64)
+        y = np.array([0, 1, 1], dtype=np.int64)
+        no_label = np.full(3, -1, dtype=np.int64)
+        self.assertEqual(
+            baseline_wl(wl, no_label, wl, y), {"accuracy": 0.0, "macro_f1": 0.0, "n_nodes": 3}
+        )
+        self.assertEqual(
+            baseline_wl(wl, y, wl, no_label), {"accuracy": 0.0, "macro_f1": 0.0, "n_nodes": 0}
+        )
 
     def test_split_respected(self) -> None:
         """Designs split exactly as ``split_of``; a non-ok floor entry is absent."""
@@ -258,7 +275,7 @@ class GnnDataTest(unittest.TestCase):
         )
 
     def test_wl_baseline_backoff(self) -> None:
-        """Last round first, back to round 0 when a colour is thin, then the majority class."""
+        """Last round first, a thin or unseen colour backs off, round 0 counts, then majority."""
         import numpy as np
 
         next_colour = 1000
@@ -278,6 +295,21 @@ class GnnDataTest(unittest.TestCase):
             rows.append([next_colour, next_colour + 1, round2, next_colour + 2, next_colour + 3])
             next_colour += 10
             labels.append(2)
+        thin4, backoff1 = 11, 12
+        for label in (3, 3, 4):  # round-4 colour 11 is thin (3 < min_count), majority class 3
+            rows.append([next_colour, backoff1, next_colour + 1, next_colour + 2, thin4])
+            next_colour += 10
+            labels.append(label)
+        for _ in range(3):  # round-1 colour 12 has six train nodes, majority class 4
+            rows.append([next_colour, backoff1, next_colour + 1, next_colour + 2,
+                         next_colour + 3])
+            next_colour += 10
+            labels.append(4)
+        round0 = 13
+        for _ in range(5):  # only the round-0 colour 13 is seen, majority class 4
+            rows.append([round0, next_colour, next_colour + 1, next_colour + 2, next_colour + 3])
+            next_colour += 10
+            labels.append(4)
         wl_train = np.asarray(rows, dtype=np.int64)
         y_train = np.asarray(labels, dtype=np.int64)
         test_rows = [
@@ -285,11 +317,13 @@ class GnnDataTest(unittest.TestCase):
             [next_colour + 4, next_colour + 5, round2, next_colour + 6, next_colour + 7],
             [next_colour + 8, next_colour + 9, next_colour + 10, next_colour + 11,
              next_colour + 12],
+            [next_colour + 13, backoff1, next_colour + 14, next_colour + 15, thin4],
+            [round0, next_colour + 16, next_colour + 17, next_colour + 18, next_colour + 19],
         ]
         wl_test = np.asarray(test_rows, dtype=np.int64)
-        y_test = np.asarray([1, 2, 0], dtype=np.int64)
+        y_test = np.asarray([1, 2, 0, 4, 4], dtype=np.int64)
         result = baseline_wl(wl_train, y_train, wl_test, y_test)
-        self.assertEqual(result["n_nodes"], 3)
+        self.assertEqual(result["n_nodes"], 5)
         self.assertAlmostEqual(result["accuracy"], 1.0)
         self.assertAlmostEqual(result["macro_f1"], 1.0)
 
