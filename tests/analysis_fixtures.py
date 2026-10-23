@@ -43,6 +43,7 @@ def _label(
     module_path: str,
     role: str,
     *,
+    cell_type: str = "",
     n_construct_cells: int = 1,
     bus_name: str = "",
     bit_index: int = -1,
@@ -50,6 +51,7 @@ def _label(
 ) -> dict[str, object]:
     """A complete ``labels`` object of L0 spec 6.4."""
     return {
+        "cell_type": cell_type,
         "construct_type": construct_type,
         "construct_types": construct_type,
         "n_construct_cells": n_construct_cells,
@@ -133,15 +135,17 @@ def make_graph(
         if not labels:
             lab = dict(_EMPTY_LABELS)
         elif kind[nid] == "pi":
-            lab = _label("$port_in", "top", "io", bus_name=nid, bit_index=0)
+            lab = _label("$port_in", "top", "io", cell_type="$port_in", bus_name=nid,
+                         bit_index=0)
         elif kind[nid] == "po":
-            lab = _label("$port_out", "top", "io", bus_name="y", bit_index=0)
+            lab = _label("$port_out", "top", "io", cell_type="$port_out", bus_name="y",
+                         bit_index=0)
         elif kind[nid] == "ff":
             module = "top/u0" if nid == ff0 else "top/u1"
-            lab = _label("$dff", module, "control")
+            lab = _label("$dff", module, "control", cell_type="$_DFF_P_")
         else:
             module = "top/u0" if nid in block0_set else "top/u1"
-            lab = _label("$eq" if width == 2 else "$add", module, "datapath")
+            lab = _label("$eq" if width == 2 else "$add", module, "datapath", cell_type="$lut")
         nodes.append(
             {
                 "id": nid,

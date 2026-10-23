@@ -95,7 +95,8 @@ def from_graph_json(obj: Mapping[str, object]) -> FeatureGraph:
     """The feature graph of an L0 ``graph.json`` object (L0 spec 6.4).
 
     Node ids and order are kept; ``lut_table`` hex becomes an integer (``""`` gives -1); pins are
-    as given; net ``n<k>`` becomes ``k``. The file holds no cell types, so ``type`` is the kind.
+    as given; net ``n<k>`` becomes ``k``. ``type`` is the kind; the file's ``cell_type`` label
+    is not used here.
     """
     raw_nodes = obj["nodes"]
     raw_edges = obj["edges"]

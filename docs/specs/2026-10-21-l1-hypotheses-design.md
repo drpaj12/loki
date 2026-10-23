@@ -338,9 +338,10 @@ with index) and the net id. L1 builds it from `FnGraph` (`structural.feature_gra
 L2's `graphio.to_feature_graph` gives the same from its `Graph`. On F1 and F2 the `FnGraph` and
 `graph.json` routes give the same nodes, tables and edges, up to the PI/PO node names (a test pins
 it on an L0 micro). F3 differs until L0 writes gate tables (open question 18.8).
-`type` is the cell kind (hard cells: the Odin III type), because `graph.json` holds no cell types;
-only LUTs carry a `table` (a constant's value is not in `graph.json`, so both routes leave it
-out); hard-cell input pins use the formal port names (`Cell.in_pins`, `name[bit]` for buses), and
+`type` is the cell kind on the `graph.json` route (`from_graph_json`, L2 spec 4.1; the file's
+`cell_type` label is not used there), while the `FnGraph` route uses the hard cell's Odin III type;
+only LUTs carry a `table` (a constant's value is not in `graph.json`, so both routes leave it out);
+hard-cell input pins use the formal port names (`Cell.in_pins`, `name[bit]` for buses), and
 flip-flop and latch extra inputs are `I<k>`. L1 keeps `latch` as its own kind, which `graph.json`
 cannot tell from `ff` (it writes the latch enable as pin `EN` of an `ff`): the two routes differ
 on latch designs only. In the role rules a forcing input needs a LUT of at least two inputs (with

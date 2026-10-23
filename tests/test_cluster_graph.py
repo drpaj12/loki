@@ -20,6 +20,7 @@ from tests.analysis_fixtures import write_graph
 from tests.helpers import skip_without
 
 _LABELS: dict[str, object] = {
+    "cell_type": "$lut",
     "construct_type": "$eq", "construct_types": "$eq", "n_construct_cells": 1,
     "module_path": "", "bus_name": "", "bit_index": -1, "role": "datapath", "hdl_file": "d.v",
     "hdl_line": -1, "hdl_col": -1, "hdl_end_line": -1, "hdl_end_col": -1, "n_spans": 1,

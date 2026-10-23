@@ -16,6 +16,7 @@ from tests.analysis_fixtures import make_graph, write_graph
 from tests.helpers import skip_without
 
 _LABELS = {
+    "cell_type": "",
     "construct_type": "", "construct_types": "", "n_construct_cells": -1, "module_path": "",
     "bus_name": "", "bit_index": -1, "role": "unknown", "hdl_file": "", "hdl_line": -1,
     "hdl_col": -1, "hdl_end_line": -1, "hdl_end_col": -1, "n_spans": 0,

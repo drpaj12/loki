@@ -209,6 +209,7 @@ def _features(
 
 def _label_dict(lab: Label) -> dict[str, object]:
     return {
+        "cell_type": lab.cell_type,
         "construct_type": lab.construct_type,
         "construct_types": lab.construct_types,
         "n_construct_cells": lab.n_construct_cells,

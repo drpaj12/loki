@@ -147,6 +147,69 @@ class GraphioTest(unittest.TestCase):
         self.assertEqual(bare_explicit.x[g.index()["n2"], last], 1.0)
         self.assertEqual(bare_explicit.x[g.index()["n5"], last], 0.0)
 
+    def test_cell_type_hard_block_from_file(self) -> None:
+        """``build_graph`` -> ``load_graph`` -> ``featurize``: the writer's cell types arrive."""
+        import numpy as np
+
+        from loki.anon import number
+        from loki.graph import build_graph
+        from loki.labels import build_labels
+        from loki.model import FinalCell, Net, Netlist, Port, PortBit, Snapshot
+
+        def hard(cid: int, cell_type: str, src: int, dst: int) -> FinalCell:
+            return FinalCell(
+                cid, "hard", cell_type, "", {}, (), (Port("a", 1, (src,)),),
+                (Port("y", 1, (dst,)),),
+            )
+
+        nets = {i: Net(i, ()) for i in (1, 2, 3, 4)}
+        nl = Netlist(
+            "top", nets,
+            (hard(30, "adder", 1, 2), hard(31, "multiplier", 2, 3), hard(32, "", 3, 4)),
+            (PortBit("A", "in", 1), PortBit("X", "out", 4)),
+        )
+        num = number(nl)
+        labels, _ = build_labels(nl, Snapshot((), (), "top"), num, {}, "/p")
+        obj, _ = build_graph(nl, labels, num, "d", "f2")
+        with tempfile.TemporaryDirectory() as tmp:
+            g = load_graph(write_graph(Path(tmp), obj))
+        self.assertEqual(g.kind, ("hard", "hard", "hard", "pi", "po"))
+        self.assertIsNotNone(g.labels)
+        assert g.labels is not None
+        index = g.index()
+        self.assertEqual(
+            [g.labels["cell_type"][index[node_id]] for node_id in ("n4", "n5", "n6")],
+            ["adder", "multiplier", ""],
+        )
+        matrix = featurize(g)
+        self.assertEqual(matrix.hard_types, ("adder", "multiplier"))
+        columns = [matrix.names.index(name) for name in (
+            "hard:adder", "hard:multiplier", "hard:<unk>")]
+        block = matrix.x[:, columns]
+        rows = {node_id: block[index[node_id]].tolist() for node_id in g.node_ids}
+        self.assertEqual(rows["n4"], [1.0, 0.0, 0.0])
+        self.assertEqual(rows["n5"], [0.0, 1.0, 0.0])
+        self.assertEqual(rows["n6"], [0.0, 0.0, 1.0])
+        self.assertEqual(rows["n7"], [0.0, 0.0, 0.0])
+        self.assertEqual(rows["n8"], [0.0, 0.0, 0.0])
+        self.assertEqual(int(np.count_nonzero(block.sum(axis=1))), 3)
+
+    def test_cell_type_only_labels_load(self) -> None:
+        """A no-port, no-construct graph still loads its hard cell types (the label gate)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            obj: Any = make_graph(labels=False)
+            obj["nodes"][2]["kind"] = "hard"
+            obj["nodes"][2]["labels"]["cell_type"] = "adder"
+            g = load_graph(write_graph(Path(tmp), obj))
+        self.assertIsNotNone(g.labels)
+        assert g.labels is not None
+        row = g.index()["n2"]
+        self.assertEqual(g.labels["cell_type"][row], "adder")
+        matrix = featurize(g)
+        self.assertEqual(matrix.hard_types, ("adder",))
+        column = matrix.names.index("hard:adder")
+        self.assertEqual(float(matrix.x[row, column]), 1.0)
+
     def test_features_exclude_labels(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             obj: Any = make_graph()

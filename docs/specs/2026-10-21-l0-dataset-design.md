@@ -242,8 +242,8 @@ all names `n<k>`; no `// file:line` comments (an imported netlist has none).
     {"id": "n17", "kind": "lut",
      "features": {"fan_in": 4, "fan_out": 2, "level": 1, "lut_width": 4,
                   "lut_table": "9009", "is_seq": 0, "is_const": 0, "hard_ports": 0},
-     "labels": {"construct_type": "$eq", "construct_types": "$eq|$gt", "n_construct_cells": 2,
-                "module_path": "top", "bus_name": "AeqB", "bit_index": 0,
+     "labels": {"cell_type": "$lut", "construct_type": "$eq", "construct_types": "$eq|$gt",
+                "n_construct_cells": 2, "module_path": "top", "bus_name": "AeqB", "bit_index": 0,
                 "role": "datapath", "hdl_file": "bm_DL_4_bit_comparator.v", "hdl_line": 12,
                 "hdl_col": 6, "hdl_end_line": 12, "hdl_end_col": 12, "n_spans": 1}}
   ],
@@ -256,8 +256,9 @@ all names `n<k>`; no `// file:line` comments (an imported netlist has none).
   text. One edge per (driver cell, sink pin) pair; `net` is the carrying net's `n<k>`.
 - `pin` names: LUT `I0`..`I5` (input position in the cover's order), flip-flop `D`, `CLK`
   (`EN` for latches), PO `I`, hard cell the formal name with index, `a[3]`.
-- `labels` hold the `labels.csv` columns except `node_id`, `kind` and `cell_type` (as in the
-  example above; `cell_type` is only in the CSV).
+- `labels` hold the `labels.csv` columns except `node_id` and `kind` (as in the example above).
+  `cell_type` is included: it is the final cell's Odin III type, visible in the netlist, not an
+  answer-key fact, and L2's hard-type features read it (L2 spec 4).
 - `features` (numbers only): `fan_in` (input pins connected to a driven net), `fan_out` (sink pins on its output
   nets), `level` (longest combinational path from a PI, flip-flop output or constant; flip-flops,
   PIs and constants are 0), `lut_width` (0 if not a LUT), `lut_table` (hex of the table, MSB
