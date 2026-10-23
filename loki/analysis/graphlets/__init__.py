@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 from loki.analysis import require
 from loki.analysis.graphio import Graph
+from loki.analysis.graphlets.ext import OrcaCounter
 from loki.analysis.graphlets.signals import CLASS_NAMES, SignalConfig, SignalInfo, classify_signals
 from loki.analysis.partition import version_info
 from loki.schemas import dump_json
@@ -70,7 +71,7 @@ class GraphletCounter(Protocol):
         ...
 
 
-#: Registered backends by name; Task G-ext registers ``"ext"`` (ORCA).
+#: Registered backends by name; ``"ext"`` (ORCA) is registered at the bottom of this module.
 BACKENDS: dict[str, GraphletCounter] = {}
 
 
@@ -422,3 +423,7 @@ def load_orbits(
     if roles.shape != (g.n_nodes, 4):
         raise ValueError(f"{path}: roles of shape {roles.shape} do not match {g.n_nodes} nodes")
     return orbits, roles
+
+
+#: ORCA is the default backend of spec 8.5, registered under its name ``"ext"``.
+BACKENDS[OrcaCounter.name] = OrcaCounter()

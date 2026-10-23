@@ -1,4 +1,5 @@
-"""The ``loki`` command: bench, assemble, check, re, score, score-all, calibrate, re-project."""
+"""The ``loki`` command: bench, assemble, check, re, score, score-all, calibrate, re-project,
+tools."""
 
 from __future__ import annotations
 
@@ -59,6 +60,9 @@ def _parser() -> argparse.ArgumentParser:
     rp.add_argument("--calib", required=True, help="directory of <floor>.json files")
     rp.add_argument("--out", required=True)
     rp.add_argument("--features", default="all", choices=("all", "none"))
+    tools = sub.add_parser("tools", help="fetch and build external analysis tools")
+    tsub = tools.add_subparsers(dest="tools_cmd", required=True)
+    tsub.add_parser("fetch-orca", help="download, verify and build the ORCA graphlet counter")
     sub.add_parser("re", help="reverse-engineer a netlist (loki re --help)", add_help=False)
     return ap
 
@@ -112,7 +116,22 @@ def _score_all(args: argparse.Namespace) -> int:
     return 0
 
 
+def _tools(args: argparse.Namespace) -> int:
+    """``loki tools``: fetch and build external analysis tools (spec 8.5)."""
+    from loki.analysis.graphlets.ext import ORCA_LICENCE
+    from loki.tools import fetch_orca
+
+    if args.tools_cmd == "fetch-orca":
+        binary = fetch_orca()
+        print(binary)
+        print(ORCA_LICENCE)
+        return 0
+    raise ValueError(f"unknown tools command {args.tools_cmd!r}")
+
+
 def _run(args: argparse.Namespace) -> int:
+    if args.cmd == "tools":
+        return _tools(args)
     if args.cmd == "score":
         floor_dir = Path(args.dataset) / args.design / args.floor
         if not floor_dir.is_dir():
