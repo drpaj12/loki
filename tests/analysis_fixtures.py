@@ -156,10 +156,10 @@ def make_graph(
     return {"schema": SCHEMA, "design": design, "floor": floor, "nodes": nodes, "edges": edges}
 
 
-def write_graph(directory: Path, obj: dict[str, object]) -> Path:
-    """Write ``obj`` as ``<directory>/graph.json`` (deterministic output); return the path."""
-    directory.mkdir(parents=True, exist_ok=True)
-    path = directory / "graph.json"
+def write_graph(dir: Path, obj: dict[str, object]) -> Path:
+    """Write ``obj`` as ``<dir>/graph.json`` (deterministic output); return the path."""
+    dir.mkdir(parents=True, exist_ok=True)
+    path = dir / "graph.json"
     path.write_text(dump_json(obj), encoding="utf-8")
     return path
 
@@ -229,7 +229,7 @@ def big_synthetic(n: int, m: int, seed: int = 0) -> tuple[np.ndarray, np.ndarray
     """The L2 spec 3 benchmark graph: local edges within +-50 plus a 20000-fan-out hub.
 
     ``m`` is the wanted number of undirected edges including the hub's. The hub is node 0 with
-    exactly ``min(20000, n - 1)`` leaves; every other edge joins nodes at an offset of 1 to 50.
+    exactly ``min(20000, n - 1, m)`` leaves; every other edge joins nodes at an offset of 1 to 50.
     The result is simple (no self-loops, no parallel edges), canonical (``src < dst``) and sorted,
     and deterministic for a given ``(n, m, seed)``. It returns fewer than ``m`` edges only when
     the request is denser than the generator fills in 64 batches.
