@@ -30,6 +30,7 @@ marker, so they are imported through :func:`importlib.import_module`.
 
 from __future__ import annotations
 
+import argparse
 import csv
 import importlib
 import random
@@ -1130,3 +1131,15 @@ def train_eval(
         torch.random.set_rng_state(saved_torch)
         np.random.set_state(saved_numpy)
         random.setstate(saved_python)
+
+
+def run_gnn(args: argparse.Namespace) -> int:
+    """``loki analyze gnn``: the spec-10 entry point of the GNN kind.
+
+    The CLI wiring (``--out``, ``--features`` and the per-design graphlet blocks of spec 8.6)
+    lives with the other kind handlers in :func:`loki.analysis.run.run_gnn`, which this public
+    name calls. The import is lazy so the two modules do not load each other at import time.
+    """
+    from loki.analysis import run as runner
+
+    return runner.run_gnn(args)
