@@ -16,7 +16,7 @@ from loki.re.loop import ReOptions, RunResult, round_rejections, run_re
 from loki.re.overlay import Evidence, Overlay
 from loki.re.provers import Verdict
 from loki.schemas import dump_json
-from tests.helpers import DATA, can_run_f2, odin3_root, odin_available
+from tests.helpers import DATA, can_run_f2, have_f3, micro, odin3_root, odin_available
 
 RE = DATA / "re"
 HARD = (
@@ -282,6 +282,25 @@ class LoopTest(unittest.TestCase):
         self.assertEqual([h.status for h in got], ["committed", "committed"])
         self.assertTrue(all(h.log_odds == math.inf for h in got))
         self.assertEqual(sum(len(h.cells) for h in got), 2)
+
+
+@unittest.skipUnless(have_f3(), "needs Odin III with gate mapping")
+class VerilogInputFinalCheckTest(unittest.TestCase):
+    def test_verilog_input_checked_as_blif(self) -> None:
+        """Loki issue #14: ``equiv-check`` reads BLIF only, so a gate-level ``.v`` input is
+        compared as the BLIF level 0 writes out (the mapped netlist), not as raw Verilog text;
+        the status is honest instead of always ``error`` with ``tool_exit`` 2."""
+        res = run_re(opts(micro("bm_DL_4_bit_comparator"), floor="f3"))
+        self.assertEqual(res.final_equiv["status"], "equivalent")
+        self.assertEqual(res.final_equiv["tool_exit"], 0)
+
+    def test_hierarchical_verilog_input_checked(self) -> None:
+        """A multi-module ``.v`` input is checked after the same ``flatten; lower; write_blif``
+        rewrite as the final side, so a hierarchical input cannot read as structurally
+        different from the flattened final level."""
+        res = run_re(opts(RE / "multimod.v", floor="f3"))
+        self.assertEqual(res.final_equiv["status"], "equivalent")
+        self.assertEqual(res.final_equiv["tool_exit"], 0)
 
 
 @unittest.skipUnless(odin_available(), "needs Odin III")

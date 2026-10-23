@@ -848,11 +848,11 @@ other gate cells that `equiv-check` cannot read as subcircuits; found by accepta
 `loki.equiv.check_equiv` against the input BLIF; the result is `report.final_equiv`. F1 records
 `skipped:hard` (decision 2). `differs` is a bug: the run exits 1.
 
-Known limitation (2026-10-22, Loki issue #14): the check compares the input text as given, and
-`equiv-check` reads BLIF only, so a gate-level `netlist.v` input always gives
-`final_equiv: {"status": "error", "tool_exit": 2}` (the run still exits 0) with no reason in the
-report. Until #14 normalises the input side (or returns `skipped:verilog-input`), use the floor
-BLIF for the final check.
+A gate-level `netlist.v` input (floor F3) is not BLIF text, so the check writes the level-0 design
+out with the same `flatten; lower; write_blif --gates-as-names` rewrite as the final side and
+compares the two BLIFs (`_Run.input_blif`; fixed in Loki issue #14, 2026-10-23). Flattening both
+sides keeps a hierarchical input from reading as structurally different. A BLIF input is still
+compared as given.
 
 ## 10. Determinism
 
