@@ -12,6 +12,11 @@ License: MIT.
 
 ## Documentation
 
+The [paper](docs/paper/README.md) reports the L0/L1/L2 recovery statistics under the
+Gate-Breaker metrics, with every number traced to the experiment records.
+
+## Documentation
+
 Start at the Yggdrasil III hub; every manual links to the others.
 
 - [Yggdrasil III hub](https://drpaj12.github.io/YggdrasilIII/): the suite, how the pieces connect, getting started.
