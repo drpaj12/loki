@@ -335,6 +335,7 @@ class ScaleTest(unittest.TestCase):
                 "--out", str(self.out(label, "structural-quotient")),
             ], label)
 
+    @skip_without("torch", "torch_geometric")
     def test_export_pyg(self) -> None:
         for label, graph, _arrays in self.sources:
             self.measure("export_pyg", [

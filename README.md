@@ -66,7 +66,8 @@ Four plugin kinds read one L0 `graph.json` (or one dataset design) and write und
 
 `loki analyze structural` computes and caches the structural arrays (1-WL colours, NPN classes,
 role flags) for inspection; `export` and `gnn` compute them when needed. `--graph graph.json`
-replaces the dataset options for every kind. Exit codes: 0 ok, 1 analysis failure, 2 usage,
+replaces the dataset options for export, structural, cluster and graphlets; `gnn` is
+dataset-only (spec 10). Exit codes: 0 ok, 1 analysis failure, 2 usage,
 3 missing extra or backend.
 
 Extras: the base install stays `odin3` only. `pip install 'loki[analysis]'` adds numpy, scipy,
