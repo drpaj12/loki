@@ -171,9 +171,13 @@ class StructuralTest(unittest.TestCase):
             self.assertEqual(loaded.variant, "npn/both")
             self.assertIsNotNone(loaded.stable_class)
             self.assertIsNotNone(loaded.quotient)
+            self.assertEqual(loaded.npn_keys, coarse.npn_keys)
+            self.assertEqual(loaded.colours, coarse.colours)
+            self.assertEqual(len(loaded.colours), WL_ROUNDS + 1)
             if loaded.stable_class is not None and loaded.quotient is not None:
                 self.assertTrue(np.array_equal(loaded.stable_class, stable_class))
                 self.assertEqual(loaded.quotient.edges, quotient.edges)
+                self.assertEqual(loaded.quotient.size, quotient.size)
             plain_path = run_structural(graph, root / "p")
             self.assertIsNone(
                 json.loads(plain_path.read_text(encoding="utf-8"))["quotient"]

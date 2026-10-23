@@ -230,8 +230,9 @@ def _orbit_arrays(
 ) -> tuple[Any, dict[str, str]] | None:
     """``gsn_orbits`` and ``gsn_orbits_source`` from an orbit file for ``g``, or ``None``.
 
-    A file that belongs to another graph (a region export, a stale run) raises ``ValueError``
-    inside :func:`load_orbits` and is skipped, because no orbit file exists for the subgraph.
+    The candidates are tried in preference order and the first file that loads wins. A file that
+    belongs to another graph (a region export, a stale run) raises ``ValueError`` inside
+    :func:`load_orbits` and is skipped, because no orbit file exists for the subgraph.
     """
     if orbits_dir is None:
         return None
@@ -239,35 +240,31 @@ def _orbit_arrays(
 
     from loki.analysis.graphlets import load_orbits
 
-    choice = _orbit_file(orbits_dir)
-    if choice is None:
-        return None
-    backend, removal = choice
-    try:
-        orbits, _roles = load_orbits(g, backend, removal, orbits_dir)
-    except ValueError:
-        return None
-    torch: Any = importlib.import_module("torch")
-    arrays = torch.from_numpy(np.asarray(orbits, dtype=np.int64))
-    return arrays, {"backend": backend, "removal": removal}
+    for backend, removal in _orbit_files(orbits_dir):
+        try:
+            orbits, _roles = load_orbits(g, backend, removal, orbits_dir)
+        except ValueError:
+            continue
+        torch: Any = importlib.import_module("torch")
+        arrays = torch.from_numpy(np.asarray(orbits, dtype=np.int64))
+        return arrays, {"backend": backend, "removal": removal}
+    return None
 
 
-def _orbit_file(orbits_dir: Path) -> tuple[str, str] | None:
-    """``(backend, removal)`` of the orbit file to read; the default backend wins."""
+def _orbit_files(orbits_dir: Path) -> list[tuple[str, str]]:
+    """``(backend, removal)`` candidates of ``orbits_dir``; the default backend's file first."""
     from loki.analysis.graphlets import DEFAULT_BACKEND
 
     if not orbits_dir.is_dir():
-        return None
+        return []
     pairs: list[tuple[str, str]] = []
     for path in sorted(orbits_dir.glob("orbits-*.npz")):
         stem = path.name[len("orbits-"):-len(".npz")]
         backend, separator, removal = stem.rpartition("-")
         if separator and backend and removal in ("global", "none"):
             pairs.append((backend, removal))
-    if not pairs:
-        return None
     preferred = (DEFAULT_BACKEND, "global")
-    return preferred if preferred in pairs else pairs[0]
+    return sorted(pairs, key=lambda pair: pair != preferred)
 
 
 def _encode_targets(values: Sequence[object], vocab: Sequence[str]) -> npt.NDArray[Any]:

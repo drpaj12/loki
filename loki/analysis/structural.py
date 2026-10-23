@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+import zipfile
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -249,7 +250,11 @@ def _reusable(
     rounds: int,
     with_quotient: bool,
 ) -> bool:
-    """True when both files exist and describe this graph and these options."""
+    """True when both files exist and describe this graph and these options.
+
+    The stored node ids are compared too: :meth:`Graph.induced` keeps the parent ``sha256``, so
+    the hash alone would reuse a whole-graph file for a subgraph.
+    """
     if not (json_path.is_file() and npz_path.is_file()):
         return False
     try:
@@ -261,7 +266,19 @@ def _reusable(
         and record.get("variant") == variant
         and record.get("rounds") == int(rounds)
         and (record.get("quotient") is not None) == with_quotient
+        and _stored_node_ids(npz_path) == g.node_ids
     )
+
+
+def _stored_node_ids(npz_path: Path) -> tuple[str, ...] | None:
+    """The ``node_ids`` of a structural npz, or ``None`` when it cannot be read."""
+    import numpy as np
+
+    try:
+        with np.load(npz_path) as data:
+            return tuple(str(node_id) for node_id in np.asarray(data["node_ids"]).tolist())
+    except (OSError, ValueError, KeyError, zipfile.BadZipFile):
+        return None
 
 
 def _npn_summary(g: Graph) -> dict[str, object]:
