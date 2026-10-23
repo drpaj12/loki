@@ -54,6 +54,7 @@ class BenchTest(unittest.TestCase):
             self.assertEqual([d["name"] for d in data["design"]], ["micro_a_one", "micro_b_two"])
             self.assertEqual(data["design"][0]["files"], ["designs/micro_a_one/micro_a_one.v"])
             self.assertEqual(data["recipe"]["l0"]["steps"][0]["use"], "loki-dataset")
+            self.assertEqual(data["recipe"]["l0"]["steps"][0]["floors"], ["f1", "f2", "f3"])
             self.assertEqual(data["sweep"]["design"], ["micro_a_one", "micro_b_two"])
             self.assertEqual(sorted(data["sweep"]["arch"]), sorted(bench.ARCHS))
             self.assertNotIn(str(Path.home()), text)

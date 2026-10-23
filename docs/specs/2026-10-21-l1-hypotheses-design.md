@@ -56,13 +56,19 @@ is never edited afterwards (RE-ARCHITECTURE section 2).
 | `netlist.blif` (L0 output) | `f2` | `read_blif "<path>"` |
 | `netlist.blif` | `f1-k6`, `f1-earch` | `read_techlib "<odin3>/lib/vtr.o3lib"; read_blif "<path>"` (the unmap spec's input situation S-2(b)); then `unmap` on the working level (section 9.1, gated) |
 | `netlist.blif` | `f3` | `read_blif "<path>"` (L0 writes gates as `.names` covers of their fn, L0 Task 12) |
-| `netlist.v` (gate-level) | `f3` | `read_techlib "<lib>"; read_verilog "<path>"; write_blif --gates-as-names "<tmp>"`, then `read_blif "<tmp>"` into a new design (gated on Odin III gate mapping) |
+| `netlist.v` (gate-level) | `f3` | `read_techlib "<lib>"; read_verilog "<path>"; proc; lower; abc --gates <name>; dfflibmap <name>; write_blif --gates-as-names "<tmp>"`, then `read_blif "<tmp>"` into a new design (gated on Odin III gate mapping). The L0 `netlist.v` holds assign logic, not library instances, so it must be gate-mapped before `write_blif --gates-as-names`; `<lib>` is `--techlib` or `<odin3>/lib/cmos6.o3lib` and `<name>` the library name it declares |
 
 So every logic cell of level 0 is a `$sop` whose `COVER` is its function: a LUT by its truth
 table, a library gate by its fn. Flip-flops are `$_DFF_P_`, `$_DFF_N_`, `$_FF_`; latches
 `$_DLATCH_P_`, `$_DLATCH_N_`; hard cells keep their `lib/vtr.o3lib` type (`adder`, `multiply`,
 `single_port_ram`, `dual_port_ram`). `<odin3>` is `$ODIN3_ROOT` (or `--odin3-root`). `--floor auto` takes the
 floor from the path (`.../<floor>/netlist.blif`) and fails if it cannot.
+
+The `.v` front is deliberately minimal (`proc; lower`): for the comparator it reproduces the floor
+BLIF gate for gate (26 logic cells). Other designs may re-synthesize to a different gate count
+(33 of the 65 F3 micros, e.g. 28 vs 36 cells for `bm_DL_BCD_7_segment_without_x`) but the two
+normalisations stay logically equivalent; `tests/test_re_fngraph.py` checks a sample of the floors
+with the equiv-check of section 9.4.
 
 ### 3.1 Odin III facts L1 rests on
 
@@ -99,9 +105,10 @@ Task 2 turns each into a test, and a changed fact stops the build.
    (`odin3_attr_get_string` fails with `INVALID_ARG`): Loki computes levels itself.
 10. Passes present (`Odin3.passes()`, which lists many more): `read_blif read_techlib read_arch
     read_verilog write_blif write_json write_verilog flatten lower fsm_detect levelize submod
-    cone_check raise`. Not yet:
+    cone_check raise`, plus `abc --gates` and `dfflibmap` and the `write_blif --gates-as-names`
+    option (the gate-mapping merge of 2026-10-22; Task 18 gate). Not yet:
     `unmap` (Odin III project 3, spec `docs/specs/2026-10-21-unmap-design.md` on branch
-    `feat/unmap-spec`, commit `bc9e5799`, not merged), `write_blif --gates-as-names` (gate mapping).
+    `feat/unmap-spec`, commit `bc9e5799`, not merged).
 
 ### 3.2 ABI gaps and how L1 lives with them (RE-ARCHITECTURE section 5)
 
@@ -829,6 +836,12 @@ For F2 and F3: copy the final level, `flatten; lower; write_blif --gates-as-name
 other gate cells that `equiv-check` cannot read as subcircuits; found by acceptance, Task 16), and run L0's
 `loki.equiv.check_equiv` against the input BLIF; the result is `report.final_equiv`. F1 records
 `skipped:hard` (decision 2). `differs` is a bug: the run exits 1.
+
+Known limitation (2026-10-22, Loki issue #14): the check compares the input text as given, and
+`equiv-check` reads BLIF only, so a gate-level `netlist.v` input always gives
+`final_equiv: {"status": "error", "tool_exit": 2}` (the run still exits 0) with no reason in the
+report. Until #14 normalises the input side (or returns `skipped:verilog-input`), use the floor
+BLIF for the final check.
 
 ## 10. Determinism
 

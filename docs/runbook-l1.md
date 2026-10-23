@@ -30,6 +30,11 @@ Outputs in `--out`: `design.v`, `overlay.json`, `report.json`, `report.md`, `tim
 the structural features off (ablation). Exit codes: 0 done, 1 internal error or `final_equiv =
 differs`, 2 usage, 3 input unreadable.
 
+Known limitation (Loki issue #14): `loki re <netlist.v> --floor f3` normalises and runs (exit 0),
+but `report.final_equiv` is always `{"status": "error", "tool_exit": 2}`: the final check compares
+the raw Verilog text with the final BLIF and `equiv-check` reads BLIF only, and the reason is not
+in the report. Use the floor `netlist.blif` for a checked run.
+
 ## 3. Calibration (train split)
 
     ODIN3_HEAVY_OK=1 $ODIN3_ROOT/tools/heavy-run .venv/bin/loki calibrate --dataset dataset --floor f2 \
@@ -53,8 +58,9 @@ tables of the last run are in `docs/results-l1.md`.
 
 ## 5. Acceptance (L1 exit) and scale tests
 
-    LOKI_DATASET=$PWD/dataset .venv/bin/python -m unittest tests.test_acceptance_l1 -v      # about 20 s
+    LOKI_DATASET=$PWD/dataset .venv/bin/python -m unittest tests.test_acceptance_l1 -v      # about 135 s
     LOKI_SCALE=1 ODIN3_HEAVY_OK=1 $ODIN3_ROOT/tools/heavy-run .venv/bin/python -m unittest tests.test_features_scale -v
 
 The acceptance test runs `loki re --calib none` twice over the micro subset (spec 15) and checks
-items 1 to 7. Without `LOKI_DATASET` it skips.
+items 1 to 7; `AcceptanceF3Test` runs the same subset from the f3 `netlist.blif` and checks exit 0
+with `final_equiv` equivalent. Without `LOKI_DATASET` it skips.

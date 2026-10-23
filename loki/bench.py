@@ -126,7 +126,7 @@ def _toml(ids: list[str], files: dict[str, str], tops: dict[str, str]) -> str:
         lines.append("")
     lines += [
         "[recipe.l0]",
-        'steps = [{ use = "loki-dataset", floors = ["f1", "f2"] }]',
+        'steps = [{ use = "loki-dataset", floors = ["f1", "f2", "f3"] }]',
         "",
         "[sweep]",
         'recipe = ["l0"]',

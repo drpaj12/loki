@@ -459,7 +459,7 @@ lexicographically first architecture and `loki check` verifies that the others a
 `loki bench init --suite micro|verilog-eval|all --odin3-root DIR --out datasets/l0` writes
 `datasets/l0/wyrd.toml` and the design sources under `datasets/l0/designs/` (copied micros;
 VerilogEval `*_ref.sv` files from the cache, copied and renamed `<id>.sv`). One `[[design]]` per
-design, `[recipe.l0] steps = [{ use = "loki-dataset", floors = ["f1","f2"] }]`, and
+design, `[recipe.l0] steps = [{ use = "loki-dataset", floors = ["f1","f2","f3"] }]`, and
 `[sweep] recipe = ["l0"]  design = [all]  arch = ["k6_frac_N10_frac_chain_mem32K_40nm",
 "EArch"]`. VerilogEval's top is `RefModule` (set `top`). Run: `wyrd run datasets/l0`, then
 `loki assemble --project datasets/l0 --out dataset`.
