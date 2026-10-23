@@ -27,7 +27,7 @@ _TEXT_COLUMNS = frozenset(
 )
 _FEATURES = ("fan_in", "fan_out", "level", "lut_width", "lut_table", "is_seq", "is_const",
              "hard_ports")
-_LABEL_KEYS = LABEL_COLUMNS[3:]
+_LABEL_KEYS = tuple(column for column in LABEL_COLUMNS if column not in ("node_id", "kind"))
 _NAME_RE = re.compile(r"^n[0-9]+$")
 
 

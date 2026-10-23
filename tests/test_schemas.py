@@ -25,7 +25,8 @@ HEADER = (
 
 def graph_example() -> dict[str, Any]:
     labels = {
-        "construct_type": "$eq", "construct_types": "$eq|$gt", "n_construct_cells": 2,
+        "cell_type": "$lut", "construct_type": "$eq", "construct_types": "$eq|$gt",
+        "n_construct_cells": 2,
         "module_path": "top", "bus_name": "AeqB", "bit_index": 0, "role": "datapath",
         "hdl_file": "bm.v", "hdl_line": 12, "hdl_col": 6, "hdl_end_line": 12,
         "hdl_end_col": 12, "n_spans": 1,
@@ -57,6 +58,9 @@ class SchemasTest(unittest.TestCase):
         g = graph_example()
         g["nodes"][0]["labels"]["role"] = "bar"
         self.assertIn("bar", " ".join(validate_graph(g)))
+        g = graph_example()
+        del g["nodes"][0]["labels"]["cell_type"]
+        self.assertIn("missing key 'cell_type'", " ".join(validate_graph(g)))
         g = graph_example()
         g["nodes"][1]["id"] = "n17"
         self.assertIn("duplicate node id 'n17'", " ".join(validate_graph(g)))

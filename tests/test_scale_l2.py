@@ -76,7 +76,7 @@ _TABLES: dict[int, tuple[int, ...]] = {
     4: (0x0000, 0x8000, 0xE880, 0x9669, 0xCACA),
 }
 _LABELS = (
-    '{"construct_type": "", "construct_types": "", "n_construct_cells": -1, '
+    '{"cell_type": "", "construct_type": "", "construct_types": "", "n_construct_cells": -1, '
     '"module_path": "", "bus_name": "", "bit_index": -1, "role": "unknown", '
     '"hdl_file": "", "hdl_line": -1, "hdl_col": -1, "hdl_end_line": -1, '
     '"hdl_end_col": -1, "n_spans": 0}'

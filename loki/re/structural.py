@@ -46,8 +46,7 @@ def feature_graph(graph: FnGraph) -> FeatureGraph:
     node per input net and one ``po:<net>`` node per output net; edges driver to sink pin.
 
     ``type`` is the cell kind, except for hard cells (their Odin III type), and only LUTs have a
-    table (a constant's value is not kept): L0's ``graph.json`` carries neither cell types nor
-    constant values, and the two routes must agree."""
+    table (a constant's value is not kept): L0's ``graph.json`` keeps no constant values."""
     nodes: list[tuple[str, str, str, int, int]] = []
     index: dict[int, int] = {}
     for cid in sorted(graph.cells):

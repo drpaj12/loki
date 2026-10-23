@@ -147,6 +147,34 @@ class GraphioTest(unittest.TestCase):
         self.assertEqual(bare_explicit.x[g.index()["n2"], last], 1.0)
         self.assertEqual(bare_explicit.x[g.index()["n5"], last], 0.0)
 
+    def test_cell_type_hard_block_from_file(self) -> None:
+        import numpy as np
+
+        with tempfile.TemporaryDirectory() as tmp:
+            obj: Any = make_graph()
+            by_id = {node["id"]: node for node in obj["nodes"]}
+            hard = {"n2": "adder", "n3": "multiplier", "n4": ""}
+            for node_id, cell_type in hard.items():
+                by_id[node_id]["kind"] = "hard"
+                by_id[node_id]["labels"]["cell_type"] = cell_type
+            g = load_graph(write_graph(Path(tmp), obj))
+        self.assertIsNotNone(g.labels)
+        assert g.labels is not None
+        self.assertEqual(
+            list(g.labels["cell_type"]),
+            [by_id[node_id]["labels"]["cell_type"] for node_id in g.node_ids],
+        )
+        matrix = featurize(g)
+        self.assertEqual(matrix.hard_types, ("adder", "multiplier"))
+        columns = [matrix.names.index(name) for name in (
+            "hard:adder", "hard:multiplier", "hard:<unk>")]
+        rows = {node_id: matrix.x[row, columns].tolist()
+                for row, node_id in enumerate(g.node_ids)}
+        self.assertEqual(rows["n2"], [1.0, 0.0, 0.0])
+        self.assertEqual(rows["n3"], [0.0, 1.0, 0.0])
+        self.assertEqual(rows["n4"], [0.0, 0.0, 1.0])
+        self.assertEqual(int(np.count_nonzero(matrix.x[:, columns].sum(axis=1))), 3)
+
     def test_features_exclude_labels(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             obj: Any = make_graph()

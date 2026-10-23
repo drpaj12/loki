@@ -34,9 +34,12 @@ NUMERIC_FEATURES: tuple[str, ...] = (
 LABEL_COLUMNS_FORBIDDEN: frozenset[str] = frozenset(
     column for column in LABEL_COLUMNS if column not in ("node_id", "kind", "cell_type")
 )
-_LABEL_KEYS: tuple[str, ...] = LABEL_COLUMNS[3:]
+_LABEL_KEYS: tuple[str, ...] = tuple(
+    column for column in LABEL_COLUMNS if column not in ("node_id", "kind")
+)
 _TEXT_LABELS = frozenset(
-    {"construct_type", "construct_types", "module_path", "bus_name", "role", "hdl_file"}
+    {"cell_type", "construct_type", "construct_types", "module_path", "bus_name", "role",
+     "hdl_file"}
 )
 _UNKNOWN = "<unk>"
 _HARD_UNKNOWN = f"hard:{_UNKNOWN}"
@@ -202,11 +205,9 @@ def featurize(g: Graph, hard_types: Sequence[str] | None = None) -> FeatureMatri
     """The spec-4 feature matrix: 8 numeric, 7 kind, 4 floor, then ``len(hard_types) + 1``.
 
     ``hard_types=None`` derives the sorted hard cell types from the ``cell_type`` label of nodes
-    with kind ``hard``; a ``graph.json`` accepted by ``validate_graph`` has no such column, so the
-    derived vocabulary is empty there (see :func:`_hard_vocabulary`). Every hard node one-hots one
-    column regardless: its cell type, or the final ``hard:<unk>`` column when the type is missing
-    from the vocabulary (no ``cell_type`` column at all, an empty value, or a type absent from an
-    explicit ``hard_types``).
+    with kind ``hard``. Every hard node one-hots one column regardless: its cell type, or the
+    final ``hard:<unk>`` column when the type is missing from the vocabulary (an empty value, or
+    a type absent from an explicit ``hard_types``).
     """
     require("analysis")
     import numpy as np
@@ -256,7 +257,8 @@ def _hard_vocabulary(g: Graph, hard_types: Sequence[str] | None) -> tuple[str, .
 def to_feature_graph(g: Graph) -> FeatureGraph:
     """The :mod:`loki.features` feature graph of ``g`` (spec 4.1).
 
-    Node order and ids are ``graph.json``'s; ``type`` is the kind (the file holds no cell types);
+    Node order and ids are ``graph.json``'s; ``type`` is the kind (the file's ``cell_type``
+    label feeds :func:`featurize`, not this graph);
     ``lut_table`` hex becomes an integer table (``""`` gives -1); pins and nets are as in the
     file. Equal to :func:`loki.features.graph.from_graph_json` on the same file, which a test
     pins; both raise ``ValueError`` for a net not named ``n<k>``.

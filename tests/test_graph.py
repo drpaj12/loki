@@ -30,6 +30,15 @@ class GraphTest(unittest.TestCase):
         by = {n["id"]: n["features"]["level"] for n in g["nodes"]}
         self.assertEqual(by, {"n3": 1, "n4": 2, "n5": 0, "n6": 3})
 
+    def test_labels_carry_cell_type(self) -> None:
+        nl = chain()
+        g = graph_of(nl)
+        self.assertEqual(validate_graph(g), [])
+        expected = {"pi": "$port_in", "po": "$port_out", "lut": "$lut"}
+        by = {n["id"]: n["labels"]["cell_type"] for n in g["nodes"]}
+        kinds = {n["id"]: n["kind"] for n in g["nodes"]}
+        self.assertEqual(by, {nid: expected[kinds[nid]] for nid in kinds})
+
     def test_level_with_loop(self) -> None:
         nets = {i: Net(i, ()) for i in (1, 2, 3)}
         cells = (lut_cell(10, [1, 3], 2, "0110"), lut_cell(11, [2], 3, "01"))
