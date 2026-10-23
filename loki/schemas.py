@@ -29,6 +29,7 @@ _FEATURES = ("fan_in", "fan_out", "level", "lut_width", "lut_table", "is_seq", "
              "hard_ports")
 _LABEL_KEYS = tuple(column for column in LABEL_COLUMNS if column not in ("node_id", "kind"))
 _NAME_RE = re.compile(r"^n[0-9]+$")
+_MISSING_LABEL_RE = re.compile(r"^nodes\[\d+\]\.labels: missing key '([^']+)'$")
 
 
 def dump_json(obj: object) -> str:
@@ -126,7 +127,32 @@ def validate_graph(obj: object) -> list[str]:
             errs.append(f"nodes[{i}]: duplicate node id {nid!r}")
         ids.add(nid)
     _edge_errors(d.get("edges", []), ids, errs)
+    _collapse_missing_label_errors(errs)
     return errs
+
+
+def _collapse_missing_label_errors(errs: list[str]) -> None:
+    """Report each missing node-label key once per graph and hint at a rebuild.
+
+    A ``graph.json`` written before the label schema lacks ``cell_type`` on every node, so the
+    raw per-node errors would print one line per node. Each missing key becomes one ``graph:``
+    line, followed by the rebuild hint for such an old dataset.
+    """
+    seen: set[str] = set()
+    kept: list[str] = []
+    for err in errs:
+        match = _MISSING_LABEL_RE.match(err)
+        if match is None:
+            kept.append(err)
+        elif match.group(1) not in seen:
+            seen.add(match.group(1))
+            kept.append(f"graph: node labels: missing key {match.group(1)!r}")
+    if seen:
+        kept.append(
+            "graph: rebuild the dataset: graph.json files written before the current label "
+            "schema lack these keys"
+        )
+    errs[:] = kept
 
 
 def validate_words(obj: object) -> list[str]:

@@ -41,6 +41,9 @@ _TEXT_LABELS = frozenset(
     {"cell_type", "construct_type", "construct_types", "module_path", "bus_name", "role",
      "hdl_file"}
 )
+#: text columns whose non-empty value marks a node as labelled; ``role`` is excluded because the
+#: writer fills it (``unknown``) even when nothing matched, so it carries no answer-key content.
+_PRESENCE_LABELS: tuple[str, ...] = tuple(sorted(_TEXT_LABELS - {"role"}))
 _UNKNOWN = "<unk>"
 _HARD_UNKNOWN = f"hard:{_UNKNOWN}"
 
@@ -53,8 +56,9 @@ class Graph:
     parallel edges kept). ``num`` holds :data:`NUMERIC_FEATURES` as int64 arrays and ``table``
     the integer ``lut_table`` of every node (-1 when the node has no table). ``labels`` maps
     each label column of the file to an array (text columns as strings, the rest int64), or is
-    ``None`` when every label object of the file is empty (see :func:`_label_columns`); ``None``
-    does not mean the label objects are absent, because a valid ``graph.json`` always writes them.
+    ``None`` when no node of the file carries an answer-key label (see :func:`_label_columns`);
+    ``None`` does not mean the label objects are absent, because a valid ``graph.json`` always
+    writes them.
     """
 
     design: str
@@ -167,19 +171,24 @@ def _int_table(lut_table: object) -> int:
 
 
 def _label_columns(nodes: Sequence[dict[str, Any]]) -> dict[str, npt.NDArray[Any]] | None:
-    """The label columns of the file, or ``None`` when no node carries a construct type.
+    """The label columns of the file, or ``None`` when no node carries an answer-key label.
 
+    A label is present when any answer-key text column other than ``role`` is non-empty: the
+    ``cell_type`` of a hard cell counts even when no construct type was matched (a no-port or
+    constant-only design), and a from-blif file is labelled because its ports carry
+    ``$port_in``/``$port_out`` while every ``lut``/``ff``/``hard`` construct type stays empty.
+    ``role`` is not counted because the writer fills it even when nothing matched (``unknown``).
     The rule distinguishes the two empty-looking states precisely: L0 writes every label object
-    even for an unlabelled design, so ``None`` here means "all label objects are empty", never
-    "the labels are absent" (``validate_graph`` requires the objects). A from-blif file is
-    therefore labelled, because its ports carry ``$port_in``/``$port_out``, while every
-    ``lut``/``ff``/``hard`` construct type stays empty; callers that ask whether the answer key
-    covers a node kind must look at that kind's ``construct_type`` values, not at
+    even for an unlabelled design, so ``None`` here means "no answer-key label", never "the
+    labels are absent" (``validate_graph`` requires the objects); callers that ask whether the
+    answer key covers a node kind must look at that kind's ``construct_type`` values, not at
     ``labels is None`` (Task 11 does so explicitly).
     """
     import numpy as np
 
-    if not nodes or not any(str(node["labels"]["construct_type"]) for node in nodes):
+    if not nodes or not any(
+        any(str(node["labels"][key]) for key in _PRESENCE_LABELS) for node in nodes
+    ):
         return None
     columns: dict[str, npt.NDArray[Any]] = {}
     for key in _LABEL_KEYS:
