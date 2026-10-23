@@ -64,6 +64,12 @@ table, a library gate by its fn. Flip-flops are `$_DFF_P_`, `$_DFF_N_`, `$_FF_`;
 `single_port_ram`, `dual_port_ram`). `<odin3>` is `$ODIN3_ROOT` (or `--odin3-root`). `--floor auto` takes the
 floor from the path (`.../<floor>/netlist.blif`) and fails if it cannot.
 
+The `.v` front is deliberately minimal (`proc; lower`): for the comparator it reproduces the floor
+BLIF gate for gate (26 logic cells). Other designs may re-synthesize to a different gate count
+(33 of the 65 F3 micros, e.g. 28 vs 36 cells for `bm_DL_BCD_7_segment_without_x`) but the two
+normalisations stay logically equivalent; `tests/test_re_fngraph.py` checks a sample of the floors
+with the equiv-check of section 9.4.
+
 ### 3.1 Odin III facts L1 rests on
 
 Probed on 2026-10-21 against the release build of `odin3` commit `00203c56` (v1.0.0, ABI 4); plan
@@ -830,6 +836,12 @@ For F2 and F3: copy the final level, `flatten; lower; write_blif --gates-as-name
 other gate cells that `equiv-check` cannot read as subcircuits; found by acceptance, Task 16), and run L0's
 `loki.equiv.check_equiv` against the input BLIF; the result is `report.final_equiv`. F1 records
 `skipped:hard` (decision 2). `differs` is a bug: the run exits 1.
+
+Known limitation (2026-10-22, Loki issue #14): the check compares the input text as given, and
+`equiv-check` reads BLIF only, so a gate-level `netlist.v` input always gives
+`final_equiv: {"status": "error", "tool_exit": 2}` (the run still exits 0) with no reason in the
+report. Until #14 normalises the input side (or returns `skipped:verilog-input`), use the floor
+BLIF for the final check.
 
 ## 10. Determinism
 

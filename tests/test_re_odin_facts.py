@@ -144,8 +144,8 @@ class OdinFactsTest(unittest.TestCase):
     def test_passes_present(self) -> None:  # fact 10
         have = set(odin_module().default().passes())
         want = {"read_blif", "read_techlib", "read_arch", "read_verilog", "write_blif",
-                "write_json", "write_verilog", "flatten", "lower", "fsm_detect", "levelize",
-                "submod", "cone_check", "raise"}
+                "write_json", "write_verilog", "flatten", "lower", "proc", "fsm_detect",
+                "levelize", "submod", "cone_check", "raise", "abc", "dfflibmap"}
         self.assertEqual(want - have, set())
 
 
