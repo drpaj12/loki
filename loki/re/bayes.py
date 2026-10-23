@@ -115,6 +115,7 @@ _YES = {"yes": 0.69}
 def _defaults() -> dict[str, dict[str, float]]:
     t: dict[str, dict[str, float]] = {
         "hard_group/shared_ctrl": {"all": 4.61, "addr_only": 1.10},
+        "hard_group/k": dict(_K_BINS),
         "hard_add/declined_chain": {"yes": 4.61},
         "ff_en/en_fn_exact": {"yes": 4.61},
         "ff_srst/rst_fanout": {"1": -1.10, "2-3": 1.10, "4-7": 2.20, "8+": 3.00},
