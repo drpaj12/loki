@@ -29,9 +29,16 @@ class _AnalysisStep:
 
     name = ""
     kind = ""
+    tools: tuple[str, ...] = ()
+    is_vpr = False
     # Kind options of spec 10, in the order they appear in the argv.
     options: tuple[str, ...] = ()
     choices: dict[str, tuple[str, ...]] = {}
+    # Integer options (never a bool), float options, and keyword strings a numeric
+    # option accepts in place of a number (``k = "auto"``, spec 7).
+    numeric: tuple[str, ...] = ()
+    real: tuple[str, ...] = ()
+    keywords: dict[str, tuple[str, ...]] = {}
     flags: tuple[str, ...] = ()
     has_design = True
 
@@ -76,7 +83,17 @@ class _AnalysisStep:
                     f"step {self.name!r}: {key} must be among {allowed}, got {bad!r}"
                 )
             return list(value)
-        if not isinstance(value, str):
+        if key in self.numeric or key in self.real:
+            words = self.keywords.get(key, ())
+            if isinstance(value, str) and value in words:
+                return value
+            types: tuple[type, ...] = (int,) if key in self.numeric else (int, float)
+            if isinstance(value, bool) or not isinstance(value, types):
+                kind = "an integer" if key in self.numeric else "a number"
+                extra = f" or {words[0]!r}" if words else ""
+                raise ValueError(
+                    f"step {self.name!r}: {key} must be {kind}{extra}, got {value!r}"
+                )
             return value
         if allowed is not None and value not in allowed:
             raise ValueError(
@@ -140,6 +157,9 @@ class ClusterStep(_AnalysisStep):
         "method": ("kmeans", "affinity", "spectral", "louvain", "all"),
         "backend": _BACKENDS,
     }
+    numeric = ("k", "max_points")
+    real = ("resolution",)
+    keywords = {"k": ("auto",)}
 
 
 class GraphletStep(_AnalysisStep):
@@ -148,6 +168,7 @@ class GraphletStep(_AnalysisStep):
     options = ("backend", "size", "removal", "hub_threshold", "min_fanout", "force",
                "graphlet_tool", "licence")
     choices = {"backend": _BACKENDS, "removal": ("global", "none")}
+    numeric = ("size", "hub_threshold", "min_fanout")
     flags = ("force", "licence")
 
 
@@ -156,4 +177,5 @@ class GnnStep(_AnalysisStep):
     kind = "gnn"
     options = ("model", "target", "epochs", "hidden", "min_count", "features")
     choices = {"model": ("sage", "gcn"), "target": ("construct_type", "role")}
+    numeric = ("epochs", "hidden", "min_count")
     has_design = False

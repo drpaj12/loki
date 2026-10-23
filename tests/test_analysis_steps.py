@@ -70,6 +70,15 @@ class StepTest(unittest.TestCase):
         self.assertEqual(argv[argv.index("--floor") + 1], "f2")
         self.assertEqual(argv[argv.index("--out") + 1], "/s/analysis")
 
+    def test_steps_expose_tools_and_is_vpr(self) -> None:
+        # Wyrd reads both unconditionally: wyrd/preflight.py `tools.update(step.tools)`
+        # and wyrd/sched.py `step.is_vpr`.
+        for cls in _STEPS:
+            with self.subTest(step=cls.name):
+                step = cls(StepSpec(cls.name, {"dataset": "/ds"}))
+                self.assertEqual(step.tools, ())
+                self.assertIs(step.is_vpr, False)
+
     def test_missing_dataset_rejected(self) -> None:
         for cls in _STEPS:
             with self.assertRaisesRegex(ValueError, f"step '{cls.name}': dataset is required"):
@@ -79,6 +88,33 @@ class StepTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,
                                     r"step 'loki-cluster': unknown argument 'x'"):
             ClusterStep(StepSpec("loki-cluster", {"dataset": "/d", "x": 1}))
+
+    def test_choice_option_rejects_non_string(self) -> None:
+        for value in (5, True, None):
+            msg = "method must be among"
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, msg):
+                ClusterStep(StepSpec("loki-cluster", {"dataset": "/d", "method": value}))
+
+    def test_numeric_option_rejects_bool_and_string(self) -> None:
+        for key in ("k", "resolution", "max_points"):
+            msg = f"{key} must be"
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, msg):
+                ClusterStep(StepSpec("loki-cluster", {"dataset": "/d", key: True}))
+        with self.assertRaisesRegex(ValueError, "max_points must be an integer"):
+            ClusterStep(StepSpec("loki-cluster", {"dataset": "/d", "max_points": "10"}))
+        for cls, key in ((GraphletStep, "size"), (GraphletStep, "min_fanout"),
+                         (GnnStep, "epochs"), (GnnStep, "hidden")):
+            msg = f"{key} must be an integer"
+            with self.subTest(step=cls.name, key=key), self.assertRaisesRegex(ValueError, msg):
+                cls(StepSpec(cls.name, {"dataset": "/d", key: True}))
+
+    def test_numeric_options_accept_their_values(self) -> None:
+        step = ClusterStep(StepSpec("loki-cluster", {"dataset": "/ds", "k": "auto",
+                                                     "resolution": 0.5, "max_points": 10}))
+        argv, _ = step.command(run_for(), Path("/s"), settings())
+        self.assertEqual(argv[argv.index("--k") + 1], "auto")
+        self.assertEqual(argv[argv.index("--resolution") + 1], "0.5")
+        self.assertEqual(argv[argv.index("--max-points") + 1], "10")
 
     def test_collect_reads_metrics_json(self) -> None:
         step = ClusterStep(StepSpec("loki-cluster", {"dataset": "/ds"}))

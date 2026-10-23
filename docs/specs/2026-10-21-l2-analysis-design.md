@@ -523,9 +523,10 @@ plus the kind's CLI options with underscores (`method`, `k`, `format`, `region`,
 <dataset>, "--design", run.design.name, "--floor", <floor>, "--out", <step_dir>/analysis, ...]`, env
 `{"LOKI_GRAPHLET_TOOL": <value from the environment>}` when that variable is set, else `{}`.
 `loki-gnn` ignores `run.design` and trains on the whole dataset (use it in a project with one design
-entry). `collect` reads `<step_dir>/metrics.json` (numbers only, e.g. cluster: `n_clusters_<method>`,
+entry). `collect` reads `<step_dir>/analysis/metrics.json` (numbers only, e.g. cluster: `n_clusters_<method>`,
 `modularity_<method>`, `nmi_module_path_<method>`; graphlets: `nodes`, `edges`, `seconds`, `removed_edges_total`, `dropped_hubs`, `clock_domains`; gnn:
-`test_accuracy`, `test_macro_f1`, `baseline_majority_accuracy`; export: `files`). Exit 0 on success.
+`test_accuracy`, `test_macro_f1`, `baseline_majority_accuracy`; export: `files`), falling back to the
+older-layout `<step_dir>/metrics.json` when that file is absent. Exit 0 on success.
 
 ## 11. Output tree
 
