@@ -48,7 +48,8 @@ class Graph:
     ``src`` and ``dst`` are indices into ``node_ids`` (driver to sink, one per ``edges`` item,
     parallel edges kept). ``num`` holds :data:`NUMERIC_FEATURES` as int64 arrays. ``labels`` maps
     each label column of the file to an array (text columns as strings, the rest int64), or is
-    ``None`` for an unlabelled netlist.
+    ``None`` when every label object of the file is empty (see :func:`_label_columns`); ``None``
+    does not mean the label objects are absent, because a valid ``graph.json`` always writes them.
     """
 
     design: str
@@ -152,7 +153,16 @@ def load_graph(path: Path) -> Graph:
 
 
 def _label_columns(nodes: Sequence[dict[str, Any]]) -> dict[str, npt.NDArray[Any]] | None:
-    """The label columns of the file, or ``None`` when no node carries a construct type."""
+    """The label columns of the file, or ``None`` when no node carries a construct type.
+
+    The rule distinguishes the two empty-looking states precisely: L0 writes every label object
+    even for an unlabelled design, so ``None`` here means "all label objects are empty", never
+    "the labels are absent" (``validate_graph`` requires the objects). A from-blif file is
+    therefore labelled, because its ports carry ``$port_in``/``$port_out``, while every
+    ``lut``/``ff``/``hard`` construct type stays empty; callers that ask whether the answer key
+    covers a node kind must look at that kind's ``construct_type`` values, not at
+    ``labels is None`` (Task 11 does so explicitly).
+    """
     import numpy as np
 
     if not nodes or not any(str(node["labels"]["construct_type"]) for node in nodes):
@@ -181,8 +191,11 @@ def featurize(g: Graph, hard_types: Sequence[str] | None = None) -> FeatureMatri
     """The spec-4 feature matrix: 8 numeric, 7 kind, 4 floor, then ``len(hard_types) + 1``.
 
     ``hard_types=None`` derives the sorted hard cell types from the ``cell_type`` label of nodes
-    with kind ``hard``; the vocabulary is empty without labels. The final ``hard:<unk>`` column is
-    set for a hard node whose type is missing from the vocabulary.
+    with kind ``hard``; a ``graph.json`` accepted by ``validate_graph`` has no such column, so the
+    derived vocabulary is empty there (see :func:`_hard_vocabulary`). Every hard node one-hots one
+    column regardless: its cell type, or the final ``hard:<unk>`` column when the type is missing
+    from the vocabulary (no ``cell_type`` column at all, an empty value, or a type absent from an
+    explicit ``hard_types``).
     """
     require("analysis")
     import numpy as np
@@ -207,13 +220,13 @@ def featurize(g: Graph, hard_types: Sequence[str] | None = None) -> FeatureMatri
     if g.floor in FLOORS:
         x[:, kind_start + len(KINDS) + FLOORS.index(g.floor)] = 1.0
     hard_start = kind_start + len(KINDS) + len(FLOORS)
+    columns = {cell_type: hard_start + column for column, cell_type in enumerate(types)}
+    unknown = hard_start + len(types)
     cells = None if g.labels is None else g.labels.get("cell_type")
-    if cells is not None:
-        columns = {cell_type: hard_start + column for column, cell_type in enumerate(types)}
-        unknown = hard_start + len(types)
-        for row, node_kind in enumerate(g.kind):
-            if node_kind == "hard":
-                x[row, columns.get(str(cells[row]), unknown)] = 1.0
+    for row, node_kind in enumerate(g.kind):
+        if node_kind == "hard":
+            cell_type = "" if cells is None else str(cells[row])
+            x[row, columns.get(cell_type, unknown)] = 1.0
     return FeatureMatrix(names=names, x=x, hard_types=types)
 
 
@@ -225,7 +238,7 @@ def _hard_vocabulary(g: Graph, hard_types: Sequence[str] | None) -> tuple[str, .
     if cells is None:
         return ()
     found = {str(cells[row]) for row, kind in enumerate(g.kind) if kind == "hard"}
-    found.discard("")
+    found -= {"", _UNKNOWN}
     return tuple(sorted(found))
 
 

@@ -6,6 +6,7 @@ import hashlib
 import json
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -90,6 +91,62 @@ class GraphioTest(unittest.TestCase):
         self.assertEqual(matrix.x[:, expected.index("floor:f2")].tolist(), [1.0] * len(levels))
         self.assertEqual(matrix.hard_types, ())
 
+    def test_features_hard_types_one_hot(self) -> None:
+        import numpy as np
+
+        with tempfile.TemporaryDirectory() as tmp:
+            loaded = load_graph(write_graph(Path(tmp), make_graph()))
+        hard = {"n2": "adder", "n3": "multiplier", "n4": ""}
+        kind = tuple(
+            "hard" if node_id in hard else node_kind
+            for node_id, node_kind in zip(loaded.node_ids, loaded.kind, strict=True)
+        )
+        assert loaded.labels is not None
+        labels = dict(loaded.labels)
+        labels["cell_type"] = np.asarray([hard.get(node_id, "") for node_id in loaded.node_ids])
+        g = replace(loaded, kind=kind, labels=labels)
+        matrix = featurize(g)
+        expected = (
+            *NUMERIC_FEATURES,
+            "kind:pi", "kind:po", "kind:lut", "kind:ff", "kind:const", "kind:hard", "kind:gate",
+            "floor:f1-k6", "floor:f1-earch", "floor:f2", "floor:f3",
+            "hard:adder", "hard:multiplier", "hard:<unk>",
+        )
+        self.assertEqual(matrix.names, expected)
+        self.assertEqual(matrix.hard_types, ("adder", "multiplier"))
+        block = matrix.x[:, [expected.index(name) for name in (
+            "hard:adder", "hard:multiplier", "hard:<unk>")]]
+        rows = {node_id: block[row].tolist() for row, node_id in enumerate(g.node_ids)}
+        self.assertEqual(rows["n2"], [1.0, 0.0, 0.0])
+        self.assertEqual(rows["n3"], [0.0, 1.0, 0.0])
+        self.assertEqual(rows["n4"], [0.0, 0.0, 1.0])
+        for node_id in ("n0", "n1", "n5"):
+            self.assertEqual(rows[node_id], [0.0, 0.0, 0.0])
+        explicit = featurize(g, hard_types=("multiplier",))
+        self.assertEqual(explicit.hard_types, ("multiplier",))
+        self.assertEqual(explicit.names[-2:], ("hard:multiplier", "hard:<unk>"))
+        explicit_rows = {
+            node_id: explicit.x[row, len(explicit.names) - 2:].tolist()
+            for row, node_id in enumerate(g.node_ids)
+        }
+        self.assertEqual(explicit_rows["n3"], [1.0, 0.0])
+        self.assertEqual(explicit_rows["n2"], [0.0, 1.0])
+        self.assertEqual(explicit_rows["n4"], [0.0, 1.0])
+        bare = replace(loaded, kind=kind, labels=None)
+        no_labels = featurize(bare)
+        self.assertEqual(no_labels.hard_types, ())
+        self.assertEqual(no_labels.names[-1], "hard:<unk>")
+        unknown = no_labels.x[:, len(no_labels.names) - 1]
+        self.assertEqual(unknown[g.index()["n2"]], 1.0)
+        self.assertEqual(unknown[g.index()["n4"]], 1.0)
+        self.assertEqual(unknown[g.index()["n5"]], 0.0)
+        bare_explicit = featurize(bare, hard_types=("adder",))
+        self.assertEqual(bare_explicit.hard_types, ("adder",))
+        self.assertEqual(bare_explicit.names[-2:], ("hard:adder", "hard:<unk>"))
+        last = len(bare_explicit.names) - 1
+        self.assertEqual(bare_explicit.x[g.index()["n2"], last], 1.0)
+        self.assertEqual(bare_explicit.x[g.index()["n5"], last], 0.0)
+
     def test_features_exclude_labels(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             obj: Any = make_graph()
@@ -98,10 +155,8 @@ class GraphioTest(unittest.TestCase):
         values = {node["labels"]["construct_type"] for node in obj["nodes"]} - {""}
         self.assertTrue(values)
         for name in matrix.names:
-            for forbidden in LABEL_COLUMNS_FORBIDDEN:
-                self.assertNotIn(forbidden, name)
-            for value in values:
-                self.assertNotIn(value, name)
+            self.assertNotIn(name, LABEL_COLUMNS_FORBIDDEN)
+            self.assertNotIn(name, values)
         self.assertNotIn("cell_type", LABEL_COLUMNS_FORBIDDEN)
         self.assertLessEqual(
             {"construct_type", "construct_types", "n_construct_cells", "module_path",
