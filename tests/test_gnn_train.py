@@ -11,7 +11,19 @@ from typing import Any
 from unittest import mock
 
 from loki.analysis import MissingExtra
-from loki.analysis.gnn import OTHER, UNLABELLED_MESSAGE, train_eval
+from loki.analysis.gnn import (
+    GRAPHLET_ROLE_NAMES,
+    OTHER,
+    UNLABELLED_MESSAGE,
+    GraphletInput,
+    baseline_wl,
+    build_id_vocab,
+    build_vocab,
+    encode,
+    graphlet_block,
+    graphlet_columns,
+    train_eval,
+)
 from loki.analysis.graphio import NUMERIC_FEATURES, iter_dataset
 from loki.schemas import FLOORS, KINDS, dump_json
 from tests.analysis_fixtures import make_dataset, make_graph, write_graph
@@ -224,3 +236,149 @@ class GnnTrainTest(unittest.TestCase):
             self.assertEqual(config["features"], ["node"])
             self.assertEqual(config["embedding_sizes"], [])
             self.assertEqual(config["input_dim"], _FIXTURE_IN_DIM)
+
+    def test_wl_baseline_uses_raw_ids(self) -> None:
+        """A thin colour keeps its backoff: raw ids score 1.0 where merged mapped ids score 0."""
+        import numpy as np
+
+        raw_train = np.array([[100]] * 10 + [[200]] * 3 + [[300]] * 3, dtype=np.int64)
+        y_train = np.array([0] * 10 + [1] * 6, dtype=np.int64)
+        raw_test = np.array([[200]] * 3 + [[300]] * 3, dtype=np.int64)
+        y_test = np.zeros(6, dtype=np.int64)
+        raw = baseline_wl(raw_train, y_train, raw_test, y_test, min_count=5)
+        self.assertEqual(raw["accuracy"], 1.0)
+        vocabulary = build_id_vocab([raw_train[:, 0]], min_count=5)
+        self.assertEqual(vocabulary, {100: 0})
+        mapped_train = np.array(
+            [vocabulary.get(int(value), len(vocabulary)) for value in raw_train[:, 0]],
+            dtype=np.int64,
+        ).reshape(-1, 1)
+        mapped_test = np.array(
+            [vocabulary.get(int(value), len(vocabulary)) for value in raw_test[:, 0]],
+            dtype=np.int64,
+        ).reshape(-1, 1)
+        merged = baseline_wl(mapped_train, y_train, mapped_test, y_test, min_count=5)
+        self.assertEqual(merged["accuracy"], 0.0)
+        self.assertNotEqual(raw, merged)
+
+    def test_baseline_reads_raw_colours(self) -> None:
+        """``train_eval`` feeds ``baseline_wl`` the dataset's raw colours, not the mapped ids."""
+        import numpy as np
+
+        from loki.analysis.graphio import load_graph
+        from loki.analysis.structural import compute_structural
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = make_dataset(Path(tmp) / "ds", designs=8)
+            entries = list(iter_dataset(root, "f2"))
+            graphs = {entry.design: load_graph(entry.graph_path) for entry in entries}
+            train = [entry for entry in entries if entry.split == "train"]
+            test = [entry for entry in entries if entry.split != "train"]
+            self.assertTrue(train)
+            self.assertTrue(test)
+            vocab = build_vocab([graphs[entry.design] for entry in train], "construct_type", 5)
+            wl_train = np.concatenate(
+                [compute_structural(graphs[entry.design]).wl for entry in train]
+            )
+            wl_test = np.concatenate(
+                [compute_structural(graphs[entry.design]).wl for entry in test]
+            )
+            y_train = np.concatenate(
+                [encode(graphs[entry.design], "construct_type", vocab) for entry in train]
+            )
+            y_test = np.concatenate(
+                [encode(graphs[entry.design], "construct_type", vocab) for entry in test]
+            )
+            expected = baseline_wl(wl_train, y_train, wl_test, y_test, min_count=5)
+            with mock.patch("loki.analysis.gnn.baseline_wl", wraps=baseline_wl) as spy:
+                result = _run(root, Path(tmp) / "out", epochs=10)
+            captured_train, captured_test = spy.call_args.args[0], spy.call_args.args[2]
+            np.testing.assert_array_equal(captured_train, wl_train)
+            np.testing.assert_array_equal(captured_test, wl_test)
+            wl = result["baselines"]["wl"]
+            self.assertGreater(result["test"]["n_nodes"], 0)
+            self.assertEqual(wl["accuracy"], round(expected["accuracy"], 4))
+            self.assertEqual(wl["macro_f1"], round(expected["macro_f1"], 4))
+            self.assertEqual(wl["n_nodes"], expected["n_nodes"])
+
+    def test_graphlet_block_fixed_train_columns(self) -> None:
+        """One train-selected orbit set keeps the block width when graphs drop different columns."""
+        import numpy as np
+
+        from loki.analysis.graphlets import graphlet_features
+
+        roles = np.zeros((3, 4), dtype=np.int64)
+        orbits_a = np.array([[0, 7, 0], [1, 7, 0], [2, 7, 0]], dtype=np.int64)
+        orbits_b = np.array([[0, 0, 3], [1, 0, 4], [2, 0, 5]], dtype=np.int64)
+        self.assertEqual(graphlet_features(orbits_a, roles).shape[1], 5)
+        self.assertEqual(graphlet_features(orbits_b, roles).shape[1], 6)
+        train = GraphletInput(orbits=orbits_a, roles=roles)
+        columns = graphlet_columns([train])
+        self.assertEqual(columns, (0,))
+        block_a = graphlet_block(train, columns)
+        block_b = graphlet_block(GraphletInput(orbits=orbits_b, roles=roles), columns)
+        self.assertEqual(block_a.shape, (3, 5))
+        self.assertEqual(block_b.shape, (3, 5))
+        expected = np.log1p(orbits_b[:, 0].astype(np.float64))
+        expected = (expected - expected.mean()) / expected.std()
+        np.testing.assert_allclose(block_b[:, 0], expected)
+        np.testing.assert_array_equal(block_b[:, 1:], roles)
+
+    def test_graphlet_extra_aligned_across_designs(self) -> None:
+        """Designs whose ``graphlet_features`` widths differ train on one fixed block width."""
+        import numpy as np
+
+        from loki.analysis.graphio import load_graph
+        from loki.analysis.graphlets import graphlet_features
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = make_dataset(Path(tmp) / "ds", designs=8)
+            entries = list(iter_dataset(root, "f2"))
+            extra: dict[str, Any] = {}
+            widths: set[int] = set()
+            for position, entry in enumerate(entries):
+                n = load_graph(entry.graph_path).n_nodes
+                orbits = np.zeros((n, 2), dtype=np.int64)
+                orbits[:, 0] = np.arange(n)
+                orbits[:, 1] = (np.arange(n) + position) * (position % 2)
+                roles = np.zeros((n, 4), dtype=np.int64)
+                extra[entry.design] = GraphletInput(orbits=orbits, roles=roles)
+                widths.add(graphlet_features(orbits, roles).shape[1])
+            self.assertGreater(len(widths), 1)
+            columns = graphlet_columns([extra[entry.design] for entry in entries
+                                        if entry.split == "train"])
+            out = Path(tmp) / "out"
+            result = _run(root, out, epochs=3, features=("node", "graphlet"), extra=extra)
+            config = _read(out / "config.json")
+            self.assertEqual(
+                config["graphlet_columns"],
+                [f"orbit:{column}" for column in columns]
+                + [f"role:{name}" for name in GRAPHLET_ROLE_NAMES],
+            )
+            self.assertEqual(config["input_dim"], _FIXTURE_IN_DIM + len(columns) + 4)
+            self.assertGreater(result["train"]["n_nodes"], 0)
+
+    def test_rng_state_restored_completely(self) -> None:
+        """The CUDA generator states and the ``warn_only`` bit are restored, not only CPU RNGs."""
+        import torch
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = make_dataset(Path(tmp) / "ds", designs=4)
+            cuda_state = [object()]
+            torch.use_deterministic_algorithms(False, warn_only=True)
+            try:
+                with (
+                    mock.patch.object(torch.cuda, "is_available", return_value=True),
+                    mock.patch.object(torch.cuda, "manual_seed_all"),
+                    mock.patch.object(
+                        torch.cuda, "get_rng_state_all", return_value=cuda_state
+                    ) as get_state,
+                    mock.patch.object(torch.cuda, "set_rng_state_all") as set_state,
+                ):
+                    _run(root, Path(tmp) / "out", epochs=1)
+                get_state.assert_called_once_with()
+                set_state.assert_called_once_with(cuda_state)
+                self.assertFalse(torch.are_deterministic_algorithms_enabled())
+                self.assertTrue(torch.is_deterministic_algorithms_warn_only_enabled())
+            finally:
+                torch.use_deterministic_algorithms(False)

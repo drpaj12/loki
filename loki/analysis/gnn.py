@@ -4,6 +4,8 @@ The trainer of Task 12 never reads a ``graph.json`` itself: this module turns th
 of L0 into :class:`Prepared` tensors (standardised features, edge list, target indices,
 categorical NPN and WL ids) and provides the three baselines the GNN must be read against: the
 majority class, features-only logistic regression and the 1-WL colour lookup of spec 9.
+The lookup reads the raw colour ids; the vocabulary mapping only feeds the ``wl`` embedding, so
+a thin colour keeps its own round-to-round backoff instead of merging into ``__other__``.
 :func:`train_eval` fits the two-layer message-passing model of spec 9 and writes the output
 tree; :class:`Net` is built on first attribute access so importing this module stays free of
 torch.
@@ -61,6 +63,8 @@ LOG1P_COLUMNS: tuple[str, ...] = ("fan_in", "fan_out", "level", "lut_width", "ha
                                   "lut_ones")
 #: Structural inputs of spec 9: ``node`` is the base block, the rest are optional additions.
 FEATURES: tuple[str, ...] = ("node", "graphlet", "wl", "npn")
+#: Role columns :func:`graphlet_features` appends after the orbit columns (spec 8.6), in order.
+GRAPHLET_ROLE_NAMES: tuple[str, ...] = ("clock_domain", "has_reset", "const_inputs", "enable")
 #: Size of the categorical embedding of every ``wl`` and ``npn`` id (spec 9).
 EMBEDDING_DIM = 8
 #: The WL round whose colour the ``wl`` feature embeds (spec 9: "the round-2 WL id").
@@ -83,8 +87,11 @@ class Prepared:
     ``-1`` for an empty target or a kind outside :data:`TRAIN_KINDS`. ``cat`` is int64
     ``(N, 2 + rounds)`` with the categorical block of :func:`gsn_features` mapped through the
     train id vocabularies (the NPN id, then the WL id of every round; unseen ids become the last
-    index). ``prepare`` always fills ``cat``; ``None`` is reserved for callers that build tensors
-    without the categorical block.
+    index). ``wl_raw`` is int64 ``(N, rounds + 1)`` with the WL colour ids before that mapping:
+    :func:`baseline_wl` reads them, because spec 9's backoff is per colour and the mapped ids
+    would merge every colour below ``min_count`` into ``__other__``. ``prepare`` always fills
+    ``cat`` and ``wl_raw``; ``None`` is reserved for callers that build tensors without the
+    categorical block.
     """
 
     design: str
@@ -94,6 +101,7 @@ class Prepared:
     y: npt.NDArray[Any]
     node_ids: tuple[str, ...]
     cat: npt.NDArray[Any] | None
+    wl_raw: npt.NDArray[Any] | None = None
 
 
 def _check_target(target: str) -> None:
@@ -295,8 +303,9 @@ def prepare(
     ``vocab`` and ``scaler`` come from the train designs; ``hard_types`` is the hard-cell type
     vocabulary the scaler was fitted with. The categorical NPN and WL ids are mapped through id
     vocabularies built from the train designs only, keeping ids with at least ``cat_min_count``
-    train nodes (the trainer passes its own ``min_count``); a graph without L0 labels raises
-    :data:`UNLABELLED_MESSAGE`.
+    train nodes (the trainer passes its own ``min_count``); the raw WL block before that mapping
+    is kept on :attr:`Prepared.wl_raw` for :func:`baseline_wl`, so a thin colour cannot be merged
+    into ``__other__``. A graph without L0 labels raises :data:`UNLABELLED_MESSAGE`.
     """
     require("analysis")
     import numpy as np
@@ -320,6 +329,7 @@ def prepare(
                 y=y,
                 node_ids=tuple(g.node_ids),
                 cat=None,
+                wl_raw=np.array(cat[:, 1:], dtype=np.int64),
             )
         )
         cats.append(np.asarray(cat))
@@ -640,6 +650,13 @@ def _cat_of(p: Prepared) -> npt.NDArray[Any]:
     return p.cat
 
 
+def _wl_raw_of(p: Prepared) -> npt.NDArray[Any]:
+    """The raw WL colour ids of a prepared design, what :func:`baseline_wl` reads."""
+    if p.wl_raw is None:
+        raise ValueError(f"{p.design}: the prepared design has no raw WL block")
+    return p.wl_raw
+
+
 def _fit_dataset(
     train_entries: Sequence[DatasetEntry], entries: Sequence[DatasetEntry], target: str,
     min_count: int,
@@ -662,38 +679,129 @@ def _fit_dataset(
     return _TrainData(prepared=prepared, vocab=vocab, scaler=scaler, names=names)
 
 
+@dataclass(frozen=True)
+class GraphletInput:
+    """The raw graphlet inputs of one design, before column selection (spec 8.6).
+
+    ``orbits`` is int64 ``(N, K)`` of the chosen orbit size and ``roles`` int64 ``(N, 4)`` with
+    the role columns of :class:`~loki.analysis.structural.StructuralArrays`. The trainer selects
+    the orbit columns once on the train split (:func:`graphlet_columns`) and builds every design
+    from that fixed set (:func:`graphlet_block`), so a column constant in one graph cannot change
+    the block width or shift the columns of another. ``graphlet_features`` drops constant orbit
+    columns per graph, so its per-graph output cannot be the trainer's per-design input directly.
+    """
+
+    orbits: npt.NDArray[Any]
+    roles: npt.NDArray[Any]
+
+
+def graphlet_columns(train: Sequence[GraphletInput]) -> tuple[int, ...]:
+    """The orbit columns kept in every design: those that vary over the pooled train orbits.
+
+    ``log1p`` is applied first, like :func:`graphlet_features`; a column with zero spread over
+    the train designs carries no information and is dropped for every design at once.
+    """
+    import numpy as np
+
+    if not train:
+        raise ValueError("graphlet_columns needs at least one train design")
+    counts = [np.asarray(item.orbits, dtype=np.float64) for item in train]
+    for values in counts:
+        if values.ndim != 2:
+            raise ValueError(f"orbit counts must be 2-D, got shape {values.shape}")
+    widths = {values.shape[1] for values in counts}
+    if len(widths) != 1:
+        raise ValueError(f"orbit blocks differ in width: {sorted(widths)}")
+    pooled = np.concatenate([np.log1p(values) for values in counts], axis=0)
+    if pooled.shape[0] == 0:
+        return ()
+    return tuple(int(column) for column in np.flatnonzero(pooled.std(axis=0) > 0))
+
+
+def graphlet_block(item: GraphletInput, columns: Sequence[int]) -> npt.NDArray[Any]:
+    """One design's graphlet block on a fixed column set: standardised ``log1p`` orbits, roles.
+
+    The selected orbit columns are standardised with the design's own mean and spread, so a
+    column constant in this design gives zeros instead of a division by zero (``spread == 0`` is
+    replaced by 1, like :func:`fit_scaler`); the four role columns are appended as they are
+    (spec 8.6). A design without nodes gives an empty ``(0, len(columns) + 4)`` block.
+    """
+    import numpy as np
+
+    counts = np.asarray(item.orbits, dtype=np.float64)
+    flags = np.asarray(item.roles, dtype=np.float64)
+    if counts.ndim != 2:
+        raise ValueError(f"orbit counts must be 2-D, got shape {counts.shape}")
+    if flags.shape != (counts.shape[0], len(GRAPHLET_ROLE_NAMES)):
+        raise ValueError(
+            f"roles must be {(counts.shape[0], len(GRAPHLET_ROLE_NAMES))}, got shape {flags.shape}"
+        )
+    selected = [int(column) for column in columns]
+    values = np.log1p(counts[:, selected])
+    if values.shape[0] == 0:
+        return np.zeros((0, len(selected) + len(GRAPHLET_ROLE_NAMES)), dtype=np.float64)
+    mean = values.mean(axis=0)
+    spread = values.std(axis=0)
+    scaled = (values - mean) / np.where(spread > 0, spread, 1.0)
+    return np.concatenate([scaled, flags], axis=1)
+
+
+def _graphlet_names(columns: Sequence[int]) -> tuple[str, ...]:
+    """The ``graphlet_columns`` config names: the kept orbit columns, then the role columns."""
+    orbits = tuple(f"orbit:{int(column)}" for column in columns)
+    roles = tuple(f"role:{name}" for name in GRAPHLET_ROLE_NAMES)
+    return orbits + roles
+
+
 def _extra_blocks(
     prepared: Sequence[Prepared], features: Sequence[str],
-    extra: Mapping[str, npt.NDArray[Any]] | None,
-) -> tuple[dict[str, npt.NDArray[Any]], int]:
-    """Validate the per-design numeric blocks a caller passes for ``features=('graphlet',)``."""
+    extra: Mapping[str, GraphletInput] | None,
+) -> tuple[dict[str, npt.NDArray[Any]], tuple[str, ...]]:
+    """Align the graphlet block of every design on one train-selected column set.
+
+    ``extra`` holds each design's raw orbit counts and role columns. The orbit columns are
+    resolved once over the train designs (:func:`graphlet_columns`) and every design's block is
+    built from that fixed set, so a column constant in one graph can neither change the block
+    width nor shift the meaning of a position. The names go to ``config.json``.
+    """
     import numpy as np
 
     if "graphlet" not in features:
         if extra is not None:
             raise ValueError("extra needs features=('graphlet',)")
-        return {}, 0
+        return {}, ()
     if extra is None:
         raise ValueError(
-            "features=('graphlet',) needs extra={design: graphlet_features(orbits, roles)}"
+            "features=('graphlet',) needs extra={design: GraphletInput(orbits, roles)}"
         )
-    blocks: dict[str, npt.NDArray[Any]] = {}
+    items: dict[str, GraphletInput] = {}
     widths: set[int] = set()
     for p in prepared:
-        block = extra.get(p.design)
-        if block is None:
+        item = extra.get(p.design)
+        if item is None:
             raise ValueError(f"no extra block for design {p.design!r}")
-        values = np.asarray(block, dtype=np.float64)
-        if values.ndim != 2 or values.shape[0] != p.x.shape[0]:
+        orbits = np.asarray(item.orbits)
+        roles = np.asarray(item.roles)
+        if orbits.ndim != 2 or orbits.shape[0] != p.x.shape[0]:
             raise ValueError(
-                f"extra block of {p.design!r} has shape {values.shape}, "
+                f"extra orbits of {p.design!r} have shape {orbits.shape}, "
                 f"expected ({p.x.shape[0]}, k)"
             )
-        widths.add(int(values.shape[1]))
-        blocks[p.design] = values
+        expected_roles = (p.x.shape[0], len(GRAPHLET_ROLE_NAMES))
+        if roles.shape != expected_roles:
+            raise ValueError(
+                f"extra roles of {p.design!r} have shape {roles.shape}, expected {expected_roles}"
+            )
+        widths.add(int(orbits.shape[1]))
+        items[p.design] = item
     if len(widths) != 1:
-        raise ValueError(f"extra blocks differ in width: {sorted(widths)}")
-    return blocks, widths.pop()
+        raise ValueError(f"extra orbit blocks differ in width: {sorted(widths)}")
+    train = [items[p.design] for p in prepared if p.split == "train"]
+    if not train:
+        raise ValueError("the graphlet block needs at least one train design")
+    columns = graphlet_columns(train)
+    blocks = {p.design: graphlet_block(items[p.design], columns) for p in prepared}
+    return blocks, _graphlet_names(columns)
 
 
 def _embedding_sizes(prepared: Sequence[Prepared], columns: Sequence[int]) -> list[int]:
@@ -852,10 +960,9 @@ def _run_training(
     min_count: int,
     seed: int,
     features: Sequence[str],
-    extra: Mapping[str, npt.NDArray[Any]] | None,
+    extra: Mapping[str, GraphletInput] | None,
 ) -> dict[str, object]:
     """The body of :func:`train_eval`, run after the seeds and determinism flags are set."""
-    import numpy as np
     import torch
 
     entries = list(iter_dataset(dataset, floor))
@@ -868,7 +975,8 @@ def _run_training(
             "the train split"
         )
     data = _fit_dataset(train_entries, entries, target, min_count)
-    blocks, extra_width = _extra_blocks(data.prepared, features, extra)
+    blocks, graphlet_names = _extra_blocks(data.prepared, features, extra)
+    extra_width = len(graphlet_names)
     columns: list[int] = []
     embedding_features: list[str] = []
     for name in features:
@@ -894,6 +1002,7 @@ def _run_training(
         "features": list(features),
         "in_dim": data.in_dim,
         "input_dim": input_dim,
+        "graphlet_columns": list(graphlet_names),
         "embedding_sizes": embedding_sizes,
         "embedding_features": embedding_features,
         "n_classes": len(data.vocab),
@@ -919,9 +1028,9 @@ def _run_training(
     x_train = _stack([inputs[p.design] for p, _ in train_pairs])
     x_test = _stack([inputs[p.design] for p, _ in test_pairs], width=numeric_width)
     y_test = _stack([p.y for p, _ in test_pairs])
-    wl_width = _cat_of(data.prepared[0]).shape[1] - 1 if data.prepared else 0
-    wl_train = _stack([np.asarray(_cat_of(p))[:, 1:] for p, _ in train_pairs], width=wl_width)
-    wl_test = _stack([np.asarray(_cat_of(p))[:, 1:] for p, _ in test_pairs], width=wl_width)
+    wl_width = _wl_raw_of(data.prepared[0]).shape[1] if data.prepared else 0
+    wl_train = _stack([_wl_raw_of(p) for p, _ in train_pairs], width=wl_width)
+    wl_test = _stack([_wl_raw_of(p) for p, _ in test_pairs], width=wl_width)
     n_test = len(test_pairs)
     majority = _round_scores(baseline_majority(y_train, y_test))
     logreg = _round_scores(baseline_logreg(x_train, y_train, x_test, y_test, seed))
@@ -963,19 +1072,23 @@ def train_eval(
     min_count: int = 5,
     seed: int = 0,
     features: Sequence[str] = ("node",),
-    extra: Mapping[str, npt.NDArray[Any]] | None = None,
+    extra: Mapping[str, GraphletInput] | None = None,
 ) -> dict[str, object]:
     """Train and evaluate the spec-9 GNN baseline on one dataset floor.
 
     The split is L0's manifest split: train designs fit the vocabulary, the scaler, the class
     weights and the model; every other design is test. Seeds and
-    ``torch.use_deterministic_algorithms(True)`` are set at entry and restored in ``finally``,
-    so two runs with the same argument write byte-identical ``metrics.json`` and ``config.json``.
+    ``torch.use_deterministic_algorithms(True)`` are set at entry and restored in ``finally``
+    (the Python, NumPy, CPU-torch and CUDA generators, the deterministic flag with its
+    ``warn_only`` bit, and the two cuDNN flags), so two runs with the same argument write
+    byte-identical ``metrics.json`` and ``config.json``.
 
     ``features`` names the structural inputs of spec 9: ``node`` is always the base block,
-    ``graphlet`` appends a caller-supplied numeric block per design through ``extra`` (the
-    Task 13 runner computes it with :func:`loki.analysis.graphlets.graphlet_features`), and
-    ``wl``/``npn`` add size-8 embeddings of the round-2 WL colour and of the NPN id.
+    ``graphlet`` appends a numeric block per design through ``extra`` (each design's raw
+    :class:`GraphletInput`; the orbit columns are selected once on the train split and recorded
+    as ``graphlet_columns`` in ``config.json``), and ``wl``/``npn`` add size-8 embeddings of the
+    round-2 WL colour and of the NPN id. ``baselines.wl`` always reads the raw WL colour ids,
+    never the vocabulary-mapped ones that feed the embedding.
 
     Outputs go directly into ``out``: ``config.json``, ``vocab.json``, ``model.pt`` (tensors and
     builtins only), ``metrics.json`` and ``predictions-<design>.csv`` per test design. The
@@ -997,7 +1110,9 @@ def train_eval(
     saved_python = random.getstate()
     saved_numpy = np.random.get_state()
     saved_torch = torch.random.get_rng_state()
+    saved_cuda = torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
     saved_deterministic = torch.are_deterministic_algorithms_enabled()
+    saved_warn_only = torch.is_deterministic_algorithms_warn_only_enabled()
     saved_cudnn = (torch.backends.cudnn.deterministic, torch.backends.cudnn.benchmark)
     try:
         seed_everything(seed)
@@ -1008,8 +1123,10 @@ def train_eval(
             features=selected, extra=extra,
         )
     finally:
-        torch.use_deterministic_algorithms(saved_deterministic)
+        torch.use_deterministic_algorithms(saved_deterministic, warn_only=saved_warn_only)
         torch.backends.cudnn.deterministic, torch.backends.cudnn.benchmark = saved_cudnn
+        if saved_cuda is not None:
+            torch.cuda.set_rng_state_all(saved_cuda)
         torch.random.set_rng_state(saved_torch)
         np.random.set_state(saved_numpy)
         random.setstate(saved_python)
