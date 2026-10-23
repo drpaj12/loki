@@ -92,10 +92,13 @@ class ExportTest(unittest.TestCase):
             self.assertEqual(graph.number_of_edges(), len(data["edges"]))
             self.assertEqual(graph.graph["design"], "d")
             self.assertEqual(graph.graph["floor"], "f2")
+            blank = [node["id"] for node in data["nodes"] if node["labels"]["bus_name"] == ""]
+            self.assertTrue(blank, "fixture must exercise an empty label value")
             for node in data["nodes"]:
                 attrs = graph.nodes[node["id"]]
                 self.assertEqual(attrs["fan_in"], node["features"]["fan_in"])
                 self.assertEqual(attrs["construct_type"], node["labels"]["construct_type"])
+                self.assertEqual(attrs["bus_name"], node["labels"]["bus_name"])
             for edge in data["edges"]:
                 attrs = graph.edges[edge["src"], edge["dst"]]
                 self.assertEqual(attrs["pin"], edge["pin"])
@@ -133,6 +136,7 @@ class ExportTest(unittest.TestCase):
                 self.assertEqual(cells[0], node_id)
                 self.assertEqual(int(cells[2]), measured[node_id]["fan_in"])
 
+    @skip_without("networkx")
     def test_export_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
