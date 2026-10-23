@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from loki.analysis import MissingExtra, require
+from loki.analysis import KINDS, MissingExtra, require
 from loki.schemas import split_of, validate_graph, validate_manifest
 from tests.analysis_fixtures import make_dataset, make_graph
 
@@ -62,6 +62,9 @@ class AnalysisPkgTest(unittest.TestCase):
         self.assertLessEqual({"numpy", "scipy", "scikit-learn", "networkx"}, analysis)
         self.assertLessEqual({"torch", "torch_geometric"} | analysis, gnn)
         self.assertLessEqual(analysis | gnn, dev)
+
+    def test_structural_is_a_kind(self) -> None:
+        self.assertIn("structural", KINDS)
 
     def test_fixture_graph_valid(self) -> None:
         self.assertEqual(validate_graph(make_graph()), [])

@@ -3,7 +3,9 @@
 The global-signal classifier and its per-node role flags live in
 :mod:`loki.analysis.graphlets.signals` (spec 8.1 and 8.2). This module builds the counting graph
 of spec 8.3, defines the counter protocol and the backend registry of spec 8.5, and reads and
-writes the files of spec 8.6. Counts are ``int64`` end to end (spec 3): a hub of degree ``d`` has
+writes the files of spec 8.6. :func:`gsn_features` joins the numeric feature block and the
+categorical NPN and WL ids of spec 8.6 for the GNN. Counts are ``int64`` end to end (spec 3): a hub
+of degree ``d`` has
 ``C(d, 3)`` star centres. numpy is imported inside functions after :func:`loki.analysis.require`,
 so importing this module needs the standard library only.
 
@@ -26,6 +28,8 @@ from loki.schemas import dump_json
 
 if TYPE_CHECKING:
     import numpy.typing as npt
+
+    from loki.analysis.structural import StructuralArrays
 
 #: Orbit columns per graphlet size (spec 8.4 and 8.5): 15 for 4-node, 73 for 5-node graphlets.
 N_ORBITS: dict[int, int] = {4: 15, 5: 73}
@@ -240,6 +244,43 @@ def graphlet_features(
     keep = spread > 0
     scaled = (values[:, keep] - mean[keep]) / spread[keep]
     return np.concatenate([scaled, flags], axis=1)
+
+
+def gsn_features(
+    orbits: npt.NDArray[Any] | None,
+    roles: npt.NDArray[Any],
+    s: StructuralArrays,
+) -> tuple[npt.NDArray[Any], npt.NDArray[Any]]:
+    """The two GSN blocks of spec 8.6 for one graph.
+
+    The numeric block is :func:`graphlet_features` of ``orbits`` and ``roles`` (standardised
+    ``log1p`` orbit counts, then the four role columns) or, without an orbit file, the role
+    columns alone as float64. The categorical block is int64 ``(N, 2 + rounds)``: the NPN class
+    id in column 0 and the WL colour ids of rounds 0 to ``rounds`` after it. Categorical ids are
+    hashes and never enter the numeric block (spec 4.1).
+    """
+    require("analysis")
+    import numpy as np
+
+    flags = np.asarray(roles)
+    if flags.ndim != 2 or flags.shape[1] != 4:
+        raise ValueError(f"roles must be (n, 4), got shape {flags.shape}")
+    n = int(flags.shape[0])
+    wl_values = np.asarray(s.wl)
+    npn_values = np.asarray(s.npn)
+    expected = (n, len(s.colours))
+    if wl_values.shape != expected:
+        raise ValueError(f"wl must be {expected}, got shape {wl_values.shape}")
+    if npn_values.shape != (n,):
+        raise ValueError(f"npn must be {(n,)}, got shape {npn_values.shape}")
+    if orbits is None:
+        numeric = np.asarray(flags, dtype=np.float64)
+    else:
+        numeric = graphlet_features(orbits, flags)
+    categorical = np.empty((n, 1 + wl_values.shape[1]), dtype=np.int64)
+    categorical[:, 0] = npn_values
+    categorical[:, 1:] = wl_values
+    return numeric, categorical
 
 
 def _tool_info(counter: GraphletCounter) -> dict[str, str]:

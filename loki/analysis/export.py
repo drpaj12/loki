@@ -8,7 +8,9 @@ columns. GraphML goes through ``networkx.DiGraph`` and ``networkx.write_graphml`
 features and labels as node attributes, the edge ``pin`` and ``net``, and the graph ``design`` and
 ``floor``; node and edge insertion order follows the graph for deterministic output. The ``pyg``
 format saves the spec-5 plain dict of :func:`pyg_dict` with ``torch.save`` at ``<stem>.pt`` and
-loads it back into a ``torch_geometric.data.Data`` through :func:`load_pyg`.
+loads it back into a ``torch_geometric.data.Data`` through :func:`load_pyg`; the dict carries the
+spec-4.1 structural block (GSN role, NPN and WL arrays) and an orbit block only when the graphlets
+directory beside ``out`` holds an orbit file for the exported graph (export never runs a backend).
 
 networkx and torch belong to the ``analysis`` and ``gnn`` extras and are imported inside the
 functions through ``importlib`` (they ship no type marker), after :func:`loki.analysis.require`.
@@ -22,6 +24,7 @@ from typing import TYPE_CHECKING, Any
 from loki.analysis import require
 from loki.analysis.graphio import featurize
 from loki.analysis.region import region_hash
+from loki.analysis.structural import compute_structural
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -37,6 +40,8 @@ FORMATS: tuple[str, ...] = ("edgelist", "graphml", "pyg")
 #: The label columns of the PyG vocabulary, in spec-5 order.
 TARGETS: tuple[str, ...] = ("construct_type", "role")
 _WHOLE = "whole"
+#: The graphlets output directory of spec 11, a sibling of the export directory.
+_GRAPHLETS_DIR = "graphlets"
 
 
 def export_graph(
@@ -66,7 +71,11 @@ def export_graph(
     if "graphml" in chosen:
         paths.append(write_graphml(target, _with_suffix(stem, ".graphml")))
     if "pyg" in chosen:
-        paths.append(write_pyg(target, _with_suffix(stem, ".pt")))
+        paths.append(
+            write_pyg(
+                target, _with_suffix(stem, ".pt"), orbits_dir=out.parent / _GRAPHLETS_DIR
+            )
+        )
     return sorted(paths)
 
 
@@ -126,7 +135,13 @@ def build_vocab_for_graph(g: Graph) -> dict[str, list[str]]:
     }
 
 
-def pyg_dict(g: Graph, split: str | None = None) -> dict[str, object]:
+def pyg_dict(
+    g: Graph,
+    split: str | None = None,
+    include_structural: bool = True,
+    *,
+    orbits_dir: Path | None = None,
+) -> dict[str, object]:
     """The spec-5 PyG payload of ``g``: a plain dict of tensors and builtins.
 
     ``x`` is float32 ``(n, len(feature_names))``, ``edge_index`` int64 ``(2, n_edges)`` with the
@@ -134,6 +149,12 @@ def pyg_dict(g: Graph, split: str | None = None) -> dict[str, object]:
     empty. The label tensors are absent when the graph is unlabelled; ``vocab`` is always present
     (both lists empty when unlabelled), and ``split`` is present only when given (an export taken
     from a dataset).
+
+    ``include_structural`` adds the spec-4.1 block of spec 5: ``gsn_roles``, ``gsn_npn``,
+    ``gsn_wl``, ``npn_keys`` and ``wl_variant``. ``gsn_orbits`` and ``gsn_orbits_source`` are
+    added only when ``orbits_dir`` holds an orbit file for exactly this graph (export never runs a
+    graphlet backend); :func:`export_graph` passes the ``graphlets`` directory beside the export
+    directory of spec 11.
     """
     require("gnn")
     import numpy as np
@@ -161,15 +182,27 @@ def pyg_dict(g: Graph, split: str | None = None) -> dict[str, object]:
     payload["floor"] = g.floor
     if split is not None:
         payload["split"] = split
+    if include_structural:
+        structural = compute_structural(g)
+        payload["gsn_roles"] = torch.from_numpy(structural.roles)
+        payload["gsn_npn"] = torch.from_numpy(structural.npn)
+        payload["gsn_wl"] = torch.from_numpy(structural.wl)
+        payload["npn_keys"] = list(structural.npn_keys)
+        payload["wl_variant"] = structural.variant
+        orbits = _orbit_arrays(g, orbits_dir)
+        if orbits is not None:
+            payload["gsn_orbits"], payload["gsn_orbits_source"] = orbits
     return payload
 
 
-def write_pyg(g: Graph, path: Path, split: str | None = None) -> Path:
+def write_pyg(
+    g: Graph, path: Path, split: str | None = None, *, orbits_dir: Path | None = None
+) -> Path:
     """Save :func:`pyg_dict` of ``g`` at ``path`` with ``torch.save`` and return ``path``."""
     require("gnn")
     torch: Any = importlib.import_module("torch")
     path.parent.mkdir(parents=True, exist_ok=True)
-    torch.save(pyg_dict(g, split), path)
+    torch.save(pyg_dict(g, split, orbits_dir=orbits_dir), path)
     return path
 
 
@@ -190,6 +223,51 @@ def load_pyg(path: Path) -> Any:
     data.node_ids = node_ids
     data.feature_names = feature_names
     return data
+
+
+def _orbit_arrays(
+    g: Graph, orbits_dir: Path | None
+) -> tuple[Any, dict[str, str]] | None:
+    """``gsn_orbits`` and ``gsn_orbits_source`` from an orbit file for ``g``, or ``None``.
+
+    A file that belongs to another graph (a region export, a stale run) raises ``ValueError``
+    inside :func:`load_orbits` and is skipped, because no orbit file exists for the subgraph.
+    """
+    if orbits_dir is None:
+        return None
+    import numpy as np
+
+    from loki.analysis.graphlets import load_orbits
+
+    choice = _orbit_file(orbits_dir)
+    if choice is None:
+        return None
+    backend, removal = choice
+    try:
+        orbits, _roles = load_orbits(g, backend, removal, orbits_dir)
+    except ValueError:
+        return None
+    torch: Any = importlib.import_module("torch")
+    arrays = torch.from_numpy(np.asarray(orbits, dtype=np.int64))
+    return arrays, {"backend": backend, "removal": removal}
+
+
+def _orbit_file(orbits_dir: Path) -> tuple[str, str] | None:
+    """``(backend, removal)`` of the orbit file to read; the default backend wins."""
+    from loki.analysis.graphlets import DEFAULT_BACKEND
+
+    if not orbits_dir.is_dir():
+        return None
+    pairs: list[tuple[str, str]] = []
+    for path in sorted(orbits_dir.glob("orbits-*.npz")):
+        stem = path.name[len("orbits-"):-len(".npz")]
+        backend, separator, removal = stem.rpartition("-")
+        if separator and backend and removal in ("global", "none"):
+            pairs.append((backend, removal))
+    if not pairs:
+        return None
+    preferred = (DEFAULT_BACKEND, "global")
+    return preferred if preferred in pairs else pairs[0]
 
 
 def _encode_targets(values: Sequence[object], vocab: Sequence[str]) -> npt.NDArray[Any]:
