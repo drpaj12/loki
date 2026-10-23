@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import importlib
 
-KINDS = ("export", "cluster", "graphlets", "gnn")
+KINDS = ("export", "cluster", "graphlets", "gnn", "structural")
 
 _EXTRAS: dict[str, tuple[str, ...]] = {
     "analysis": ("numpy", "scipy", "sklearn", "networkx"),

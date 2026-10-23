@@ -7,7 +7,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from loki.analysis.export import (
     FORMATS,
@@ -18,9 +18,36 @@ from loki.analysis.export import (
     write_pyg,
 )
 from loki.analysis.graphio import featurize, load_graph
+from loki.analysis.graphlets import BACKENDS, N_ORBITS, load_orbits, run_graphlets
 from loki.analysis.region import cone, region_hash
+from loki.analysis.structural import compute_structural
 from tests.analysis_fixtures import make_graph, write_graph
+from tests.graphlet_oracle import brute_orbits
 from tests.helpers import skip_without
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
+
+class _FakeCounter:
+    """The 4-node oracle as a registered graphlet backend (plan Task 10a test)."""
+
+    name = "fake"
+    max_size = 5
+
+    def available(self) -> tuple[bool, str]:
+        """Always installed: the oracle is Python."""
+        return True, ""
+
+    def count(
+        self, n: int, src: npt.NDArray[Any], dst: npt.NDArray[Any], size: int = 4
+    ) -> npt.NDArray[Any]:
+        """The oracle's counts; size 5 is zero-filled because the oracle is 4-node only."""
+        import numpy as np
+
+        if size == 5:
+            return np.zeros((n, N_ORBITS[5]), dtype=np.int64)
+        return brute_orbits(n, src, dst)
 
 
 def _partially_labelled() -> dict[str, Any]:
@@ -177,6 +204,65 @@ class PygExportTest(unittest.TestCase):
                 edge_index[0].tolist(),
                 [region.node_ids.index(edge["src"]) for edge in expected],
             )
+
+    def test_pyg_structural_keys(self) -> None:
+        """The spec-5 structural block: GSN vectors and keys, orbits only from a file."""
+        torch: Any = importlib.import_module("torch")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_graph(root, make_graph())
+            g = load_graph(root / "graph.json")
+            payload = pyg_dict(g)
+            wl: Any = payload["gsn_wl"]
+            npn: Any = payload["gsn_npn"]
+            roles: Any = payload["gsn_roles"]
+            self.assertEqual(tuple(wl.shape), (g.n_nodes, 5))
+            self.assertEqual(wl.dtype, torch.int64)
+            self.assertEqual(tuple(npn.shape), (g.n_nodes,))
+            self.assertEqual(npn.dtype, torch.int64)
+            self.assertEqual(tuple(roles.shape), (g.n_nodes, 4))
+            self.assertEqual(roles.dtype, torch.int64)
+            npn_keys: Any = payload["npn_keys"]
+            self.assertEqual(len(npn_keys), g.n_nodes)
+            self.assertEqual(payload["wl_variant"], "npn/both")
+            structural = compute_structural(g)
+            self.assertTrue(torch.equal(wl, torch.from_numpy(structural.wl)))
+            self.assertTrue(torch.equal(npn, torch.from_numpy(structural.npn)))
+            self.assertTrue(torch.equal(roles, torch.from_numpy(structural.roles)))
+            self.assertEqual(payload["npn_keys"], list(structural.npn_keys))
+            self.assertNotIn("gsn_orbits", payload)
+            self.assertNotIn("gsn_orbits_source", payload)
+            BACKENDS["fake"] = _FakeCounter()
+            self.addCleanup(BACKENDS.pop, "fake", None)
+            run_graphlets(g, "fake", root / "graphlets")
+            again = pyg_dict(g, orbits_dir=root / "graphlets")
+            orbits: Any = again["gsn_orbits"]
+            self.assertEqual(tuple(orbits.shape), (g.n_nodes, N_ORBITS[4]))
+            self.assertEqual(orbits.dtype, torch.int64)
+            self.assertEqual(again["gsn_orbits_source"], {"backend": "fake", "removal": "global"})
+            expected, _ = load_orbits(g, "fake", "global", root / "graphlets")
+            self.assertTrue(torch.equal(orbits, torch.from_numpy(expected)))
+            export_graph(g, None, ["pyg"], root / "export")
+            loaded: Any = load_pyg(root / "export" / "whole.pt")
+            self.assertTrue(torch.equal(loaded.gsn_orbits, torch.from_numpy(expected)))
+            self.assertEqual(loaded.gsn_orbits_source, {"backend": "fake", "removal": "global"})
+
+    def test_pyg_no_structural(self) -> None:
+        """``include_structural=False`` writes none of the structural keys."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_graph(root, make_graph())
+            g = load_graph(root / "graph.json")
+            payload = pyg_dict(g, None, False)
+            for key in (
+                "gsn_roles", "gsn_npn", "gsn_wl", "npn_keys", "wl_variant", "gsn_orbits",
+                "gsn_orbits_source",
+            ):
+                self.assertNotIn(key, payload)
+            export_graph(g, None, ["pyg"], root / "export")
+            loaded: Any = load_pyg(root / "export" / "whole.pt")
+            self.assertTrue(hasattr(loaded, "gsn_wl"))
+            self.assertFalse(hasattr(loaded, "gsn_orbits"))
 
     def test_export_graph_pyg_format_listed(self) -> None:
         torch: Any = importlib.import_module("torch")

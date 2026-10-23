@@ -468,11 +468,11 @@ loki/analysis/
   graphio.py      Graph, load_graph, featurize, undirected_adjacency, iter_dataset, DatasetEntry
   region.py       Region, RegionError, cone, from_partition, from_nodes, parse_region
   partition.py    Partition, load_partition, write_partition, quality
-  structural.py   hash64, StructuralArrays, run_structural, load_structural, gsn_features   (4.1; plan Task 10a)
+  structural.py   hash64, StructuralArrays, run_structural, load_structural   (4.1; plan Task 10a)
   export.py       export_graph(graph, region, formats, out) -> list[Path]; load_pyg
   cluster.py      cluster_kmeans, cluster_affinity, cluster_spectral, cluster_louvain, run_cluster
   graphlets/
-    __init__.py   GraphletCounter, BACKENDS, DEFAULT_BACKEND = "ext", counting_graph, graphlet_features, run_graphlets
+    __init__.py   GraphletCounter, BACKENDS, DEFAULT_BACKEND = "ext", counting_graph, graphlet_features, gsn_features, run_graphlets
     signals.py    SignalConfig, SignalInfo, classify_signals, lut_restrict   (plan Task 9)
     ext.py        OrcaCounter, fetch_orca, find_orca   (plan Task G-ext)
     own.py        OwnCounter, count_reference   (optional, later: plan Tasks G-own-1, G-own-2)
