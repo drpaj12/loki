@@ -228,9 +228,10 @@ def cluster_spectral(
     ``min(k, |L|)`` clusters. Zero embedding rows stay zero. Every other component becomes one
     cluster of its own; hundreds of tiny components (constants, unused logic) are normal. A
     largest component below three nodes, or fewer than two clusters asked for, makes every
-    component one cluster without an embedding. The params record the resolved ``k`` and the
-    ``n_components`` the embedding used (0 when it was skipped); the record also carries the
-    connected component count (``components``).
+    component one cluster without an embedding. The params record the resolved ``k``, the
+    ``n_components`` the embedding used (0 when it was skipped) and the k-means algorithm that
+    ran (``"kmeans"``, ``"minibatch"``, or ``"none"`` when the embedding was skipped); the
+    record also carries the connected component count (``components``).
     """
     require("analysis")
     import numpy as np
@@ -240,8 +241,12 @@ def cluster_spectral(
     adjacency = undirected_adjacency(g)
     count, raw = csgraph.connected_components(adjacency, directed=False)
     labels = np.asarray(raw, dtype=np.int64)
-    assignment, n_components = _spectral_assignment(adjacency, labels, int(count), clusters, seed)
-    params: dict[str, object] = {"k": clusters, "n_components": n_components}
+    assignment, n_components, algorithm = _spectral_assignment(
+        adjacency, labels, int(count), clusters, seed
+    )
+    params: dict[str, object] = {
+        "k": clusters, "n_components": n_components, "algorithm": algorithm
+    }
     return make_partition(
         g, _SPECTRAL_METHOD, params, seed, assignment, components=int(count)
     )
@@ -360,13 +365,14 @@ def _spectral_assignment(
     count: int,
     clusters: int,
     seed: int,
-) -> tuple[npt.NDArray[Any], int]:
-    """Assignment of spec 7.3 and the ``n_components`` its embedding used (0 when skipped)."""
+) -> tuple[npt.NDArray[Any], int, str]:
+    """Assignment of spec 7.3, its ``n_components`` and the k-means algorithm that ran
+    (``"none"`` with ``n_components == 0`` when the embedding was skipped)."""
     import numpy as np
 
     n_nodes = int(labels.size)
     if count == 0:
-        return np.zeros(0, dtype=np.int64), 0
+        return np.zeros(0, dtype=np.int64), 0, "none"
     sizes = np.bincount(labels, minlength=count)
     first = np.full(count, n_nodes, dtype=np.int64)
     np.minimum.at(first, labels, np.arange(n_nodes, dtype=np.int64))
@@ -374,7 +380,7 @@ def _spectral_assignment(
         -int(sizes[component]), int(first[component])
     )))
     if sizes[largest] < 3 or clusters < 2:
-        return labels.astype(np.int64, copy=True), 0
+        return labels.astype(np.int64, copy=True), 0, "none"
     rows = np.flatnonzero(labels == largest)
     size = int(rows.size)
     n_components = min(clusters, size - 1)
@@ -402,20 +408,20 @@ def _spectral_assignment(
     )
     for offset, component in enumerate(others):
         assignment[labels == component] = min(clusters, size) + offset
-    return assignment, n_components
+    return assignment, n_components, _kmeans_algorithm(size, min(clusters, size))
 
 
 def _embedding_kmeans(
     embedding: npt.NDArray[Any], clusters: int, seed: int
 ) -> npt.NDArray[Any]:
-    """k-means over spectral embedding rows (``n_init=3``; minibatch above the node cap)."""
+    """k-means over spectral embedding rows (``n_init=3``; minibatch above the row cap)."""
     import numpy as np
 
     module = importlib.import_module("sklearn.cluster")
-    if clusters <= KMEANS_FULL_MAX:
-        model = module.KMeans(n_clusters=clusters, n_init=3, random_state=seed)
-    else:
+    if _kmeans_algorithm(int(embedding.shape[0]), clusters) == "minibatch":
         model = module.MiniBatchKMeans(n_clusters=clusters, n_init=3, random_state=seed)
+    else:
+        model = module.KMeans(n_clusters=clusters, n_init=3, random_state=seed)
     return np.asarray(model.fit_predict(embedding), dtype=np.int64)
 
 

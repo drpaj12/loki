@@ -5,7 +5,9 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from loki.analysis import cluster
 from loki.analysis.cluster import (
     METHODS,
     cluster_louvain,
@@ -156,6 +158,14 @@ class ClusterGraphTest(unittest.TestCase):
         self.assertEqual(partition.components, 5)
         self.assertEqual(partition.n_clusters, 5)
         self.assertEqual(set(partition.assignment), set(range(5)))
+
+    def test_spectral_uses_minibatch_over_20000(self) -> None:
+        g = _load(_blocks())
+        small = cluster_spectral(g, k=2)
+        self.assertEqual(small.params["algorithm"], "kmeans")
+        with mock.patch.object(cluster, "KMEANS_FULL_MAX", 10):
+            large = cluster_spectral(g, k=2)
+        self.assertEqual(large.params["algorithm"], "minibatch")
 
     def test_run_cluster_all_writes_four_files(self) -> None:
         self.assertEqual(METHODS, ("kmeans", "affinity", "spectral", "louvain"))
