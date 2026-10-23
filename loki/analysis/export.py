@@ -7,10 +7,11 @@ columns are ``id``, ``kind``, the spec-4 feature matrix and, when the graph is l
 columns. GraphML goes through ``networkx.DiGraph`` and ``networkx.write_graphml`` with the same
 features and labels as node attributes, the edge ``pin`` and ``net``, and the graph ``design`` and
 ``floor``; node and edge insertion order follows the graph for deterministic output. The ``pyg``
-format is implemented by L2 Task 5 and raises ``NotImplementedError`` here.
+format saves the spec-5 plain dict of :func:`pyg_dict` with ``torch.save`` at ``<stem>.pt`` and
+loads it back into a ``torch_geometric.data.Data`` through :func:`load_pyg`.
 
-networkx belongs to the ``analysis`` extra and is imported inside the function through
-``importlib`` (it ships no type marker), after :func:`loki.analysis.require`.
+networkx and torch belong to the ``analysis`` and ``gnn`` extras and are imported inside the
+functions through ``importlib`` (they ship no type marker), after :func:`loki.analysis.require`.
 """
 
 from __future__ import annotations
@@ -26,11 +27,15 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
+    import numpy.typing as npt
+
     from loki.analysis.graphio import Graph
     from loki.analysis.region import Region
 
-#: Export formats of the plugin surface; ``pyg`` arrives in L2 Task 5.
+#: Export formats of the plugin surface.
 FORMATS: tuple[str, ...] = ("edgelist", "graphml", "pyg")
+#: The label columns of the PyG vocabulary, in spec-5 order.
+TARGETS: tuple[str, ...] = ("construct_type", "role")
 _WHOLE = "whole"
 
 
@@ -40,8 +45,8 @@ def export_graph(
     """Export ``g`` or its induced region in every requested format into ``out``.
 
     ``formats`` is a subset of :data:`FORMATS`; an unknown name raises ``ValueError`` before
-    anything is written, and ``pyg`` raises ``NotImplementedError`` (L2 Task 5). The returned
-    paths are sorted and the export is deterministic byte for byte.
+    anything is written. The returned paths are sorted and the export is deterministic byte for
+    byte.
     """
     require("analysis")
     chosen = tuple(formats)
@@ -52,7 +57,7 @@ def export_graph(
             + "; use one of " + ", ".join(FORMATS)
         )
     if "pyg" in chosen:
-        raise NotImplementedError("the pyg export is implemented in L2 Task 5")
+        require("gnn")
     target = g if region is None else g.induced(region.node_ids)
     stem = out / (_WHOLE if region is None else f"region-{region_hash(region.spec)}")
     paths: list[Path] = []
@@ -60,6 +65,8 @@ def export_graph(
         paths.extend(write_edgelist(target, stem))
     if "graphml" in chosen:
         paths.append(write_graphml(target, _with_suffix(stem, ".graphml")))
+    if "pyg" in chosen:
+        paths.append(write_pyg(target, _with_suffix(stem, ".pt")))
     return sorted(paths)
 
 
@@ -103,6 +110,94 @@ def write_graphml(g: Graph, path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     nx.write_graphml(graph, path)
     return path
+
+
+def build_vocab_for_graph(g: Graph) -> dict[str, list[str]]:
+    """The two label vocabularies of one graph (spec 5): sorted unique non-empty values.
+
+    Unlabelled graphs (``g.labels is None``, i.e. every label object is empty) give an empty
+    list for both entries. Class indices are not comparable across exports of different designs.
+    """
+    if g.labels is None:
+        return {name: [] for name in TARGETS}
+    return {
+        name: sorted({str(value) for value in g.labels[name].tolist() if str(value)})
+        for name in TARGETS
+    }
+
+
+def pyg_dict(g: Graph, split: str | None = None) -> dict[str, object]:
+    """The spec-5 PyG payload of ``g``: a plain dict of tensors and builtins.
+
+    ``x`` is float32 ``(n, len(feature_names))``, ``edge_index`` int64 ``(2, n_edges)`` with the
+    driver in row 0, and the label tensors are int64 with ``-1`` where a node's target value is
+    empty. The label tensors are absent when the graph is unlabelled; ``vocab`` is always present
+    (both lists empty when unlabelled), and ``split`` is present only when given (an export taken
+    from a dataset).
+    """
+    require("gnn")
+    import numpy as np
+
+    torch: Any = importlib.import_module("torch")
+    matrix = featurize(g)
+    vocab = build_vocab_for_graph(g)
+    payload: dict[str, object] = {
+        "x": torch.from_numpy(matrix.x),
+        "edge_index": torch.from_numpy(np.asarray([g.src, g.dst], dtype=np.int64)),
+        "node_ids": list(g.node_ids),
+        "feature_names": list(matrix.names),
+        "hard_types": list(matrix.hard_types),
+    }
+    # Unlabelled = every target empty (Task 2); role-only keeps y_role only via a spec change.
+    if g.labels is not None:
+        payload["y_construct_type"] = torch.from_numpy(
+            _encode_targets(g.labels["construct_type"].tolist(), vocab["construct_type"])
+        )
+        payload["y_role"] = torch.from_numpy(
+            _encode_targets(g.labels["role"].tolist(), vocab["role"])
+        )
+    payload["vocab"] = vocab
+    payload["design"] = g.design
+    payload["floor"] = g.floor
+    if split is not None:
+        payload["split"] = split
+    return payload
+
+
+def write_pyg(g: Graph, path: Path, split: str | None = None) -> Path:
+    """Save :func:`pyg_dict` of ``g`` at ``path`` with ``torch.save`` and return ``path``."""
+    require("gnn")
+    torch: Any = importlib.import_module("torch")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(pyg_dict(g, split), path)
+    return path
+
+
+def load_pyg(path: Path) -> Any:
+    """Load a ``.pt`` written by :func:`write_pyg` into a ``torch_geometric.data.Data``.
+
+    The file holds a plain dict so ``torch.load(path, weights_only=True)`` reads it; the ``Data``
+    carries ``node_ids`` and ``feature_names`` beside the tensor and metadata attributes. The
+    return is typed ``Any`` because torch_geometric ships no type stubs.
+    """
+    require("gnn")
+    torch: Any = importlib.import_module("torch")
+    data_module: Any = importlib.import_module("torch_geometric.data")
+    raw: Any = torch.load(path, weights_only=True)
+    node_ids = raw.pop("node_ids")
+    feature_names = raw.pop("feature_names")
+    data: Any = data_module.Data(**raw)
+    data.node_ids = node_ids
+    data.feature_names = feature_names
+    return data
+
+
+def _encode_targets(values: Sequence[object], vocab: Sequence[str]) -> npt.NDArray[Any]:
+    """Target values as int64 vocabulary indices, ``-1`` for an empty value."""
+    import numpy as np
+
+    positions = {name: column for column, name in enumerate(vocab)}
+    return np.asarray([positions.get(str(value), -1) for value in values], dtype=np.int64)
 
 
 def _nodes_text(g: Graph) -> str:
