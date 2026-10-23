@@ -125,6 +125,8 @@ class AcceptanceExportStructuralTest(unittest.TestCase):
         region = load_pyg(files / f"{stem}.pt")
         self.assertLess(int(region.num_nodes), int(whole.num_nodes))
         self.assertEqual(int(region.x.shape[1]), len(region.feature_names))
+        for key in ("gsn_wl", "gsn_npn", "gsn_roles"):
+            self.assertEqual(int(getattr(region, key).shape[0]), int(region.num_nodes), key)
 
     def test_1c_structural_two_runs_identical_except_seconds(self) -> None:
         # Plan Task 10a pins the determinism as "byte-identical except seconds": the JSON
