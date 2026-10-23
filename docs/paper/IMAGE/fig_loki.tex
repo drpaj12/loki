@@ -1,0 +1,20 @@
+% The Loki III pipeline: L0 -> L1 -> L2 over Odin III. Shared palette: IMAGE/odin3-tikz-styles.tex.
+\begin{tikzpicture}[odin]
+  % the base the pipeline stands on
+  \node[box, neutral] (odin) {Odin III\\\odinsub{provenance front end}};
+  % L0: datasets and their renamed twins
+  \node[box, light, above=6mm of odin] (l0) {L0 datasets\\\odinsub{labels, neutral names}};
+  \node[box, external, right=2.5mm of l0] (rn) {renamed twins\\\odinsub{105,646 ids}};
+  % L1: Bayesian flow
+  \node[box, light, right=10mm of odin] (l1) {L1 Bayesian flow\\\odinsub{detect, prove, commit}};
+  % L2: graph analysis
+  \node[box, light, right=2.5mm of l1] (l2) {L2 graph analysis\\\odinsub{clusters, GNN vs 1-WL}};
+  % flow
+  \draw[flow] (odin.north) -- (l0.south);
+  \draw[flow, dash pattern=on 2.4pt off 1.4pt] (l0) -- (rn);
+  \draw[flow] (l0.east) to[out=0, in=180] (l1.west);
+  \draw[flow] (odin.east) -- (l1.west);
+  \draw[flow] (l1) -- (l2);
+  % a note: no LLM anywhere
+  \node[plain, below=1.5mm of odin, font=\scriptsize\color{o3sub}] {no language model at any stage};
+\end{tikzpicture}
