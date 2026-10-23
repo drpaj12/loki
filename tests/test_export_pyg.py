@@ -98,6 +98,16 @@ class PygExportTest(unittest.TestCase):
             for row, value in enumerate(labels["role"].tolist()):
                 self.assertEqual(encoded_role[row], vocab["role"].index(value))
 
+    def test_pyg_split_passed_through(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_graph(root, make_graph())
+            g = load_graph(root / "graph.json")
+            self.assertEqual(pyg_dict(g, split="train")["split"], "train")
+            write_pyg(g, root / "export" / "whole.pt", split="train")
+            loaded: Any = load_pyg(root / "export" / "whole.pt")
+            self.assertEqual(loaded.split, "train")
+
     def test_pyg_unlabelled_has_no_y(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

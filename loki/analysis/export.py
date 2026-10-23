@@ -56,6 +56,8 @@ def export_graph(
             "unknown export format(s): " + ", ".join(unknown)
             + "; use one of " + ", ".join(FORMATS)
         )
+    if "pyg" in chosen:
+        require("gnn")
     target = g if region is None else g.induced(region.node_ids)
     stem = out / (_WHOLE if region is None else f"region-{region_hash(region.spec)}")
     paths: list[Path] = []
@@ -129,8 +131,9 @@ def pyg_dict(g: Graph, split: str | None = None) -> dict[str, object]:
 
     ``x`` is float32 ``(n, len(feature_names))``, ``edge_index`` int64 ``(2, n_edges)`` with the
     driver in row 0, and the label tensors are int64 with ``-1`` where a node's target value is
-    empty. The label tensors and ``vocab`` are absent when the graph is unlabelled; ``split`` is
-    present only when given (an export taken from a dataset).
+    empty. The label tensors are absent when the graph is unlabelled; ``vocab`` is always present
+    (both lists empty when unlabelled), and ``split`` is present only when given (an export taken
+    from a dataset).
     """
     require("gnn")
     import numpy as np
@@ -145,6 +148,7 @@ def pyg_dict(g: Graph, split: str | None = None) -> dict[str, object]:
         "feature_names": list(matrix.names),
         "hard_types": list(matrix.hard_types),
     }
+    # Unlabelled = every target empty (Task 2); role-only keeps y_role only via a spec change.
     if g.labels is not None:
         payload["y_construct_type"] = torch.from_numpy(
             _encode_targets(g.labels["construct_type"].tolist(), vocab["construct_type"])
