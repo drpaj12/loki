@@ -154,5 +154,24 @@ class AcceptanceL1Test(unittest.TestCase):
             load_gt(self.floor(name))
 
 
+@unittest.skipUnless(
+    odin_available() and odin3_root() is not None and DATASET, "needs Odin III and LOKI_DATASET"
+)
+class AcceptanceF3Test(unittest.TestCase):
+    """Task 18: the acceptance subset at floor F3 (gate netlists) runs and stays equivalent."""
+
+    def test_f3_subset_runs(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="loki-l1-f3-") as tmpname:
+            out = Path(tmpname)
+            for name in SUBSET:
+                did = f"micro_{name}"
+                net = Path(DATASET) / did / "f3" / "netlist.blif"
+                rc = re_main([str(net), "--floor", "f3", "--calib", "none",
+                              "--out", str(out / did)])
+                self.assertEqual(rc, 0, f"{did}: loki re exit {rc}")
+                report = _read(out / did / "report.json")
+                self.assertEqual(report["final_equiv"]["status"], "equivalent", did)
+
+
 if __name__ == "__main__":
     unittest.main()
