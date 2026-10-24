@@ -1,0 +1,5 @@
+condition,designs,ast_mean,cfg_mean,got_ops,type_f1,tw_f1
+L0-stop gate netlist,15,0.404369,0.646831,0,0.0,0.0
+L1 calibrated,15,0.404369,0.646831,0,,
+L1 uncalibrated,15,0.415471,0.639365,1161,0.017336,0.00788
+"L1 uncalibrated, flattened",15,0.457626,0.694059,1161,0.017336,0.00788
