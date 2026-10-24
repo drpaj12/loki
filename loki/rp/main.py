@@ -21,14 +21,16 @@ def _parser() -> argparse.ArgumentParser:
     doc.add_argument("re_dir")
     doc.add_argument("-o", "--out", default="", help="output file (default: stdout)")
     doc.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS)
-    doc.add_argument("--include-candidates", action=argparse.BooleanOptionalAction, default=True)
+    doc.add_argument("--include-candidates", dest="candidates", action="store_true", default=True)
+    doc.add_argument("--no-candidates", dest="candidates", action="store_false",
+                     help="leave the candidate section out")
     return ap
 
 
 def _doc(args: argparse.Namespace) -> int:
     from loki.rp.doc import render
 
-    text = render(Path(args.re_dir), max_chars=args.max_chars, candidates=args.include_candidates)
+    text = render(Path(args.re_dir), max_chars=args.max_chars, candidates=args.candidates)
     if args.out:
         Path(args.out).write_text(text, encoding="utf-8")
         print(f"wrote {args.out}")
