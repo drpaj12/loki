@@ -33,7 +33,7 @@ The same design is built to several netlist forms, called floors, each with its 
 |---|---|---|
 | F1 | `f1-k6`, `f1-earch` | LUT6 plus hard blocks (adders, multipliers, RAMs stay hard cells and are labelled), for the `k6_frac_N10_frac_chain_mem32K_40nm` and `EArch` architectures |
 | F2 | `f2` | LUT6 only, soft arithmetic |
-| F3 | `f3` | six-cell gate netlist (specified; not on `main` yet) |
+| F3 | `f3` | six-cell gate netlist |
 
 ## What one build does
 

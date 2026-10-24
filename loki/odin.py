@@ -26,11 +26,48 @@ def odin_module() -> Any:
     return importlib.import_module("odin3")
 
 
+_SV_STATE: dict[str, Any] = {"tried": False, "lib": None}
+_SV_DECL = (
+    "odin3_status odin3_read_slang(odin3_design *d, uint32_t run, const odin3_sv_options *o);"
+)
+
+
+def register_slang(o: Any) -> bool:
+    """Register the slang adapter as the process's SystemVerilog reader (once per process).
+
+    The library is ``$ODIN3_SLANG_LIB`` or ``libodin3_slang.so`` beside ``$ODIN3_LIB``. Without
+    it a ``.sv`` read fails with Odin III's own "no SystemVerilog reader" message.
+    """
+    if _SV_STATE["tried"]:
+        return True
+    env = os.environ.get("ODIN3_SLANG_LIB")
+    lib_env = os.environ.get("ODIN3_LIB")
+    path = Path(env) if env else None
+    if path is None and lib_env:
+        path = Path(lib_env).parent / "libodin3_slang.so"
+    if path is None or not path.is_file():
+        return False
+    _SV_STATE["tried"] = True
+    o.ffi.cdef(_SV_DECL)
+    slang = o.ffi.dlopen(str(path))
+    # keep the handle alive: cffi may dlclose a collected library, and the reader stays registered
+    _SV_STATE["lib"] = slang
+    o.lib.odin3_sv_reader_register(o.ffi.addressof(slang, "odin3_read_slang"))
+    return True
+
+
 def _q(path: Path | str) -> str:
     text = os.fspath(path)
     if '"' in text:
         raise ValueError(f"{text}: a pass argument cannot hold a double quote")
     return f'"{text}"'
+
+
+def read_flags(files: Sequence[Path]) -> str:
+    """``read_verilog`` flags: ``--vtr-compat`` is refused for SystemVerilog (.sv) sources."""
+    if any(f.suffix == ".sv" for f in files):
+        return "--nolatches"
+    return "--nolatches --vtr-compat"
 
 
 def read_script(
@@ -41,12 +78,12 @@ def read_script(
     if floor == "f3":
         if cmos6_lib is None:
             raise ValueError("floor f3 needs the cmos6.o3lib path")
-        return f"read_techlib {_q(cmos6_lib)}; read_verilog --nolatches --vtr-compat {paths}"
+        return f"read_techlib {_q(cmos6_lib)}; read_verilog {read_flags(files)} {paths}"
     if floor not in ("f1-k6", "f1-earch", "f2"):
         raise ValueError(f"unknown floor {floor!r}")
     if arch_xml is None:
         raise ValueError(f"floor {floor} needs an architecture xml")
-    return f"read_arch {_q(arch_xml)}; read_verilog --nolatches --vtr-compat {paths}"
+    return f"read_arch {_q(arch_xml)}; read_verilog {read_flags(files)} {paths}"
 
 
 def floor_script(
@@ -88,6 +125,8 @@ def open_front(
     mod = odin_module()
     o = mod.default()
     o.load_abc()
+    if any(f.suffix == ".sv" for f in files):
+        register_slang(o)
     reader = read_script(floor, files, arch_xml, cmos6_lib)
     design = mod.Design(o)
     if top:

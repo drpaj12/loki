@@ -1,7 +1,9 @@
-# L1 and L2 (planned)
+# L1 and L2
 
-L1 and L2 are specified; this page says what the specifications promise. The L1 code is in an open
-pull request and is not described here until it is on `main`.
+L1 (`loki re`) and L2 (`loki analyze`) are on `main`. This page says what the specifications promise;
+the commands, flags and output tree are in the repository README and in
+[`docs/runbook-l1.md`](https://github.com/drpaj12/loki/blob/main/docs/runbook-l1.md), and the measured
+results are in the [paper](https://github.com/drpaj12/loki/tree/main/docs/paper).
 
 ## L1: Bayesian hypotheses
 
