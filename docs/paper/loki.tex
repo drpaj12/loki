@@ -305,7 +305,8 @@ $-0.0075$ (CFG), with mixed per-quartile signs; the commits are mostly wrong \co
 and bus pieces, so this is not evidence about recovery quality. A flatten control (Odin~III
 \code{proc; flatten}, which also lowers the committed processes) inlines the committed
 hierarchy and raises both metrics over the gate netlist: AST 0.4576 against 0.4044
-(+0.0533) and CFG 0.6941 against 0.6382 (+0.0559) over the designs both can score.
+(+0.0533, all 15 designs) and CFG 0.6941 against 0.6382 (+0.0559, the 12 designs the probe
+can score).
 Algorithms~2 and~3 read a single module, while Loki's L1 commits a hierarchy, so a recovery
 that produces hierarchy is systematically penalised until it is flattened: for a
 netlist-to-RTL benchmark this is a metric limitation, not a property of the recovery.
