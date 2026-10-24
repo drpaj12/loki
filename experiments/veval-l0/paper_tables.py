@@ -174,7 +174,7 @@ def table_features(feats: dict[str, dict[str, str]], stats: dict) -> list[str]:
         + f" & All ($n{{=}}{n_all}$) & $\\geq 2$ \\\\",
         r"\midrule",
     ]
-    for col, label, flag in FEATURES:
+    for col, label, _flag in FEATURES:
         cells = []
         total = 0
         for q in QUARTILES:
