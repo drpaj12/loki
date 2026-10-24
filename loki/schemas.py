@@ -433,3 +433,91 @@ def _row_errors(row: dict[str, str], n: int) -> list[str]:
         except ValueError:
             errs.append(f"labels.csv line {n}: column {col} is not an integer")
     return errs
+
+
+_RP_KEYS = ("schema", "header", "netlist", "elements", "buses", "fsms", "hierarchy", "coverage")
+_RP_OPTIONAL = ("l2",)
+_RP_HEADER = ("loki", "odin3", "input", "floor", "calib", "seed", "commit_threshold",
+              "candidate_threshold")
+_RP_ELEMENT = ("id", "kind", "stage", "status", "fn", "width", "params", "proof", "p_comp",
+               "prior_log_odds", "log_odds", "evidence", "cells", "nets", "ports", "recovered",
+               "parents", "children", "conflicts", "role", "reason")
+_RP_STATUS = ("committed", "candidate", "rejected")
+_RP_PROOF = ("label", "engine", "verdict", "from")
+_RP_EVIDENCE = ("name", "source", "value", "llr")
+_RP_COVER = ("cells_total", "committed", "candidate", "uncovered", "uncovered_cells",
+             "uncovered_nets")
+
+
+def _rp_missing(obj: object, keys: tuple[str, ...], where: str) -> list[str]:
+    if not isinstance(obj, dict):
+        return [f"{where}: not an object"]
+    return [f"{where}: missing key {k!r}" for k in keys if k not in obj]
+
+
+def _rp_element(el: object, where: str) -> list[str]:
+    errs = _rp_missing(el, _RP_ELEMENT, where)
+    if errs or not isinstance(el, dict):
+        return errs
+    if el["status"] not in _RP_STATUS:
+        errs.append(f"{where}: bad status {el['status']!r}")
+    if not (isinstance(el["id"], str) and re.fullmatch(r"h\d+", el["id"])):
+        errs.append(f"{where}: bad id {el['id']!r}")
+    errs += _rp_missing(el["proof"], _RP_PROOF, f"{where}.proof")
+    ev = el["evidence"]
+    if not isinstance(ev, list) or len(ev) > 5:
+        errs.append(f"{where}: evidence must be a list of at most 5")
+    else:
+        for i, item in enumerate(ev):
+            errs += _rp_missing(item, _RP_EVIDENCE, f"{where}.evidence[{i}]")
+    for key in ("cells", "parents", "children", "conflicts"):
+        if not isinstance(el[key], list):
+            errs.append(f"{where}: {key} is not a list")
+    if (el["status"] == "committed") != isinstance(el["recovered"], dict):
+        errs.append(f"{where}: recovered is set exactly for committed elements")
+    return errs
+
+
+def _rp_tree(nodes: object, where: str, ids: set[str]) -> list[str]:
+    if not isinstance(nodes, list):
+        return [f"{where}: not a list"]
+    errs: list[str] = []
+    for i, node in enumerate(nodes):
+        errs += _rp_missing(node, ("id", "module", "instance", "children"), f"{where}[{i}]")
+        if isinstance(node, dict) and "children" in node:
+            if node.get("id") not in ids:
+                errs.append(f"{where}[{i}]: id {node.get('id')!r} is not an element")
+            errs += _rp_tree(node["children"], f"{where}[{i}].children", ids)
+    return errs
+
+
+def validate_reverse_provenance(obj: object) -> list[str]:
+    """Errors of a ``reverse-provenance.json`` object (schema 1); empty when valid."""
+    if not isinstance(obj, dict):
+        return ["rp: not an object"]
+    errs = [f"rp: missing key {k!r}" for k in _RP_KEYS if k not in obj]
+    errs += [f"rp: unknown key {k!r}" for k in obj if k not in _RP_KEYS + _RP_OPTIONAL]
+    if obj.get("schema") != 1:
+        errs.append("rp: schema must be 1")
+    if errs:
+        return errs
+    errs += _rp_missing(obj["header"], _RP_HEADER, "header")
+    errs += _rp_missing(obj["netlist"], ("cells", "inputs", "outputs"), "netlist")
+    errs += _rp_missing(obj["coverage"], _RP_COVER, "coverage")
+    els = obj["elements"]
+    if not isinstance(els, list):
+        return [*errs, "rp: elements is not a list"]
+    for i, el in enumerate(els):
+        errs += _rp_element(el, f"elements[{i}]")
+    ids = {el["id"] for el in els if isinstance(el, dict) and "id" in el}
+    for key in ("buses", "fsms"):
+        rows = obj[key]
+        if not isinstance(rows, list):
+            errs.append(f"rp: {key} is not a list")
+            continue
+        errs += [f"{key}: id {r.get('id')!r} is not an element" for r in rows
+                 if isinstance(r, dict) and r.get("id") not in ids]
+    errs += _rp_tree(obj["hierarchy"], "hierarchy", ids)
+    if "l2" in obj:
+        errs += _rp_missing(obj["l2"], ("method", "partition", "clusters"), "l2")
+    return errs
