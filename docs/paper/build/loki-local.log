@@ -208,26 +208,72 @@ File: lstmisc.sty 2020/03/24 1.8d (Carsten Heinz)
 File: listings.cfg 2020/03/24 1.8d listings configuration
 ))
 Package: listings 2020/03/24 1.8d (Carsten Heinz)
- (tikz.sty
-(pgf.sty (pgfrcs.sty (pgfutil-common.tex
-\pgfutil@everybye=\toks25
+ (pifont.sty
+Package: pifont 2020/03/25 PSNFSS-v9.3 Pi font support (SPQR) 
+LaTeX Font Info:    Trying to load font information for U+pzd on input line 63.
+
+
+(upzd.fd
+File: upzd.fd 2001/06/04 font definitions for U/pzd.
+)
+LaTeX Font Info:    Trying to load font information for U+psy on input line 64.
+
+ (upsy.fd
+File: upsy.fd 2001/06/04 font definitions for U/psy.
+)) (amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+ (amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)) (algorithm.sty
+Invalid UTF-8 byte or sequence at line 11 replaced by U+FFFD.
+Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
+nment
+ (float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count286
+\float@exts=\toks25
+\float@box=\box58
+\@float@everytoks=\toks26
+\@floatcapt=\box59
+)
+(ifthen.sty
+Package: ifthen 2020/11/24 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\@float@every@algorithm=\toks27
+\c@algorithm=\count287
+) (algorithmic.sty
+Invalid UTF-8 byte or sequence at line 11 replaced by U+FFFD.
+Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
+\c@ALC@unique=\count288
+\c@ALC@line=\count289
+\c@ALC@rem=\count290
+\c@ALC@depth=\count291
+\ALC@tlm=\skip55
+\algorithmicindent=\skip56
+) (tikz.sty (pgf.sty (pgfrcs.sty
+(pgfutil-common.tex
+\pgfutil@everybye=\toks28
 \pgfutil@tempdima=\dimen192
 \pgfutil@tempdimb=\dimen193
- (pgfutil-common-lists.tex))
-(pgfutil-latex.def
-\pgfutil@abb=\box58
-) (pgfrcs.code.tex (pgf.revision.tex)
+ (pgfutil-common-lists.tex)) (pgfutil-latex.def
+\pgfutil@abb=\box60
+)
+(pgfrcs.code.tex (pgf.revision.tex)
 Package: pgfrcs 2021/05/15 v3.1.9a (3.1.9a)
 ))
 Package: pgf 2021/05/15 v3.1.9a (3.1.9a)
- (pgfcore.sty
-(pgfsys.sty (pgfsys.code.tex
+ (pgfcore.sty (pgfsys.sty (pgfsys.code.tex
 Package: pgfsys 2021/05/15 v3.1.9a (3.1.9a)
- (pgfkeys.code.tex
-\pgfkeys@pathtoks=\toks26
-\pgfkeys@temptoks=\toks27
+(pgfkeys.code.tex
+\pgfkeys@pathtoks=\toks29
+\pgfkeys@temptoks=\toks30
  (pgfkeysfiltered.code.tex
-\pgfkeys@tmptoks=\toks28
+\pgfkeys@tmptoks=\toks31
 ))
 \pgf@x=\dimen194
 \pgf@y=\dimen195
@@ -241,33 +287,33 @@ Package: pgfsys 2021/05/15 v3.1.9a (3.1.9a)
 \pgf@yd=\dimen259
 \w@pgf@writea=\write3
 \r@pgf@reada=\read2
-\c@pgf@counta=\count286
-\c@pgf@countb=\count287
-\c@pgf@countc=\count288
-\c@pgf@countd=\count289
-\t@pgf@toka=\toks29
-\t@pgf@tokb=\toks30
-\t@pgf@tokc=\toks31
-\pgf@sys@id@count=\count290
-
-(pgf.cfg
+\c@pgf@counta=\count292
+\c@pgf@countb=\count293
+\c@pgf@countc=\count294
+\c@pgf@countd=\count295
+\t@pgf@toka=\toks32
+\t@pgf@tokb=\toks33
+\t@pgf@tokc=\toks34
+\pgf@sys@id@count=\count296
+ (pgf.cfg
 File: pgf.cfg 2021/05/15 v3.1.9a (3.1.9a)
 )
 Driver file for pgf: pgfsys-xetex.def
  (pgfsys-xetex.def
 File: pgfsys-xetex.def 2021/05/15 v3.1.9a (3.1.9a)
- (pgfsys-dvipdfmx.def
+
+(pgfsys-dvipdfmx.def
 File: pgfsys-dvipdfmx.def 2021/05/15 v3.1.9a (3.1.9a)
  (pgfsys-common-pdf.def
 File: pgfsys-common-pdf.def 2021/05/15 v3.1.9a (3.1.9a)
 )
-\pgfsys@objnum=\count291
-)))
-(pgfsyssoftpath.code.tex
+\pgfsys@objnum=\count297
+))) (pgfsyssoftpath.code.tex
 File: pgfsyssoftpath.code.tex 2021/05/15 v3.1.9a (3.1.9a)
-\pgfsyssoftpath@smallbuffer@items=\count292
-\pgfsyssoftpath@bigbuffer@items=\count293
-) (pgfsysprotocol.code.tex
+\pgfsyssoftpath@smallbuffer@items=\count298
+\pgfsyssoftpath@bigbuffer@items=\count299
+)
+(pgfsysprotocol.code.tex
 File: pgfsysprotocol.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 )) (xcolor.sty
 Package: xcolor 2021/10/31 v2.13 LaTeX color extensions (UK)
@@ -283,24 +329,24 @@ Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1372.
 Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1373.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1374.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1375.
-)
-(pgfcore.code.tex
+) (pgfcore.code.tex
 Package: pgfcore 2021/05/15 v3.1.9a (3.1.9a)
- (pgfmath.code.tex (pgfmathcalc.code.tex (pgfmathutil.code.tex) (pgfmathparser.
-code.tex
+
+(pgfmath.code.tex (pgfmathcalc.code.tex (pgfmathutil.code.tex)
+(pgfmathparser.code.tex
 \pgfmath@dimen=\dimen260
-\pgfmath@count=\count294
-\pgfmath@box=\box59
-\pgfmath@toks=\toks32
-\pgfmath@stack@operand=\toks33
-\pgfmath@stack@operation=\toks34
+\pgfmath@count=\count300
+\pgfmath@box=\box61
+\pgfmath@toks=\toks35
+\pgfmath@stack@operand=\toks36
+\pgfmath@stack@operation=\toks37
 ) (pgfmathfunctions.code.tex
 (pgfmathfunctions.basic.code.tex) (pgfmathfunctions.trigonometric.code.tex)
 (pgfmathfunctions.random.code.tex) (pgfmathfunctions.comparison.code.tex)
 (pgfmathfunctions.base.code.tex) (pgfmathfunctions.round.code.tex)
 (pgfmathfunctions.misc.code.tex) (pgfmathfunctions.integerarithmetics.code.tex)
 )) (pgfmathfloat.code.tex
-\c@pgfmathroundto@lastzeros=\count295
+\c@pgfmathroundto@lastzeros=\count301
 )) (pgfint.code.tex) (pgfcorepoints.code.tex
 File: pgfcorepoints.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 \pgf@picminx=\dimen261
@@ -329,10 +375,10 @@ File: pgfcorepathusage.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 )
 (pgfcorescopes.code.tex
 File: pgfcorescopes.code.tex 2021/05/15 v3.1.9a (3.1.9a)
-\pgfpic=\box60
-\pgf@hbox=\box61
-\pgf@layerbox@main=\box62
-\pgf@picture@serial@count=\count296
+\pgfpic=\box62
+\pgf@hbox=\box63
+\pgf@layerbox@main=\box64
+\pgf@picture@serial@count=\count302
 ) (pgfcoregraphicstate.code.tex
 File: pgfcoregraphicstate.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 \pgflinewidth=\dimen279
@@ -356,14 +402,14 @@ File: pgfcorearrows.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 ) (pgfcoreshade.code.tex
 File: pgfcoreshade.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 \pgf@max=\dimen284
-\pgf@sys@shading@range@num=\count297
-\pgf@shadingcount=\count298
+\pgf@sys@shading@range@num=\count303
+\pgf@shadingcount=\count304
 ) (pgfcoreimage.code.tex
 File: pgfcoreimage.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 
 (pgfcoreexternal.code.tex
 File: pgfcoreexternal.code.tex 2021/05/15 v3.1.9a (3.1.9a)
-\pgfexternal@startupbox=\box63
+\pgfexternal@startupbox=\box65
 )) (pgfcorelayers.code.tex
 File: pgfcorelayers.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 )
@@ -375,7 +421,7 @@ File: pgfcorepatterns.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 File: pgfcorerdf.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 ))) (pgfmoduleshapes.code.tex
 File: pgfmoduleshapes.code.tex 2021/05/15 v3.1.9a (3.1.9a)
-\pgfnodeparttextbox=\box64
+\pgfnodeparttextbox=\box66
 ) (pgfmoduleplot.code.tex
 File: pgfmoduleplot.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 )
@@ -392,13 +438,13 @@ Package: pgffor 2021/05/15 v3.1.9a (3.1.9a)
 (pgfmath.code.tex)
 \pgffor@iter=\dimen287
 \pgffor@skip=\dimen288
-\pgffor@stack=\toks35
-\pgffor@toks=\toks36
+\pgffor@stack=\toks38
+\pgffor@toks=\toks39
 )) (tikz.code.tex
 Package: tikz 2021/05/15 v3.1.9a (3.1.9a)
  (pgflibraryplothandlers.code.tex
 File: pgflibraryplothandlers.code.tex 2021/05/15 v3.1.9a (3.1.9a)
-\pgf@plot@mark@count=\count299
+\pgf@plot@mark@count=\count305
 \pgfplotmarksize=\dimen289
 )
 \tikz@lastx=\dimen290
@@ -409,22 +455,22 @@ File: pgflibraryplothandlers.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 \tikz@lastmovetoy=\dimen295
 \tikzleveldistance=\dimen296
 \tikzsiblingdistance=\dimen297
-\tikz@figbox=\box65
-\tikz@figbox@bg=\box66
-\tikz@tempbox=\box67
-\tikz@tempbox@bg=\box68
-\tikztreelevel=\count300
-\tikznumberofchildren=\count301
-\tikznumberofcurrentchild=\count302
-\tikz@fig@count=\count303
+\tikz@figbox=\box67
+\tikz@figbox@bg=\box68
+\tikz@tempbox=\box69
+\tikz@tempbox@bg=\box70
+\tikztreelevel=\count306
+\tikznumberofchildren=\count307
+\tikznumberofcurrentchild=\count308
+\tikz@fig@count=\count309
 
 (pgfmodulematrix.code.tex
 File: pgfmodulematrix.code.tex 2021/05/15 v3.1.9a (3.1.9a)
-\pgfmatrixcurrentrow=\count304
-\pgfmatrixcurrentcolumn=\count305
-\pgf@matrix@numberofcolumns=\count306
+\pgfmatrixcurrentrow=\count310
+\pgfmatrixcurrentcolumn=\count311
+\pgf@matrix@numberofcolumns=\count312
 )
-\tikz@expandcount=\count307
+\tikz@expandcount=\count313
  (tikzlibrarytopaths.code.tex
 File: tikzlibrarytopaths.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 )))
@@ -446,8 +492,8 @@ File: tikzlibraryshapes.geometric.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 File: pgflibraryshapes.geometric.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 )) (tikzlibrarybackgrounds.code.tex
 File: tikzlibrarybackgrounds.code.tex 2021/05/15 v3.1.9a (3.1.9a)
-\pgf@layerbox@background=\box69
-\pgf@layerboxsaved@background=\box70
+\pgf@layerbox@background=\box71
+\pgf@layerboxsaved@background=\box72
 )
 (tikzlibrarycalc.code.tex
 File: tikzlibrarycalc.code.tex 2021/05/15 v3.1.9a (3.1.9a)
@@ -455,83 +501,177 @@ File: tikzlibrarycalc.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 File: tikzlibrarymatrix.code.tex 2021/05/15 v3.1.9a (3.1.9a)
 )
 (IMAGE/odin3-tikz-styles
-\odinfigbox=\box71
+\odinfigbox=\box73
 ) (l3backend-xetex.def
 File: l3backend-xetex.def 2022-02-07 L3 backend support: XeTeX
-\c__kernel_sys_dvipdfmx_version_int=\count308
-\l__color_backend_stack_int=\count309
-\g__color_backend_stack_int=\count310
-\g__graphics_track_int=\count311
-\l__pdf_internal_box=\box72
-\g__pdf_backend_object_int=\count312
-\g__pdf_backend_annotation_int=\count313
-\g__pdf_backend_link_int=\count314
+\c__kernel_sys_dvipdfmx_version_int=\count314
+\l__color_backend_stack_int=\count315
+\g__color_backend_stack_int=\count316
+\g__graphics_track_int=\count317
+\l__pdf_internal_box=\box74
+\g__pdf_backend_object_int=\count318
+\g__pdf_backend_annotation_int=\count319
+\g__pdf_backend_link_int=\count320
 ) (loki-local.aux)
 \openout1 = `loki-local.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 37.
-LaTeX Font Info:    ... okay on input line 37.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 37.
-LaTeX Font Info:    ... okay on input line 37.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 37.
-LaTeX Font Info:    ... okay on input line 37.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 37.
-LaTeX Font Info:    ... okay on input line 37.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 37.
-LaTeX Font Info:    Trying to load font information for TS1+cmr on input line 3
-7.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 43.
+LaTeX Font Info:    Trying to load font information for TS1+cmr on input line 4
+3.
  (ts1cmr.fd
 File: ts1cmr.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 37.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 37.
-LaTeX Font Info:    ... okay on input line 37.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 37.
-LaTeX Font Info:    ... okay on input line 37.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 37.
-LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
 
 -- Lines per column: 56 (exact).
-\c@lstlisting=\count315
+\c@lstlisting=\count321
 
-Underfull \hbox (badness 10000) in paragraph at lines 63--65
+Underfull \hbox (badness 10000) in paragraph at lines 69--71
 []\OT1/ptm/b/it/9 Index Terms\OT1/ptm/b/n/9 ---reverse en-gi-neer-ing, netlist,
  prove-nance,
  []
 
+LaTeX Font Info:    Trying to load font information for U+msa on input line 85.
 
-LaTeX Warning: Citation `faruque2025gatebreaker' on page 1 undefined on input l
-ine 71.
+(umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 85.
 
-
-LaTeX Warning: Citation `liu2023verilogeval' on page 1 undefined on input line 
-74.
-
-
-Underfull \hbox (badness 5050) in paragraph at lines 90--96
+ (umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+Underfull \hbox (badness 5050) in paragraph at lines 96--102
 []\OT1/ptm/m/n/10 The con-tri-bu-tions are: (1) a bench-mark method --
  []
-
-
-LaTeX Warning: Citation `gharibian2010finding' on page 1 undefined on input lin
-e 105.
 
 [1
 
 
 ]
 LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 1
-34.
+40.
  (ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
-) (IMAGE/fig_loki)
-ODINFIT: figure scaled from 257.32794pt to 252.0pt
-[2]
-Overfull \hbox (280.51654pt too wide) in paragraph at lines 290--298
+)
+Underfull \hbox (badness 10000) in paragraph at lines 160--160
+[]|\OT1/pcr/m/n/8 read_arch k6_frac_N10_
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 166--166
+[]|\OT1/pcr/m/n/8 read_techlib
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 166--166
+[]|\OT1/pcr/m/n/8 lower; abc --gates cmos6;
+ []
+
+
+Overfull \hbox (2.26274pt too wide) in paragraph at lines 156--170
  [][] 
  []
 
-(loki-local.bbl)
+[2]
+Underfull \hbox (badness 2012) in paragraph at lines 254--269
+\OT1/ptm/m/n/10 true when it matches an L0 con-struct (Sec-tion [][]).
+ []
+
+
+Underfull \hbox (badness 6641) in paragraph at lines 254--269
+\OT1/ptm/m/n/10 The prior is the Laplace-smoothed pre-ci-sion of the
+ []
+
+
+Underfull \hbox (badness 2103) in paragraph at lines 254--269
+\OML/cmm/m/it/10 tp$ \OT1/ptm/m/n/10 are true. For ex-am-ple, the \OT1/pcr/m/n/
+10 f3 \OT1/ptm/m/n/10 com-para-tor de-tec-tor
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 254--269
+\OT1/ptm/m/n/10 made 31,036 pro-pos-als of which 2 were true, so
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 254--269
+\OT1/ptm/m/n/10 (\OT1/pcr/m/n/10 experiments/f3-recovery/calib/f3.json\OT1/ptm/
+m/n/10 ). A
+ []
+
+LaTeX Font Info:    Trying to load font information for TS1+pcr on input line 2
+75.
+(ts1pcr.fd
+File: ts1pcr.fd 2001/06/04 font definitions for TS1/pcr.
+) [3]
+Underfull \hbox (badness 1796) in paragraph at lines 362--372
+\OT1/ptm/m/n/10 can-di-date blocks: k-means on the fea-ture space ($\OML/cmm/m/
+it/10 k \OT1/cmr/m/n/10 =
+ []
+
+[4]
+Underfull \hbox (badness 3895) in paragraph at lines 478--485
+[]\OT1/ptm/m/it/10 L2, step by step. \OT1/ptm/m/n/10 (1) The same split ap-plie
+s. (2)
+ []
+
+
+Underfull \hbox (badness 2608) in paragraph at lines 478--485
+\OT1/ptm/m/n/10 and de-sign, with its mod-u-lar-ity and NMI/ARI against
+ []
+
+(IMAGE/fig_loki)
+ODINFIT: figure scaled from 257.32794pt to 252.0pt
+
+Underfull \hbox (badness 3158) in paragraph at lines 517--522
+\OT1/pcr/m/n/10 netlist.blif \OT1/ptm/m/n/10 and \OT1/pcr/m/n/10 netlist.v\OT1/
+ptm/m/n/10 , \OT1/pcr/m/n/10 graph.json
+ []
+
+[5]
+Underfull \hbox (badness 5147) in paragraph at lines 525--529
+[]\OT1/ptm/m/it/10 L1: nor-malise. \OT1/pcr/m/n/10 loki re \OT1/ptm/m/n/10 read
+s \OT1/pcr/m/n/10 netlist.blif
+ []
+
+
+Underfull \hbox (badness 2119) in paragraph at lines 537--539
+\OT1/ptm/m/n/10 tural fea-tures, four clus-ter-ings and a GNN (Sec-
+ []
+
+[6] (veval-tables)
+Underfull \hbox (badness 1681) in paragraph at lines 684--698
+\OT1/ptm/m/n/10 gate and are recorded as failed rather than forced in:
+ []
+
+[7]
+Underfull \hbox (badness 5652) in paragraph at lines 737--748
+\OT1/ptm/m/n/10 turns inferred-latch paths into don't-care and \OT1/pcr/m/n/10 
+lower
+ []
+
+[8]
+Underfull \vbox (badness 1248) has occurred while \output is active []
+
+LaTeX Font Info:    Font shape `OT1/pcr/m/it' in size <8> not available
+(Font)              Font shape `OT1/pcr/m/sl' tried instead on input line 904.
+ [9]
+(loki-local.bbl [10])
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -543,12 +683,11 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[3] (loki-local.aux)
+[11
+
+] (loki-local.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: There were undefined references.
-
  ) )
-Output written on loki-local.xdv (3 pages, 32696 bytes).
+Output written on loki-local.xdv (11 pages, 98108 bytes).
