@@ -7,6 +7,7 @@ import hashlib
 import io
 import json
 import re
+from typing import Any
 
 SCHEMA = 1
 KINDS = ("pi", "po", "lut", "ff", "const", "hard", "gate")
@@ -432,4 +433,171 @@ def _row_errors(row: dict[str, str], n: int) -> list[str]:
             int(row[col])
         except ValueError:
             errs.append(f"labels.csv line {n}: column {col} is not an integer")
+    return errs
+
+
+_RP_KEYS = ("schema", "header", "netlist", "elements", "buses", "fsms", "hierarchy", "coverage")
+_RP_OPTIONAL = ("l2",)
+_RP_STATUS = ("committed", "candidate", "rejected")
+
+# A spec is a kind name ("str", "int", "num", "odds", "bool"), ("list", spec), ("map", spec),
+# ("opt", spec) for null-or, ("enum", values), ("tuple", n) for n integers, or a dict of
+# key -> spec (a key ending in "?" is optional). Extra keys are allowed.
+_Spec = Any
+_STRS: _Spec = ("list", "str")
+_PORTS: _Spec = {"inputs": ("map", _STRS), "outputs": ("map", _STRS)}
+_RP_EVIDENCE_SPEC: _Spec = {"name": "str", "source": "str", "value": "str", "llr": "odds"}
+_RP_ELEMENT_SPEC: _Spec = {
+    "id": "str", "kind": "str", "stage": "str", "status": ("enum", _RP_STATUS), "fn": "str",
+    "width": "int", "params": ("map", "any"),
+    "proof": {"label": "str", "engine": "str", "verdict": "str", "from": "str"},
+    "p_comp": "num", "prior_log_odds": "odds", "log_odds": "odds",
+    "evidence": ("list", _RP_EVIDENCE_SPEC), "cells": _STRS, "nets": ("map", _STRS),
+    "ports": _PORTS, "recovered": ("opt", {"module": "str", "instance": "str", "form": "str"}),
+    "parents": _STRS, "children": _STRS, "conflicts": _STRS, "role": "str", "reason": "str",
+    "links_outside": {"parents": "int", "children": "int", "conflicts": "int"},
+}
+_RP_FRAC: _Spec = {"cells": "int", "fraction": "num"}
+_RP_SPEC: _Spec = {
+    "schema": "int",
+    "header": {
+        "loki": "str", "odin3": "str", "floor": "str", "seed": "int",
+        "commit_threshold": "num", "candidate_threshold": "num",
+        "input": {"path": "str", "name": "str", "sha256": "str"},
+        "calib": {"path": ("opt", "str"), "name": ("opt", "str"), "sha256": ("opt", "str")},
+    },
+    "netlist": {"cells": _STRS, "inputs": _STRS, "outputs": _STRS},
+    "elements": ("list", _RP_ELEMENT_SPEC),
+    "buses": ("list", {"id": "str", "status": ("enum", ("committed", "candidate")),
+                       "width": "int", "order_source": "str", "bits": ("list", _STRS)}),
+    "fsms": ("list", {
+        "id": "str", "status": ("enum", ("committed", "candidate")), "state_nets": _STRS,
+        "control_nets": _STRS, "reset_net": _STRS, "states": "int", "reset_state": "int",
+        "encoding": "str", "transitions": ("list", ("tuple", 3)), "transitions_total": "int"}),
+    "coverage": {
+        "cells_total": "int", "committed": _RP_FRAC, "candidate": _RP_FRAC,
+        "uncovered": _RP_FRAC, "attrs": {"elements": "int", "cells": "int"},
+        "uncovered_cells": _STRS, "uncovered_nets": _STRS,
+    },
+    "l2?": {
+        "method": "str",
+        "partition": {"key": "str", "n_clusters": "int", "allow_unjoined_ports?": "bool"},
+        "clusters": ("map", {
+            "size": "int", "cells": _STRS, "cells_outside_committed": "int",
+            "overlap": ("list", {"id": "str", "module": "str", "cells_in_common": "int",
+                                 "fraction_of_cluster": "num", "fraction_of_module": "num"})}),
+        "cells_unclustered": "int",
+    },
+}
+
+
+def _rp_scalar(obj: object, kind: str) -> bool:
+    if kind == "str":
+        return isinstance(obj, str)
+    if kind == "int":
+        return isinstance(obj, int) and not isinstance(obj, bool)
+    if kind == "bool":
+        return isinstance(obj, bool)
+    num = isinstance(obj, (int, float)) and not isinstance(obj, bool)
+    if kind == "odds":
+        return num or obj in ("inf", "-inf")
+    return kind == "any" or num
+
+
+def _rp_walk(obj: object, spec: _Spec, where: str, errs: list[str]) -> None:
+    if isinstance(spec, str):
+        if not _rp_scalar(obj, spec):
+            errs.append(f"{where}: expected {spec}, got {obj!r}"[:120])
+    elif isinstance(spec, dict):
+        _rp_walk_dict(obj, spec, where, errs)
+    elif spec[0] == "opt":
+        if obj is not None:
+            _rp_walk(obj, spec[1], where, errs)
+    elif spec[0] == "enum":
+        if obj not in spec[1]:
+            errs.append(f"{where}: bad value {obj!r}")
+    elif spec[0] == "tuple":
+        if not (isinstance(obj, list) and len(obj) == spec[1]
+                and all(_rp_scalar(x, "int") for x in obj)):
+            errs.append(f"{where}: expected {spec[1]} integers")
+    elif spec[0] == "list":
+        if not isinstance(obj, list):
+            errs.append(f"{where}: not a list")
+        else:
+            for i, item in enumerate(obj):
+                _rp_walk(item, spec[1], f"{where}[{i}]", errs)
+    elif not isinstance(obj, dict):
+        errs.append(f"{where}: not an object")
+    else:
+        for key, item in obj.items():
+            _rp_walk(item, spec[1], f"{where}.{key}", errs)
+
+
+def _rp_walk_dict(obj: object, spec: dict[str, _Spec], where: str, errs: list[str]) -> None:
+    if not isinstance(obj, dict):
+        errs.append(f"{where}: not an object")
+        return
+    for key, sub in spec.items():
+        name = key.rstrip("?")
+        if name in obj:
+            _rp_walk(obj[name], sub, f"{where}.{name}", errs)
+        elif not key.endswith("?"):
+            errs.append(f"{where}: missing key {name!r}")
+
+
+def _rp_semantic(obj: dict[str, Any], errs: list[str]) -> None:
+    """Rules a shape cannot say: id syntax, evidence cap, recovered iff committed, id links."""
+    ids: set[str] = set()
+    for i, el in enumerate(obj["elements"]):
+        where = f"elements[{i}]"
+        if not re.fullmatch(r"h\d+", el["id"]):
+            errs.append(f"{where}: bad id {el['id']!r}")
+        ids.add(el["id"])
+        if len(el["evidence"]) > 5:
+            errs.append(f"{where}: evidence must be a list of at most 5")
+        if (el["status"] == "committed") != isinstance(el["recovered"], dict):
+            errs.append(f"{where}: recovered is set exactly for committed elements")
+    for key in ("buses", "fsms"):
+        errs += [f"{key}: id {r['id']!r} is not an element" for r in obj[key]
+                 if r["id"] not in ids]
+    _rp_tree(obj["hierarchy"], "hierarchy", ids, errs)
+    for number in obj.get("l2", {}).get("clusters", {}):
+        if not number.isdigit():
+            errs.append(f"l2.clusters: key {number!r} is not a cluster number")
+
+
+def _rp_tree(nodes: object, where: str, ids: set[str], errs: list[str]) -> None:
+    node_spec = {"id": "str", "module": "str", "instance": "str"}
+    if not isinstance(nodes, list):
+        errs.append(f"{where}: not a list")
+        return
+    for i, node in enumerate(nodes):
+        here = f"{where}[{i}]"
+        _rp_walk(node, node_spec, here, errs)
+        if not isinstance(node, dict):
+            continue
+        if "children" not in node:
+            errs.append(f"{here}: missing key 'children'")
+            continue
+        if isinstance(node.get("id"), str) and node["id"] not in ids:
+            errs.append(f"{here}: id {node['id']!r} is not an element")
+        _rp_tree(node["children"], f"{here}.children", ids, errs)
+
+
+def validate_reverse_provenance(obj: object) -> list[str]:
+    """Errors of a ``reverse-provenance.json`` object (schema 1); empty when valid.
+
+    Checks the type of every field that ``loki rp doc`` and ``loki rp add-l2`` read."""
+    if not isinstance(obj, dict):
+        return ["rp: not an object"]
+    errs = [f"rp: missing key {k!r}" for k in _RP_KEYS if k not in obj]
+    errs += [f"rp: unknown key {k!r}" for k in obj if k not in _RP_KEYS + _RP_OPTIONAL]
+    if obj.get("schema") != 1:
+        errs.append("rp: schema must be 1")
+    if errs:
+        return errs
+    _rp_walk(obj, _RP_SPEC, "rp", errs)
+    if errs:
+        return errs
+    _rp_semantic(obj, errs)
     return errs

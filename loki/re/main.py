@@ -36,6 +36,8 @@ def _parser() -> argparse.ArgumentParser:
     ap.add_argument("--keep-levels", default="")
     ap.add_argument("--no-commit", action="store_true")
     ap.add_argument("--features", choices=("all", "none"), default="all")
+    ap.add_argument("--rp-min-p", type=float, default=0.5,
+                    help="lowest p_comp of a candidate listed in reverse-provenance.json")
     ap.add_argument("--score-dataset", default="", help="L0 dataset: also write score.json")
     ap.add_argument("--score-design", default="", help="design id inside --score-dataset")
     ap.add_argument("--score-p", type=float, default=0.5)
@@ -58,6 +60,7 @@ def _options(args: argparse.Namespace) -> ReOptions:
         commit=not args.no_commit,
         keep_levels=Path(args.keep_levels) if args.keep_levels else None,
         features=args.features,
+        rp_min_p=args.rp_min_p,
     )
 
 

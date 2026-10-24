@@ -45,6 +45,7 @@ class ReOptions:
     commit: bool
     keep_levels: Path | None
     features: str = "all"
+    rp_min_p: float = 0.5
 
 
 @dataclass

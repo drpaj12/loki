@@ -1,0 +1,36 @@
+.model top
+.inputs n0 n1 n2
+.outputs n5
+.names n3
+1
+.cname n11
+.names n4
+.cname n12
+.names n6 n2 n1 n7 n8
+1000 1
+0010 1
+1010 1
+0110 1
+1110 1
+0001 1
+1001 1
+0101 1
+1101 1
+0011 1
+1011 1
+0111 1
+1111 1
+.cname n13
+.names n1 n5 n9
+01 1
+.cname n14
+.names n1 n2 n6 n10
+011 1
+.cname n15
+.latch n8 n6 re n0 3
+.cname n16
+.latch n9 n7 re n0 3
+.cname n17
+.latch n10 n5 re n0 3
+.cname n18
+.end

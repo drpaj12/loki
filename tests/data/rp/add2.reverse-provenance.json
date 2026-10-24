@@ -1,0 +1,183 @@
+{
+ "buses": [],
+ "coverage": {
+  "attrs": {
+   "cells": 0,
+   "elements": 0
+  },
+  "candidate": {
+   "cells": 0,
+   "fraction": 0.0
+  },
+  "cells_total": 4,
+  "committed": {
+   "cells": 3,
+   "fraction": 0.75
+  },
+  "uncovered": {
+   "cells": 1,
+   "fraction": 0.25
+  },
+  "uncovered_cells": [
+   "n13"
+  ],
+  "uncovered_nets": [
+   "q"
+  ]
+ },
+ "elements": [
+  {
+   "cells": [
+    "n10",
+    "n11",
+    "n12"
+   ],
+   "children": [],
+   "conflicts": [],
+   "evidence": [
+    {
+     "llr": -1.326871,
+     "name": "arith/adder",
+     "source": "prior",
+     "value": ""
+    },
+    {
+     "llr": 0.500316,
+     "name": "wl_npn",
+     "source": "feature",
+     "value": "-"
+    },
+    {
+     "llr": 0.267292,
+     "name": "width",
+     "source": "feature",
+     "value": "2"
+    },
+    {
+     "llr": 0.052306,
+     "name": "out_reads",
+     "source": "feature",
+     "value": "yes"
+    },
+    {
+     "llr": 0.0,
+     "name": "cone_check",
+     "source": "cone_check",
+     "value": "equivalent"
+    }
+   ],
+   "fn": "Y = A + B",
+   "id": "h1",
+   "kind": "adder",
+   "links_outside": {
+    "children": 1,
+    "conflicts": 0,
+    "parents": 0
+   },
+   "log_odds": 9.21,
+   "nets": {
+    "A": [
+     "a0",
+     "a1"
+    ],
+    "B": [
+     "b0",
+     "b1"
+    ],
+    "Y": [
+     "y0",
+     "y1"
+    ]
+   },
+   "p_comp": 0.9999,
+   "params": {
+    "cout": 0,
+    "width": 2
+   },
+   "parents": [],
+   "ports": {
+    "inputs": {
+     "A": [
+      "a0",
+      "a1"
+     ],
+     "B": [
+      "b0",
+      "b1"
+     ]
+    },
+    "outputs": {
+     "Y": [
+      "y0",
+      "y1"
+     ]
+    }
+   },
+   "prior_log_odds": -1.326871,
+   "proof": {
+    "engine": "cone_check",
+    "from": "",
+    "label": "equivalent",
+    "verdict": "equivalent"
+   },
+   "reason": "",
+   "recovered": {
+    "form": "raise+submod",
+    "instance": "adder_h1_i",
+    "module": "adder_h1"
+   },
+   "role": "datapath",
+   "stage": "L1",
+   "status": "committed",
+   "width": 2
+  }
+ ],
+ "fsms": [],
+ "header": {
+  "calib": {
+   "name": "f2.json",
+   "path": "f2.json",
+   "sha256": "2041428b67ac53b4e210a8a3233650f12087a4a81300a965f2e5c72e557489a2"
+  },
+  "candidate_threshold": 0.5,
+  "commit_threshold": 0.9,
+  "floor": "f2",
+  "input": {
+   "name": "add2.blif",
+   "path": "add2.blif",
+   "sha256": "f3a46fe71efc3620695faeb42ac272ba727240b8aea0178a35cc811aca6dcb54"
+  },
+  "loki": "test",
+  "odin3": "test",
+  "seed": 1
+ },
+ "hierarchy": [
+  {
+   "children": [],
+   "id": "h1",
+   "instance": "adder_h1_i",
+   "module": "adder_h1"
+  }
+ ],
+ "netlist": {
+  "cells": [
+   "n10",
+   "n11",
+   "n12",
+   "n13"
+  ],
+  "inputs": [
+   "a0",
+   "a1",
+   "b0",
+   "b1",
+   "clk"
+  ],
+  "outputs": [
+   "q",
+   "y0",
+   "y1"
+  ]
+ },
+ "schema": 1
+}

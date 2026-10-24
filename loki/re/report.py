@@ -232,7 +232,10 @@ def write_markdown(report: Mapping[str, object]) -> str:
 
 
 def write_outputs(res: RunResult, opts: ReOptions, out: Path) -> None:
-    """Write ``design.v``, ``overlay.json``, ``report.json``, ``report.md`` and ``timing.json``."""
+    """Write ``design.v``, ``overlay.json``, ``report.json``, ``report.md``, ``timing.json`` and
+    ``reverse-provenance.json``."""
+    from loki.rp.build import build_rp
+
     out.mkdir(parents=True, exist_ok=True)
     mod = odin_module()
     with tempfile.TemporaryDirectory(prefix="loki-re-") as tmp:
@@ -245,3 +248,4 @@ def write_outputs(res: RunResult, opts: ReOptions, out: Path) -> None:
     (out / "report.json").write_text(dump_json(report), encoding="utf-8")
     (out / "report.md").write_text(write_markdown(report), encoding="utf-8")
     (out / "timing.json").write_text(dump_json(res.timing), encoding="utf-8")
+    (out / "reverse-provenance.json").write_text(dump_json(build_rp(res, opts)), encoding="utf-8")
