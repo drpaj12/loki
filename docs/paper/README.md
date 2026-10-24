@@ -15,6 +15,10 @@ Every number traces to the experiment records:
   in that file.
 - `work/loki-rename-exp/` and `work/gatebreaker-exp/` — the first experiments on the controller
   machine (kept off-repo; the protocol notes are in the experiment files).
+- `experiments/veval-l0/EXPERIMENT.md` and its CSVs — the L0 provenance experiment on the 156
+  VerilogEval references (three floors), the complexity quartiles, the feature matrix and the
+  sizes. `veval-tables.tex` is generated from them: run
+  `python3 experiments/veval-l0/paper_tables.py` to rewrite it (byte-identical on rerun).
 - The Gate-Breaker VerilogEval replication table (`tab:veval`) fills in as that run lands.
 
 Tables marked `[TODO: ...]` are numbers not yet measured.
