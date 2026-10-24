@@ -298,6 +298,86 @@ Section~3); the \code{f2} LUTs carry the comparator spans that the join reads ba
 \section{Results}
 \label{sec:results}
 
+\subsection{L0 on VerilogEval: the provenance ceiling}
+\label{sec:veval-l0}
+
+The provenance experiment is run on the 156 VerilogEval spec-to-rtl reference designs
+(Section~\ref{sec:bench}) next to the micro suite. The question is the one L0 exists to
+answer: how much of the reference does the answer key reconstruct, per floor, with no
+recovery step at all. The experiment builds the three floors \code{f1-k6}, \code{f2} and
+\code{f3} for every reference (\code{f1-earch} is not built; one architecture is enough
+because \code{f2} and \code{f3} do not depend on it).
+
+% All numbers in this subsection: experiments/veval-l0/EXPERIMENT.md (Result in one paragraph,
+% Caveats, Numbers), experiments/veval-l0/stats.json (ceiling block) and
+% experiments/veval-l0/l0-ceiling-veval.csv; micro column: experiments/f3-recovery/EXPERIMENT.md
+% (L0 ceiling table), the capped 715/745 is computed from the signals and ref_signals columns of
+% l0-ceiling-veval.csv (min per design), and docs/runbook-l0.md (F3 acceptance: 65 ok, 3 skipped, 0 non-equivalent).
+\emph{Coverage of the build.} Of the 156 references, 150 build on all three floors, and
+\code{loki check} reports zero errors on the assembled dataset. Two are skipped by Odin~III's
+SystemVerilog reader: \code{Prob151\_review2015\_fsm} and \code{Prob156\_review2015\_fancytimer}
+(both Q4), with \code{ODIN3\_ERR\_PARSE ... an explicit 4-bit cast is not supported}. Four
+fail Loki's own equivalence gate and are recorded as failed rather than forced in:
+\code{Prob031\_dff} (the reference initialises \code{q} to \code{1'hx}; the writer-versus-Odin~III
+BLIF check reports \code{differs} on \code{f1} and \code{f2}, while \code{f3} was equivalent)
+and \code{Prob046\_dff8p}, \code{Prob078\_dualedge} and \code{Prob145\_circuit8}, whose negedge
+flip-flops make \code{equiv-check} return an error status for both comparisons. One design,
+\code{Prob144\_conwaylife}, was killed by Wyrd's default 2\,GB step memory limit (peak 4.3\,GB)
+and built after a rerun with an 8\,GB limit. Reading \code{.sv} sources needed two fixes in
+Loki (SystemVerilog is read with \code{--nolatches} only, since \code{--vtr-compat} is refused
+for it, and the slang adapter is registered with the process); both are in
+\code{loki/odin.py} and apply to the experiment run.
+
+\begin{table}[t]
+\caption{The L0 ceiling on \code{f3}, micro suite and VerilogEval references. Both columns are
+counts over all built designs; the last row is the per-design coverage of declared signals.}
+\label{tab:l0-ceiling}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & Micro & VerilogEval \\
+\midrule
+Source designs & 68 & 156 \\
+Built on \code{f3} & 65 & 150 \\
+Refused by the reader & 3 & 2 \\
+Failed equivalence gate & 0 & 4 \\
+Gate nodes, all labelled & 50,047 & 54,306 \\
+Rows with \code{cell\_type} and HDL span & 100\% & 100\% \\
+Module scopes / reference modules & 112 / 113 & 150 / 150 \\
+Leaf signal names / declared signals & 611 / 666 & 841 / 745 \\
+Per-design signal coverage: median & 100\% & 100\% \\
+\hspace{1em}minimum & 55.6\% & 75.0\% \\
+\hspace{1em}geometric mean & -- & 0.986 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{The ceiling.} On \code{f3} the 150 designs have 54,306 gate nodes. Every node is
+labelled, cell-typed and carries an HDL span: the label, \code{cell\_type} and HDL coverage
+have geometric mean 1.000 over designs. The 150 module scopes of the 150 reference modules are
+all present (module coverage 1.000). Signal coverage, the recovered leaf signal names over
+the signals the reference declares, has geometric mean 0.986 (arithmetic mean 1.029): 120
+designs are at exactly 1, 28 are below it, and 2 are above it, where flattened array elements
+add names. The micro suite shows the same shape with a slightly lower ceiling (Table~\ref{tab:l0-ceiling}):
+99.1\% of module scopes and 91.7\% of signal names (an aggregate ratio, where VerilogEval's
+841 over 745 is inflated by those two designs; capped at each design's declared count it is
+715 over 745, 96.0\%). The two sets agree on the message of
+Section~\ref{sec:f3-results}: labels and spans are complete, and what the mapping erased is
+the signal names, not the labels.
+
+\emph{Caveats, reported with the numbers.} (i) \code{--nolatches} turns inferred-latch paths
+into don't-care and \code{lower --async sync} turns asynchronous resets into synchronous clears,
+so a built netlist can differ from the reference's behaviour even though Loki's own checks
+(netlist against its anonymised twin and against Odin~III's writer) pass; the build gate
+guarantees internal consistency, not equality with the reference. (ii) The reference module,
+instance and signal counts come from pyverilog where it parses the reference (130 of the 150)
+and from a regex fallback otherwise (20); the regex counts are approximate and the
+reference signal count is the weakest number in this section. (iii) The same pyverilog limit
+decides the complexity quartiles (Section~\ref{sec:complexity}). (iv) A train/test split by
+design is fixed by the manifest rule (117 train, 33 test on \code{f3}); it is not used here,
+where no model is fitted.
+
 \subsection{L1 recovery: what the flow already reverse engineered, and what it erased}
 \label{sec:l1-results}
 
