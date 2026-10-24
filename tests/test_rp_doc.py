@@ -30,6 +30,7 @@ def element(n: int, status: str, kind: str = "adder", p: float = 0.99) -> dict[s
         "parents": [], "children": [], "conflicts": [], "role": "datapath" if n % 2 else "",
         "reason": "proof differs (cone_check), counterexample A=1,B=2"
         if status == "rejected" else "",
+        "links_outside": {"parents": 0, "children": 0, "conflicts": 0},
     }
 
 
@@ -39,12 +40,14 @@ def big() -> dict[str, Any]:
     els += [element(n, "rejected") for n in range(42, 82)]
     cov = {"cells_total": 400, "committed": {"cells": 4, "fraction": 0.01},
            "candidate": {"cells": 100, "fraction": 0.25},
+           "attrs": {"elements": 0, "cells": 0},
            "uncovered": {"cells": 296, "fraction": 0.74},
            "uncovered_cells": [f"u{i}" for i in range(296)], "uncovered_nets": ["q1", "q2"]}
     return {
         "schema": 1,
-        "header": {"loki": "0", "odin3": "0", "input": {"path": "x.blif", "sha256": "0" * 64},
-                   "floor": "f2", "calib": {"path": None, "sha256": None}, "seed": 1,
+        "header": {"loki": "0", "odin3": "0", "input": {"path": "x.blif", "name": "x.blif",
+                             "sha256": "0" * 64},
+                   "floor": "f2", "calib": {"path": None, "name": None, "sha256": None}, "seed": 1,
                    "commit_threshold": 0.9, "candidate_threshold": 0.5},
         "netlist": {"cells": [], "inputs": [], "outputs": []},
         "elements": els, "buses": [], "fsms": [],
@@ -118,8 +121,9 @@ class DocTest(unittest.TestCase):
         self.assertNotIn("u0..u295", no_lists)
         self.assertIn("h1: 4 cells form", no_lists)
         self.assertLessEqual(len(no_lists), len(no_cand) - 10)
-        self.assertLessEqual(len(cut), 1000)
-        self.assertIn("Cut at 1000 characters", cut)
+        self.assertLessEqual(len(cut), 1500)
+        self.assertIn("Cut at ", cut)
+        self.assertIn("## 9. What Loki does NOT claim", cut)
 
     def test_invalid_file_is_value_error(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

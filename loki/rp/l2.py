@@ -26,13 +26,23 @@ def _frac(part: int, whole: int) -> float:
     return round(part / whole, 6) if whole else 0.0
 
 
-def _split(rp: dict[str, Any], part: Partition) -> tuple[dict[int, set[str]], int, int]:
+def design_matches(rp: dict[str, Any], design: str) -> bool:
+    """The partition design is the stem or a directory name of the re input path."""
+    path = Path(str(rp["header"]["input"]["path"]))
+    stem = path.name.split(".")[0]
+    return design in {stem, *(d for d in path.parent.parts)}
+
+
+def _split(rp: dict[str, Any], part: Partition,
+           allow: bool) -> tuple[dict[int, set[str]], int, int]:
     """Cells per cluster, port nodes joined by name and nodes not joined (ports of other id).
 
     Cells join by name only. The graph of the dataset names its PI/PO nodes with ids of the shared
     counter, which differ from the net names of the netlist, so port nodes may not join. Nodes
     that join to nothing are accepted only when every cell of the netlist is in the partition and
     their number is the number of port nets not joined by name: then they can only be ports.
+    That count is a coincidence check, so it also needs the partition design to match the re input
+    (``design_matches``), unless ``allow`` (``--allow-unjoined-ports``) is passed.
     Anything else is a ``JoinError``."""
     net = rp["netlist"]
     cells, ports = set(net["cells"]), set(net["inputs"]) | set(net["outputs"])
@@ -49,6 +59,11 @@ def _split(rp: dict[str, Any], part: Partition) -> tuple[dict[int, set[str]], in
         raise JoinError(
             f"{len(unknown)} of {len(part.node_ids)} partition nodes are not cells or ports of "
             f"the re input (first: {', '.join(unknown[:5])}); not joining by guess")
+    if unknown and not allow and not design_matches(rp, part.design):
+        raise JoinError(
+            f"{len(unknown)} partition nodes are not joined by name and the partition design "
+            f"{part.design!r} does not match the re input {rp['header']['input']['name']!r}; "
+            "pass --allow-unjoined-ports to accept them by count")
     return out, len(named), len(unknown)
 
 
@@ -72,9 +87,10 @@ def _overlap(members: set[str], mods: list[dict[str, Any]]) -> list[dict[str, ob
     return out
 
 
-def build_l2(rp: dict[str, Any], part: Partition, source: str) -> dict[str, object]:
+def build_l2(rp: dict[str, Any], part: Partition, source: str,
+             allow_unjoined_ports: bool = False) -> dict[str, object]:
     """The ``l2`` block for ``rp`` from the partition ``part`` (read from file ``source``)."""
-    clusters, n_ports, n_unjoined = _split(rp, part)
+    clusters, n_ports, n_unjoined = _split(rp, part, allow_unjoined_ports)
     mods = _modules(rp)
     in_module: set[str] = set()
     for m in mods:
@@ -95,18 +111,23 @@ def build_l2(rp: dict[str, Any], part: Partition, source: str) -> dict[str, obje
                       "params": part.params, "graph_sha256": part.graph_sha256,
                       "design": part.design, "floor": part.floor,
                       "n_clusters": part.n_clusters, "port_nodes": n_ports,
-                      "unjoined_nodes": n_unjoined},
+                      "unjoined_nodes": n_unjoined,
+                      "allow_unjoined_ports": allow_unjoined_ports},
         "clusters": block,
         "cells_unclustered": len(set(net["cells"]) - clustered),
     }
 
 
-def add_l2(re_dir: Path, partition: Path) -> Path:
+def add_l2(re_dir: Path, partition: Path, allow_unjoined_ports: bool = False) -> Path:
     """Add (or replace) the ``l2`` block of ``re_dir/reverse-provenance.json``; returns the path."""
     path = re_dir / FILE
     rp = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(rp, dict):
+        rp.pop("l2", None)
+    if validate_reverse_provenance(rp):
+        raise ValueError(f"{path}: not a schema-1 reverse-provenance file")
     part = load_partition(partition)
-    rp["l2"] = build_l2(rp, part, str(partition))
+    rp["l2"] = build_l2(rp, part, str(partition), allow_unjoined_ports)
     errs = validate_reverse_provenance(rp)
     if errs:
         raise ValueError(f"{path}: merged file invalid: {errs[0]}")

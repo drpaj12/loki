@@ -17,10 +17,17 @@ def _parser() -> argparse.ArgumentParser:
     l2 = sub.add_parser("add-l2", help="merge an L2 partition into reverse-provenance.json")
     l2.add_argument("re_dir")
     l2.add_argument("partition")
+    l2.add_argument("--allow-unjoined-ports", action="store_true",
+                    help="accept partition nodes that join to nothing when their count equals "
+                    "the ports not joined by name, even if the partition design differs from "
+                    "the re input")
     doc = sub.add_parser("doc", help="write the LLM context document")
     doc.add_argument("re_dir")
     doc.add_argument("-o", "--out", default="", help="output file (default: stdout)")
-    doc.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS)
+    doc.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS,
+                     help="size limit; section 9 (what Loki does not claim) is never cut, so a "
+                     "value below the size of sections 1, 2 and 9 (about 1500 characters, more "
+                     "for long netlist names) is raised to that size")
     doc.add_argument("--include-candidates", dest="candidates", action="store_true", default=True)
     doc.add_argument("--no-candidates", dest="candidates", action="store_false",
                      help="leave the candidate section out")
@@ -48,14 +55,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.rp_cmd == "add-l2":
             from loki.rp.l2 import add_l2
 
-            print(f"wrote {add_l2(Path(args.re_dir), Path(args.partition))}")
+            done = add_l2(Path(args.re_dir), Path(args.partition), args.allow_unjoined_ports)
+            print(f"wrote {done}")
             return 0
         return _doc(args)
     except FileNotFoundError as err:
         print(f"loki rp: {err}", file=sys.stderr)
         return 3
-    except ValueError as err:
-        print(f"loki rp: {err}", file=sys.stderr)
+    except (ValueError, KeyError, TypeError) as err:
+        print(f"loki rp: {type(err).__name__}: {err}", file=sys.stderr)
         return 2
 
 

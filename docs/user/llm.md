@@ -12,7 +12,9 @@ loki rp doc out/x -o out/x/rp.md [--max-chars 24000] [--no-candidates]
 
 `loki rp add-l2` joins an L2 partition (from `loki analyze cluster`) to the cells of the `loki re`
 input by name and adds an `l2` block. It stops with exit code 2 when the partition node ids cannot
-be joined to the input names; it never guesses. `loki rp doc` reads `reverse-provenance.json` only
+be joined to the input names; it never guesses. Port nodes whose ids differ from the netlist port
+names are accepted by count only when the partition design matches the `loki re` input (its file
+stem or a directory name); otherwise pass `--allow-unjoined-ports`, which the `l2` block records. `loki rp doc` reads `reverse-provenance.json` only
 and writes Markdown. The same text is available in Python as `loki.rp.doc.render(path)`.
 
 The document has these parts: what the claims are and the trust order (proved, then high-confidence
@@ -21,7 +23,9 @@ with counts, coverage and the module tree; one statement per committed claim; bu
 and roles; candidates, flagged unconfirmed; rejected claims; the L2 groups when present; and what
 Loki does not claim (uncovered cells and nets, and that module names are Loki's labels, not HDL
 names). The output is deterministic. When it exceeds `--max-chars` the rejected claims go first, then
-the candidates, then the per-cell lists; the document names what it dropped.
+the candidates (with candidate buses and state machines), then the per-cell lists; the document
+names what it dropped. Sections 1, 2 and 9 are never cut: a `--max-chars` below their size (about
+1500 characters) is raised to it.
 
 ## Sample
 

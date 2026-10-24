@@ -1,6 +1,10 @@
 {
  "buses": [],
  "coverage": {
+  "attrs": {
+   "cells": 0,
+   "elements": 0
+  },
   "candidate": {
    "cells": 0,
    "fraction": 0.0
@@ -28,9 +32,7 @@
     "n11",
     "n12"
    ],
-   "children": [
-    "h2"
-   ],
+   "children": [],
    "conflicts": [],
    "evidence": [
     {
@@ -67,6 +69,11 @@
    "fn": "Y = A + B",
    "id": "h1",
    "kind": "adder",
+   "links_outside": {
+    "children": 1,
+    "conflicts": 0,
+    "parents": 0
+   },
    "log_odds": 9.21,
    "nets": {
     "A": [
@@ -128,18 +135,20 @@
  "fsms": [],
  "header": {
   "calib": {
-   "path": "calib/f2.json",
+   "name": "f2.json",
+   "path": "f2.json",
    "sha256": "2041428b67ac53b4e210a8a3233650f12087a4a81300a965f2e5c72e557489a2"
   },
   "candidate_threshold": 0.5,
   "commit_threshold": 0.9,
   "floor": "f2",
   "input": {
-   "path": "tests/data/re/add2.blif",
+   "name": "add2.blif",
+   "path": "add2.blif",
    "sha256": "f3a46fe71efc3620695faeb42ac272ba727240b8aea0178a35cc811aca6dcb54"
   },
-  "loki": "0.1.0",
-  "odin3": "1.1.0",
+  "loki": "test",
+  "odin3": "test",
   "seed": 1
  },
  "hierarchy": [

@@ -2,7 +2,7 @@
 
 ## 1. What this is
 
-Loki III analysed the gate-level netlist `tests/data/re/add2.blif` (sha256 f3a46fe71efc, floor f2).
+Loki III analysed the gate-level netlist `add2.blif` (sha256 f3a46fe71efc, floor f2).
 The list below holds Loki's claims about its higher-level structure.
 Each claim has a confidence (a probability) and a proof status.
 Trust order: proved or derived claims, then unproven claims with high confidence, then candidates.
@@ -15,7 +15,7 @@ The recovered Verilog (`design.v`) carries Loki attributes on the pieces it comm
 - `loki_kind`, `loki_fn`: what the piece is and its function; `loki_conf`: confidence.
 - `loki_proof`: `equivalent`, `derived`, `unproven` or `none`; `loki_role`: control, datapath or mixed.
 - `loki_bus = "<hid>[bit]"` on a net: the net is that bit of bus `<hid>`.
-Port nets are listed least-significant bit first. Cell and net names are those of the input netlist.
+Cell and net names are those of the input netlist.
 
 ## 3. Summary
 

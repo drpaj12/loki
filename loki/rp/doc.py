@@ -18,6 +18,7 @@ from loki.schemas import validate_reverse_provenance
 FILE = "reverse-provenance.json"
 MAX_CHARS = 24000
 _SPLIT = re.compile(r"^(.*?)(\d+)$")
+_AN_NUMBER = re.compile(r"8|(11|18)(?!\d)")
 _NOUN = {
     "adder": "adder", "subtractor": "subtractor", "adder_cin": "adder with carry-in",
     "comparator": "comparator", "eq_const": "comparison against a constant",
@@ -66,7 +67,9 @@ def _noun(el: dict[str, Any]) -> str:
 
 
 def _article(text: str) -> str:
-    return ("an " if text[:1] in "aeiou" or text.startswith("8") else "a ") + text
+    """``an`` before a vowel and before a number said with a vowel (8, 80..89, 11, 18)."""
+    vowel = bool(text) and text[0] in "aeiou"
+    return ("an " if vowel or _AN_NUMBER.match(text) else "a ") + text
 
 
 def _proof(el: dict[str, Any]) -> str:
@@ -75,7 +78,7 @@ def _proof(el: dict[str, Any]) -> str:
     if p["label"] == "equivalent":
         return f"Proved equivalent by {engine}."
     if p["label"] == "derived":
-        return f"Proof derived from {p['from']} through a matching cone ({engine})."
+        return f"Proof derived from {p['from']} (proof transfer)."
     if p["label"] == "unproven":
         return f"Not proven ({engine})."
     if p["verdict"] == "differs":
@@ -104,14 +107,20 @@ def _statement(el: dict[str, Any], lists: bool, confirmed: bool) -> str:
         text += f" Recovered as module {rec['module']}, instance {rec['instance']}."
     if el["role"]:
         text += f" Role: {el['role']}."
-    if el["conflicts"]:
-        text += f" Conflicts with {', '.join(el['conflicts'])}."
+    more = el["links_outside"]["conflicts"]
+    if el["conflicts"] or more:
+        text += " Conflicts with " + ", ".join(el["conflicts"])
+        if more:
+            text += (" and " if el["conflicts"] else "") + f"{more} more not listed"
+        text += "."
     return text
 
 
 def _rejected(el: dict[str, Any], lists: bool) -> str:
     what = f"{_article(_noun(el))} (`{el['fn']}`) on {_cells(el['cells'], lists)}"
     reason = el["reason"]
+    if not reason:
+        return f"- {el['id']}: Loki proposed {what}; it was rejected."
     if reason.startswith("proof differs"):
         return (f"- {el['id']}: Loki tested {what} and the proof showed it differs"
                 f"{reason[len('proof differs'):]}.")
@@ -140,7 +149,7 @@ def _intro(rp: dict[str, Any]) -> list[str]:
     return [
         "# Loki analysis of a gate netlist", "",
         "## 1. What this is", "",
-        f"Loki III analysed the gate-level netlist `{h['input']['path']}` "
+        f"Loki III analysed the gate-level netlist `{h['input']['name']}` "
         f"(sha256 {h['input']['sha256'][:12]}, floor {h['floor']}).",
         "The list below holds Loki's claims about its higher-level structure.",
         "Each claim has a confidence (a probability) and a proof status.",
@@ -160,8 +169,7 @@ def _howto() -> list[str]:
         "- `loki_proof`: `equivalent`, `derived`, `unproven` or `none`; `loki_role`: control, "
         "datapath or mixed.",
         "- `loki_bus = \"<hid>[bit]\"` on a net: the net is that bit of bus `<hid>`.",
-        "Port nets are listed least-significant bit first. Cell and net names are those of "
-        "the input netlist.", "",
+        "Cell and net names are those of the input netlist.", "",
     ]
 
 
@@ -181,6 +189,11 @@ def _summary(rp: dict[str, Any], kinds: dict[str, str]) -> list[str]:
             f"{cov['committed']['cells']} ({cov['committed']['fraction']:.1%}); by candidates "
             f"only: {cov['candidate']['cells']} ({cov['candidate']['fraction']:.1%}); by nothing: "
             f"{cov['uncovered']['cells']} ({cov['uncovered']['fraction']:.1%}).", ""]
+    attrs = cov["attrs"]
+    if attrs["elements"]:
+        out += [f"Of the committed cells, {attrs['cells']} (in {attrs['elements']} claims) are "
+                "marked only by attributes on existing cells (form attrs). Those claims are not "
+                "modules, so the hierarchy below does not show them.", ""]
     out += ["Recovered module hierarchy (a module contains its children):", ""]
     out += _tree(rp["hierarchy"], kinds) or ["(no committed modules)"]
     return [*out, ""]
@@ -195,15 +208,19 @@ def _committed(rp: dict[str, Any], lists: bool) -> list[str]:
     return [*out, ""]
 
 
+def _head(row: dict[str, Any]) -> str:
+    return row["id"] if row["status"] == "committed" else f"{row['id']} (unconfirmed)"
+
+
 def _bus_line(b: dict[str, Any]) -> str:
     bits = "; ".join(f"bit {i} = {span(ns, True)}" for i, ns in enumerate(b["bits"]))
     src = b["order_source"] or "not recorded"
-    return f"- {b['id']}: {b['width']} bits, bit order from {src}: {bits}."
+    return f"- {_head(b)}: {b['width']} bits, bit order from {src}: {bits}."
 
 
 def _fsm_line(f: dict[str, Any]) -> str:
     rows = f["transitions"][:12]
-    text = (f"- {f['id']}: state registers {span(f['state_nets'], True)}, {f['states']} states, "
+    text = (f"- {_head(f)}: state registers {span(f['state_nets'], True)}, {f['states']} states, "
             f"reset state {f['reset_state']}, encoding {f['encoding']}")
     if f["control_nets"]:
         text += f", control inputs {span(f['control_nets'], True)}"
@@ -214,11 +231,17 @@ def _fsm_line(f: dict[str, Any]) -> str:
     return text + "."
 
 
-def _structure(rp: dict[str, Any]) -> list[str]:
+def _structure(rp: dict[str, Any], cands: bool) -> list[str]:
+    """Section 5; candidate buses and state machines are marked and drop with the candidates."""
+    def keep(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return [r for r in rows if cands or r["status"] == "committed"]
+
+    none = "none." if cands else "none committed."
+    buses, fsms = keep(rp["buses"]), keep(rp["fsms"])
     out = ["## 5. Buses, state machines and roles", ""]
-    out += ["Buses:", *(_bus_line(b) for b in rp["buses"])] if rp["buses"] else ["Buses: none."]
-    out += ["", *(["State machines:", *(_fsm_line(f) for f in rp["fsms"])]
-                  if rp["fsms"] else ["State machines: none."]), ""]
+    out += ["Buses:", *(_bus_line(b) for b in buses)] if buses else [f"Buses: {none}"]
+    out += ["", *(["State machines:", *(_fsm_line(f) for f in fsms)]
+                  if fsms else [f"State machines: {none}"]), ""]
     roles: dict[str, list[str]] = {}
     for el in rp["elements"]:
         if el["status"] == "committed" and el["role"]:
@@ -286,14 +309,16 @@ def _kinds(rp: dict[str, Any]) -> dict[str, str]:
     return {e["id"]: e["kind"] for e in rp["elements"]}
 
 
-def _body(rp: dict[str, Any], rejected: bool, cands: bool, lists: bool) -> list[str]:
+def _parts(rp: dict[str, Any], rejected: bool, cands: bool,
+           lists: bool) -> tuple[list[str], list[str]]:
+    """The text before section 9 and section 9, which is never cut."""
     out = _intro(rp) + _howto() + _summary(rp, _kinds(rp)) + _committed(rp, lists)
-    out += _structure(rp)
+    out += _structure(rp, cands)
     if cands:
         out += _candidates(rp, lists)
     if rejected:
         out += _rejects(rp, lists)
-    return out + _l2(rp, lists) + _not_claimed(rp, lists)
+    return out + _l2(rp, lists), _not_claimed(rp, lists)
 
 
 def _note(rp: dict[str, Any], steps: tuple[bool, bool, bool], asked: bool, limit: int) -> str:
@@ -304,6 +329,9 @@ def _note(rp: dict[str, Any], steps: tuple[bool, bool, bool], asked: bool, limit
         dropped.append(f"rejected claims ({sum(e['status'] == 'rejected' for e in els)})")
     if asked and not cands:
         dropped.append(f"candidates ({sum(e['status'] == 'candidate' for e in els)})")
+        rows = sum(r["status"] == "candidate" for r in rp["buses"] + rp["fsms"])
+        if rows:
+            dropped.append(f"candidate buses and state machines ({rows})")
     if not lists:
         dropped.append("per-cell lists")
     if not dropped:
@@ -319,26 +347,51 @@ def _variants(candidates: bool) -> list[tuple[bool, bool, bool]]:
     return steps
 
 
-def _cut(text: str, limit: int) -> str:
-    notice = f"> Cut at {limit} characters; later text is missing.\n"
-    cut = text[: max(limit - len(notice), 0)]
-    return cut[: cut.rfind("\n") + 1] + notice
+def _join(lines: list[str]) -> str:
+    return "\n".join(lines).rstrip("\n") + "\n"
+
+
+def _text(rp: dict[str, Any], steps: tuple[bool, bool, bool], candidates: bool,
+          limit: int) -> tuple[list[str], list[str]]:
+    head, tail = _parts(rp, *steps)
+    note = _note(rp, steps, candidates, limit)
+    return ([*head[:2], note, *head[2:]] if note else head), tail
+
+
+def min_chars(rp: dict[str, Any], candidates: bool = True) -> int:
+    """The size below which ``max_chars`` is raised: sections 1, 2 and 9 and the notices."""
+    last = _variants(candidates)[-1]
+    head, tail = _text(rp, last, candidates, 10**6)
+    fixed = _join(head[: head.index("## 3. Summary")]) + _join(tail)
+    return len(fixed) + len(_cut_notice(10**6, 10**6)) + 4
+
+
+def _cut_notice(limit: int, asked: int) -> str:
+    raised = f" (--max-chars {asked} raised to fit sections 1, 2 and 9)" if asked != limit else ""
+    return f"> Cut at {limit} characters{raised}; later text of sections 3 to 8 is missing.\n"
+
+
+def _cut(head: list[str], tail: list[str], limit: int, asked: int) -> str:
+    notice = _cut_notice(limit, asked)
+    tail_text = _join(tail)
+    cut = _join(head)[: max(limit - len(tail_text) - len(notice) - 1, 0)]
+    return cut[: cut.rfind("\n") + 1] + notice + "\n" + tail_text
 
 
 def render(path: Path, max_chars: int = MAX_CHARS, candidates: bool = True) -> str:
-    """The document for ``path`` (a ``loki re`` output directory or the JSON file)."""
+    """The document for ``path`` (a ``loki re`` output directory or the JSON file).
+
+    Over ``max_chars`` the lowest-priority material goes first. Section 9 is never cut:
+    ``max_chars`` below ``min_chars`` is raised to it."""
     file = path / FILE if path.is_dir() else path
     rp = json.loads(file.read_text(encoding="utf-8"))
     errs = validate_reverse_provenance(rp)
     if errs:
         raise ValueError(f"{file}: not a valid reverse-provenance file: {errs[0]}")
-    text = ""
-    for rejected, cands, lists in _variants(candidates):
-        body = _body(rp, rejected, cands, lists)
-        note = _note(rp, (rejected, cands, lists), candidates, max_chars)
-        if note:
-            body = [*body[:2], note, *body[2:]]
-        text = "\n".join(body).rstrip("\n") + "\n"
-        if len(text) <= max_chars:
+    limit = max(max_chars, min_chars(rp, candidates))
+    for steps in _variants(candidates):
+        head, tail = _text(rp, steps, candidates, limit)
+        text = _join([*head, *tail])
+        if len(text) <= limit:
             return text
-    return _cut(text, max_chars)
+    return _cut(head, tail, limit, max_chars)

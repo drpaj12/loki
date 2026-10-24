@@ -18,7 +18,8 @@ def load(out: Path) -> dict[str, object]:
 
 class HelpersTest(unittest.TestCase):
     def test_natural_order(self) -> None:
-        self.assertEqual(sorted_names(["g10", "g2", "a", "g2"]), ["a", "g2", "g10"])
+        self.assertEqual(sorted_names(["g10", "g2", "a"]), ["a", "g2", "g10"])
+        self.assertEqual(sorted_names(["g2", "g2"]), ["g2", "g2"])
         self.assertLess(natural_key("n9"), natural_key("n10"))
 
     def test_num_format(self) -> None:

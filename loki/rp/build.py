@@ -31,6 +31,7 @@ _LIVE = ("open", "confirmed", "alternative")
 _DEAD = ("refuted", "rejected")
 _PROOF_SOURCES = ("cone_check", "truth_table", "sim", "transfer")
 _DOC_PREFIX = "detector:"
+LINK_KEYS = ("parents", "children", "conflicts")
 _NATURAL = re.compile(r"(\d+)")
 
 
@@ -41,7 +42,8 @@ def natural_key(name: str) -> tuple[tuple[int, int, str], ...]:
 
 
 def sorted_names(names: Iterable[str]) -> list[str]:
-    return sorted(set(names), key=lambda n: (natural_key(n), n))
+    """Names in natural order; same-name entries are kept, so the length is the id count."""
+    return sorted(names, key=lambda n: (natural_key(n), n))
 
 
 def num(x: float) -> float | str:
@@ -56,7 +58,7 @@ def _id_num(hid: str) -> int:
 
 
 def _names(res: RunResult, nets: Iterable[int]) -> list[str]:
-    return [res.graph.names.get(n, str(n)) for n in nets]
+    return [res.graph.names.get(n, f"net{n}") for n in nets]
 
 
 def _role_map(overlay: Overlay) -> dict[str, list[Hypothesis]]:
@@ -116,7 +118,7 @@ def _rejection(h: Hypothesis) -> str:
         if e.source == "competition":
             lost = e.name in ("selected", "committed")
             return f"lost to {e.value}" if lost else "low probability"
-    return "rejected"
+    return ""
 
 
 def status_of(h: Hypothesis, min_p: float) -> str:
@@ -187,18 +189,18 @@ def _element(res: RunResult, h: Hypothesis, status: str,
     return el
 
 
-def _bus(res: RunResult, h: Hypothesis) -> dict[str, object]:
+def _bus(res: RunResult, h: Hypothesis, status: str) -> dict[str, object]:
     slices = sorted((k for k in h.nets if k.startswith("slice")), key=lambda k: int(k[5:]))
-    return {"id": h.id, "width": len(slices),
+    return {"id": h.id, "status": status, "width": len(slices),
             "order_source": str(h.params.get("order_source", "")),
             "bits": [_names(res, h.nets[k]) for k in slices]}
 
 
-def _fsm(res: RunResult, h: Hypothesis) -> dict[str, object]:
+def _fsm(res: RunResult, h: Hypothesis, status: str) -> dict[str, object]:
     rows = json.loads(str(h.params.get("rows", "[]")))
     feats = h.features
     return {
-        "id": h.id, "state_nets": _names(res, h.nets.get("Q", ())),
+        "id": h.id, "status": status, "state_nets": _names(res, h.nets.get("Q", ())),
         "control_nets": _names(res, h.nets.get("C", ())),
         "reset_net": _names(res, h.nets.get("RST", ())),
         "states": h.params.get("states", 0), "reset_state": h.params.get("start", 0),
@@ -227,17 +229,34 @@ def _tree(committed: dict[str, Hypothesis]) -> list[dict[str, object]]:
 
 
 def _keep_known(elements: list[dict[str, object]]) -> None:
-    """Drop links to hypotheses that are not elements, so every id in the file resolves."""
+    """Drop links to hypotheses that are not elements, so every id in the file resolves.
+
+    The element keeps the number of links it lost in ``links_outside``."""
     known = {str(el["id"]) for el in elements}
     for el in elements:
-        for key in ("parents", "children", "conflicts"):
+        outside: dict[str, int] = {}
+        for key in LINK_KEYS:
             ids = el[key]
             assert isinstance(ids, list)
-            el[key] = [i for i in ids if i in known]
+            kept = [i for i in ids if i in known]
+            el[key] = kept
+            outside[key] = len(ids) - len(kept)
+        el["links_outside"] = outside
 
 
 def _frac(part: int, whole: int) -> float:
     return round(part / whole, 6) if whole else 0.0
+
+
+def _attrs_cover(elements: Sequence[Hypothesis], status: dict[str, str]) -> tuple[int, set[int]]:
+    """Committed claims in ``attrs`` form (attributes on cells, no module) and their cells."""
+    cells: set[int] = set()
+    count = 0
+    for h in elements:
+        if status[h.id] == "committed" and (h.commit or {}).get("form") == "attrs":
+            count += 1
+            cells |= h.cells
+    return count, cells
 
 
 def _coverage(res: RunResult, elements: Sequence[Hypothesis],
@@ -251,12 +270,14 @@ def _coverage(res: RunResult, elements: Sequence[Hypothesis],
         elif status[h.id] == "candidate":
             cand |= h.cells
     cand -= committed
+    attrs = _attrs_cover(elements, status)
     rest = set(g.cells) - committed - cand
     total = len(g.cells)
     nets = sorted({n for c in rest for n in g.cells[c].outs})
     return {
         "cells_total": total,
         "committed": {"cells": len(committed), "fraction": _frac(len(committed), total)},
+        "attrs": {"elements": attrs[0], "cells": len(attrs[1])},
         "candidate": {"cells": len(cand), "fraction": _frac(len(cand), total)},
         "uncovered": {"cells": len(rest), "fraction": _frac(len(rest), total)},
         "uncovered_cells": sorted_names(g.label(c) for c in rest),
@@ -272,13 +293,13 @@ def _inventory(res: RunResult) -> dict[str, list[str]]:
 
 
 def _header(opts: ReOptions, min_p: float) -> dict[str, object]:
-    calib: dict[str, object] = {"path": None, "sha256": None}
+    calib: dict[str, object] = {"path": None, "name": None, "sha256": None}
     if opts.calib is not None:
-        calib = {"path": str(opts.calib), "sha256": _sha256(opts.calib)}
+        calib = {"path": str(opts.calib), "name": opts.calib.name, "sha256": _sha256(opts.calib)}
     v = _versions()
     return {
         "loki": loki.__version__, "odin3": v["odin3"],
-        "input": {"path": str(opts.netlist),
+        "input": {"path": str(opts.netlist), "name": opts.netlist.name,
                   "sha256": _sha256(opts.netlist) if opts.netlist.is_file() else ""},
         "floor": opts.floor, "calib": calib, "seed": opts.seed,
         "commit_threshold": bayes.COMMIT_P, "candidate_threshold": min_p,
@@ -302,8 +323,8 @@ def build_rp(res: RunResult, opts: ReOptions) -> dict[str, object]:
         "schema": SCHEMA, "header": _header(opts, min_p),
         "netlist": _inventory(res),
         "elements": elements,
-        "buses": [_bus(res, h) for h in live if h.kind == "bus"],
-        "fsms": [_fsm(res, h) for h in live if h.kind == "fsm"],
+        "buses": [_bus(res, h, status[h.id]) for h in live if h.kind == "bus"],
+        "fsms": [_fsm(res, h, status[h.id]) for h in live if h.kind == "fsm"],
         "hierarchy": _tree(committed),
         "coverage": _coverage(res, shown, status),
     }
