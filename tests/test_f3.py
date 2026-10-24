@@ -198,3 +198,21 @@ class F3Test(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _slang_lib() -> bool:
+    root = odin3_root()
+    return root is not None and (root / "build" / "release" / "libodin3_slang.so").is_file()
+
+
+@unittest.skipUnless(have_f3() and _slang_lib(), "needs Odin III with the slang adapter")
+class F3SystemVerilogTest(unittest.TestCase):
+    def test_sv_reads_through_slang(self) -> None:
+        root = odin3_root()
+        assert root is not None
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "sv_and.sv"
+            src.write_text("module RefModule(input a, input b, output y);\n"
+                           "  assign y = a & b;\nendmodule\n", encoding="utf-8")
+            res = build_floor("sv_and", [src], "RefModule", "f3", None, Path(tmp) / "out", root)
+        self.assertEqual((res.status, res.reason), ("ok", ""))
