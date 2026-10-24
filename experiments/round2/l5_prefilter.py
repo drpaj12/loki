@@ -5,8 +5,11 @@ A rule is a pair ``(kind, feature, bin)`` over the structural features the hypot
 carries (carry and sum cut shape ``npn_carry``/``npn_sum`` for the adder family, ``npn_class`` for
 muxes, ``width``, ``out_reads``, ``k``): the rule prunes every call of that kind with that
 feature bin. For each rule the file reports the calls pruned and the ``equivalent`` verdicts that
-pruning would have lost. Exhaustive over the rules; no held-out data, so this is an upper bound
-on what a prefilter could save, not a measured saving.
+pruning would have lost. The search covers single-bin rules only (one feature, one bin); there
+is no held-out data, so the result is an upper bound on what such a rule could save, not a
+measured saving. The calls are counted across all eight run sets, so the same call can repeat
+in several sets. Whatever the rule, no zero-loss rule can prune more calls than the
+non-`equivalent` ones.
 """
 
 from __future__ import annotations

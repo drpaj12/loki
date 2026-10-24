@@ -130,7 +130,8 @@ designs, f2 and f3; f3 took 70 minutes, one process). `loki re` on all 150 netli
 `--rp-min-p 0.1` for RQ-L5. Output Verilog scored against `<Prob>_ref.sv` with the round-1 AST
 (pyverilog depth 3) and CFG (odin3 probe, common width, sigma 0.5; skipped above 12,000 nodes)
 for six variants (`l2_astcfg.py`): f3 and f2 L0 netlists, and `design.v` of the four runs. 21
-references fail pyverilog (SystemVerilog), so 129 designs have an AST value; 6 f3 outputs
+references fail pyverilog (SystemVerilog; by quartile Q1 to Q4: 0, 1, 5, 15, `l2_refparse.csv`),
+so 129 designs have an AST value (n = 38, 38, 32, 21 per quartile); 6 f3 outputs
 exceed the CFG limit (`l2_coverage.csv`). The LLM figures are `gatebreaker-exp2/data/results.json`
 (per design means over correct samples; 36 Q1 and 37 Q2 designs, 73 in all).
 
@@ -153,7 +154,10 @@ in Q1 and Q2). The "all designs" column is used only for the four-quartile trend
 32, 21 designs with an AST value for Q1 to Q4, 129 in all; its CFG is 0.750, 0.741, 0.750, 0.768.
 The 21 references that fail to parse are excluded from every AST value.) Mean paired differences Loki minus LLM are in `l2_paired.csv` (Wilcoxon p < 1e-4 in every
 f3-calibrated cell, < 0.003 for every variant). Operator type-F1 on the common Q1+Q2 designs: LLM 0.465 (precision 0.637,
-recall 0.366), Loki f2 calibrated 0.081, f2 uncalibrated 0.074 (`l2_ops.csv`).
+recall 0.366; the LLM side is the Q1+Q2 functionally correct samples elaborated from RTL), Loki f2
+calibrated 0.081, f2 uncalibrated 0.074 (`l2_ops.csv`). The Loki side is the f2 run; calibrated
+f3 recovers 0.0 operators, so this comparison is across floors and not like for like with the
+AST/CFG columns, which are f3.
 
 `final_equiv`: `equivalent` in 150 of 150 runs of each of the four sets (`l2_equiv.csv`). What
 that proves: the flattened `design.v` is formally equal to the input netlist (`equiv-check`);
@@ -219,9 +223,11 @@ H5a status: **not supported** on the registered primary set; the negative correl
 calibrated rp 0.1 run is post hoc (exploratory) and not part of the verdict. The committed
 fraction correlates with F1 trivially (committed cells are the matches). H5b
 (`l5_prefilter.py`): 210 `cone_check` calls across the round-2 runs (166 end `equivalent`) and
-2,876 `truth_table` calls; exhaustive over (kind, feature, bin) rules of the features the
+2,876 `truth_table` calls (the 210 repeat across the 8 run sets, so they are not 210 distinct
+hypotheses); over single-bin (kind, feature, bin) rules, not conjunctions, of the features the
 hypotheses carry, the largest rule with zero lost `equivalent` verdicts is `adder/out_reads=no`
-with 14 calls (6.7%); status **not supported**. Caveat: the rule search is on the same data and
+with 14 calls (6.7%); status **not supported**. Independently of the rule search, a zero-loss rule
+cannot prune more than the 44 non-equivalent calls (21%). Caveat: the rule search is on the same data and
 is an upper bound, not a measured saving; the soundness truth set holds scored word types only,
 so a committed `bus` or `datapath_unit` outside them counts against must precision.
 

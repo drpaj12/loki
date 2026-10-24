@@ -19,6 +19,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 DEFAULT_OUT = HERE.parents[1] / "docs" / "paper" / "round2-tables.tex"
 MACROS: dict[str, str] = {}
+# Decision thresholds of EXPERIMENT.md (set by the implementer during the round).
+THR_L1_SUPPORT, THR_L1_REJECT = 0.8, 0.5
+THR_L4_GAP, THR_L4_SHARE = 0.02, 0.8
+THR_L5B_FRAC = 0.3
 
 
 def rows(name: str) -> list[dict[str, str]]:
@@ -83,6 +87,9 @@ def l1_block() -> tuple[str, str]:
         macro(f"rtLone{split.capitalize()}Ratio", f3(ratios[split], 2))
         macro(f"rtLone{split.capitalize()}Lut", f3(lut))
         macro(f"rtLone{split.capitalize()}Native", f3(nat))
+    macro("rtLoneThr", f"{THR_L1_SUPPORT:g}")
+    macro("rtLoneDesigns", s["lut-calib-all"]["runs"])
+    macro("rtLoneTestDesigns", s["lut-calib-test"]["runs"])
     macro("rtLoneGateMatched", fi(s["gate-calib-test"]["matched"]))
     macro("rtLoneGateGt", fi(s["gate-calib-test"]["gt"]))
     macro("rtLoneLutMatchedTest", fi(s["lut-calib-test"]["matched"]))
@@ -102,9 +109,9 @@ def l1_block() -> tuple[str, str]:
     vals = [ratios["test"], ratios["all"]]
     if any(v is None for v in vals):
         st = "I"
-    elif all(v >= 0.8 for v in vals if v is not None):
+    elif all(v >= THR_L1_SUPPORT for v in vals if v is not None):
         st = "S"
-    elif all(v < 0.5 for v in vals if v is not None):
+    elif all(v < THR_L1_REJECT for v in vals if v is not None):
         st = "N"
     else:
         st = "I"
@@ -206,9 +213,10 @@ def l4_block() -> tuple[str, str]:
     macro("rtLfourGap", f3(gap, 4))
     macro("rtLfourAucFull", f3(num(a["full"]["auc"])))
     macro("rtLfourAucNone", f3(num(a["none"]["auc"])))
+    macro("rtLfourThr", f"{THR_L4_GAP:g}")
     macro("rtLfourHeld", a["full"]["runs"])
     macro("rtLfourGt", fi(a["full"]["gt"]))
-    st = "I" if gap < 0.02 else ("S" if top2 >= 0.8 * gap else "N")
+    st = "I" if gap < THR_L4_GAP else ("S" if top2 >= THR_L4_SHARE * gap else "N")
     macro("rtLfourStatus", verdict(st))
     names = [("none", "defaults (no calibration)"), ("full", "full calibration"),
              ("drop-npn", "without npn"), ("drop-wl", "without wl"),
@@ -266,11 +274,14 @@ def l5_block() -> tuple[str, str, str]:
     frac = int(best["calls_pruned"]) / total
     macro("rtLfiveCalls", fi(total))
     macro("rtLfiveEquivCalls", fi(eq_total))
+    macro("rtLfiveThr", f"{THR_L5B_FRAC:g}")
+    macro("rtLfiveNonEquiv", fi(total - eq_total))
+    macro("rtLfiveNonEquivFrac", f3((total - eq_total) / total, 2))
     macro("rtLfiveBestFrac", f3(frac, 3))
     macro("rtLfiveBestRule", tex(f"{best['kind']}/{best['feature']}={best['bin']}"))
     tt = [r for r in pre if r["prover"] == "truth_table"]
     macro("rtLfiveTruthCalls", fi(tt[0]["calls_total"]) if tt else "0")
-    stb = "S" if frac >= 0.3 else "N"
+    stb = "S" if frac >= THR_L5B_FRAC else "N"
     macro("rtLfivebStatus", verdict(stb))
     names = [("l2-f2-none", "VerilogEval f2, uncalibrated"),
              ("l2-f2-calib", "VerilogEval f2, calibrated"),
@@ -345,11 +356,18 @@ def l2_block() -> tuple[str, str]:
         macro(f"rtLtwoTest{name}Ast", f3(num(r["ast_mean"])))
         macro(f"rtLtwoTest{name}Cfg", f3(num(r["cfg_mean"])))
     macro("rtLtwoTestN", ts[("f3-calib", "Q1+Q2", "common")]["n"])
+    for r in rows("l2_refparse.csv"):
+        tag = {"Q1": "Qa", "Q2": "Qb", "Q3": "Qc", "Q4": "Qd"}[r["quartile"]]
+        macro(f"rtLtwoRefFail{tag}", r["ref_ast_parse_fail"])
+    sp = {r["split"]: r["designs"] for r in rows("l2_split.csv")}
+    macro("rtLtwoTrainDesigns", sp["train"])
+    macro("rtLtwoTestDesigns", sp["test"])
     cov = {r["variant"]: r for r in rows("l2_coverage.csv")}
     macro("rtLtwoRefAstFail", cov["f3-calib"]["ref_ast_parse_fail"])
     macro("rtLtwoCfgSkip", cov["f3-calib"]["cfg_skipped_size"])
     macro("rtLtwoAstN", cov["f3-calib"]["ast_values"])
     macro("rtLtwoEquivRuns", e["runs"])
+    macro("rtLtwoDesigns", e["runs"])
     macro("rtLtwoCommitDesigns", e["designs_with_commits"])
     macro("rtLtwoEquivOk", e["final_equiv_equivalent"])
     macro("rtLtwoSelfOk", e["input_netlist_selfcheck_ok"])

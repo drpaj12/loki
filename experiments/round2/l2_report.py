@@ -198,6 +198,20 @@ def coverage_rows() -> list[list[Any]]:
     return out
 
 
+def refparse_rows() -> list[list[Any]]:
+    """Per quartile: designs, and references pyverilog cannot parse (no AST value)."""
+    quart = quartile_map()
+    rows = json.loads((r2lib.DATA / "l2" / "astcfg.json").read_text(encoding="utf-8"))
+    return [[q, sum(1 for r in rows if quart.get(r["design"]) == q),
+             sum(1 for r in rows if quart.get(r["design"]) == q and "ref_ast_error" in r)]
+            for q in QS]
+
+
+def split_rows() -> list[list[Any]]:
+    """Designs with a built f3 floor per split of the VerilogEval dataset (calibration: train)."""
+    return [[k, len(r2lib.test_designs(r2lib.VEVAL, "f3", k))] for k in ("train", "test")]
+
+
 def main() -> int:
     r2lib.write_csv(r2lib.OUT / "l2_headtohead.csv",
                     ["variant", "quartile", "n", "ast_mean", "cfg_mean", "set"], headtohead())
@@ -209,6 +223,9 @@ def main() -> int:
     r2lib.write_csv(r2lib.OUT / "l2_equiv.csv",
                     ["set", "runs", "final_equiv_equivalent", "status_counts", "committed",
                      "designs_with_commits", "input_netlist_selfcheck_ok"], equiv_rows())
+    r2lib.write_csv(r2lib.OUT / "l2_split.csv", ["split", "designs"], split_rows())
+    r2lib.write_csv(r2lib.OUT / "l2_refparse.csv", ["quartile", "designs", "ref_ast_parse_fail"],
+                    refparse_rows())
     r2lib.write_csv(r2lib.OUT / "l2_coverage.csv",
                     ["variant", "designs", "ast_values", "ref_ast_parse_fail", "cfg_values",
                      "cfg_skipped_size"], coverage_rows())
