@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from loki.bench import VERILOG_EVAL, ARCHS, _copy_design, _q
+from loki.bench import ARCHS, VERILOG_EVAL, _copy_design, _q
 
 FLOORS = '[{ use = "loki-dataset", floors = ["f1", "f2", "f3"] }]'
 

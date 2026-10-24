@@ -33,6 +33,13 @@ def _q(path: Path | str) -> str:
     return f'"{text}"'
 
 
+def read_flags(files: Sequence[Path]) -> str:
+    """``read_verilog`` flags: ``--vtr-compat`` is refused for SystemVerilog (.sv) sources."""
+    if any(f.suffix == ".sv" for f in files):
+        return "--nolatches"
+    return "--nolatches --vtr-compat"
+
+
 def read_script(
     floor: str, files: Sequence[Path], arch_xml: Path | None, cmos6_lib: Path | None
 ) -> str:
@@ -41,12 +48,12 @@ def read_script(
     if floor == "f3":
         if cmos6_lib is None:
             raise ValueError("floor f3 needs the cmos6.o3lib path")
-        return f"read_techlib {_q(cmos6_lib)}; read_verilog --nolatches --vtr-compat {paths}"
+        return f"read_techlib {_q(cmos6_lib)}; read_verilog {read_flags(files)} {paths}"
     if floor not in ("f1-k6", "f1-earch", "f2"):
         raise ValueError(f"unknown floor {floor!r}")
     if arch_xml is None:
         raise ValueError(f"floor {floor} needs an architecture xml")
-    return f"read_arch {_q(arch_xml)}; read_verilog --nolatches --vtr-compat {paths}"
+    return f"read_arch {_q(arch_xml)}; read_verilog {read_flags(files)} {paths}"
 
 
 def floor_script(

@@ -134,6 +134,11 @@ class OdinFactsTest(unittest.TestCase):
         ports = {str(c.type_name): [p.name for p in c.ports()] for c in hard}
         self.assertEqual(ports["multiply"], ["a", "b", "out"])
 
+    def test_sv_reader_drops_vtr_compat(self) -> None:
+        front_s, _ = floor_script("f2", [Path("/x/a.sv")], Path("/x/arch.xml"), None)
+        self.assertIn('read_verilog --nolatches "/x/a.sv"', front_s)
+        self.assertNotIn("--vtr-compat", front_s)
+
     def test_floor_scripts(self) -> None:
         front_s, map_s = floor_script("f2", [Path("/x/a.v")], Path("/x/arch.xml"), None)
         self.assertIn('read_verilog --nolatches --vtr-compat "/x/a.v"', front_s)

@@ -22,7 +22,7 @@ from loki.extract import Unsupported, extract_netlist
 from loki.graph import build_graph
 from loki.labels import Label, build_labels, labels_to_csv
 from loki.model import Netlist, Snapshot
-from loki.odin import OdinSkip, floor_script, odin_module, open_front
+from loki.odin import OdinSkip, floor_script, odin_module, open_front, read_flags
 from loki.rules import UnlistedWordType, assign_roles
 from loki.schemas import FLOORS, SCHEMA, dump_json
 from loki.snapshot import take_snapshot
@@ -60,13 +60,13 @@ def display_script(
     if floor == "f3":
         if cmos6_lib is None:
             raise ValueError("floor f3 needs the cmos6.o3lib path")
-        reader = f"read_techlib {cmos6_lib.name}; read_verilog --nolatches --vtr-compat {names}"
+        reader = f"read_techlib {cmos6_lib.name}; read_verilog {read_flags(files)} {names}"
     else:
         arch = arch_xml.stem if floor.startswith("f1-") and arch_xml else "<arch>"
-        reader = f"read_arch {arch}; read_verilog --nolatches --vtr-compat {names}"
+        reader = f"read_arch {arch}; read_verilog {read_flags(files)} {names}"
     front, mapping = floor_script(floor, [], Path("x"), cmos6_lib)
-    tail = front.split("--vtr-compat", 1)[1].split(";", 1)[1].strip()
-    return [reader, *(c.strip() for c in tail.split(";")), *(c.strip() for c in mapping.split(";"))]
+    tail = [c.strip() for c in front.split(";")[2:]]
+    return [reader, *tail, *(c.strip() for c in mapping.split(";"))]
 
 
 def _counts(graph: dict[str, Any]) -> dict[str, int]:
