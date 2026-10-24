@@ -4,8 +4,8 @@
 The file holds the round-2 tables (tab:r2-*), the research-log table (tab:r2-log) and a macro
 for every deciding number the prose cites (``\\rt...``), so no number in the paper's round-2
 text is typed by hand. The status of each hypothesis is computed here with the decision rules of
-EXPERIMENT.md (thresholds set by the implementer during the round). No timestamps and no environment: a rerun reproduces the
-file byte for byte.
+EXPERIMENT.md (thresholds set by the implementer during the round). No timestamps and no
+environment: a rerun reproduces the file byte for byte.
 
 Usage: paper_tables.py [--out PATH]
 """
@@ -61,6 +61,12 @@ def table(caption: str, label: str, head: list[str], body: list[list[str]], spec
 
 def verdict(status: str) -> str:
     return {"S": "supported", "N": "not supported", "I": "inconclusive"}[status]
+
+
+def verdict_l7(status: str) -> str:
+    """RQ-L7 holds by the letter of its rule only; the evidence is weak (see EXPERIMENT.md)."""
+    return "supported by the letter of the rule (weak evidence)" if status == "S" \
+        else verdict(status)
 
 
 # ------------------------------------------------------------------------------------------ L1
@@ -152,7 +158,7 @@ def l7_block() -> tuple[str, str]:
     tie = abs(d_ast) < 0.02 and abs(d_cfg) < 0.02 and abs(d_f1) >= 0.01
     flatok = f_ast >= 0.04 and f_cfg >= 0.04 and abs(f_f1) == 0
     st = "S" if tie and flatok else ("N" if not tie and not flatok else "I")
-    macro("rtLsevenStatus", verdict(st))
+    macro("rtLsevenStatus", verdict_l7(st))
     order = [("rename-f1-k6-calib", "f1-k6, calibrated"), ("rename-f1-k6-nocalib", "f1-k6, none"),
              ("rename-f2-calib", "f2, calibrated"), ("rename-f2-nocalib", "f2, none"),
              ("f3exp-f3-calib", "f3 gates, calibrated"), ("f3exp-f3-nocalib", "f3 gates, none"),
@@ -187,6 +193,13 @@ def l4_block() -> tuple[str, str]:
     drops = {k: full - float(a[f"drop-{k}"]["micro_f1"]) for k in ("npn", "wl", "struct")}
     top2 = sum(sorted(drops.values(), reverse=True)[:2])
     gap = full - prior
+    ng = {r["ablation"]: r for r in rows("l4_nogshare.csv")}
+    ng_full, ng_prior = float(ng["full"]["micro_f1"]), float(ng["priors-only"]["micro_f1"])
+    macro("rtLfourNgFull", f3(ng_full, 4))
+    macro("rtLfourNgPriors", f3(ng_prior, 4))
+    macro("rtLfourNgNone", f3(num(ng["none"]["micro_f1"]), 4))
+    macro("rtLfourNgGap", f3(ng_full - ng_prior, 4))
+    macro("rtLfourNgGt", fi(ng["full"]["gt"]))
     macro("rtLfourFull", f3(full, 4))
     macro("rtLfourPriors", f3(prior, 4))
     macro("rtLfourNone", f3(num(a["none"]["micro_f1"]), 4))
@@ -205,14 +218,17 @@ def l4_block() -> tuple[str, str]:
         r = a[k]
         body.append([lab, fi(r["counted"]), fi(r["matched"]), f3(num(r["micro_f1"]), 4),
                      f"{f3(num(r['micro_f1_lo']), 4)}--{f3(num(r['micro_f1_hi']), 4)}",
-                     f3(num(r["macro_f1"])), f3(num(r["ece"])), f3(num(r["auc"]))])
+                     f3(num(ng[k]["micro_f1"]), 4), f3(num(r["macro_f1"])), f3(num(r["ece"])),
+                     f3(num(r["auc"]))])
     tab = table(
         r"Evidence-family ablation (RQ-L4) on the 49 held-out f2 designs (16 micro, 33 "
         r"VerilogEval). Each row refits the calibration on the 169 train designs with the family "
         r"removed (its weight set to 0). The \code{l2} family has no feature in \code{loki re} and "
-        r"is not applicable. The interval is a 95\% design bootstrap of micro-F1.",
+        r"is not applicable. The interval is a 95\% design bootstrap of micro-F1 "
+        r"(hard kinds excluded); the next column is micro-F1 with the design "
+        r"\code{ve\_Prob153\_gshare} (about 1{,}300 of the 1{,}558 instances) left out.",
         "tab:r2-l4", ["Calibration", "Counted", "Matched", "micro-F1", "95\\% interval",
-                      "macro-F1", "ECE", "AUC"], body, "lrrrrrrr")
+                      "w/o gshare", "macro-F1", "ECE", "AUC"], body, "lrrrrrrrr")
     return tab, st
 
 
@@ -323,11 +339,18 @@ def l2_block() -> tuple[str, str]:
         macro(f"rtLtwoTrendAst{tag}", f3(v("f3-calib", q, "all", "ast")))
         macro(f"rtLtwoTrendCfg{tag}", f3(v("f3-calib", q, "all", "cfg")))
         macro(f"rtLtwoTrendN{tag}", h[("f3-calib", q, "all")]["n"])
+    ts = {(r["variant"], r["quartiles"], r["set"]): r for r in rows("l2_testsplit.csv")}
+    for key, name in (("llm", "Llm"), ("f3-calib", "Loki")):
+        r = ts[(key, "Q1+Q2", "common")]
+        macro(f"rtLtwoTest{name}Ast", f3(num(r["ast_mean"])))
+        macro(f"rtLtwoTest{name}Cfg", f3(num(r["cfg_mean"])))
+    macro("rtLtwoTestN", ts[("f3-calib", "Q1+Q2", "common")]["n"])
     cov = {r["variant"]: r for r in rows("l2_coverage.csv")}
     macro("rtLtwoRefAstFail", cov["f3-calib"]["ref_ast_parse_fail"])
     macro("rtLtwoCfgSkip", cov["f3-calib"]["cfg_skipped_size"])
     macro("rtLtwoAstN", cov["f3-calib"]["ast_values"])
     macro("rtLtwoEquivRuns", e["runs"])
+    macro("rtLtwoCommitDesigns", e["designs_with_commits"])
     macro("rtLtwoEquivOk", e["final_equiv_equivalent"])
     macro("rtLtwoSelfOk", e["input_netlist_selfcheck_ok"])
     macro("rtLtwoOpsLlm", f3(num(ops[("llm", "Q1+Q2")]["type_f1"])))
@@ -407,7 +430,7 @@ def log_table(status: dict[str, str]) -> str:
         r"Research log: the round-2 questions, their status and the deciding number "
         r"(all generated from \code{experiments/round2}).",
         "tab:r2-log", ["RQ", "Hypothesis", "Round", "Status", "Deciding number"], body,
-        "lp{3.2cm}llp{3.6cm}")
+        "lp{3.0cm}lp{2.6cm}p{3.2cm}")
 
 
 def main() -> int:
@@ -418,7 +441,8 @@ def main() -> int:
     status: dict[str, str] = {}
     t, status["L1"] = l1_block()
     parts.append(t)
-    t, status["L7"] = l7_block()
+    t, st7 = l7_block()
+    status["L7"] = st7
     parts.append(t)
     t, status["L2"] = l2_block()
     parts.append(t)
@@ -427,6 +451,7 @@ def main() -> int:
     t, status["L5a"], status["L5b"] = l5_block()
     parts.append(t)
     status = {k: verdict(v) if v in ("S", "N", "I") else v for k, v in status.items()}
+    status["L7"] = verdict_l7(st7)
     head = ["% Generated by experiments/round2/paper_tables.py; do not edit."]
     macros = [rf"\newcommand{{\{k}}}{{{v}}}" for k, v in sorted(MACROS.items())]
     args.out.write_text("\n".join(head + macros) + "\n\n" + "\n\n".join(parts) + "\n",

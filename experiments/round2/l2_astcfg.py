@@ -15,23 +15,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 
 import metrics_ext
 import r2lib
 
-REFS = Path("/home/jamiespa/odin3-ws/external/verilog-eval/dataset_spec-to-rtl")
+REFS = Path(os.environ.get("VERILOG_EVAL", str(r2lib.WS / "external" / "verilog-eval"))) \
+    / "dataset_spec-to-rtl"
 OUT = r2lib.DATA / "l2" / "astcfg.json"
 RUNS = r2lib.DATA / "l2" / "runs"
 VARIANTS = ("f3-l0", "f2-l0", "f3-calib", "f3-none", "f2-calib", "f2-none")
-
-
-def quartiles() -> dict[str, str]:
-    import csv
-    path = Path(__file__).resolve().parents[1] / "veval-l0" / "benchmark.csv"
-    with path.open(encoding="utf-8", newline="") as fh:
-        return {r["design"]: r["quartile"] for r in csv.DictReader(fh)}
 
 
 def candidate(variant: str, design: str) -> Path:

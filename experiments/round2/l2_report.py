@@ -20,7 +20,7 @@ from typing import Any
 import r2lib
 from scipy.stats import wilcoxon
 
-GB = Path("/home/jamiespa/odin3-ws/work/gatebreaker-exp2/data")
+GB = r2lib.GB / "data"
 VARIANTS = ("f3-l0", "f2-l0", "f3-calib", "f3-none", "f2-calib", "f2-none")
 QS = ("Q1", "Q2", "Q3", "Q4")
 
@@ -57,6 +57,32 @@ def headtohead() -> list[list[Any]]:
                 a = [float(loki[d][f"{v}:ast"]) for d in sel if f"{v}:ast" in loki[d]]
                 c = [float(loki[d][f"{v}:cfg"]) for d in sel if f"{v}:cfg" in loki[d]]
                 rows.append([v, q, len(a), mean(a), mean(c), label])
+    return rows
+
+
+def test_split() -> list[list[Any]]:
+    """AST and CFG means on the VerilogEval test-split designs only (the calibration fits the
+    117 train designs, the head-to-head scores all 150), from the same scored outputs."""
+    quart = quartile_map()
+    manifest = json.loads((r2lib.VEVAL / "manifest.json").read_text(encoding="utf-8"))
+    test = {str(e["design"]) for e in manifest["designs"] if e["split"] == "test"}
+    loki = {r["design"]: r for r in json.loads(
+        (r2lib.DATA / "l2" / "astcfg.json").read_text(encoding="utf-8")) if r["design"] in test}
+    llm = llm_rows()
+    rows: list[list[Any]] = []
+    for group in ("Q1", "Q2", "Q1+Q2", "Q1+Q2+Q3+Q4"):
+        designs = sorted(d for d in loki if quart.get(d) in group.split("+"))
+        common = [d for d in designs if d in llm and llm[d]["ast"] is not None]
+        if group != "Q1+Q2+Q3+Q4":
+            rows.append(["llm", group, len(common),
+                         mean([float(llm[d]["ast"]) for d in common]),
+                         mean([float(llm[d]["cfg"]) for d in common
+                               if llm[d]["cfg"] is not None]), "common"])
+        for v in VARIANTS:
+            for label, sel in (("all", designs), ("common", common)):
+                a = [float(loki[d][f"{v}:ast"]) for d in sel if f"{v}:ast" in loki[d]]
+                c = [float(loki[d][f"{v}:cfg"]) for d in sel if f"{v}:cfg" in loki[d]]
+                rows.append([v, group, len(a), mean(a), mean(c), label])
     return rows
 
 
@@ -175,6 +201,8 @@ def coverage_rows() -> list[list[Any]]:
 def main() -> int:
     r2lib.write_csv(r2lib.OUT / "l2_headtohead.csv",
                     ["variant", "quartile", "n", "ast_mean", "cfg_mean", "set"], headtohead())
+    r2lib.write_csv(r2lib.OUT / "l2_testsplit.csv",
+                    ["variant", "quartiles", "n", "ast_mean", "cfg_mean", "set"], test_split())
     r2lib.write_csv(r2lib.OUT / "l2_paired.csv",
                     ["variant", "metric", "quartile", "n", "mean_diff_loki_minus_llm",
                      "wilcoxon_p"], paired())

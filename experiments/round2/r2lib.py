@@ -12,6 +12,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import time
@@ -23,9 +24,15 @@ from typing import Any
 
 from loki.score.metrics import reliability
 
-DATA = Path("/home/jamiespa/odin3-ws/work/loki-exp2-data")
-MICRO = Path("/home/jamiespa/odin3-ws/work/loki-rename-exp/dataset-rebuild")
-VEVAL = Path("/home/jamiespa/odin3-ws/work/loki-veval-exp/dataset")
+# Workspace layout: <ws>/work/<this worktree>/experiments/round2; override with ODIN3_WS.
+WS = Path(os.environ.get("ODIN3_WS", str(Path(__file__).resolve().parents[4])))
+WORK = WS / "work"
+ODIN3_ROOT = Path(os.environ.get("ODIN3_ROOT", str(WS / "odin3")))
+DATA = Path(os.environ.get("LOKI_R2_DATA", str(WORK / "loki-exp2-data")))
+TMP = Path(os.environ.get("LOKI_R2_TMP", str(Path(os.environ.get("TMPDIR", "/tmp")) / "le2")))
+GB = WORK / "gatebreaker-exp2"
+MICRO = WORK / "loki-rename-exp" / "dataset-rebuild"
+VEVAL = WORK / "loki-veval-exp" / "dataset"
 OUT = Path(__file__).resolve().parent
 
 

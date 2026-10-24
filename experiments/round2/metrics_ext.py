@@ -15,12 +15,14 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-SCRIPTS = Path("/home/jamiespa/odin3-ws/work/gatebreaker-exp2/scripts")
+import r2lib
+
+SCRIPTS = r2lib.GB / "scripts"
 # The odin3-cfg worktree is gone; odin3_cfg.py is extracted unchanged from odin3 commit 77e975e5
 # (`git show 77e975e5:tools/cfg-probe/odin3_cfg.py`, branch feat/cfg-probe), the commit the
 # round-1 replication used.
-PROBE = Path("/home/jamiespa/odin3-ws/work/loki-exp2-data/cfg-probe")
-CLEAN_DIR = Path("/tmp/claude-1000/le2-ast-clean")
+PROBE = r2lib.DATA / "cfg-probe"
+CLEAN_DIR = r2lib.TMP / "ast-clean"
 CFG_NODE_LIMIT = 12000
 
 
@@ -35,9 +37,9 @@ def metrics() -> ModuleType:
 
 
 def cfg_probe() -> ModuleType:
-    os.environ.setdefault("ODIN3_LIB", "/home/jamiespa/odin3-ws/odin3/build/release/libodin3.so")
-    os.environ.setdefault(
-        "ODIN3_SLANG_LIB", "/home/jamiespa/odin3-ws/odin3/build/release/libodin3_slang.so")
+    build = r2lib.ODIN3_ROOT / "build" / "release"
+    os.environ.setdefault("ODIN3_LIB", str(build / "libodin3.so"))
+    os.environ.setdefault("ODIN3_SLANG_LIB", str(build / "libodin3_slang.so"))
     return _load("odin3_cfg", PROBE)
 
 

@@ -127,9 +127,10 @@ def run_all(workers: int) -> int:
 
 
 def design_f1(score: dict[str, Any]) -> tuple[int, int, int]:
-    c = score["constructs"]
-    return (sum(int(v["counted"]) for v in c.values()), sum(int(v["matched"]) for v in c.values()),
-            sum(int(v["gt"]) for v in c.values()))
+    """(counted, matched, gt) of one design, hard kinds left out as in ``r2lib.summarise``."""
+    c = [v for k, v in score["constructs"].items() if k not in r2lib.HARD]
+    return (sum(int(v["counted"]) for v in c), sum(int(v["matched"]) for v in c),
+            sum(int(v["gt"]) for v in c))
 
 
 def boot_micro_f1(rows: list[tuple[int, int, int]], n: int = 2000) -> tuple[float, float]:
@@ -155,12 +156,21 @@ def auc(points: list[tuple[float, bool]]) -> float | None:
     return wins / (len(pos) * len(neg))
 
 
+LEAVE_OUT = "ve_Prob153_gshare__f2"
+
+
 def table() -> int:
     rows: list[list[Any]] = []
     kinds: list[list[Any]] = []
+    nogs: list[list[Any]] = []
     for name in ("none", *ABLATIONS):
         scores = r2lib.load_scores((BASE / "runs" / name).glob(f"*__{FLOOR}/re/score.json"))
         s = r2lib.summarise(scores)
+        rest = {k: v for k, v in scores.items() if k != LEAVE_OUT}
+        sr = r2lib.summarise(rest)
+        lo_r, hi_r = boot_micro_f1([design_f1(v) for v in rest.values()])
+        nogs.append([name, sr["runs"], sr["counted"], sr["matched"], sr["gt"], sr["micro_f1"],
+                     round(lo_r, 6), round(hi_r, 6)])
         per = [design_f1(v) for v in scores.values()]
         lo, hi = boot_micro_f1(per)
         pts = [(float(p), bool(y)) for v in scores.values() for pl in v["points"].values()
@@ -177,6 +187,9 @@ def table() -> int:
                     ["ablation", "runs", "counted", "matched", "gt", "macro_f1", "macro_f1_all",
                      "micro_f1", "micro_f1_lo", "micro_f1_hi", "ece", "points", "true_points",
                      "auc"], rows)
+    r2lib.write_csv(r2lib.OUT / "l4_nogshare.csv",
+                    ["ablation", "runs", "counted", "matched", "gt", "micro_f1", "micro_f1_lo",
+                     "micro_f1_hi"], nogs)
     wrows = []
     for name in ABLATIONS:
         w = json.loads((BASE / "calib" / f"{name}.json").read_text(encoding="utf-8"))["weights"]

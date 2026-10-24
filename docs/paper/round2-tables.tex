@@ -20,6 +20,11 @@
 \newcommand{\rtLfourGap}{$-$0.0013}
 \newcommand{\rtLfourGt}{1{,}558}
 \newcommand{\rtLfourHeld}{49}
+\newcommand{\rtLfourNgFull}{0.0225}
+\newcommand{\rtLfourNgGap}{$-$0.0070}
+\newcommand{\rtLfourNgGt}{257}
+\newcommand{\rtLfourNgNone}{0.0553}
+\newcommand{\rtLfourNgPriors}{0.0295}
 \newcommand{\rtLfourNone}{0.0159}
 \newcommand{\rtLfourPriors}{0.0051}
 \newcommand{\rtLfourStatus}{inconclusive}
@@ -49,12 +54,13 @@
 \newcommand{\rtLsevenFAst}{0.0422}
 \newcommand{\rtLsevenFCfg}{0.0547}
 \newcommand{\rtLsevenFF}{0.0000}
-\newcommand{\rtLsevenStatus}{supported}
+\newcommand{\rtLsevenStatus}{supported by the letter of the rule (weak evidence)}
 \newcommand{\rtLsevenTypeFonek}{0.349}
 \newcommand{\rtLsevenTypeFthree}{0.000}
 \newcommand{\rtLsevenTypeFtwo}{0.070}
 \newcommand{\rtLtwoAstN}{129}
 \newcommand{\rtLtwoCfgSkip}{6}
+\newcommand{\rtLtwoCommitDesigns}{7}
 \newcommand{\rtLtwoCommonNQa}{36}
 \newcommand{\rtLtwoCommonNQb}{36}
 \newcommand{\rtLtwoCondA}{yes}
@@ -76,6 +82,11 @@
 \newcommand{\rtLtwoRefAstFail}{21}
 \newcommand{\rtLtwoSelfOk}{128}
 \newcommand{\rtLtwoStatus}{inconclusive}
+\newcommand{\rtLtwoTestLlmAst}{0.893}
+\newcommand{\rtLtwoTestLlmCfg}{0.927}
+\newcommand{\rtLtwoTestLokiAst}{0.705}
+\newcommand{\rtLtwoTestLokiCfg}{0.802}
+\newcommand{\rtLtwoTestN}{16}
 \newcommand{\rtLtwoTrendAstQa}{0.754}
 \newcommand{\rtLtwoTrendAstQb}{0.455}
 \newcommand{\rtLtwoTrendAstQc}{0.605}
@@ -198,21 +209,21 @@ Q4 & 21 & 0.505 & 0.768 & 0.505 & 0.768 & 0.507 & 0.870 & -- \\
 \end{table}
 
 \begin{table}[t]
-\caption{Evidence-family ablation (RQ-L4) on the 49 held-out f2 designs (16 micro, 33 VerilogEval). Each row refits the calibration on the 169 train designs with the family removed (its weight set to 0). The \code{l2} family has no feature in \code{loki re} and is not applicable. The interval is a 95\% design bootstrap of micro-F1.}
+\caption{Evidence-family ablation (RQ-L4) on the 49 held-out f2 designs (16 micro, 33 VerilogEval). Each row refits the calibration on the 169 train designs with the family removed (its weight set to 0). The \code{l2} family has no feature in \code{loki re} and is not applicable. The interval is a 95\% design bootstrap of micro-F1 (hard kinds excluded); the next column is micro-F1 with the design \code{ve\_Prob153\_gshare} (about 1{,}300 of the 1{,}558 instances) left out.}
 \label{tab:r2-l4}
 \centering
 \footnotesize
 \resizebox{\columnwidth}{!}{%
-\begin{tabular}{@{}lrrrrrrr@{}}
+\begin{tabular}{@{}lrrrrrrrr@{}}
 \toprule
-Calibration & Counted & Matched & micro-F1 & 95\% interval & macro-F1 & ECE & AUC \\
+Calibration & Counted & Matched & micro-F1 & 95\% interval & w/o gshare & macro-F1 & ECE & AUC \\
 \midrule
-defaults (no calibration) & 1{,}708 & 26 & 0.0159 & 0.0036--0.0873 & 0.113 & 0.841 & 0.437 \\
-full calibration & 10 & 3 & 0.0038 & 0.0000--0.0381 & 0.145 & 0.061 & 0.885 \\
-without npn & 10 & 3 & 0.0038 & 0.0000--0.0381 & 0.145 & 0.061 & 0.885 \\
-without wl & 13 & 3 & 0.0038 & 0.0000--0.0376 & 0.145 & 0.024 & 0.930 \\
-without struct & 11 & 4 & 0.0051 & 0.0000--0.0496 & 0.163 & 0.056 & 0.884 \\
-priors only & 14 & 4 & 0.0051 & 0.0000--0.0494 & 0.163 & 0.026 & 0.918 \\
+defaults (no calibration) & 1{,}708 & 26 & 0.0159 & 0.0036--0.0912 & 0.0553 & 0.113 & 0.841 & 0.437 \\
+full calibration & 10 & 3 & 0.0038 & 0.0000--0.0444 & 0.0225 & 0.145 & 0.061 & 0.885 \\
+without npn & 10 & 3 & 0.0038 & 0.0000--0.0444 & 0.0225 & 0.145 & 0.061 & 0.885 \\
+without wl & 13 & 3 & 0.0038 & 0.0000--0.0435 & 0.0222 & 0.145 & 0.024 & 0.930 \\
+without struct & 11 & 4 & 0.0051 & 0.0000--0.0578 & 0.0299 & 0.163 & 0.056 & 0.884 \\
+priors only & 14 & 4 & 0.0051 & 0.0000--0.0574 & 0.0295 & 0.163 & 0.026 & 0.918 \\
 \bottomrule
 \end{tabular}}
 \end{table}

@@ -16,7 +16,7 @@ from typing import Any
 import opf1
 import r2lib
 
-W = Path("/home/jamiespa/odin3-ws/work")
+W = r2lib.WORK
 RENAME = W / "loki-rename-exp"
 F3EXP = W / "loki-f3-exp"
 MICRO = r2lib.MICRO

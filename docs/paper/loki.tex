@@ -1061,7 +1061,11 @@ f3 test designs (Table~\ref{tab:r2-ties}) the calibrated and uncalibrated L1 run
 metrics, AST by \rtLsevenDAst{} and CFG by \rtLsevenDCfg{}, while operator type-F1 moves by
 \rtLsevenDF{}; the flatten control raises AST by \rtLsevenFAst{} and CFG by \rtLsevenFCfg{}
 and leaves the recovery record, hence the operator F1, unchanged (\rtLsevenFF{}). By the
-rule H7 is \rtLsevenStatus. Two cautions: the separating level is small (the uncalibrated
+rule H7 is \rtLsevenStatus. The tie the rule was written for, the calibrated flow against
+the L0-stop netlist (both add nothing to the text), does not separate: their operator type-F1
+is $0$ against $0$. The verdict rests on the calibrated flow against the uncalibrated one,
+where the calibrated side recovers no operator at all, and on the flatten clause, which holds
+by construction. Two cautions: the separating level is small (the uncalibrated
 detectors count mostly wrong constructs), and the flatten comparison holds the record fixed
 by construction, because the operator F1 reads the recovery record and AST and CFG read the
 text. The operator F1 does not replace them; it is the measure that sees recovery, where
@@ -1078,7 +1082,12 @@ candidate, and \rtLtwoCfgSkip{} f3 outputs exceed the CFG probe's size limit
 f3 output has AST similarity \rtLtwoLokiAstQa{} in Q1 and \rtLtwoLokiAstQb{} in Q2 (common
 designs, $n=\rtLtwoCommonNQa{}$ and $\rtLtwoCommonNQb{}$) against the model's \rtLtwoLlmAstQa{} and \rtLtwoLlmAstQb{}, and CFG similarity
 \rtLtwoLokiCfgQa{} and \rtLtwoLokiCfgQb{} against \rtLtwoLlmCfgQa{} and \rtLtwoLlmCfgQb{};
-every gap is significant by a paired Wilcoxon test (\code{l2\_paired.csv}). Across the four
+every gap is significant by a paired Wilcoxon test (\code{l2\_paired.csv}). The calibration
+was fitted on the train designs and these means cover all 150, so we also give the held-out
+test split alone (\code{l2\_testsplit.csv}): on its \rtLtwoTestN{} Q1 and Q2 designs both
+tools score on, AST is \rtLtwoTestLokiAst{} for Loki against \rtLtwoTestLlmAst{} for the model
+and CFG \rtLtwoTestLokiCfg{} against \rtLtwoTestLlmCfg{}, the same direction. (The calibrated
+f3 flow commits in only \rtLtwoCommitDesigns{} designs, so the fit can change few outputs.) Across the four
 quartiles (Table~\ref{tab:r2-l2q}) the f3 AST over all scored designs ($n=\rtLtwoTrendNQa{}$, \rtLtwoTrendNQb{}, \rtLtwoTrendNQc{}, \rtLtwoTrendNQd{}; a different, larger
 design set than the common rows above) reads \rtLtwoTrendAstQa{}, \rtLtwoTrendAstQb{},
 \rtLtwoTrendAstQc{} and \rtLtwoTrendAstQd{}, so it falls from Q1 to Q4 without being monotone,
@@ -1114,7 +1123,11 @@ micro and VerilogEval f2 floors with the family removed and its weight set to 0,
 Held-out micro-F1 is \rtLfourNone{} with the defaults, \rtLfourFull{} with the full
 calibration and \rtLfourPriors{} with priors only. The full-minus-priors gap is \rtLfourGap{},
 below the 0.02 floor of the rule, so H4 is \rtLfourStatus: no family carries measurable
-performance, because the features add nothing detectable over the per-detector priors. The
+performance, because the features add nothing detectable over the per-detector priors. One held-out design (\code{ve\_Prob153\_gshare}) holds most of the ground truth
+and nothing in it is matched; with it left out (\rtLfourNgGt{} instances) the micro-F1 is
+\rtLfourNgNone{} with the defaults, \rtLfourNgFull{} full and \rtLfourNgPriors{} priors only (gap
+\rtLfourNgGap), so the verdict does not change; on that subset the defaults score higher than
+either calibrated row. The
 fit says so itself: the full calibration sets the \code{npn} weight to 0 and shrinks
 \code{struct} and \code{wl} (\code{l4\_weights.csv}). What
 calibration does is prune, from the many counted constructs of the defaults to a handful, and
@@ -1217,7 +1230,8 @@ prover keep recall? (v) AST and CFG tie where the recovery differs: is there a m
 sees it?
 
 \emph{Round 2 (2026-10-24): the hypotheses and what happened.} Table~\ref{tab:r2-log}.
-The operator F1 is the one hypothesis the rule supports (H7). The LUT6 re-map reaches the f2
+The operator F1 is the one hypothesis the rule supports, by its letter and on weak evidence
+(H7). The LUT6 re-map reaches the f2
 level in-sample (\rtLoneAllRatio) but not on the held-out split (\rtLoneTestRatio, too few matches for
 the rule), so H1 is \rtLoneStatus. The
 head-to-head puts Loki below the model on every cell with its output equal to its input in all

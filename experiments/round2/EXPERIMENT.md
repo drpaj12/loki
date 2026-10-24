@@ -112,12 +112,15 @@ run sets (rename-l2 f1-k6, f1-earch, f2; f3-recovery; the round-2 sets). LLM sid
 | L1 uncalibrated, flattened | 0.4576 | 0.6941 | 1,161 | 0.0173 |
 
 Floors (type-F1, calibrated, pooled): f1-k6 0.349 and f2 0.070 over the 68 micro designs; f3 gates 0.000 over the 15 test designs.
-Status: **supported**. Calibrated against uncalibrated L1 tie on AST (+0.0111) and CFG (-0.0075)
+Status: **supported by the letter of the rule; weak evidence**. Calibrated against uncalibrated L1 tie on AST (+0.0111) and CFG (-0.0075)
 while type-F1 moves by 0.0173; the flatten control raises AST by 0.0422 and CFG by 0.0547 with
 the operator F1 unchanged. Caveats: the separating level is small (the uncalibrated detectors
 count mostly wrong constructs), and the unchanged operator F1 under flattening is by construction
 (the metric reads the recovery record, AST and CFG read the text); the calibrated f3 run ties
-with L0-stop on all three metrics (0.0), so there it does not separate.
+with L0-stop on all three metrics (0.0), so there it does not separate. The tie the brief named
+(calibrated against L0-stop, f3 delta 0) does NOT separate: operator type-F1 is 0 against 0.
+The verdict rests on calibrated against uncalibrated (the calibrated side recovers 0 operators)
+and on the flatten clause, which holds by construction.
 
 ### RQ-L2: head-to-head on the 150 VerilogEval designs
 
@@ -130,6 +133,12 @@ for six variants (`l2_astcfg.py`): f3 and f2 L0 netlists, and `design.v` of the 
 references fail pyverilog (SystemVerilog), so 129 designs have an AST value; 6 f3 outputs
 exceed the CFG limit (`l2_coverage.csv`). The LLM figures are `gatebreaker-exp2/data/results.json`
 (per design means over correct samples; 36 Q1 and 37 Q2 designs, 73 in all).
+
+Calibration leakage: the VerilogEval calibration fits the 117 train designs while AST and CFG are
+scored on all 150. `l2_testsplit.csv` (from the same scored outputs, no reruns) restricts to the
+33 test-split designs: on the 16 Q1+Q2 designs both tools are scored on, AST is 0.705 (Loki f3
+calibrated) against 0.893 (LLM) and CFG 0.802 against 0.927, so the direction of the comparison
+is the same on held-out designs.
 
 | quartile | LLM AST | Loki f3 AST (common) | LLM CFG | Loki f3 CFG (common) | Loki f3 AST (all designs) |
 |---|---|---|---|---|---|
@@ -171,12 +180,19 @@ that family is not applicable.
 
 | calibration | counted | matched | micro-F1 | 95% interval | macro-F1 | ECE | AUC |
 |---|---|---|---|---|---|---|---|
-| defaults | 1,708 | 26 | 0.0159 | 0.0036-0.0873 | 0.113 | 0.841 | 0.437 |
-| full | 10 | 3 | 0.0038 | 0.0000-0.0381 | 0.145 | 0.061 | 0.886 |
-| without npn | 10 | 3 | 0.0038 | 0.0000-0.0381 | 0.145 | 0.061 | 0.886 |
-| without wl | 13 | 3 | 0.0038 | 0.0000-0.0376 | 0.145 | 0.024 | 0.930 |
-| without struct | 11 | 4 | 0.0051 | 0.0000-0.0496 | 0.163 | 0.056 | 0.884 |
-| priors only | 14 | 4 | 0.0051 | 0.0000-0.0494 | 0.163 | 0.026 | 0.918 |
+| defaults | 1,708 | 26 | 0.0159 | 0.0036-0.0912 | 0.113 | 0.841 | 0.437 |
+| full | 10 | 3 | 0.0038 | 0.0000-0.0444 | 0.145 | 0.061 | 0.886 |
+| without npn | 10 | 3 | 0.0038 | 0.0000-0.0444 | 0.145 | 0.061 | 0.886 |
+| without wl | 13 | 3 | 0.0038 | 0.0000-0.0435 | 0.145 | 0.024 | 0.930 |
+| without struct | 11 | 4 | 0.0051 | 0.0000-0.0578 | 0.163 | 0.056 | 0.884 |
+| priors only | 14 | 4 | 0.0051 | 0.0000-0.0574 | 0.163 | 0.026 | 0.918 |
+
+The bootstrap previously counted `hard_*` kinds in the per-design F1 while the point estimate
+left them out; both now exclude them (only the intervals changed, e.g. full 0.0000-0.0381 to
+0.0000-0.0444). Leaving out `ve_Prob153_gshare` (`l4_nogshare.csv`, 48 designs, 257 GT
+instances): micro-F1 defaults 0.0553, full 0.0225, without npn 0.0225, without wl 0.0222,
+without struct 0.0299, priors only 0.0295; full minus priors-only is -0.0073, still below the
+0.02 floor, so the verdict is unchanged.
 
 Status: **inconclusive** (full minus priors-only = -0.0013, below the 0.02 floor of the rule).
 Fitted weights (`l4_weights.csv`): full npn 0.0, wl 0.5, struct 0.1: the fit itself zeroes npn and
@@ -241,11 +257,19 @@ so a committed `bus` or `datapath_unit` outside them counts against must precisi
 
 ## Data and commands
 
-Data under `/home/jamiespa/odin3-ws/work/loki-exp2-data`: `l1/lut` (LUT netlists, `cover.json`),
+Paths come from environment variables with workspace-relative defaults (`r2lib.py`):
+`ODIN3_WS` (workspace root; default: four levels above `experiments/round2`, i.e. the directory
+that holds `work/`), `ODIN3_ROOT` (Odin III checkout; default `$ODIN3_WS/odin3`), `LOKI_R2_DATA`
+(default `$ODIN3_WS/work/loki-exp2-data`), `LOKI_R2_TMP` (scratch for cleaned sources and
+translated overlays; default `${TMPDIR:-/tmp}/le2`), `VERILOG_EVAL` (default
+`$ODIN3_WS/external/verilog-eval`). The inputs it reads under `$ODIN3_WS/work` are the
+`gatebreaker-exp2`, `loki-rename-exp`, `loki-veval-exp` and `loki-f3-exp` data directories.
+
+Data under `$LOKI_R2_DATA`: `l1/lut` (LUT netlists, `cover.json`),
 `l1/runs`, `l2/calib`, `l2/runs`, `l2/astcfg.json`, `l2/llm_ops.json`, `l4/` (pickle, calibrations,
 runs), `cfg-probe/`.
 
-    export ODIN3_ROOT=/home/jamiespa/odin3-ws/odin3 ODIN3_LIB=$ODIN3_ROOT/build/release/libodin3.so
+    export ODIN3_WS=<workspace> ODIN3_ROOT=$ODIN3_WS/odin3 ODIN3_LIB=$ODIN3_ROOT/build/release/libodin3.so
     export PYTHONPATH=<loki checkout>:$ODIN3_ROOT/plugins/python:experiments/round2
     L=/tmp/claude-1000/odin3-heavy.lock
     flock -x $L python experiments/round2/l1_lutmap.py <rename dataset-rebuild> <data>/l1/lut

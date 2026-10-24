@@ -22,7 +22,7 @@ import r2lib
 from loki.odin import FRONT
 from loki.snapshot import take_snapshot
 
-GB = Path("/home/jamiespa/odin3-ws/work/gatebreaker-exp2/data")
+GB = r2lib.GB / "data"
 OUT = r2lib.DATA / "l2" / "llm_ops.json"
 
 

@@ -26,7 +26,7 @@ from loki.score.metrics import score_run
 CALIB = Path(__file__).resolve().parents[1] / "rename-l2" / "calib" / "f2.json"
 RUNS = r2lib.DATA / "l1" / "runs"
 LUT = r2lib.DATA / "l1" / "lut"
-TRANSLATED = Path("/tmp/claude-1000/le2-translated")
+TRANSLATED = r2lib.TMP / "translated"
 
 
 def designs() -> list[tuple[str, int, str]]:
@@ -132,7 +132,7 @@ def table() -> int:
         for kind, row in s["kinds"].items():
             kinds.append([label, kind, row["counted"], row["matched"], row["gt"],
                           row["precision"], row["recall"], row["f1"]])
-    f3exp = Path("/home/jamiespa/odin3-ws/work/loki-f3-exp")
+    f3exp = r2lib.WORK / "loki-f3-exp"
     for label, sub in (("gate-calib-test", "runs"), ("gate-none-test", "runs-nocalib")):
         s = r2lib.summarise(r2lib.load_scores((f3exp / sub / "base").glob("*__f3/re/score.json")))
         summ[label] = s
