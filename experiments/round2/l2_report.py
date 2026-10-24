@@ -158,6 +158,20 @@ def ops_rows() -> list[list[Any]]:
     return out
 
 
+def coverage_rows() -> list[list[Any]]:
+    """Designs with an AST and a CFG value per variant, and why the others have none."""
+    rows = json.loads((r2lib.DATA / "l2" / "astcfg.json").read_text(encoding="utf-8"))
+    out: list[list[Any]] = []
+    ref_fail = sum(1 for r in rows if "ref_ast_error" in r)
+    for v in VARIANTS:
+        ast = sum(1 for r in rows if f"{v}:ast" in r)
+        cfg = sum(1 for r in rows if f"{v}:cfg" in r)
+        skipped = sum(1 for r in rows if str(r.get(f"{v}:cfg_error", "")).startswith(
+            "ValueError: skipped"))
+        out.append([v, len(rows), ast, ref_fail, cfg, skipped])
+    return out
+
+
 def main() -> int:
     r2lib.write_csv(r2lib.OUT / "l2_headtohead.csv",
                     ["variant", "quartile", "n", "ast_mean", "cfg_mean", "set"], headtohead())
@@ -167,6 +181,9 @@ def main() -> int:
     r2lib.write_csv(r2lib.OUT / "l2_equiv.csv",
                     ["set", "runs", "final_equiv_equivalent", "status_counts", "committed",
                      "designs_with_commits", "input_netlist_selfcheck_ok"], equiv_rows())
+    r2lib.write_csv(r2lib.OUT / "l2_coverage.csv",
+                    ["variant", "designs", "ast_values", "ref_ast_parse_fail", "cfg_values",
+                     "cfg_skipped_size"], coverage_rows())
     ops = ops_rows()
     if ops:
         r2lib.write_csv(r2lib.OUT / "l2_ops.csv",

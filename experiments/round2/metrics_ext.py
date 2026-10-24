@@ -1,7 +1,7 @@
 """Loader for the read-only Gate-Breaker metric code (AST Algorithm 2, CFG Algorithm 3).
 
 ``work/gatebreaker-exp2/scripts/metrics.py`` (pyverilog AST similarity) and the odin3 CFG probe
-(``work/odin3-cfg/tools/cfg-probe/odin3_cfg.py``) are imported from their worktrees without
+(``odin3_cfg.py`` of odin3 commit 77e975e5) are imported from their worktrees without
 copying them. The CFG side builds Odin III designs, so callers run it under the heavy lock.
 """
 
@@ -16,7 +16,10 @@ from types import ModuleType
 from typing import Any
 
 SCRIPTS = Path("/home/jamiespa/odin3-ws/work/gatebreaker-exp2/scripts")
-PROBE = Path("/home/jamiespa/odin3-ws/work/odin3-cfg/tools/cfg-probe")
+# The odin3-cfg worktree is gone; odin3_cfg.py is extracted unchanged from odin3 commit 77e975e5
+# (`git show 77e975e5:tools/cfg-probe/odin3_cfg.py`, branch feat/cfg-probe), the commit the
+# round-1 replication used.
+PROBE = Path("/home/jamiespa/odin3-ws/work/loki-exp2-data/cfg-probe")
 CLEAN_DIR = Path("/tmp/claude-1000/le2-ast-clean")
 CFG_NODE_LIMIT = 12000
 

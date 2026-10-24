@@ -101,10 +101,10 @@ def main() -> int:
         return table()
     if args.stage == "calibrate":
         return calibrate(args.floor)
-    if args.stage == "score":
-        return score_floor(args.floor, args.cond)
-    calib = CALIB / f"{args.floor}.json" if args.cond == "calib" else None
     tag = args.cond + (f"-rp{args.rp_min_p}" if args.rp_min_p else "")
+    if args.stage == "score":
+        return score_floor(args.floor, tag)
+    calib = CALIB / f"{args.floor}.json" if args.cond == "calib" else None
     extra = ["--rp-min-p", args.rp_min_p] if args.rp_min_p else []
     jobs = [(f"{args.floor}-{tag} {d} {n}", r2lib.VEVAL / d / args.floor / "netlist.blif",
              args.floor, calib, run_dir(args.floor, tag, d))

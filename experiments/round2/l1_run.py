@@ -151,9 +151,26 @@ def table() -> int:
     return 0
 
 
+def cover_table() -> int:
+    """Per design: LUT count, LUTs with no f3 net of the same function, LUTs left with an empty
+    cover after the fill, gates and gates covered."""
+    rows = []
+    for d, nodes, split in designs():
+        info = json.loads((LUT / d / "cover.json").read_text(encoding="utf-8"))
+        empty = sum(1 for v in info["cover"].values() if not v)
+        rows.append([d, split, nodes, info["gate_cells"], info["luts"], info["unmatched"], empty,
+                     info["covered_gates"]])
+    r2lib.write_csv(r2lib.OUT / "l1_cover.csv",
+                    ["design", "split", "f3_nodes", "gate_cells", "luts", "no_net_match",
+                     "empty_cover", "covered_gates"], rows)
+    print("luts", sum(r[4] for r in rows), "no_net_match", sum(r[5] for r in rows),
+          "empty", sum(r[6] for r in rows))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("stage", choices=("run", "score", "table"))
+    ap.add_argument("stage", choices=("run", "score", "table", "cover"))
     ap.add_argument("--set", choices=("lut", "native"))
     ap.add_argument("--cond", choices=("calib", "none"))
     ap.add_argument("--min-nodes", type=int, default=0)
@@ -163,6 +180,8 @@ def main() -> int:
     args = ap.parse_args()
     if args.stage == "table":
         return table()
+    if args.stage == "cover":
+        return cover_table()
     if args.stage == "score":
         return score_set(args.set, args.cond)
     calib = CALIB if args.cond == "calib" else None

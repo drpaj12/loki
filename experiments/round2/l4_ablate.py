@@ -177,6 +177,11 @@ def table() -> int:
                     ["ablation", "runs", "counted", "matched", "gt", "macro_f1", "macro_f1_all",
                      "micro_f1", "micro_f1_lo", "micro_f1_hi", "ece", "points", "true_points",
                      "auc"], rows)
+    wrows = []
+    for name in ABLATIONS:
+        w = json.loads((BASE / "calib" / f"{name}.json").read_text(encoding="utf-8"))["weights"]
+        wrows.append([name, *(w.get(f, "") for f in FAMILIES)])
+    r2lib.write_csv(r2lib.OUT / "l4_weights.csv", ["ablation", *FAMILIES], wrows)
     r2lib.write_csv(r2lib.OUT / "l4_kinds.csv",
                     ["ablation", "kind", "counted", "matched", "gt", "precision", "recall", "f1"],
                     kinds)

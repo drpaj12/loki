@@ -1,0 +1,6 @@
+ablation,npn,wl,struct
+full,0.0,0.5,0.1
+drop-npn,0.0,0.5,0.1
+drop-wl,0.0,0.0,0.2
+drop-struct,0.0,0.5,0.0
+priors-only,0.0,0.0,0.0
