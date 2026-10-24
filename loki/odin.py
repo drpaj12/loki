@@ -26,6 +26,34 @@ def odin_module() -> Any:
     return importlib.import_module("odin3")
 
 
+_SV_STATE = {"tried": False}
+_SV_DECL = (
+    "odin3_status odin3_read_slang(odin3_design *d, uint32_t run, const odin3_sv_options *o);"
+)
+
+
+def register_slang(o: Any) -> bool:
+    """Register the slang adapter as the process's SystemVerilog reader (once per process).
+
+    The library is ``$ODIN3_SLANG_LIB`` or ``libodin3_slang.so`` beside ``$ODIN3_LIB``. Without
+    it a ``.sv`` read fails with Odin III's own "no SystemVerilog reader" message.
+    """
+    if _SV_STATE["tried"]:
+        return True
+    env = os.environ.get("ODIN3_SLANG_LIB")
+    lib_env = os.environ.get("ODIN3_LIB")
+    path = Path(env) if env else None
+    if path is None and lib_env:
+        path = Path(lib_env).parent / "libodin3_slang.so"
+    if path is None or not path.is_file():
+        return False
+    _SV_STATE["tried"] = True
+    o.ffi.cdef(_SV_DECL)
+    slang = o.ffi.dlopen(str(path))
+    o.lib.odin3_sv_reader_register(o.ffi.addressof(slang, "odin3_read_slang"))
+    return True
+
+
 def _q(path: Path | str) -> str:
     text = os.fspath(path)
     if '"' in text:
@@ -95,6 +123,8 @@ def open_front(
     mod = odin_module()
     o = mod.default()
     o.load_abc()
+    if any(f.suffix == ".sv" for f in files):
+        register_slang(o)
     reader = read_script(floor, files, arch_xml, cmos6_lib)
     design = mod.Design(o)
     if top:
