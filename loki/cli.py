@@ -1,5 +1,5 @@
 """The ``loki`` command: bench, assemble, check, re, score, score-all, calibrate, re-project,
-tools, analyze."""
+tools, analyze, rp."""
 
 from __future__ import annotations
 
@@ -64,6 +64,7 @@ def _parser() -> argparse.ArgumentParser:
     tsub = tools.add_subparsers(dest="tools_cmd", required=True)
     tsub.add_parser("fetch-orca", help="download, verify and build the ORCA graphlet counter")
     sub.add_parser("re", help="reverse-engineer a netlist (loki re --help)", add_help=False)
+    sub.add_parser("rp", help="ReverseProvenance: add-l2, doc (loki rp --help)", add_help=False)
     sub.add_parser("analyze", help="analyse a graph or dataset (loki analyze --help)",
                    add_help=False)
     return ap
@@ -195,6 +196,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         from loki.re.main import main as re_main
 
         return re_main(words[1:])
+    if words[:1] == ["rp"]:
+        from loki.rp.main import main as rp_main
+
+        return rp_main(words[1:])
     if words[:1] == ["analyze"]:
         from loki.analysis.run import main as analyze_main
 
