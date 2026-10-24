@@ -1,0 +1,5 @@
+set,runs,final_equiv_equivalent,status_counts,committed,designs_with_commits,input_netlist_selfcheck_ok
+f2-calib,150,150,"{""equivalent"": 150}",31,17,128
+f2-none,150,150,"{""equivalent"": 150}",669,89,128
+f3-calib,150,150,"{""equivalent"": 150}",14,7,128
+f3-none,150,150,"{""equivalent"": 150}",6471,129,128

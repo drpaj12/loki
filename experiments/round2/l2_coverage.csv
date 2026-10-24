@@ -1,0 +1,7 @@
+variant,designs,ast_values,ref_ast_parse_fail,cfg_values,cfg_skipped_size
+f3-l0,150,129,21,144,6
+f2-l0,150,129,21,140,10
+f3-calib,150,129,21,144,6
+f3-none,150,129,21,146,4
+f2-calib,150,129,21,140,10
+f2-none,150,129,21,141,9

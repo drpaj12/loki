@@ -58,7 +58,11 @@ pipeline naming-neutral across 105,646 renamed identifiers. On the L1
 hypothesis flow, the structures that are already reverse engineered by the
 synthesis flow recover almost perfectly (hard adders 67 of 67, hard
 multipliers 30 of 30), while the structures the flow erased recover weakly
-(macro-F1 0.354 on the first floor, 0.108 on the second, calibrated). The L2
+(macro-F1 0.354 on the first floor, 0.108 on the second, calibrated). A second round of
+compute-only experiments finds that re-mapping the gate netlist to LUT6 brings its in-sample recovery to the
+second floor's level (not on the held-out designs, where the result is inconclusive), that the language model is more readable than Loki on the same designs
+while Loki's output is formally equal to its input, and that an operator-recovery F1 sees what
+AST and CFG similarity cannot. The L2
 graph stage beats a 1-WL baseline on real micros once node, graphlet, WL and
 NPN features combine (macro-F1 0.4241 against 0.2717) and its clusters carry
 the designer's hierarchy (Louvain modularity 0.4220). We state the honest
@@ -1008,6 +1012,155 @@ claims. The Gate-Breaker future work -- bus naming, datapath/control classificat
 partitioning -- is exactly L2's table, and its numbers are the baseline a model-assisted
 Loki would have to beat.
 
+\subsection{Round 2: five follow-up questions}
+\label{sec:round2}
+
+\input{round2-tables}
+
+The first round left five questions open. Each carries a hypothesis and a decision rule; the
+thresholds were set by the implementer during the round and are not time-stamped before the data
+(Appendix~\ref{app:log}); a later round should fix them in a commit before running. All five are compute-only: no language-model
+call was made, and the language-model figures are the round-1 Gate-Breaker replication, read
+again. Every number in this subsection is a macro generated from the summary tables of
+\code{experiments/round2}.
+
+\emph{RQ-L1: is the f3 failure a vocabulary problem?} The L1 detectors read LUT covers, and
+the f3 netlist is a cmos6 gate netlist. H1: re-mapping the same gates into LUT6 recovers
+close to the f2 rate. We read each f3 \code{netlist.blif} into Odin~III, run
+\code{abc --lut 6}, and give the result to \code{loki re} as an f2 netlist. Odin~III drops
+the cell names in \code{abc}, so each of the \rtLoneLuts{} LUTs is expanded back to the
+gates it covers: a bit-parallel simulation signature matches its output to the f3 net of the
+same function, and the cover is the cone of that net down to the matched inputs.
+\rtLoneNoMatchFrac{} of the LUTs ABC resynthesised implement a function that is no f3 net;
+they take the support-contained share of their consumers' covers, and \rtLoneEmpty{} are left
+with an empty cover. The expanded hypotheses are then scored against the unchanged f3 key,
+and the native f2 floor of the same \rtLoneDesigns{} designs, with the same calibration, is the
+comparison (Table~\ref{tab:r2-l1}). On the gate netlist the calibrated flow matches
+\rtLoneGateMatched{} of \rtLoneGateGt{} instances in the \rtLoneTestDesigns{} test designs. After the LUT6
+re-map it matches \rtLoneLutMatchedTest{} (native f2: \rtLoneNativeMatchedTest{}), and over
+all \rtLoneDesigns{} designs \rtLoneLutMatchedAll{} against \rtLoneNativeMatchedAll{} of \rtLoneGtAll{},
+a micro-F1 ratio of \rtLoneAllRatio{} in-sample (the \rtLoneDesigns{} designs include the designs the f2
+calibration was fitted on) against \rtLoneTestRatio{} on the held-out test split. The rule asked
+for a ratio of at least \rtLoneThr{} on both splits, so H1 is \rtLoneStatus. The in-sample recovery is
+that of f2, on the same kinds (adders, subtractors, muxes), but the 15-design test split holds
+only a handful of matches (\rtLoneLutMatchedTest{} against \rtLoneNativeMatchedTest{}), so its
+ratio is noise in either direction. The result is consistent with the f3 failure being the
+detectors' vocabulary and not missing information in the gates, but does not show it; the f2
+level it would recover to is itself low.
+
+\emph{RQ-L7: are AST and CFG blind to what Loki recovers?} We score recovery with a
+word-level operator F1. The L0 key lists the word cells of the elaborated reference; a run's
+recovered operators are its counted hypotheses (committed, or $p_{\mathrm{comp}}\ge 0.5$),
+mapped to an operator class and an operand width (add, sub, mul, eq, ne, lt, le, gt, ge,
+mux, register). Precision and recall are multiset overlaps, so the score does not depend on
+which cells carry an operator; \code{type} ignores the width and \code{tw} requires it.
+Table~\ref{tab:r2-l7} rescores every run set. The floors separate cleanly, which neither
+AST nor CFG can show because both exist only on f3: type-F1 \rtLsevenTypeFonek{} on f1 (the
+hard detector), \rtLsevenTypeFtwo{} on f2 and \rtLsevenTypeFthree{} on the f3 gates. On the
+f3 test designs (Table~\ref{tab:r2-ties}) the calibrated and uncalibrated L1 runs tie on both
+metrics, AST by \rtLsevenDAst{} and CFG by \rtLsevenDCfg{}, while operator type-F1 moves by
+\rtLsevenDF{}; the flatten control raises AST by \rtLsevenFAst{} and CFG by \rtLsevenFCfg{}
+and leaves the recovery record, hence the operator F1, unchanged (\rtLsevenFF{}). By the
+rule H7 is \rtLsevenStatus. The tie the rule was written for, the calibrated flow against
+the L0-stop netlist (both add nothing to the text), does not separate: their operator type-F1
+is $0$ against $0$. The verdict rests on the calibrated flow against the uncalibrated one,
+where the calibrated side recovers no operator at all, and on the flatten clause, which holds
+by construction. Two cautions: the separating level is small (the uncalibrated
+detectors count mostly wrong constructs), and the flatten comparison holds the record fixed
+by construction, because the operator F1 reads the recovery record and AST and CFG read the
+text. The operator F1 does not replace them; it is the measure that sees recovery, where
+they see only form.
+
+\emph{RQ-L2: Loki against the language model on the same designs.} Round 1 scored the
+language model on Q1 and Q2 of VerilogEval, and Loki's AST and CFG only on micro designs. We
+ran \code{loki re} on all \rtLtwoDesigns{} VerilogEval netlists at f2 and f3, calibrated (a calibration
+fitted on the \rtLtwoTrainDesigns{} train designs of VerilogEval itself) and not, and scored the output Verilog
+(\code{design.v}) against the reference \code{.sv} with the round-1 AST and CFG code.
+\rtLtwoRefAstFail{} references that pyverilog cannot parse have no AST value for any
+candidate, and \rtLtwoCfgSkip{} f3 outputs exceed the CFG probe's size limit
+(\code{l2\_coverage.csv}). On the designs both are scored on (Table~\ref{tab:r2-l2}), Loki's
+f3 output has AST similarity \rtLtwoLokiAstQa{} in Q1 and \rtLtwoLokiAstQb{} in Q2 (common
+designs, $n=\rtLtwoCommonNQa{}$ and $\rtLtwoCommonNQb{}$) against the model's \rtLtwoLlmAstQa{} and \rtLtwoLlmAstQb{}, and CFG similarity
+\rtLtwoLokiCfgQa{} and \rtLtwoLokiCfgQb{} against \rtLtwoLlmCfgQa{} and \rtLtwoLlmCfgQb{};
+every gap is significant by a paired Wilcoxon test (\code{l2\_paired.csv}). The calibration
+was fitted on the train designs and these means cover all \rtLtwoDesigns{}, so we also give the held-out
+test split alone (\code{l2\_testsplit.csv}): on its \rtLtwoTestN{} Q1 and Q2 designs both
+tools score on, AST is \rtLtwoTestLokiAst{} for Loki against \rtLtwoTestLlmAst{} for the model
+and CFG \rtLtwoTestLokiCfg{} against \rtLtwoTestLlmCfg{}, the same direction. (The calibrated
+f3 flow commits in only \rtLtwoCommitDesigns{} designs, so the fit can change few outputs.) Across the four
+quartiles (Table~\ref{tab:r2-l2q}) the f3 AST over all scored designs ($n=\rtLtwoTrendNQa{}$, \rtLtwoTrendNQb{}, \rtLtwoTrendNQc{}, \rtLtwoTrendNQd{}; a different, larger
+design set than the common rows above) reads \rtLtwoTrendAstQa{}, \rtLtwoTrendAstQb{},
+\rtLtwoTrendAstQc{} and \rtLtwoTrendAstQd{}, so it falls from Q1 to Q4 without being monotone. The \rtLtwoRefAstFail{} references that
+do not parse fall in Q1 to Q4 as \rtLtwoRefFailQa{}, \rtLtwoRefFailQb{}, \rtLtwoRefFailQc{} and
+\rtLtwoRefFailQd{}, so Q3 and Q4 are scored on the designs that parse, and the apparent fall
+may partly reflect which designs those are. The CFG stays flat (\rtLtwoTrendCfgQa{} to \rtLtwoTrendCfgQd{}). The calibrated f3 flow
+commits almost nothing, so its output is the L0 netlist; the uncalibrated flow, which does
+commit, scores lower, not higher.
+
+What the correctness column proves is narrow. Every one of the \rtLtwoEquivRuns{} runs of each
+set ends \code{final\_equiv = equivalent} (\rtLtwoEquivOk{} for the calibrated f3 set), which
+says that the flattened output is formally equal to the \emph{input netlist}. It does not say
+the output matches the reference RTL: that netlist itself passes the official testbench in only
+\rtLtwoSelfOk{} of the \rtLtwoDesigns{} designs (the round-1 self-check; inferred latches and asynchronous
+resets are the failures), so Loki's output is exactly as correct as its input, no more. The
+model is checked against the testbench directly, but only its correct samples enter the
+similarity columns. On operator recovery (RQ-L7) the model is far ahead: on the common Q1 and
+Q2 designs its operator type-F1 is \rtLtwoOpsLlm{} (functionally correct samples elaborated with
+the same Odin~III front as the key) against \rtLtwoOpsLokiCal{} for Loki's calibrated f2 run and
+\rtLtwoOpsLokiNone{} uncalibrated (the calibrated f3 run recovers no operator, 0.0, so the
+comparison uses f2, a different floor from the one AST and CFG use). By the rule, H2 is \rtLtwoStatus: Loki is below the model
+on both metrics in both quartiles (\rtLtwoCondA), the equivalence holds in all runs
+(\rtLtwoCondC), and the similarity does not stay flat from Q1 to Q4 (\rtLtwoCondB). The
+positioning this measures is that the model is readable and recovers the operators of small
+designs but is unverified, and Loki is verified but partial; neither number alone is the
+result, and the arm that combines them (a model given the ReverseProvenance record, L8) was
+not run.
+
+\emph{RQ-L4: which evidence family drives the posterior?} The calibrated flow scores every
+hypothesis from a per-detector prior plus feature log-likelihood ratios in four families
+(\code{npn}, \code{wl}, \code{l2}, \code{struct}). \code{loki re} produces no \code{l2}
+feature (those exist only in the ReverseProvenance document), so that family is not
+applicable. For each remaining family we refit the calibration on the train designs of the
+micro and VerilogEval f2 floors with the family removed and its weight set to 0, and ran the
+\rtLfourHeld{} held-out designs (Table~\ref{tab:r2-l4}; \rtLfourGt{} ground-truth instances).
+Held-out micro-F1 is \rtLfourNone{} with the defaults, \rtLfourFull{} with the full
+calibration and \rtLfourPriors{} with priors only. The full-minus-priors gap is \rtLfourGap{},
+below the \rtLfourThr{} floor of the rule, so H4 is \rtLfourStatus: no family carries measurable
+performance, because the features add nothing detectable over the per-detector priors. One held-out design (\code{ve\_Prob153\_gshare}) holds most of the ground truth
+and nothing in it is matched; with it left out (\rtLfourNgGt{} instances) the micro-F1 is
+\rtLfourNgNone{} with the defaults, \rtLfourNgFull{} full and \rtLfourNgPriors{} priors only (gap
+\rtLfourNgGap), so the verdict does not change; on that subset the defaults score higher than
+either calibrated row. The
+fit says so itself: the full calibration sets the \code{npn} weight to 0 and shrinks
+\code{struct} and \code{wl} (\code{l4\_weights.csv}). What
+calibration does is prune, from the many counted constructs of the defaults to a handful, and
+rank: the AUC of $p_{\mathrm{comp}}$ over the live hypotheses rises from \rtLfourAucNone{} to
+\rtLfourAucFull{} (over different pools, since calibration rejects more).
+
+\emph{RQ-L5: is the must/may bracket an uncertainty measure?} Following the graph-sandwich
+framing (must is what L1 proved and committed, may adds the candidates it lists), the
+bracket of a run is read from \code{reverse-provenance.json} and its width is the candidate
+fraction of the cells. H5a: the width correlates negatively with the design's F1. On the
+uncalibrated VerilogEval f2 runs (\rtLfiveN{} designs with ground truth) the Spearman
+correlation is \rtLfiveRho{} ($p=\rtLfiveP$), and \rtLfiveRhoCal{} on the calibrated run that
+lists candidates from $p=0.1$ (Table~\ref{tab:r2-l5}), so H5a is \rtLfiveaStatus. The
+committed fraction does correlate with F1 (\rtLfiveRhoMust), but trivially: committed cells
+are the matches. As a soundness check of the bracket itself, \rtLfiveMustPrec{} of the
+committed cells lie inside the scored ground-truth footprints (must precision), the committed
+cells cover \rtLfiveMustRec{} of the truth, and the may bracket contains \rtLfiveMayRec{} of
+it. H5b: of \rtLfiveCalls{} \code{cone\_check} (SAT) calls across all round-2 runs,
+\rtLfiveEquivCalls{} end \code{equivalent}; the largest structural rule that loses no such
+verdict (\rtLfiveBestRule) prunes \rtLfiveBestFrac{} of the calls, against the \rtLfiveThr{} the rule
+asked for (Table~\ref{tab:r2-prefilter}), so H5b is \rtLfivebStatus. The prover budget is
+spent confirming true hypotheses, and the structural features the calls already carry do not
+separate the rest; the truth-table checks (\rtLfiveTruthCalls{}) are cheap already. The rule
+search covers single-bin rules (one feature and one bin of one kind) on the same data, so
+\rtLfiveBestFrac{} is an upper bound for such rules, not a measured saving; the calls repeat
+across the eight run sets. The bound that holds for any rule is simpler: a rule that loses no
+\code{equivalent} verdict can prune at most the \rtLfiveNonEquiv{} calls that were not
+(\rtLfiveNonEquivFrac{} of all).
+
+
 \section{Discussion}
 \label{sec:discussion}
 
@@ -1024,6 +1177,20 @@ same protocol exposed a rename-script defect (library \code{.blackbox} model nam
 renamed, which silently removed every hard proposal on renamed floors) and the spectral
 determinism defect -- both fixed or reported, and both invisible without the protocol.
 
+A fourth observation comes from round 2 (Section~\ref{sec:round2}): \emph{readable and
+verified are different properties, and the two tools hold one each}. The language model
+produces RTL whose similarity to the reference is high and whose operators it names
+(operator type-F1 \rtLtwoOpsLlm{} on Q1 and Q2, correct samples elaborated to RTL), but nothing proves the text equals the
+netlist; Loki's output is formally equal to its input in all \rtLtwoEquivRuns{} runs and
+recovers few operators (\rtLtwoOpsLokiCal{}, calibrated f2 run; the f3 run recovers none), and its similarity to the reference
+is lower in every cell. The f3 failure of round 1 may be the detectors' vocabulary and not
+missing information (a LUT6 re-map reaches the f2 level in-sample but not on the held-out designs,
+\rtLoneAllRatio{} against \rtLoneTestRatio{}, so the question stays open), the three refinements we
+expected to help (evidence-family weighting, the width of the must/may bracket as an
+uncertainty measure, a structural prefilter before the prover) did not on the registered
+tests, and the one new instrument that
+earned its place is the operator F1, which sees recovery where AST and CFG see only form.
+
 \section{Conclusion}
 \label{sec:conclusion}
 
@@ -1033,6 +1200,60 @@ perfectly; the rest, weakly but measurably, with calibration that reports its ow
 graph stage whose features beat 1-WL, and clusters that carry the designer's hierarchy. The
 methodology -- provenance-tracked labelled datasets plus the renamed-instance protocol -- is
 the part we would export to any future comparison, with or without a model.
+
+\appendices
+
+\section{Research log}
+\label{app:log}
+
+This appendix records the order in which the questions were asked, what each result
+suggested, and what became of the next set of hypotheses, so that the progress of the work is
+visible and not only its end state. The decision rules of round 2 are in
+\code{experiments/round2/EXPERIMENT.md}; their thresholds were set by the implementer during
+the round (the file was committed after the scripts and the result CSVs), so they are not
+pre-registered.
+
+\emph{Round 0 (2026-10-21 to 22): build.} Question: how much structure does Loki recover
+without a language model? Built L0 (provenance-labelled, anonymised datasets and the
+renamed-instance neutrality check), L1 (Bayesian hypotheses with calibration and proofs) and
+L2 (graph analysis).
+
+\emph{Round 1 (2026-10-23): first results.} Section~\ref{sec:l1-results} to
+Section~\ref{sec:gb-results}. Hard blocks are fully recovered, because synthesis had already
+reverse engineered them; soft structures recover weakly; on the cmos6 gate netlist (f3) L1
+recovers nothing and AST and CFG do not move; the GNN beats 1-WL; and the language model is
+strong on the simple VerilogEval quartiles but its output is unverified.
+
+\emph{What round 1 suggested.} (i) The f3 zero beside a weak f2 result: is the failure the
+detectors' LUT vocabulary, not missing information? (ii) The language-model and Loki figures
+sat on different benchmarks: put them on the same 150 designs. Our working position is that the
+model is readable but unverified on small designs, Loki is verified but partial, and the
+combination is the contribution. (iii) The calibrated flow commits little: which evidence
+family earns that? (iv) The reverse-engineering result is a smaller graph bracketed by what is
+proven (must) and what is possible (may), in the style of the graph-sandwich problem: is the
+width of that bracket an uncertainty measure, and does a cheap structural test before the
+prover keep recall? (v) AST and CFG tie where the recovery differs: is there a metric that
+sees it?
+
+\emph{Round 2 (2026-10-24): the hypotheses and what happened.} Table~\ref{tab:r2-log}.
+The operator F1 is the one hypothesis the rule supports, by its letter and on weak evidence
+(H7). The LUT6 re-map reaches the f2
+level in-sample (\rtLoneAllRatio) but not on the held-out split (\rtLoneTestRatio, too few matches for
+the rule), so H1 is \rtLoneStatus. The
+head-to-head puts Loki below the model on every cell with its output equal to its input in all
+runs, but the similarity does not stay flat with complexity (H2, \rtLtwoStatus). The evidence
+families add nothing over the priors on held-out designs, because the calibration already
+zeroes or shrinks them (H4, \rtLfourStatus). The bracket width is not an uncertainty measure
+on the registered set (H5a, \rtLfiveaStatus; an exploratory look at calibrated runs that list
+candidates from $p=0.1$ gives Spearman \rtLfiveRhoCal), and a structural prefilter cannot cut
+the prover without losing proved constructs (H5b, \rtLfivebStatus). The head-to-head
+(Section~\ref{sec:round2}) fills in the positioning of the discussion.
+
+\emph{Next.} L3, a cross-suite GNN (train on one suite, test on the other); L6, a motif null
+model for the graphlet counts; and L8, a language model given the ReverseProvenance document
+(deferred by Peter), which is the experiment that tests the combination directly.
+
+\input{round2-log}
 
 \bibliographystyle{IEEEtran}
 \bibliography{joined}
