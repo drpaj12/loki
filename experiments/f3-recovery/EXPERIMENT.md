@@ -54,10 +54,6 @@ Loki's committed hierarchy rather than reward it.
    (`work/odin3-cfg/tools/cfg-probe/odin3_cfg.py`, common width, sigma 0.5) over Odin III's
    elaborated AST. Designs are ranked by f3 node count; quartile means are over that rank.
 
-## TODO numbers
-
-(filled from the runs below)
-
 ## L0 ceiling (65 f3 designs, 50,047 gate nodes)
 
 The answer key is complete at the gate level: every graph node has a label row, every row
