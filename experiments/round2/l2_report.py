@@ -17,7 +17,6 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-import opf1
 import r2lib
 from scipy.stats import wilcoxon
 
@@ -105,20 +104,57 @@ def equiv_rows() -> list[list[Any]]:
     return out
 
 
-def llm_ops_rows() -> list[list[Any]]:
+def _f(prec: float | None, rec: float | None) -> float | None:
+    if rec is None:
+        return None
+    return 0.0 if rec == 0 or prec is None else 2 * prec * rec / (prec + rec)
+
+
+def _pool(per_design: list[dict[str, Any]]) -> list[Any]:
+    """Pooled (key, got, type P/R/F1, tw P/R/F1) of per-design expected counts."""
+    key = sum(d["key_n"] for d in per_design)
+    got = sum(d["got_n"] for d in per_design)
+    out: list[Any] = [len(per_design), round(key, 4), round(got, 4)]
+    for name in ("type", "tw"):
+        tp = sum(d[f"{name}_tp"] for d in per_design)
+        prec = tp / got if got else None
+        rec = tp / key if key else None
+        f = _f(prec, rec)
+        out += ["" if x is None else round(x, 6) for x in (prec, rec, f)]
+    return out
+
+
+def ops_rows() -> list[list[Any]]:
+    """Operator F1 per quartile on the common LLM designs: the LLM samples (mean over the
+    correct samples of a design) and the Loki runs of l7_runs.csv."""
     path = r2lib.DATA / "l2" / "llm_ops.json"
     if not path.is_file():
         return []
     quart = quartile_map()
-    rows = [r for r in json.loads(path.read_text(encoding="utf-8")) if "error" not in r]
+    llm: dict[str, list[dict[str, Any]]] = {}
+    for r in json.loads(path.read_text(encoding="utf-8")):
+        if "error" not in r:
+            llm.setdefault(r["design"], []).append(r)
+    common = set(llm)
     out: list[list[Any]] = []
-    for q in (*QS, "all"):
-        sel = [r for r in rows if q == "all" or quart.get(r["design"]) == q]
-        if sel:
-            pool = opf1.pooled(sel)
-            out.append([q, len(sel), len({r["design"] for r in sel}), pool["key_n"], pool["got_n"],
-                        *(round(float(pool[k]), 6) if pool[k] is not None else ""
-                          for k in ("type_p", "type_r", "type_f1", "tw_p", "tw_r", "tw_f1"))])
+    sets: dict[str, list[dict[str, Any]]] = {}
+    for d, samples in llm.items():
+        n = len(samples)
+        sets.setdefault("llm", [])
+        sets["llm"].append({"design": d, **{k: sum(float(s[k]) for s in samples) / n for k in (
+            "key_n", "got_n", "type_tp", "tw_tp")}})
+    with (r2lib.OUT / "l7_runs.csv").open(encoding="utf-8", newline="") as fh:
+        for r in csv.DictReader(fh):
+            if r["set"].startswith("l2-") and r["design"] in common:
+                sets.setdefault(r["set"], []).append({
+                    "design": r["design"], "key_n": float(r["key_ops"]),
+                    "got_n": float(r["got_ops"]), "type_tp": float(r["type_tp"]),
+                    "tw_tp": float(r["tw_tp"])})
+    for label, per in sorted(sets.items()):
+        for q in (*QS, "Q1+Q2"):
+            sel = [d for d in per if quart.get(str(d["design"])) in q.split("+")]
+            if sel:
+                out.append([label, q, *_pool(sel)])
     return out
 
 
@@ -131,10 +167,10 @@ def main() -> int:
     r2lib.write_csv(r2lib.OUT / "l2_equiv.csv",
                     ["set", "runs", "final_equiv_equivalent", "status_counts", "committed",
                      "designs_with_commits", "input_netlist_selfcheck_ok"], equiv_rows())
-    ops = llm_ops_rows()
+    ops = ops_rows()
     if ops:
-        r2lib.write_csv(r2lib.OUT / "l2_llm_ops.csv",
-                        ["quartile", "samples", "designs", "key_ops", "got_ops", "type_p",
+        r2lib.write_csv(r2lib.OUT / "l2_ops.csv",
+                        ["set", "quartile", "designs", "key_ops", "got_ops", "type_p",
                          "type_r", "type_f1", "tw_p", "tw_r", "tw_f1"], ops)
     return 0
 

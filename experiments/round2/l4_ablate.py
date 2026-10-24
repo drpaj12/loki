@@ -22,7 +22,7 @@ import pickle
 import random
 from dataclasses import replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import r2lib
 
@@ -90,14 +90,15 @@ def fit_all() -> int:
     (BASE / "calib").mkdir(parents=True, exist_ok=True)
     for name, drop in ABLATIONS.items():
         obj = fit([strip(d, drop) for d in data], FLOOR, "round2-micro+veval", "train")
-        weights = dict(obj["weights"])  # type: ignore[call-overload]
+        weights = dict(cast(dict[str, float], obj["weights"]))
         for fam in drop:
             weights[fam] = 0.0
         obj["weights"] = dict(sorted(weights.items()))
         if "wl" in drop:
             obj["node_llr"] = {}
         write_calib(obj, BASE / "calib" / f"{name}.json")
-        print("fitted", name, "weights", obj["weights"], "ece", obj["reliability"]["ece"])  # type: ignore[index]
+        ece = cast(dict[str, Any], obj["reliability"])["ece"]
+        print("fitted", name, "weights", obj["weights"], "ece", ece)
     return 0
 
 
@@ -142,6 +143,18 @@ def boot_micro_f1(rows: list[tuple[int, int, int]], n: int = 2000) -> tuple[floa
     return vals[int(0.025 * n)], vals[int(0.975 * n)]
 
 
+def auc(points: list[tuple[float, bool]]) -> float | None:
+    """Rank AUC of ``p_comp`` against the match label over all live hypotheses (ties count 1/2)."""
+    pos = [p for p, y in points if y]
+    neg = [p for p, y in points if not y]
+    if not pos or not neg:
+        return None
+    wins = 0.0
+    for p in pos:
+        wins += sum(1.0 if p > q else 0.5 if p == q else 0.0 for q in neg)
+    return wins / (len(pos) * len(neg))
+
+
 def table() -> int:
     rows: list[list[Any]] = []
     kinds: list[list[Any]] = []
@@ -152,15 +165,18 @@ def table() -> int:
         lo, hi = boot_micro_f1(per)
         pts = [(float(p), bool(y)) for v in scores.values() for pl in v["points"].values()
                for p, y in pl]
+        a = auc(pts)
         rows.append([name, s["runs"], s["counted"], s["matched"], s["gt"], s["macro_f1"],
                      s["macro_f1_all"], s["micro_f1"], round(lo, 6), round(hi, 6),
-                     reliability(pts)["ece"] if pts else None])
+                     reliability(pts)["ece"] if pts else None, len(pts),
+                     sum(1 for _p, y in pts if y), None if a is None else round(a, 6)])
         for kind, k in s["kinds"].items():
             kinds.append([name, kind, k["counted"], k["matched"], k["gt"], k["precision"],
                           k["recall"], k["f1"]])
     r2lib.write_csv(r2lib.OUT / "l4_ablation.csv",
                     ["ablation", "runs", "counted", "matched", "gt", "macro_f1", "macro_f1_all",
-                     "micro_f1", "micro_f1_lo", "micro_f1_hi", "ece"], rows)
+                     "micro_f1", "micro_f1_lo", "micro_f1_hi", "ece", "points", "true_points",
+                     "auc"], rows)
     r2lib.write_csv(r2lib.OUT / "l4_kinds.csv",
                     ["ablation", "kind", "counted", "matched", "gt", "precision", "recall", "f1"],
                     kinds)
