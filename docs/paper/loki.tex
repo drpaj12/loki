@@ -199,7 +199,7 @@ neutral \code{n}$k$ name from one shared counter, and a label: the structure kin
 (\code{construct\_type}) is the answer key in \code{labels.csv}, and the netlist-visible
 hard-block kind (\code{cell\_type}) travels in the graph labels, so structures that are
 already reverse engineered stay visible to the reconstruction. \code{loki check} validates
-every dataset: 68 designs, 269 floors, 100\% labelled rows, zero errors. The two hard-block
+every dataset: 68 designs, 269 floors, a label row for every node, zero errors. The two hard-block
 designs the v1.0 front end refused now compile on the v1.1.0 SystemVerilog front end, so the
 set is complete.
 
@@ -244,7 +244,7 @@ L(h)=\pi_{d,k}+\mathrm{clip}_{\pm 6.91}\Big(\sum_{f} w_{\phi(f)}\,\lambda_{k,f}(
 \end{multline}
 where $\pi_{d,k}$ is the prior log-odds of that detector and kind; $\lambda_{k,f}(b_f)$ is the
 LLR of feature $f$ in bin $b_f$; $w_{\phi(f)}$ weights the feature's family (structural, WL
-colour or NPN class); $n_{\mathrm{conf}}$ and $n_{\mathrm{ref}}$ are the numbers of confirmed
+colour, NPN class or L2; the \code{f3} calibration uses the first three only); $n_{\mathrm{conf}}$ and $n_{\mathrm{ref}}$ are the numbers of confirmed
 (or committed) and refuted child hypotheses (a bus slice, a register's flip-flops), which raise
 and lower their parent; and $e_h$ collects fixed records (a sampled check adds $\ln 100=4.61$).
 The clip at $\pm\ln 1000=6.91$ limits the double counting that a naive-Bayes sum of
@@ -276,7 +276,7 @@ equivalent to a template word cell (for example \code{\$add}, \code{\$sub}, \cod
 \code{\$mux}) with its ports bound to the cone's boundary nets, under a timeout; the
 reference functions of the claims (\code{claims.py}) cover addition, subtraction, the six
 comparisons, constant comparison, 2:1 and $N$:1 multiplexers, counters, shift registers
-and LFSRs. (ii) The \emph{truth-table} prover enumerates the claim's inputs when they number
+and LFSRs. (ii) The \emph{truth-table} prover enumerates the claim's inputs and side nets when together they number
 at most 16, an exact proof or a counterexample, and otherwise simulates 4096 seeded random
 vectors, which can refute a claim but only raises it by $\ln 100$. (iii) \emph{Proof transfer}
 groups open hypotheses by operation, parameters and the 1-WL colour of their output
@@ -305,8 +305,13 @@ the order $(p_{\mathrm{comp}}$ descending, kind rank, cell count descending, id$
 losers of a conflict become rejected or alternative.
 
 \emph{Commit and the final structure.} A selected hypothesis is rebuilt on a copy of the
-working design: a proved word-level claim is \emph{raised} to a single word cell (re-checked
-by \code{cone\_check} first when the proof was a \code{cone\_check} one) and every selected piece is wrapped by \code{submod} in a module
+working design: a hypothesis is \emph{raised} to a single word cell only if its kind is one of adder,
+subtractor, comparator or multiplexer, its claim has a \code{cone\_check} template, and it is
+proved by \code{cone\_check} (directly or by transfer); the cone is re-checked by
+\code{cone\_check} unconditionally before the raise. A claim proved only by truth table is
+wrapped, not raised, and counters, shift registers, LFSRs, FSMs, registers, constant
+comparisons, multiplexer trees and carry-in adders are never raised. Every selected piece
+except buses and roles (which only set attributes) is wrapped by \code{submod} in a module
 named for its kind, whose instance is tagged with the hypothesis id, kind, confidence
 $p_{\mathrm{comp}}$, proof status and the recovered function. If \code{raise} or
 \code{submod} fails, the offending hypothesis is rejected with a record of the error and the
@@ -365,8 +370,8 @@ a sample of at most 3000 nodes with the remaining nodes assigned to the nearest 
 spectral clustering (a spectral embedding of the largest connected component, then k-means),
 and Louvain community detection (resolution~1, no $k$). The first two use node features; the
 last two use the graph structure. A partition is scored by its \emph{modularity} on the
-undirected simple projection of the graph and by its \emph{NMI} (and ARI) against the known
-\code{module\_path} and \code{construct\_type} labels over the LUT, flip-flop, hard and gate
+undirected simple projection of the graph, by its \emph{NMI} against the known
+\code{module\_path} and \code{construct\_type} labels and by its \emph{ARI} against \code{module\_path} only over the LUT, flip-flop, hard and gate
 nodes. These two numbers are a quality report, never an input to a method: modularity says
 whether the clusters are dense subgraphs, NMI whether they are the designer's modules.
 
@@ -413,20 +418,23 @@ questions are asked in different terms. Table~\ref{tab:eval-map} sets the two si
 \toprule
 Step & Gate-Breaker & Loki \\
 \midrule
-Input & cmos6 gate netlist of a VerilogEval reference, obfuscated wire names &
+Input & cmos6 gate netlist of a VerilogEval reference, internal nets renamed \code{n\_}$\langle$SHA-1 prefix$\rangle$, ports kept &
  a floor netlist (\code{f1}, \code{f2}, \code{f3}) with names \code{n}$k$; for the neutrality
  check a renamed twin \\
 Producer & a language model, $K$ samples per design &
  the L1 flow, one deterministic run per design (fixed seed); no sampling \\
 Correctness &
  simulate the extracted RTL against the testbench: success rate, Success@$k$ &
- \code{equiv-check} of the flattened final design against the input: \code{final\_equiv}
- (formal; skipped on \code{f1}, whose hard cells are not checked) \\
+ \code{equiv-check} of the flattened final design against the \emph{input netlist}:
+ \code{final\_equiv} (formal; on \code{f1} hard cells are cut points and only soft logic is
+ checked). A self-consistency check of the rewrite, not correctness against the reference RTL;
+ Loki has no behavioural pass rate against the reference \\
 Match to the truth &
  AST and CFG similarity to the reference RTL &
  each counted hypothesis against the L0 answer key: Jaccard $\ge 0.5$, one-to-one;
  precision, recall, F1, average precision per kind and floor; hierarchy similarity;
- AST and CFG of \code{design.v} against the reference on \code{f3} \\
+ AST and CFG of \code{design.v} against the reference on \code{f3}, unconditionally (Gate-Breaker's
+ are computed on functionally correct samples only) \\
 Aggregate & per complexity quartile &
  micro-averaged per kind and floor over the test split; AST and CFG per quartile of \code{f3}
  node count \\
@@ -467,13 +475,17 @@ Aggregate & per complexity quartile &
 
 Of the Gate-Breaker metrics, the AST and CFG similarities are used on \code{f3} as in the
 paper: AST similarity is the mean, over the subtrees of the reference, of the best Jaccard
-similarity to a subtree of the candidate (depth 3, node kinds normalised); CFG
+similarity to a subtree of the candidate (depth 3, node kinds normalised); Gate-Breaker computes
+both on functionally correct samples only, Loki's are unconditional; CFG
 similarity is the node kernel over shortest-path histograms of the control-flow graphs. They
 are computed twice per design, for the gate netlist (L0-stop) and for \code{design.v} (L1-stop),
 and the L1 delta is their difference. The success rate and Success@$k$ need samples; a
 deterministic flow has one attempt per design, so they are reported only for the language-model
-replication (Section~\ref{sec:gb-results}), and formal \code{final\_equiv} plays the role of
-the testbench.
+replication (Section~\ref{sec:gb-results}). Formal \code{final\_equiv} does not play the role
+of the testbench: it compares the flattened final design with the \emph{input netlist}, so it
+shows that the rewrite preserved the netlist (it is trivial on \code{f3}, where L1 commits
+nothing), not that the design is correct against the reference RTL. Loki has no behavioural
+pass rate against the reference.
 
 \emph{L2, step by step.} (1) The same split applies. (2) \code{loki analyze cluster} writes
 a partition per method and design, with its modularity and NMI/ARI against \code{module\_path}
@@ -540,7 +552,7 @@ defines it.
  (Section~\ref{sec:eval}); \code{loki score-all} aggregates every run into per-kind tables.
 \end{enumerate}
 
-In this micro the comparator cone of the \code{f3} floor has 26 logic cells (L1 spec,
+In this micro the \code{f3} comparator, as re-synthesised by the minimal \code{.v} front, has 26 logic cells (L1 spec,
 Section~3); the \code{f2} LUTs carry the comparator spans that the join reads back.
 
 \section{The VerilogEval benchmark and its structure}
@@ -601,7 +613,10 @@ split is skewed by quartile (Table~\ref{tab:veval-bench}): 36 of Q1 and 23 of Q2
 AST-scored, but 1 of Q3 and none of Q4. The regex counts operator characters and keywords
 textually, so they differ from an AST count (the observed Q4 range, 1069 to 3259, exceeds the
 paper's bin top of 1326 for this reason or because the problems differ; we do not separate the
-two). The 156 scores equal those of the replication that computed them first, exactly, so the
+two). The regex also never counts \code{always\_comb}, \code{always\_ff} or \code{always\_latch}
+blocks, which 34 references use, so \code{c@A} and \code{cSeq} are undercounted in the 96
+regex-scored designs, most of Q3 and Q4; the quartile split and the feature trends below rest on
+approximate scores. The 156 scores equal those of the replication that computed them first, exactly, so the
 quartiles here and in Table~\ref{tab:veval} are the same partition.
 
 % Sources: experiments/veval-l0/EXPERIMENT.md "Feature rules" table and Caveats;
@@ -629,8 +644,9 @@ row means; both columns are committed in \code{features.csv}.
 
 Table~\ref{tab:veval-sample} shows 12 designs, three per quartile at fixed ranks by size, so
 the sample is not hand-picked; Table~\ref{tab:veval-features} counts, per quartile, the
-designs that show each feature. The matrix shows what the weight of a clocked block
-(Eq.~\ref{eq:complexity}) leads one to expect: storage is absent from Q1 and Q2 (0 of 77 designs) and present in 31 of 37 Q3 and all 36 Q4
+designs that show each feature. The storage trend is partly tautological: a clocked block adds 1000 to the score
+(Eq.~\ref{eq:complexity}) and storage counts register words, so storage rises with the quartile
+by construction; the other trends are conditioned on the score as well. Storage is absent from Q1 and Q2 (0 of 77 designs) and present in 31 of 37 Q3 and all 36 Q4
 designs. The other features grow with the quartile: select/mux 8\% in Q1 to 56\% in Q4, control
 3\% to 83\%, FSMs 0 of 77 below Q3 and 15 of 36 in Q4. Arithmetic is rare throughout (21 of
 150, 14\%), so the benchmark leans on control, selection and storage more than on arithmetic
@@ -649,8 +665,8 @@ Table~\ref{tab:veval-sizes} gives the size of the 150 designs on each floor. The
 hide a heavy tail. Over all designs the mean node count is 163.5 on \code{f1-k6}, 111.4 on
 \code{f2} and 362.0 on \code{f3}, but the medians are 14.0, 13.5 and 25.0: most references
 are small (125 of 150 have at most 100 nodes at \code{f3}) and a few are large (9 exceed
-1000; the largest, \code{Prob144\_conwaylife}, has 15,487). The gate mapping roughly triples
-the node count of the LUT mapping (362.0 against 111.4 on average, 25.0 against 13.5 at the
+1000; the largest, \code{Prob144\_conwaylife}, has 15,487). The gate mapping multiplies
+the node count of the LUT mapping by about 3 on the mean and 1.9 at the median (362.0 against 111.4 on average, 25.0 against 13.5 at the
 median), as expected when a LUT of up to six inputs becomes a network of cells from a
 library of one- and two-input gates (BUF, INV, NAND2, NOR2).
 \code{f1-k6} sits above \code{f2} on average and in Q3 and Q4 (109.4 against 77.4; 453.9
@@ -710,7 +726,7 @@ Source designs & 68 & 156 \\
 Built on \code{f3} & 65 & 150 \\
 Refused by the reader & 3 & 2 \\
 Failed equivalence gate & 0 & 4 \\
-Gate nodes, all labelled & 50,047 & 54,306 \\
+Gate nodes, each with a label row & 50,047 & 54,306 \\
 Rows with \code{cell\_type} and HDL span & 100\% & 100\% \\
 Module scopes / reference modules & 112 / 113 & 150 / 150 \\
 Leaf signal names / declared signals & 611 / 666 & 841 / 745 \\
@@ -721,9 +737,10 @@ Per-design signal coverage: median & 100\% & 100\% \\
 \end{tabular}
 \end{table}
 
-\emph{The ceiling.} On \code{f3} the 150 designs have 54,306 gate nodes. Every node is
-labelled, cell-typed and carries an HDL span: the label, \code{cell\_type} and HDL coverage
-have geometric mean 1.000 over designs. The 150 module scopes of the 150 reference modules are
+\emph{The ceiling.} On \code{f3} the 150 designs have 54,306 gate nodes. Every node has a
+label row, a \code{cell\_type} and an HDL span: the label, \code{cell\_type} and HDL coverage
+have geometric mean 1.000 over designs. Label coverage is rows over nodes, so it shows that a row
+exists, not that its fields are informative; unmatched cells stay \code{unknown}. The 150 module scopes of the 150 reference modules are
 all present (module coverage 1.000). Signal coverage, the recovered leaf signal names over
 the signals the reference declares, has geometric mean 0.986 (arithmetic mean 1.029): 120
 designs are at exactly 1, 28 are below it, and 2 are above it, where flattened array elements
@@ -731,8 +748,9 @@ add names. The micro suite shows the same shape with a slightly lower ceiling (T
 99.1\% of module scopes and 91.7\% of signal names (an aggregate ratio, where VerilogEval's
 841 over 745 is inflated by those two designs; capped at each design's declared count it is
 715 over 745, 96.0\%). The two sets agree on the message of
-Section~\ref{sec:f3-results}: labels and spans are complete, and what the mapping erased is
-the signal names, not the labels.
+Section~\ref{sec:f3-results}: every node has a label row, a \code{cell\_type} and an HDL span,
+and what the mapping erased is the signal names, not the label rows. (Label coverage counts rows,
+not informative values: a cell that no rule matched keeps the value \code{unknown}.)
 
 \emph{Caveats, reported with the numbers.} (i) \code{--nolatches} turns inferred-latch paths
 into don't-care and \code{lower --async sync} turns asynchronous resets into synchronous clears,
@@ -796,7 +814,7 @@ macro-F1 (all kinds) & & & 0.108 \\
 
 Gate-Breaker's own input is a cmos6 gate netlist, so we built the f3 floor (65 of 68 micro
 designs; the gate reader refuses three hard-block sources) and asked the same questions of
-it. The L0 answer key is complete at this level: all 50,047 gate nodes carry a label row, a
+it. The L0 answer key is complete at this level in that all 50,047 gate nodes carry a label row, a
 cmos6 \code{cell\_type} and an HDL span. What provenance reconstructs of the reference is
 nearly complete but not total: 112 module scopes against 113 module definitions (99.1\%; 54
 of 65 designs complete) and 611 distinct leaf signal names against 666 declared signals
