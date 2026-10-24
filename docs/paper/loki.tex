@@ -17,6 +17,8 @@
 \usepackage{listings}
 \usepackage{pifont}
 \usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 \usepackage{tikz}
 \usetikzlibrary{positioning,fit,arrows.meta,shapes.geometric,backgrounds,calc,matrix}
 
@@ -50,8 +52,8 @@ structure can be recovered \emph{without} a language model, from provenance, a
 Bayesian hypothesis flow and graph analysis alone? This paper describes the
 benchmarks built to answer that question and reports the recovery statistics
 under the Gate-Breaker metrics. The benchmarks are 68 synthesizable micro
-designs compiled by a provenance-tracked front end into named, labelled,
-anonymised netlist datasets; a renamed-instance protocol then proves the
+designs and the 156 VerilogEval references (150 build on three floors), compiled by a
+provenance-tracked front end into named, labelled, anonymised netlist datasets; a renamed-instance protocol then proves the
 pipeline naming-neutral across 105,646 renamed identifiers. On the L1
 hypothesis flow, the structures that are already reverse engineered by the
 synthesis flow recover almost perfectly (hard adders 67 of 67, hard
@@ -211,29 +213,275 @@ the pipeline is naming-neutral, so nothing it recovers is an artefact of a name.
 \subsection{L1: the Bayesian hypothesis flow}
 \label{sec:l1}
 
-L1 is a round-based hypothesis flow over the netlist, with no language model. Pattern
-detectors (arith, bus, ff\_pattern, fsm, mux, role, seqfn, unit, and the \code{hard} detector
-of Task~17) propose structures with likelihoods; \code{cone\_check} proofs confirm them by
-equivalence against the lowered cone; Bayes' rule updates each hypothesis from the evidence;
-and a confirmed guess commits as a new level of an ordinary Odin~III design
-(\code{raise}, \code{submod}), so the result can be written, drawn and traced back to the
-gates. The \code{hard} detector reads the \code{unmap} pass's facts: a hard adder, multiplier
+% Sources for this subsection: docs/specs/2026-10-21-l1-hypotheses-design.md sections 2, 6.1-6.6,
+% 7, 8, 8.1, 9.2, 9.3; loki/re/bayes.py (constants), loki/re/overlay.py (_score, _total,
+% compete, select_commits), loki/re/loop.py (one_round, prove_step), loki/re/provers.py,
+% loki/re/claims.py (REFS), loki/re/commit.py (commit, reject_failed),
+% loki/score/calibrate.py (to_calib, fit_weights, fit).
+L1 is a round-based hypothesis flow over one netlist, with no language model. It reads a
+floor netlist into a fresh Odin~III design (level~0, never edited) in which every cell is a
+function, and keeps a working copy that grows one level of hierarchy per committing round.
+
+\emph{Hypotheses and detectors.} A hypothesis is a claim that a set of level-0 cells is a
+structure of some kind, for example: a flip-flop with enable or synchronous reset (\code{ff\_en},
+\code{ff\_srst}), a \code{register}, a \code{bus} of isomorphic slices, an \code{adder},
+\code{subtractor}, \code{comparator} or constant comparison (\code{eq\_const}), a
+\code{mux} or \code{mux\_tree}, a \code{counter}, \code{shift\_reg}, \code{lfsr} or \code{fsm},
+a datapath or control \code{unit}, a per-cell \code{role}, or a hard block
+(\code{hard\_add}, \code{hard\_mul}, \code{hard\_mem}). Nine detector plugins (arith, bus,
+ff\_pattern, fsm, hard, mux, role, seqfn, unit) propose them. A detector reports features as
+\emph{bin labels} (a width of 5 to 8, whether an enable function is exact, the NPN class of a
+cell) and never a likelihood; the likelihoods come from calibration.
+
+\emph{Bayesian inference.}\label{sec:bayes} Each hypothesis $h$ of kind $k$ from detector
+$d$ carries a log-odds $L(h)$, the logarithm of the odds that it is a real structure, and
+$p(h)=1/(1+e^{-L(h)})$ is its probability. $L$ is a naive-Bayes sum: a prior plus evidence
+items, each the log-likelihood ratio (LLR) of an observation,
+\begin{multline}
+L(h)=\pi_{d,k}+\mathrm{clip}_{\pm 6.91}\Big(\sum_{f} w_{\phi(f)}\,\lambda_{k,f}(b_f)\\
++\min\big(1.10\,n_{\mathrm{conf}},\,3.30\big)-2.30\,n_{\mathrm{ref}}\Big)+e_h,
+\label{eq:logodds}
+\end{multline}
+where $\pi_{d,k}$ is the prior log-odds of that detector and kind; $\lambda_{k,f}(b_f)$ is the
+LLR of feature $f$ in bin $b_f$; $w_{\phi(f)}$ weights the feature's family (structural, WL
+colour or NPN class); $n_{\mathrm{conf}}$ and $n_{\mathrm{ref}}$ are the numbers of confirmed
+(or committed) and refuted child hypotheses (a bus slice, a register's flip-flops), which raise
+and lower their parent; and $e_h$ collects fixed records (a sampled check adds $\ln 100=4.61$).
+The clip at $\pm\ln 1000=6.91$ limits the double counting that a naive-Bayes sum of
+correlated features would otherwise allow. A proof sets $L(h)\ge\ln 9999=9.21$ (the odds
+become 9999 to 1), and a counterexample sets $L(h)=-\infty$.
+
+All three tables are \emph{calibrated} from the training split of L0 (\code{loki calibrate}).
+The flow runs with default tables on every training design; each hypothesis is labelled true
+when it matches an L0 construct (Section~\ref{sec:eval}). The prior is the Laplace-smoothed
+precision of the detector, $\pi_{d,k}=\mathrm{logit}\,\frac{tp+1}{n+2}$ over $n$ proposals of
+which $tp$ are true. For example, the \code{f3} comparator detector made 31,036 proposals of
+which 2 were true, so $\pi=\ln\frac{3}{31035}=-9.24$; the committed value is $-9.244259$
+(\code{experiments/f3-recovery/calib/f3.json}). A bin's LLR is $\lambda=\ln\frac{(pos+1)/(POS+B)}{(neg+1)/(NEG+B)}$,
+with $pos$ and $neg$ the true and false proposals in the bin, $POS$ and $NEG$ the totals of
+the kind, and $B$ the number of bins. The family weights $w$ are the grid values in $\{0,0.1,\dots,1\}$
+that maximise the Bernoulli log-likelihood of the labels, fitted by three sweeps of
+coordinate ascent on out-of-fold rows (two folds, split by design). Without calibration
+(\code{--calib none}) the priors are 0 and the LLRs are the defaults of \code{bayes.py}. The
+reliability check is the expected calibration error over ten equal-width bins of the
+predicted probability, $\mathrm{ECE}=\sum_b\frac{n_b}{N}\,|\bar p_b-r_b|$ with $r_b$ the
+observed match rate.
+
+\emph{Proof engines.} A hypothesis with a functional claim (``these 9 LUTs compute $A+B$ at
+width 5'') can be proved. Three engines prove claims: \code{cone\_check} first when the claim has a template, the
+truth table otherwise or when the cone cannot be bound to the template, and transfer after an
+exact proof.
+(i) \code{cone\_check}, an Odin~III pass, proves that the claim's cone of level-0 cells is
+equivalent to a template word cell (for example \code{\$add}, \code{\$sub}, \code{\$eq},
+\code{\$mux}) with its ports bound to the cone's boundary nets, under a timeout; the
+reference functions of the claims (\code{claims.py}) cover addition, subtraction, the six
+comparisons, constant comparison, 2:1 and $N$:1 multiplexers, counters, shift registers
+and LFSRs. (ii) The \emph{truth-table} prover enumerates the claim's inputs when they number
+at most 16, an exact proof or a counterexample, and otherwise simulates 4096 seeded random
+vectors, which can refute a claim but only raises it by $\ln 100$. (iii) \emph{Proof transfer}
+groups open hypotheses by operation, parameters and the 1-WL colour of their output
+drivers; when one member is proved exactly, the others are tried by a lockstep
+\code{cone\_match} of the two cones, and one transferred member per group is proved for real
+as a spot check, revoking the transfers of the group if it fails. A sequential claim is proved
+as a next-state function (state in, next state out); an FSM gets no proof.
+
+\emph{Deciding the structure.} Hypotheses that claim the same cells compete. Two hypotheses
+\emph{conflict} when both kinds are exclusive, their cell sets intersect, and neither is a
+strict subset of the other (a strict subset is nesting: the smaller becomes a child of the
+larger). For each connected component $C$ of the conflict graph the competitive probability is
+\begin{equation}
+p_{\mathrm{comp}}(h)=\frac{e^{L(h)}}{1+\sum_{j\in C}e^{L(j)}},
+\label{eq:pcomp}
+\end{equation}
+where the ``1'' is the option that none of them is real; a hypothesis without conflicts has
+$p_{\mathrm{comp}}=p$. Two confirmed hypotheses with equal cells are two true forms of the
+same logic and count as one member of $C$; the one whose kind ranks higher (a counter above an
+adder, for example) wins at commit and the other is kept as an \emph{alternative}. A proof is
+spent on hypotheses with $p_{\mathrm{comp}}\ge 0.2$, most probable first, at most 200 per round;
+a hypothesis below $0.01$ is rejected, and re-enters when later evidence lifts it. A hypothesis
+is \emph{selected for commit} when $p_{\mathrm{comp}}\ge 0.9$, every child that could commit is
+already committed, and it does not conflict with a committed piece. Selection is greedy in
+the order $(p_{\mathrm{comp}}$ descending, kind rank, cell count descending, id$)$, and the
+losers of a conflict become rejected or alternative.
+
+\emph{Commit and the final structure.} A selected hypothesis is rebuilt on a copy of the
+working design: a proved word-level claim is \emph{raised} to a single word cell (re-checked
+by \code{cone\_check} first when the proof was a \code{cone\_check} one) and every selected piece is wrapped by \code{submod} in a module
+named for its kind, whose instance is tagged with the hypothesis id, kind, confidence
+$p_{\mathrm{comp}}$, proof status and the recovered function. If \code{raise} or
+\code{submod} fails, the offending hypothesis is rejected with a record of the error and the
+commit is retried once without it (\code{reject\_failed}). The structure that L1 reports is
+therefore exactly the set of committed pieces in \code{design.v}; the alternatives, rejected
+and open hypotheses stay in \code{overlay.json} with their evidence. Algorithm~\ref{alg:l1}
+summarises the loop. It stops when a round commits nothing, proposes nothing new and changes
+no log-odds by more than $10^{-6}$ (a fixed point), after eight rounds, or at the time
+budget, then flattens and lowers the final design and checks it against the input with
+\code{equiv-check}; a result of \code{differs} is a bug and the run exits with an error.
+
+\begin{algorithm}[t]
+\caption{The L1 round loop (\code{loki/re/loop.py}).}
+\label{alg:l1}
+\begin{algorithmic}[1]
+\small
+\STATE $\mathit{level}_0\gets$ read netlist as functions; $\mathit{work}\gets\mathit{level}_0$
+\STATE \textbf{if} floor f1 with hard cells \textbf{then} run \code{unmap} on $\mathit{work}$
+\FOR{$r=1$ \TO $8$}
+\STATE \textbf{propose:} every detector adds hypotheses over the view of $\mathit{work}$
+\STATE \textbf{score:} $L(h)$ by Eq.~\ref{eq:logodds}; \textbf{compete:} $p_{\mathrm{comp}}$ by Eq.~\ref{eq:pcomp}
+\STATE \textbf{prove} claims with $p_{\mathrm{comp}}\ge 0.2$: \code{cone\_check}, truth table, transfer
+\STATE \textbf{re-score} and \textbf{compete}; reject $p_{\mathrm{comp}}<0.01$
+\STATE \textbf{select} $p_{\mathrm{comp}}\ge 0.9$ (children first); \textbf{commit} by raise and submod
+\IF{nothing committed, nothing new, $|\Delta L|\le 10^{-6}$} \STATE \textbf{break} \ENDIF
+\ENDFOR
+\STATE write \code{design.v}, \code{overlay.json}, \code{report}; \code{equiv-check} against the input
+\end{algorithmic}
+\end{algorithm}
+
+The \code{hard} detector reads the \code{unmap} pass's facts: a hard adder, multiplier
 or memory that the flow already reverse engineered is recovered directly, with the
-decline reasons the pass recorded (carry-in chains and the like) kept as open hypotheses. A
-committed calibration (per-floor weights over the structural, WL and NPN features) turns
-likelihoods into probabilities; the reported expected calibration error (ECE) is the honest
-check on that step.
+decline reasons the pass recorded (carry-in chains and the like) kept as open hypotheses. The
+\code{hard} detector does not run on \code{f2} or \code{f3}.
 
 \subsection{L2: graph analysis}
 \label{sec:l2}
 
-L2 reads the same datasets as graphs: node features from Weisfeiler-Leman colours, NPN
-signatures and ORCA graphlet counts; region and partition records; four clustering methods
-(k-means, affinity propagation, spectral, Louvain) scored by modularity and by normalized
-mutual information against the known module hierarchy; and a graph neural network (GraphSAGE,
-and GCN as the variant) trained on the labelled graphs with a 1-WL baseline as the honest
-competitor. The GNN targets the construct type of every node; the question it answers is
-whether the learned node features beat what one Weisfeiler-Leman round already knows.
+% Sources: docs/specs/2026-10-21-l2-analysis-design.md sections 1, 4.1, 6, 7.1-7.4, 8, 9;
+% docs/specs/2026-10-21-l1-hypotheses-design.md section 6.7 (WL, NPN).
+L2 reads the L0 \code{graph.json} files and nothing else: never \code{key.json} and never the
+BLIF. It has three parts.
+
+\emph{Structural features.} Each node gets numeric features (fan-in, fan-out, logic level,
+LUT width, hard-port count), its kind and, on hard cells, its \code{cell\_type}, plus three
+families: colours of 1-WL colour refinement (a hash of the node's label and the multiset of
+its neighbours' colours, per round, so that equal colours mean equal unfolded neighbourhoods),
+the NPN class of a LUT's function (invariant under permutation and negation of the inputs and the output), and the
+ORCA orbit counts of the 4-node graphlets around the node. Before graphlets are counted, the
+global signals (clock, reset, constants, global enables) are classified by role and their
+edges removed, so that a clock does not connect everything.
+
+\emph{Clustering.} Four methods partition a netlist graph into candidate blocks: k-means on
+the feature space ($k=\mathrm{clip}(\mathrm{round}\sqrt{N/2},2,200)$), affinity propagation on
+a sample of at most 3000 nodes with the remaining nodes assigned to the nearest exemplar,
+spectral clustering (a spectral embedding of the largest connected component, then k-means),
+and Louvain community detection (resolution~1, no $k$). The first two use node features; the
+last two use the graph structure. A partition is scored by its \emph{modularity} on the
+undirected simple projection of the graph and by its \emph{NMI} (and ARI) against the known
+\code{module\_path} and \code{construct\_type} labels over the LUT, flip-flop, hard and gate
+nodes. These two numbers are a quality report, never an input to a method: modularity says
+whether the clusters are dense subgraphs, NMI whether they are the designer's modules.
+
+\emph{GNN against 1-WL.} A node classifier predicts each node's \code{construct\_type}: a
+two-layer GraphSAGE (GCN as the variant) of hidden width 64 with ReLU and dropout 0.2 over the
+graph and its reverse edges, trained with Adam (learning rate 0.01, weight decay $5\cdot10^{-4}$)
+for a fixed 100 epochs, full-batch, with class weights $1/\sqrt{\mathrm{count}}$. The split is
+L0's, by design, with the class vocabulary taken from the training designs only (rarer
+values, and values first seen in a test design, are one class \code{\_\_other\_\_}); there is
+no validation set and no early stopping, so nothing is tuned on a test design. Loss and metrics
+cover only the LUT, flip-flop, hard and gate nodes with a known target. The question is
+whether message passing earns anything over what the colour refinement already knows, because
+a message-passing GNN is at most as discriminating as 1-WL~\cite{xu2019powerful}. So the 1-WL
+baseline predicts, for each node, the most common training class of its WL colour (backing
+off from round 4 to round 0 when a colour has fewer than five training nodes), and the
+GNN has beaten it only if its test macro-F1 is higher. Two further baselines are reported on
+the same nodes, the majority class and a logistic regression on the features alone. The
+task is that of GNN-RE~\cite{alrahis2022gnnre}, which maps each gate of a flat netlist to the
+module it belongs to; Loki's model is a baseline for the same task, not a re-implementation,
+and the numbers are not compared with that paper's.
+
+\subsection{Evaluation protocol: how L1 and L2 are scored}
+\label{sec:eval}
+
+% Sources: docs/specs/2026-10-21-l1-hypotheses-design.md sections 12.1-12.5 and 9.4;
+% docs/specs/2026-10-21-l2-analysis-design.md sections 6 and 9; docs/runbook-l1.md sections 3-4;
+% experiments/rename-l2/EXPERIMENT.md (Protocol); experiments/f3-recovery/EXPERIMENT.md (Protocol,
+% step 3); work/gatebreaker-exp2/EXPERIMENT.md section 4 (K=10, testbench, extraction) for the
+% Gate-Breaker side of Table tab:eval-map.
+Gate-Breaker evaluates a stochastic model: for each design the model is sampled $K$ times,
+each sample's RTL is extracted and simulated against the VerilogEval testbench, and the
+results are aggregated per complexity quartile as the success rate (the fraction of the $K$
+samples that pass), Success@$k$ (the fraction of designs with a passing sample among the first
+$k$), and the AST and CFG similarity of the recovered RTL to the reference. Loki's L1 and L2
+are deterministic and their output is a structure, not an RTL text, so the same four
+questions are asked in different terms. Table~\ref{tab:eval-map} sets the two side by side.
+
+\begin{table*}[t]
+\caption{The Gate-Breaker evaluation and the Loki evaluation, step by step.}
+\label{tab:eval-map}
+\centering
+\footnotesize
+\begin{tabular}{@{}lp{5.6cm}p{9.0cm}@{}}
+\toprule
+Step & Gate-Breaker & Loki \\
+\midrule
+Input & cmos6 gate netlist of a VerilogEval reference, obfuscated wire names &
+ a floor netlist (\code{f1}, \code{f2}, \code{f3}) with names \code{n}$k$; for the neutrality
+ check a renamed twin \\
+Producer & a language model, $K$ samples per design &
+ the L1 flow, one deterministic run per design (fixed seed); no sampling \\
+Correctness &
+ simulate the extracted RTL against the testbench: success rate, Success@$k$ &
+ \code{equiv-check} of the flattened final design against the input: \code{final\_equiv}
+ (formal; skipped on \code{f1}, whose hard cells are not checked) \\
+Match to the truth &
+ AST and CFG similarity to the reference RTL &
+ each counted hypothesis against the L0 answer key: Jaccard $\ge 0.5$, one-to-one;
+ precision, recall, F1, average precision per kind and floor; hierarchy similarity;
+ AST and CFG of \code{design.v} against the reference on \code{f3} \\
+Aggregate & per complexity quartile &
+ micro-averaged per kind and floor over the test split; AST and CFG per quartile of \code{f3}
+ node count \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\emph{L1, step by step.}
+\begin{enumerate}
+\item \emph{Split.} L0 assigns each design to train or test by a hash of the design name
+ ($\mathrm{sha256}(\mathrm{seed}{:}\mathrm{design})\bmod 100<80$ is train), so the split is
+ fixed by the name and independent of the run.
+\item \emph{Calibrate} on the training designs of one floor (\code{loki calibrate}): the
+ priors, bin LLRs, family weights and reliability curve of Section~\ref{sec:bayes}.
+\item \emph{Run} \code{loki re} on every test netlist, calibrated and, as a diagnostic,
+ with \code{--calib none}. The run never reads the answer key.
+\item \emph{Ground truth.} From \code{words.json}, the L0 word cells give ground-truth
+ instances $(\mathrm{type},F_g)$ with $F_g$ the set of final cells of the word; counters,
+ mux trees and FSMs are derived from the word connectivity.
+\item \emph{Count and match.} A hypothesis \emph{counts} when it is committed or its
+ $p_{\mathrm{comp}}\ge 0.5$ (\code{--score-p}); it \emph{matches} a ground-truth instance of
+ an accepted type when the Jaccard of their cell sets is at least 0.5, greedily
+ one-to-one by Jaccard. Precision is matched over counted, recall matched over ground truth,
+ and average precision sweeps the threshold from 0.1 to 0.9.
+\item \emph{Buses, roles and hierarchy.} A bus matches a ground-truth bus (nodes sharing a
+ module path and bus name, at least two bits) at the same Jaccard; its bit order is scored
+ exactly and up to reversal. Roles are scored as precision and recall of the predicted
+ control and datapath cells. The hierarchy similarity compares the clusters of the module
+ paths to the committed pieces with the Dice score $F(g,h)=2|g\cap h|/(|g|+|h|)$,
+ $\mathrm{HS}_{gt}=\sum_g|g|\max_h F(g,h)/\sum_g|g|$ and its converse $\mathrm{HS}_{l1}$, and
+ reports their harmonic mean.
+\item \emph{Aggregate.} \code{loki score} writes one \code{score.json} per run and
+ \code{loki score-all} the floor-by-kind tables, the reliability curve of $p_{\mathrm{comp}}$
+ with its ECE, and, with \code{--compare}, the ablation against \code{--features none}.
+\item \emph{Naming neutrality.} The renamed twin of the dataset is run and scored against the
+ original-named key; the base and renamed \code{score.json} must be byte-identical.
+\end{enumerate}
+
+Of the Gate-Breaker metrics, the AST and CFG similarities are used on \code{f3} as in the
+paper: AST similarity is the mean, over the subtrees of the reference, of the best Jaccard
+similarity to a subtree of the candidate (depth 3, node kinds normalised); CFG
+similarity is the node kernel over shortest-path histograms of the control-flow graphs. They
+are computed twice per design, for the gate netlist (L0-stop) and for \code{design.v} (L1-stop),
+and the L1 delta is their difference. The success rate and Success@$k$ need samples; a
+deterministic flow has one attempt per design, so they are reported only for the language-model
+replication (Section~\ref{sec:gb-results}), and formal \code{final\_equiv} plays the role of
+the testbench.
+
+\emph{L2, step by step.} (1) The same split applies. (2) \code{loki analyze cluster} writes
+a partition per method and design, with its modularity and NMI/ARI against \code{module\_path}
+and \code{construct\_type}; the table reports the mean over designs. (3) \code{loki analyze
+gnn} fits the vocabulary and the model on the training designs and writes \code{metrics.json}:
+accuracy and macro-F1 on the training and test nodes for the GNN, the majority class, the
+feature-only logistic regression and the 1-WL baseline, and \code{beats\_wl}. (4) The
+neutrality check re-runs both on a permuted copy of every identifier.
 
 \begin{figure}[t]
 \centering
@@ -583,6 +831,7 @@ the macro average.}
 \label{tab:f3-l1}
 \centering
 \footnotesize
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lrrrrrrrr@{}}
 \toprule
  & & \multicolumn{3}{c}{calibrated} & \multicolumn{4}{c}{\code{--calib none}} \\
@@ -606,7 +855,7 @@ buses & 120 & 2,569 & 0 & 0.000 & 2,835 & 0 & 0.000 & 0.000 \\
 datapath role & 20,541 & 20,541 & 20,541 & 1.000 & 20,541 & 20,541 & 1.000 & 1.000 \\
 control role & 0 & 0 & 0 & -- & 0 & 0 & -- & -- \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 The AST and CFG deltas (Table~\ref{tab:f3-sim}) follow from the zero-commit result: with the
@@ -620,12 +869,12 @@ and bus pieces, so this is not evidence about recovery quality. A flatten contro
 hierarchy and raises both metrics over the gate netlist: AST 0.4576 against 0.4044
 (+0.0533, all 15 designs) and CFG 0.6941 against 0.6382 (+0.0559, the 12 designs the probe
 can score).
-Algorithms~2 and~3 read a single module, while Loki's L1 commits a hierarchy, so a recovery
+Gate-Breaker's Algorithms~2 and~3 read a single module, while Loki's L1 commits a hierarchy, so a recovery
 that produces hierarchy is systematically penalised until it is flattened: for a
 netlist-to-RTL benchmark this is a metric limitation, not a property of the recovery.
 
 \begin{table}[t]
-\caption{f3 AST (Algorithm~2, depth 3, pyverilog) and CFG (Algorithm~3, odin3 probe)
+\caption{f3 AST (Gate-Breaker Algorithm~2, depth 3, pyverilog) and CFG (Algorithm~3, odin3 probe)
 similarity against the micro reference RTL, L0-stop (gate netlist) against L1-stop
 (\code{design.v}); quartiles by f3 node count. With the f3 calibration L1-stop equals
 L0-stop, so every delta is 0.0000; the table therefore shows the L0 values and the diagnostic
@@ -633,6 +882,7 @@ L0-stop, so every delta is 0.0000; the table therefore shows the L0 values and t
 \label{tab:f3-sim}
 \centering
 \footnotesize
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lrrrrrr@{}}
 \toprule
 Quartile & AST L0 & AST L1 & $\Delta$AST & CFG L0 & CFG L1 & $\Delta$CFG \\
@@ -651,7 +901,7 @@ mean (15 / 13) & 0.4044 & 0.4044 & 0.0000 & 0.6468 & 0.6468 & 0.0000 \\
 3 (3 AST / 1 CFG) & 0.4003 & 0.4007 & $+0.0004$ & 0.7507 & 0.7561 & $+0.0055$ \\
 mean & 0.4044 & 0.4155 & $+0.0111$ & 0.6468 & 0.6394 & $-0.0075$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{L2: clusters that carry the hierarchy, and a GNN that beats 1-WL}
@@ -731,7 +981,7 @@ model's boolean expressions. Two caveats: the host's only model path routes thro
 gateway that aliases a DeepSeek backend as Claude Opus (so the model column is not
 verifiably the paper's comparison class), and the CLI exposes none of the paper's sampling
 flags ($T{=}0.85$, $p{=}0.95$). The CFG column uses the common-width node kernel (the
-odin3 CFG probe); the AST column uses the paper's pyverilog Algorithm 2.
+odin3 CFG probe); the AST column uses the paper's pyverilog Algorithm~2 of Gate-Breaker.
 
 What the two lines of work measure is complementary. The language model recovers functional
 behaviour from the gates and names nothing reliably; Loki recovers the structures the flow
