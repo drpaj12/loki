@@ -55,13 +55,18 @@ def _parse_clean(path: Path) -> object:
 
 def ast_pair(ref: Path, l0: Path, l1: Path, top: str) -> tuple[float, float]:
     ref_mod = metrics.parse_module(str(ref), top) if top else metrics.parse_module(str(ref))
-    sims = []
-    for generated in (l0, l1):
-        sims.append(metrics.ast_similarity(ref_mod, _parse_clean(generated), depth=3))
-    return sims[0], sims[1]
+    first = metrics.ast_similarity(ref_mod, _parse_clean(l0), depth=3)
+    if l0.read_bytes() == l1.read_bytes():
+        return first, first
+    return first, metrics.ast_similarity(ref_mod, _parse_clean(l1), depth=3)
 
 
-def cfg_pair(binding: object, ref: Path, l0: Path, l1: Path) -> tuple[float, float]:
+CFG_NODE_LIMIT = 12000
+
+
+def cfg_pair(binding: object, ref: Path, l0: Path, l1: Path,
+             limit: int = CFG_NODE_LIMIT) -> tuple[float, float]:
+    """SimCFG against the reference; skipped when the probe's O(n^2) kernel cannot scale."""
     cfgs = []
     for path in (ref, l0, l1):
         design = odin3_cfg.read_design(binding, Path(path))
@@ -69,10 +74,13 @@ def cfg_pair(binding: object, ref: Path, l0: Path, l1: Path) -> tuple[float, flo
             cfgs.append(odin3_cfg.design_cfg(design))
         finally:
             design.close()
-    sims = []
-    for cfg in cfgs[1:]:
-        sims.append(odin3_cfg.cfg_similarity(cfgs[0], cfg))
-    return sims[0], sims[1]
+    biggest = max(len(cfg) for cfg in cfgs)
+    if biggest > limit:
+        raise ValueError(f"skipped: CFG {biggest} nodes > {limit} (Algorithm 3 is O(n^2))")
+    first = odin3_cfg.cfg_similarity(cfgs[0], cfgs[1])
+    if l0.read_bytes() == l1.read_bytes():
+        return first, first
+    return first, odin3_cfg.cfg_similarity(cfgs[0], cfgs[2])
 
 
 def main() -> int:

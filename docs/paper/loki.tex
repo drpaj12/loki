@@ -230,6 +230,116 @@ macro-F1 (all kinds) & & & 0.108 \\
 \end{tabular}
 \end{table}
 
+\subsection{f3: recovery from the cmos6 gate netlist}
+\label{sec:f3-results}
+
+Gate-Breaker's own input is a cmos6 gate netlist, so we built the f3 floor (65 of 68 micro
+designs; the gate reader refuses three hard-block sources) and asked the same questions of
+it. The L0 answer key is complete at this level: all 50,047 gate nodes carry a label row, a
+cmos6 \code{cell\_type} and an HDL span. What provenance reconstructs of the reference is
+nearly complete but not total: 112 module scopes against 113 module definitions (99.1\%; 54
+of 65 designs complete) and 611 distinct leaf signal names against 666 declared signals
+(91.7\%; median design 100\%, minimum 55.6\%). The module gap is reference-side (generate
+branches and unused submodules never elaborate); the signal gap is synthesis-side (nets that
+mapping created or merged have no original name left). The ceiling is consequently what the
+mapping preserved, not the source RTL.
+
+Table~\ref{tab:f3-l1} reports L1 on the 15 f3 test designs (23,098 gate nodes), base and
+renamed, with a calibration fitted on the 50 train designs' f3 floors. The result is the
+strict one: no construct is counted (0 of 144 ground-truth instances; macro-F1 0.0) and no
+hypothesis is committed at all. The f3 priors are strongly negative because the gate-level
+detectors are imprecise on the train floors (comparator $-9.24$ from 31,036 proposals with
+2 true), so the best calibrated confidence in any test design is a bus at $p=0.764$, below
+the 0.9 commit threshold, and the L1-stop Verilog is byte-identical to the input netlist in
+15 of 15 designs. Without calibration the detectors count 1,166 constructs for 2 matches
+(macro-F1 0.038; one adder, one register) and 2,835 buses for 0 matches. Buses are proposed
+but never reconstructed: 2,569 counted bus hypotheses against 120 ground-truth buses, 0
+matched, so no width or bit order is recovered. The role detector labels every logic cell
+datapath, which is 100\% correct only because the f3 answer key holds no control cells (0 of
+50,047; f1 has 4): control-versus-data is not answerable from f3 provenance, and the
+datapath F1 of 1.000 over 20,541 cells is vacuous. The hard detector stays f1-only by design
+(\code{unmap} runs only on f1 floors with hard cells), so the 28 hard ground-truth instances
+are unreachable here. Base and renamed \code{score.json} digests are identical
+(9368cfc26303): naming contributes no decision bit at f3 either.
+
+\begin{table}[t]
+\caption{f3 L1 per kind on the 15 test designs. The calibrated columns are the protocol's
+setting; the \code{--calib none} columns are a diagnostic of what the detectors propose
+before calibration prunes it. A kind with no counted prediction has no F1 and is left out of
+the macro average.}
+\label{tab:f3-l1}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+ & & \multicolumn{3}{c}{calibrated} & \multicolumn{4}{c}{\code{--calib none}} \\
+Kind & GT & counted & matched & F1 & counted & matched & precision & F1 \\
+\midrule
+adder & 17 & 0 & 0 & -- & 1 & 1 & 1.000 & 0.111 \\
+adder\_cin & 17 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+comparator & 20 & 0 & 0 & -- & 14 & 0 & 0.000 & 0.000 \\
+eq\_const & 16 & 0 & 0 & -- & 1,141 & 0 & 0.000 & 0.000 \\
+ff\_srst & 2 & 0 & 0 & -- & 7 & 0 & 0.000 & 0.000 \\
+hard\_add & 17 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+hard\_mul & 11 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+mux & 7 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+mux\_bit & 7 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+register & 22 & 0 & 0 & -- & 3 & 1 & 0.333 & 0.080 \\
+subtractor & 8 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+\midrule
+macro-F1 & 144 & 0 & 0 & 0.000 & 1,166 & 2 & & 0.038 \\
+\midrule
+buses & 120 & 2,569 & 0 & 0.000 & 2,835 & 0 & 0.000 & 0.000 \\
+datapath role & 20,541 & 20,541 & 20,541 & 1.000 & 20,541 & 20,541 & 1.000 & 1.000 \\
+control role & 0 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The AST and CFG deltas (Table~\ref{tab:f3-sim}) follow from the zero-commit result: with the
+f3 calibration L1-stop is byte-identical to L0-stop, so both metrics have delta exactly
+0.0000 in every quartile (AST over 15 designs; CFG over the 13 whose CFG the probe can
+finish, 12,000 nodes being its practical $O(n^2)$ limit). The uncalibrated diagnostic, where
+L1 commits 1,535 hypotheses in 11 of 15 designs, moves the means by +0.0111 (AST) and
+$-0.0075$ (CFG), with mixed per-quartile signs; the commits are mostly wrong \code{eq\_const}
+and bus pieces, so this is not evidence about recovery quality. A flatten control (Odin~III
+\code{proc; flatten}, which also lowers the committed processes) inlines the committed
+hierarchy and raises both metrics over the gate netlist: AST 0.4576 against 0.4044
+(+0.0533) and CFG 0.6941 against 0.6382 (+0.0559) over the designs both can score.
+Algorithms~2 and~3 read a single module, while Loki's L1 commits a hierarchy, so a recovery
+that produces hierarchy is systematically penalised until it is flattened: for a
+netlist-to-RTL benchmark this is a metric limitation, not a property of the recovery.
+
+\begin{table}[t]
+\caption{f3 AST (Algorithm~2, depth 3, pyverilog) and CFG (Algorithm~3, odin3 probe)
+similarity against the micro reference RTL, L0-stop (gate netlist) against L1-stop
+(\code{design.v}); quartiles by f3 node count. With the f3 calibration L1-stop equals
+L0-stop, so every delta is 0.0000; the table therefore shows the L0 values and the diagnostic
+(\code{--calib none}) deltas.}
+\label{tab:f3-sim}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Quartile & AST L0 & AST L1 & $\Delta$AST & CFG L0 & CFG L1 & $\Delta$CFG \\
+\midrule
+0 (4 designs) & 0.4428 & 0.4428 & 0.0000 & 0.7909 & 0.7909 & 0.0000 \\
+1 (4) & 0.3765 & 0.3765 & 0.0000 & 0.4224 & 0.4224 & 0.0000 \\
+2 (4) & 0.3969 & 0.3969 & 0.0000 & 0.7013 & 0.7013 & 0.0000 \\
+3 (3 AST / 1 CFG) & 0.4003 & 0.4003 & 0.0000 & 0.7507 & 0.7507 & 0.0000 \\
+\midrule
+mean (15 / 13) & 0.4044 & 0.4044 & 0.0000 & 0.6468 & 0.6468 & 0.0000 \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{diagnostic \code{--calib none} (L1 commits hierarchy)}} \\
+0 (4) & 0.4428 & 0.4277 & $-0.0151$ & 0.7909 & 0.7776 & $-0.0133$ \\
+1 (4) & 0.3765 & 0.3756 & $-0.0009$ & 0.4224 & 0.4099 & $-0.0124$ \\
+2 (4) & 0.3969 & 0.4542 & $+0.0573$ & 0.7013 & 0.7014 & $+0.0001$ \\
+3 (3 AST / 1 CFG) & 0.4003 & 0.4007 & $+0.0004$ & 0.7507 & 0.7561 & $+0.0055$ \\
+mean & 0.4044 & 0.4155 & $+0.0111$ & 0.6468 & 0.6394 & $-0.0075$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{L2: clusters that carry the hierarchy, and a GNN that beats 1-WL}
 \label{sec:l2-results}
 

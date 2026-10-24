@@ -46,12 +46,12 @@ def renamed_floor(dataset: Path, design: str) -> Path:
     raise KeyError(design)
 
 
-def run_one(netlist: Path, calib: Path, out: Path, timeout: int) -> dict[str, object]:
+def run_one(netlist: Path, calib: Path | None, out: Path, timeout: int) -> dict[str, object]:
     if (out / "report.json").is_file():
         return {"status": "exists"}
     out.parent.mkdir(parents=True, exist_ok=True)
     cmd = [sys.executable, "-m", "loki.cli", "re", str(netlist), "--floor", "f3",
-           "--calib", str(calib), "--out", str(out)]
+           "--calib", "none" if calib is None else str(calib), "--out", str(out)]
     start = time.monotonic()
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     seconds = round(time.monotonic() - start, 1)
@@ -117,6 +117,7 @@ def main() -> int:
     ap.add_argument("--renamed", type=Path)
     ap.add_argument("--rename-map", type=Path)
     ap.add_argument("--calib", type=Path)
+    ap.add_argument("--no-calib", action="store_true", help="run with the default tables")
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--split", default="test")
     ap.add_argument("--max-designs", type=int, default=0)
@@ -124,7 +125,8 @@ def main() -> int:
     args = ap.parse_args()
     if args.stage == "score":
         return score_variant(args.variant, args.dataset, args.out, args.rename_map)
-    assert args.calib is not None
+    assert args.calib is not None or args.no_calib
+    calib = None if args.no_calib else args.calib
     source = args.renamed if args.variant == "renamed" else args.dataset
     designs = f3_designs(args.dataset, args.split)
     if args.max_designs:
@@ -132,7 +134,7 @@ def main() -> int:
     for design, nodes in designs:
         floor = (renamed_floor(source, design) if args.variant == "renamed"
                  else source / design / "f3")
-        result = run_one(floor / "netlist.blif", args.calib, args.out / f"{design}__f3" / "re",
+        result = run_one(floor / "netlist.blif", calib, args.out / f"{design}__f3" / "re",
                          args.timeout)
         print(design, nodes, json.dumps(result), flush=True)
     return 0

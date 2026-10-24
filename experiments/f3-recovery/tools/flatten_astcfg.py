@@ -11,6 +11,8 @@ Usage: flatten_astcfg.py RUNS_DIR DATASET REF_DIR SANITIZED_DIR OUT_JSON
 from __future__ import annotations
 
 import json
+import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -20,13 +22,26 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import astcfg  # noqa: E402
 import odin3_cfg  # noqa: E402
 
+ODIN3 = "/home/jamiespa/odin3-ws/odin3/build/release/odin3"
 
-def flatten(binding: object, source: Path, target: Path) -> None:
-    design = odin3_cfg.read_design(binding, source)
-    try:
-        design.run_script(f'flatten; write_verilog "{target}"')
-    finally:
-        design.close()
+
+def flatten(source: Path, target: Path) -> None:
+    """CLI flatten with the top named: the Python reader's implicit top resolution refuses the
+    uninstantiated committed function modules; ``--top`` wins over it (same build)."""
+    script = (f'read_verilog "{source}"; hierarchy --top top; proc; flatten; '
+              f'write_verilog "{target}"')
+    subprocess.run([ODIN3, "--top", "top", "-p", script], check=True, capture_output=True,
+                   text=True)
+    # flatten cannot remove a dead module from the IR, so write_verilog emits the uninstantiated
+    # committed modules after the flattened top; keep the top module alone for the metrics.
+    text = target.read_text(encoding="utf-8")
+    starts = [m.start() for m in re.finditer(r"(?m)^module\s", text)]
+    if len(starts) > 1:
+        cut = text[: starts[1]]
+        last = cut.rfind("endmodule")
+        if last >= 0:
+            cut = cut[: last + len("endmodule")] + "\n"
+        target.write_text(cut, encoding="utf-8")
 
 
 def main() -> int:
@@ -55,10 +70,14 @@ def main() -> int:
             continue
         flat = flat_dir / f"{design}.v"
         try:
-            flatten(binding, l1, flat)
+            flatten(l1, flat)
             ast_flat, _ = astcfg.ast_pair(ref, flat, flat, str(key.get("top") or ""))
-            cfg_ref = astcfg.cfg_pair(binding, ref, flat, flat)
-            row.update(simast_flat=round(ast_flat, 6), simcfg_flat=round(cfg_ref[0], 6))
+            row["simast_flat"] = round(ast_flat, 6)
+            try:
+                cfg_ref = astcfg.cfg_pair(binding, ref, flat, flat)
+                row["simcfg_flat"] = round(cfg_ref[0], 6)
+            except ValueError as err:
+                row["cfg_error"] = str(err)[:120]
         except Exception as err:  # noqa: BLE001 - reported per design
             row["error"] = f"{type(err).__name__}: {str(err)[:120]}"
         rows.append(row)
