@@ -151,17 +151,17 @@ second part of \code{floor\_script}. Node kinds are those of \code{graph.json}
 \label{tab:floors}
 \centering
 \footnotesize
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}lp{4.2cm}p{4.9cm}p{6.5cm}@{}}
 \toprule
 Floor & Reads & Mapping script & Netlist contents \\
 \midrule
-\code{f1-k6} & \code{read\_arch k6\_frac\_N10\_frac\_chain\_mem32K\_40nm} &
- \code{hardmap; lower; abc --lut 6} & LUT6, flip-flops, and hard adder, multiplier and RAM
+\code{f1-k6} & \code{read\_arch} \code{k6\_frac\_N10\_}\allowbreak\code{frac\_chain\_}\allowbreak\code{mem32K\_40nm} &
+ \code{hardmap; lower;} \code{abc --lut 6} & LUT6, flip-flops, and hard adder, multiplier and RAM
  cells that keep their Odin~III type \\
 \code{f1-earch} & \code{read\_arch} of the EArch file & same as \code{f1-k6} & same kinds, EArch hard blocks \\
 \code{f2} & \code{read\_arch} (cell types only) & \code{lower; abc --lut 6} &
  LUT6 and flip-flops only; arithmetic is soft, so no \code{hard} node exists \\
-\code{f3} & \code{read\_techlib lib/cmos6.o3lib} & \code{lower; abc --gates cmos6; dfflibmap cmos6} &
+\code{f3} & \code{read\_techlib} \code{lib/cmos6.o3lib} & \code{lower; abc --gates cmos6;} \code{dfflibmap cmos6} &
  library gates (BUF, INV, NAND2, NOR2) and DFF flip-flops \\
 \bottomrule
 \end{tabular}
@@ -294,6 +294,126 @@ defines it.
 
 In this micro the comparator cone of the \code{f3} floor has 26 logic cells (L1 spec,
 Section~3); the \code{f2} LUTs carry the comparator spans that the join reads back.
+
+\section{The VerilogEval benchmark and its structure}
+\label{sec:bench}
+
+\subsection{VerilogEval spec-to-rtl as the Gate-Breaker benchmark}
+\label{sec:veval-bench}
+
+Gate-Breaker evaluates on VerilogEval~\cite{liu2023verilogeval}, taking the spec-to-rtl
+variant: 156 problems, each a natural-language prompt, a reference solution
+(\code{*\_ref.sv}, module \code{RefModule}) and a testbench (\code{*\_test.sv}). The
+Gate-Breaker flow synthesizes the reference to a cmos6 gate netlist, hands the netlist to the
+model, and checks the model's RTL against the testbench. Loki uses the same 156 references as
+L0 sources and reads the reference module as the design; the prompts and testbenches are not
+inputs to L0, L1 or L2. The references are SystemVerilog, read through Odin~III's slang
+adapter (Section~\ref{sec:veval-l0}).
+
+% Sources: work/gatebreaker-exp2/EXPERIMENT.md section 2 (156 *_ref.sv, *_test.sv, *_prompt.txt);
+% work/gatebreaker-exp2/scripts/complexity.py (the score and its feature rules; weights and
+% definitions below are quoted from its docstring and WEIGHTS table); experiments/veval-l0/
+% EXPERIMENT.md Protocol step 3 (bins, 60 AST / 96 regex); experiments/veval-l0/complexity.csv
+% (per-design score, quartile, method) -> Table tab:veval-bench.
+\subsection{The complexity score and its quartiles}
+\label{sec:complexity}
+
+Gate-Breaker groups the problems by a complexity score (its Eq.~2), a weighted sum of
+counts of HDL constructs:
+\begin{multline}
+C = 1000\,c_{\mathrm{Seq}} + 200\,(c_{\mathrm{FG}} + c_{\mathrm F}) + 20\,c_{\mathrm{Mo}}
+ + 15\,(c_{@A} + c_{\mathrm B}) \\
+ + 10\,(c_{\mathrm M} + c_{\mathrm{Ca}}) + 5\,c_{\mathrm E}
+ + 3\,c_{\mathrm A} + 2\,c_{\mathrm C}.
+\label{eq:complexity}
+\end{multline}
+The paper names the terms but does not define them, so the implementation we reuse
+(\code{complexity.py} of the second Gate-Breaker replication) fixes the reading:
+$c_{\mathrm{Seq}}$ counts clocked \code{always} blocks (a \code{posedge} or \code{negedge} in
+the sensitivity list), $c_{\mathrm{FG}}$ for-generate constructs, $c_{\mathrm F}$ \code{for}
+loops, $c_{\mathrm{Mo}}$ module instantiations, $c_{@A}$ all \code{always} blocks,
+$c_{\mathrm B}$ declarations wider than one bit, $c_{\mathrm M}$ multiplexers (ternary
+operators plus non-default \code{case} items), $c_{\mathrm{Ca}}$ \code{case} statements,
+$c_{\mathrm E}$ arithmetic operators (\code{+ - * / \%}), $c_{\mathrm A}$ continuous
+assignments and $c_{\mathrm C}$ concatenations. A clocked block weighs 1000 on its own, so a
+design in which the counter recognises one scores at least 1000, which is Q3 or Q4.
+
+The quartiles are the paper's absolute bins (its Table~II), not rank quartiles of the
+benchmark: Q1 is 3 to 23, Q2 24 to 111, Q3 112 to 1064 and Q4 1065 to 1326. The 156 references
+fall 38, 39, 40 and 39 into Q1 to Q4, close to the paper's 39 per quartile. The 150
+designs that build on every floor are split 38, 39, 37 and 36: the six missing ones are
+\code{Prob031}, \code{Prob046} and \code{Prob145} (Q3) and \code{Prob078}, \code{Prob151} and
+\code{Prob156} (Q4). Table~\ref{tab:veval-bench} gives the counts.
+
+\emph{Deviation: pyverilog AST against a regex fallback.} The score is computed on the
+pyverilog AST of the first module when the file parses, and by regular-expression counts of
+the same terms otherwise, with the method recorded per design. Because the references are
+SystemVerilog, pyverilog parses only 60 of the 156; the other 96 use the regex counts. The
+split is skewed by quartile (Table~\ref{tab:veval-bench}): 36 of Q1 and 23 of Q2 are
+AST-scored, but 1 of Q3 and none of Q4. The regex counts operator characters and keywords
+textually, so they differ from an AST count (the observed Q4 range, 1069 to 3259, exceeds the
+paper's bin top of 1326 for this reason or because the problems differ; we do not separate the
+two). The 156 scores equal those of the replication that computed them first, exactly, so the
+quartiles here and in Table~\ref{tab:veval} are the same partition.
+
+% Sources: experiments/veval-l0/EXPERIMENT.md "Feature rules" table and Caveats;
+% experiments/veval-l0/features.csv; stats.json (feature_coverage).
+\subsection{The feature matrix}
+\label{sec:veval-features}
+
+Gate-Breaker characterises its benchmark by the HDL structures it contains. We build the
+same kind of matrix for the 150 built designs, from the \code{f3} floor of each, with
+rules fixed in advance (\code{summarize.py}):
+\emph{arithmetic} counts the word cells of type \code{\$add \$sub \$mul \$div \$mod \$neg
+\$pos \$pow \$alu \$macc}; \emph{select/mux} those of type \code{\$mux \$pmux \$bmux \$demux};
+\emph{storage} the register words (\code{\$dff}, \code{\$dffe}, \code{\$adff}, \code{\$adffe},
+\code{\$sdff}, \code{\$sdffe}, \code{\$sdffce}, \code{\$dffsr}, \code{\$aldff},
+\code{\$dlatch}, \code{\$adlatch}); \emph{FSM} is 1 when Odin~III's \code{fsm} pass marked any
+word; \emph{control} is 1 when any label row has role \code{control} or \code{mixed}; and
+\emph{wide buses} counts the distinct bus names with a bit index of at least 1. The matrix
+uses one symbol per cell: \ding{55} for count 0, \ding{51} for one, \ding{51}\ding{51} for
+two or more; FSM and control are 0/1 flags, so they show \ding{55} or \ding{51} only.
+
+The bus column is \code{buses\_wide}, not \code{buses}. The latter counts every named signal,
+including single-bit ports, so it is at least 1 for all 150 designs and at least 2 for 147,
+and would put a check mark in every row. The wide count is the quantity a ``multi-bit bus''
+row means; both columns are committed in \code{features.csv}.
+
+Table~\ref{tab:veval-sample} shows 12 designs, three per quartile at fixed ranks by size, so
+the sample is not hand-picked; Table~\ref{tab:veval-features} counts, per quartile, the
+designs that show each feature. The matrix shows what the weight of a clocked block
+(Eq.~\ref{eq:complexity}) leads one to expect: storage is absent from Q1 and Q2 (0 of 77 designs) and present in 31 of 37 Q3 and all 36 Q4
+designs. The other features grow with the quartile: select/mux 8\% in Q1 to 56\% in Q4, control
+3\% to 83\%, FSMs 0 of 77 below Q3 and 15 of 36 in Q4. Arithmetic is rare throughout (21 of
+150, 14\%), so the benchmark leans on control, selection and storage more than on arithmetic
+datapaths. Wide buses are common from Q2 up (90\%, 59\%, 100\%) but nearly absent in Q1
+(8\%), whose members mostly have only single-bit signals. The FSM flag is Odin~III's detection, not a
+reading of the source: \code{Prob107\_fsm1s} in Table~\ref{tab:veval-sample} has storage
+and control cells but no FSM mark.
+
+% Sources: experiments/veval-l0/sizes.csv and stats.json ("sizes"), via paper_tables.py;
+% largest design, the count of designs at most 100 nodes and above 1000 nodes: benchmark.csv
+% (f3_nodes column); micro f3 size: experiments/f3-recovery/EXPERIMENT.md (50,047 nodes, 65 designs).
+\subsection{Benchmark size per technology mapping}
+\label{sec:veval-sizes}
+
+Table~\ref{tab:veval-sizes} gives the size of the 150 designs on each floor. The averages
+hide a heavy tail. Over all designs the mean node count is 163.5 on \code{f1-k6}, 111.4 on
+\code{f2} and 362.0 on \code{f3}, but the medians are 14.0, 13.5 and 25.0: most references
+are small (125 of 150 have at most 100 nodes at \code{f3}) and a few are large (9 exceed
+1000; the largest, \code{Prob144\_conwaylife}, has 15,487). The gate mapping roughly triples
+the node count of the LUT mapping (362.0 against 111.4 on average, 25.0 against 13.5 at the
+median), as expected when a LUT of up to six inputs becomes a network of cells from a
+library of one- and two-input gates (BUF, INV, NAND2, NOR2).
+\code{f1-k6} sits above \code{f2} on average and in Q3 and Q4 (109.4 against 77.4; 453.9
+against 269.8) while the two coincide in Q1 and Q2 (6.3 and 6.1; 100.2 and 100.0): the
+\code{f1-k6} floor keeps hard cells (21 designs hold hard adders) where \code{f2} spreads
+arithmetic over LUTs, which is consistent with the excess but is not isolated here. By quartile on \code{f3}, the mean grows from 9.9 nodes in Q1 to 972.1 in
+Q4, but the Q4 median is only 51.5: the complexity score tracks the number and kind of HDL
+constructs, not the netlist size. For scale, the micro suite's \code{f3} floors hold 50,047
+nodes over 65 designs, a mean of about 770.
+
+\input{veval-tables}
 
 \section{Results}
 \label{sec:results}
