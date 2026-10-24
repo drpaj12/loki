@@ -54,6 +54,9 @@ See `docs/runbook-l0.md`.
         --out datasets/l1-scores [--compare <runs made with --features none>]
     LOKI_DATASET=$PWD/dataset python -m unittest tests.test_acceptance_l1 -v      # L1 exit test
 
+Every run also writes `reverse-provenance.json` (what Loki claims about each piece of the input netlist, with confidence and proof) and `loki rp doc` turns it into a document for an LLM: see
+[Passing Loki results to an LLM](docs/user/llm.md).
+
 `calib/f2.json` (train split) is committed. Details in `docs/runbook-l1.md`, first numbers in
 `docs/results-l1.md`.
 

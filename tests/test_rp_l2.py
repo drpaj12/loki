@@ -77,6 +77,24 @@ class AddL2Test(unittest.TestCase):
         self.assertIn("not joining by guess", err.getvalue())
         self.assertEqual((self.dir / FILE).read_bytes(), before)
 
+    def test_unjoined_port_ids_accepted_when_cells_complete(self) -> None:
+        ids = ["n10", "n11", "n12", "n13", *[f"p{i}" for i in range(8)]]
+        part = write(Path(self.tmp.name) / "p.json", partition(ids, [0, 0, 1, 1, *[0] * 8]))
+        add_l2(self.dir, part)
+        rp = json.loads((self.dir / FILE).read_text(encoding="utf-8"))
+        self.assertEqual(rp["l2"]["partition"]["unjoined_nodes"], 8)
+        self.assertEqual(rp["l2"]["partition"]["port_nodes"], 0)
+
+    def test_unjoined_ids_refused_when_count_differs_or_cells_missing(self) -> None:
+        few = ["n10", "n11", "n12", "n13", "p0", "p1"]
+        part = write(Path(self.tmp.name) / "p.json", partition(few, [0, 0, 1, 1, 0, 0]))
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(loki_main(["rp", "add-l2", str(self.dir), str(part)]), 2)
+        short = ["n10", "n11", *[f"p{i}" for i in range(8)]]
+        part = write(Path(self.tmp.name) / "q.json", partition(short, [0, 1, *[0] * 8]))
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(loki_main(["rp", "add-l2", str(self.dir), str(part)]), 2)
+
     def test_ports_only_fails(self) -> None:
         part = write(Path(self.tmp.name) / "p.json", partition(["a0", "y0"], [0, 1]))
         with contextlib.redirect_stderr(io.StringIO()):

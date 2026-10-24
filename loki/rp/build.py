@@ -140,6 +140,13 @@ def _width(h: Hypothesis) -> int:
     return max((len(ns) for ns in h.nets.values()), default=0)
 
 
+def _fn(h: Hypothesis) -> str:
+    """``fn_text``, except for a bus: its text counts the width of one slice, not the bits."""
+    if h.kind == "bus":
+        return f"bus: {_width(h)} bits"
+    return fn_text(h)
+
+
 def _ports(res: RunResult, h: Hypothesis) -> dict[str, dict[str, list[str]]]:
     if h.claim is None:
         return {"inputs": {}, "outputs": {}}
@@ -163,7 +170,7 @@ def _element(res: RunResult, h: Hypothesis, status: str,
         recovered = {"module": commit.get("module", ""), "instance": commit.get("instance", ""),
                      "form": commit.get("form", "")}
     el: dict[str, object] = {
-        "id": h.id, "kind": h.kind, "stage": STAGE, "status": status, "fn": fn_text(h),
+        "id": h.id, "kind": h.kind, "stage": STAGE, "status": status, "fn": _fn(h),
         "width": _width(h),
         "params": {k: v for k, v in sorted(h.params.items()) if k != "rows"},
         "proof": _proof(h), "p_comp": num(h.p_comp),

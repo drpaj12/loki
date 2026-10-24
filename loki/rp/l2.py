@@ -26,25 +26,30 @@ def _frac(part: int, whole: int) -> float:
     return round(part / whole, 6) if whole else 0.0
 
 
-def _split(rp: dict[str, Any], part: Partition) -> tuple[dict[int, set[str]], int]:
-    """Cells per cluster, and the number of port nodes; ``JoinError`` on any unknown id."""
+def _split(rp: dict[str, Any], part: Partition) -> tuple[dict[int, set[str]], int, int]:
+    """Cells per cluster, port nodes joined by name and nodes not joined (ports of other id).
+
+    Cells join by name only. The graph of the dataset names its PI/PO nodes with ids of the shared
+    counter, which differ from the net names of the netlist, so port nodes may not join. Nodes
+    that join to nothing are accepted only when every cell of the netlist is in the partition and
+    their number is the number of port nets not joined by name: then they can only be ports.
+    Anything else is a ``JoinError``."""
     net = rp["netlist"]
     cells, ports = set(net["cells"]), set(net["inputs"]) | set(net["outputs"])
     unknown = [n for n in part.node_ids if n not in cells and n not in ports]
-    if unknown:
-        raise JoinError(
-            f"{len(unknown)} of {len(part.node_ids)} partition nodes are not cells or ports of "
-            f"the re input (first: {', '.join(unknown[:5])}); not joining by guess")
+    named = {n for n in part.node_ids if n in ports}
     out: dict[int, set[str]] = {}
-    n_ports = 0
     for node, number in zip(part.node_ids, part.assignment, strict=True):
         if node in cells:
             out.setdefault(number, set()).add(node)
-        else:
-            n_ports += 1
-    if not any(out.values()):
+    joined = set().union(*out.values()) if out else set()
+    if not joined:
         raise JoinError("no partition node is a cell of the re input")
-    return out, n_ports
+    if unknown and not (joined == cells and len(unknown) == len(ports - named)):
+        raise JoinError(
+            f"{len(unknown)} of {len(part.node_ids)} partition nodes are not cells or ports of "
+            f"the re input (first: {', '.join(unknown[:5])}); not joining by guess")
+    return out, len(named), len(unknown)
 
 
 def _modules(rp: dict[str, Any]) -> list[dict[str, Any]]:
@@ -69,7 +74,7 @@ def _overlap(members: set[str], mods: list[dict[str, Any]]) -> list[dict[str, ob
 
 def build_l2(rp: dict[str, Any], part: Partition, source: str) -> dict[str, object]:
     """The ``l2`` block for ``rp`` from the partition ``part`` (read from file ``source``)."""
-    clusters, n_ports = _split(rp, part)
+    clusters, n_ports, n_unjoined = _split(rp, part)
     mods = _modules(rp)
     in_module: set[str] = set()
     for m in mods:
@@ -89,7 +94,8 @@ def build_l2(rp: dict[str, Any], part: Partition, source: str) -> dict[str, obje
         "partition": {"key": part.key, "file": Path(source).name, "seed": part.seed,
                       "params": part.params, "graph_sha256": part.graph_sha256,
                       "design": part.design, "floor": part.floor,
-                      "n_clusters": part.n_clusters, "port_nodes": n_ports},
+                      "n_clusters": part.n_clusters, "port_nodes": n_ports,
+                      "unjoined_nodes": n_unjoined},
         "clusters": block,
         "cells_unclustered": len(set(net["cells"]) - clustered),
     }

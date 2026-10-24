@@ -253,7 +253,10 @@ def _l2(rp: dict[str, Any], lists: bool) -> list[str]:
     p = l2["partition"]
     out = ["## 8. Groupings from graph analysis (L2)", "",
            f"Method {l2['method']} (partition {p['key']}, {p['n_clusters']} clusters). These "
-           "groups come from graph structure, not from Loki's claims above.", ""]
+           "groups come from graph structure, not from Loki's claims above."]
+    if len(l2["clusters"]) < p["n_clusters"]:
+        out.append("Clusters that hold no cell (only ports) are not listed.")
+    out.append("")
     for number in sorted(l2["clusters"], key=int):
         c = l2["clusters"][number]
         text = f"- cluster {number}: {_cells(c['cells'], lists)}"
