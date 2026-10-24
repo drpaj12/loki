@@ -4,7 +4,7 @@
 The file holds the round-2 tables (tab:r2-*), the research-log table (tab:r2-log) and a macro
 for every deciding number the prose cites (``\\rt...``), so no number in the paper's round-2
 text is typed by hand. The status of each hypothesis is computed here with the decision rules of
-EXPERIMENT.md (fixed before the runs). No timestamps and no environment: a rerun reproduces the
+EXPERIMENT.md (thresholds set by the implementer during the round). No timestamps and no environment: a rerun reproduces the
 file byte for byte.
 
 Usage: paper_tables.py [--out PATH]
@@ -315,9 +315,14 @@ def l2_block() -> tuple[str, str]:
     macro("rtLtwoLlmAstQb", f3(v("llm", "Q2", "common", "ast")))
     macro("rtLtwoLlmCfgQa", f3(v("llm", "Q1", "common", "cfg")))
     macro("rtLtwoLlmCfgQb", f3(v("llm", "Q2", "common", "cfg")))
+    for q, tag in (("Q1", "Qa"), ("Q2", "Qb")):
+        macro(f"rtLtwoLokiAst{tag}", f3(v("f3-calib", q, "common", "ast")))
+        macro(f"rtLtwoLokiCfg{tag}", f3(v("f3-calib", q, "common", "cfg")))
+        macro(f"rtLtwoCommonN{tag}", h[("f3-calib", q, "common")]["n"])
     for q, tag in (("Q1", "Qa"), ("Q2", "Qb"), ("Q3", "Qc"), ("Q4", "Qd")):
-        macro(f"rtLtwoLokiAst{tag}", f3(v("f3-calib", q, "all", "ast")))
-        macro(f"rtLtwoLokiCfg{tag}", f3(v("f3-calib", q, "all", "cfg")))
+        macro(f"rtLtwoTrendAst{tag}", f3(v("f3-calib", q, "all", "ast")))
+        macro(f"rtLtwoTrendCfg{tag}", f3(v("f3-calib", q, "all", "cfg")))
+        macro(f"rtLtwoTrendN{tag}", h[("f3-calib", q, "all")]["n"])
     cov = {r["variant"]: r for r in rows("l2_coverage.csv")}
     macro("rtLtwoRefAstFail", cov["f3-calib"]["ref_ast_parse_fail"])
     macro("rtLtwoCfgSkip", cov["f3-calib"]["cfg_skipped_size"])
@@ -381,7 +386,8 @@ def log_table(status: dict[str, str]) -> str:
     m = MACROS
     body = [
         ["L1", "f3 failure is detector vocabulary", "2", status["L1"],
-         f"micro-F1 LUT6/f2 = {m['rtLoneAllRatio']} (all), {m['rtLoneTestRatio']} (test)"],
+         f"micro-F1 LUT6/f2 = {m['rtLoneAllRatio']} (all, in-sample), "
+         f"{m['rtLoneTestRatio']} (test)"],
         ["L2", "Loki below the LLM on AST/CFG, flat over Q1--Q4", "2", status["L2"],
          f"AST Q1/Q2 {m['rtLtwoLokiAstQa']}/{m['rtLtwoLokiAstQb']} vs "
          f"{m['rtLtwoLlmAstQa']}/{m['rtLtwoLlmAstQb']}"],

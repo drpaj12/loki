@@ -10,7 +10,12 @@ the summary CSVs, which regenerate byte for byte from the data (`paper_tables.py
 any kind was made; the LLM figures are the round-1 Gate-Breaker replication
 (`work/gatebreaker-exp2`) re-read, plus Odin III elaboration of its saved samples.
 
-## Questions and decision rules (fixed before the results)
+## Questions and decision rules
+
+These are not pre-registered. The brief gave the questions but no numeric thresholds; the
+thresholds below were set by the implementer during the round, and this file first appears in
+commit 38b6f66, after the scripts and the CSVs. They are not time-stamped before the data. A
+future round fixes its thresholds in a commit before running.
 
 | RQ | hypothesis | supported when |
 |---|---|---|
@@ -27,11 +32,13 @@ L8 (LLM with reverse provenance) is deferred by Peter and not run.
 
 Operator-recovery F1 (RQ-L7) is the one hypothesis the rules support. The LUT6 re-map of the f3
 gate netlists (RQ-L1) recovers 14 constructs of 580 over the 65 designs against 16 for the native
-f2 floor (micro-F1 ratio 0.87), but on the 15 held-out designs it is 2 against 4 (ratio 0.51), so
-the rule gives inconclusive; the gate netlist itself matched 0 of 116. On the 150 VerilogEval
-designs (RQ-L2) Loki's f3 output has AST 0.754 / 0.455 and CFG 0.750 / 0.741 in Q1 / Q2 against
+f2 floor (micro-F1 ratio 0.87, in-sample: the 65 include the 52 designs the f2 calibration was
+fitted on), but on the 15 held-out designs it is 2 against 4 (ratio 0.51), so
+the rule gives inconclusive; the data are consistent with the vocabulary explanation but do not
+show it; the gate netlist itself matched 0 of 116. On the 150 VerilogEval
+designs (RQ-L2) Loki's f3 output has AST 0.763 / 0.460 and CFG 0.751 / 0.743 in Q1 / Q2 (common designs, n = 36 each) against
 the language model's AST 0.894 / 0.761 and CFG 0.942 / 0.890 (every paired difference
-significant); the AST falls from Q1 to Q4 (0.754, 0.455, 0.605, 0.505) while the CFG stays flat,
+significant); the AST falls from Q1 to Q4 (all designs, n = 38, 38, 32, 21: 0.754, 0.455, 0.605, 0.505) while the CFG stays flat,
 and `final_equiv` is `equivalent` in 150 of 150 runs of every set, which proves equality with the
 input netlist only (that netlist passes the official testbench in 128 of 150). The evidence
 families (RQ-L4) add nothing over per-detector priors on 49 held-out designs (micro-F1 0.0038
@@ -77,8 +84,9 @@ the totals and averages.
 | LUT6 from f3, none | all | 65 | 921 | 31 | 580 | 0.041 | 0.049 |
 | native f2, none | all | 65 | 930 | 32 | 579 | 0.042 | 0.070 |
 
-Status: **inconclusive** by the rule (ratio 0.87 pooled, 0.51 on the 15-design test split; the
-test split has 2 and 4 matches). The pooled matches fall on the same kinds (adders 6 against 7,
+Status: **inconclusive** by the rule (ratio 0.87 pooled and in-sample, since the 65 designs
+include the 52 calibration fit designs; 0.51 on the 15-design test split, which has 2 and 4
+matches). The vocabulary explanation is consistent with the data, not shown by them. The pooled matches fall on the same kinds (adders 6 against 7,
 mux_bit 6 against 6). Caveats: the calibration is the f2 table, not refit on the LUT6-from-f3
 netlists; GT counts differ by one (580 against 579); the cover is a functional reconstruction (23.0% of LUTs resynthesised), and it moves
 Jaccard values.
@@ -123,16 +131,18 @@ references fail pyverilog (SystemVerilog), so 129 designs have an AST value; 6 f
 exceed the CFG limit (`l2_coverage.csv`). The LLM figures are `gatebreaker-exp2/data/results.json`
 (per design means over correct samples; 36 Q1 and 37 Q2 designs, 73 in all).
 
-| quartile | LLM AST | Loki f3 AST | LLM CFG | Loki f3 CFG | Loki f3 AST (all designs) |
+| quartile | LLM AST | Loki f3 AST (common) | LLM CFG | Loki f3 CFG (common) | Loki f3 AST (all designs) |
 |---|---|---|---|---|---|
-| Q1 | 0.894 | 0.754 | 0.942 | 0.750 | 0.754 |
-| Q2 | 0.761 | 0.455 | 0.890 | 0.741 | 0.455 |
+| Q1 | 0.894 | 0.763 | 0.942 | 0.751 | 0.754 |
+| Q2 | 0.761 | 0.460 | 0.890 | 0.743 | 0.455 |
 | Q3 | -- | -- | -- | -- | 0.605 |
 | Q4 | -- | -- | -- | -- | 0.505 |
 
-(Loki f3 is the calibrated run; its CFG over all designs is 0.750, 0.741, 0.750, 0.768 for Q1 to
-Q4; the "common" columns of `l2_headtohead.csv` restrict Loki to the LLM's designs, e.g. 0.763
-and 0.460 AST.) Mean paired differences Loki minus LLM are in `l2_paired.csv` (Wilcoxon p < 1e-4 in every
+(Loki f3 is the calibrated run. The comparison with the LLM and the decision rule use the
+"common" rows of `l2_headtohead.csv` (Loki restricted to the designs both are scored on, n = 36
+in Q1 and Q2). The "all designs" column is used only for the four-quartile trend: n = 38, 38,
+32, 21 designs with an AST value for Q1 to Q4, 129 in all; its CFG is 0.750, 0.741, 0.750, 0.768.
+The 21 references that fail to parse are excluded from every AST value.) Mean paired differences Loki minus LLM are in `l2_paired.csv` (Wilcoxon p < 1e-4 in every
 f3-calibrated cell, < 0.003 for every variant). Operator type-F1 on the common Q1+Q2 designs: LLM 0.465 (precision 0.637,
 recall 0.366), Loki f2 calibrated 0.081, f2 uncalibrated 0.074 (`l2_ops.csv`).
 
@@ -222,8 +232,8 @@ so a committed `bus` or `datapath_unit` outside them counts against must precisi
 - Operator F1 class and width definitions, and the de-duplication of bit-level hypotheses, are
   mine (above).
 - RQ-L4 pools micro and VerilogEval f2 for fit and test; the `l2` family is not applicable.
-- RQ-L5 primary set is the uncalibrated VerilogEval f2 run, fixed before the data; rp 0.1 is
-  secondary.
+- RQ-L5 primary set is the uncalibrated VerilogEval f2 run, chosen by the implementer
+  (not time-stamped before the data); rp 0.1 is secondary.
 - The odin3 CFG probe worktree no longer exists; `odin3_cfg.py` was extracted unchanged from odin3
   commit 77e975e5 (`git show`, the commit round 1 used) into the data directory.
 - pyverilog writes `parsetab.py` and `parser.out` into its working directory; both were deleted.
