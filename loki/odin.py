@@ -26,7 +26,7 @@ def odin_module() -> Any:
     return importlib.import_module("odin3")
 
 
-_SV_STATE = {"tried": False}
+_SV_STATE: dict[str, Any] = {"tried": False, "lib": None}
 _SV_DECL = (
     "odin3_status odin3_read_slang(odin3_design *d, uint32_t run, const odin3_sv_options *o);"
 )
@@ -50,6 +50,8 @@ def register_slang(o: Any) -> bool:
     _SV_STATE["tried"] = True
     o.ffi.cdef(_SV_DECL)
     slang = o.ffi.dlopen(str(path))
+    # keep the handle alive: cffi may dlclose a collected library, and the reader stays registered
+    _SV_STATE["lib"] = slang
     o.lib.odin3_sv_reader_register(o.ffi.addressof(slang, "odin3_read_slang"))
     return True
 
