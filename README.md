@@ -1,19 +1,26 @@
 # Loki III
 
 Reverse engineering of structural netlists (LUT, hard-block and gate-level) back to hierarchical, word-level
-Verilog, with a Bayesian hypothesis flow over Odin III's provenance IR. Status: specs and plans in
-`docs/specs/` and `docs/plans/` (L0 ground-truth dataset, L1 Bayesian hypotheses, L2 analysis plugins).
+Verilog, with a Bayesian hypothesis flow over Odin III's provenance IR. Three levels, each with a spec and
+a plan in `docs/specs/` and `docs/plans/`: L0 ground-truth dataset, L1 Bayesian hypotheses (`loki re`), L2
+analysis plugins (`loki analyze`).
 
 Loki III is part of **Yggdrasil III** (the project / world tree), the suite of Odin III
-(<https://github.com/drpaj12/odin3>), Wyrd III (<https://github.com/drpaj12/wyrd>), Loki III and Midgard III (the Verilog
-Town game). Loki III depends on the `odin3` Python package and never changes the Odin III core.
+(<https://github.com/drpaj12/odin3>), Wyrd III (<https://github.com/drpaj12/wyrd>), Loki III, Verdandi III
+(<https://github.com/drpaj12/verdandiIII>), The Norns III (<https://github.com/drpaj12/nornsIII>, which uses Loki III's L2
+clusters as placement seeds) and Midgard III (the Verilog Town game). Loki III depends on the `odin3` Python package and never changes the Odin III core.
 
 License: MIT.
 
-## Documentation
+## Paper and experiments
 
-The [paper](docs/paper/README.md) reports the L0/L1/L2 recovery statistics under the
-Gate-Breaker metrics, with every number traced to the experiment records.
+The [paper](docs/paper/README.md) (`docs/paper/loki.tex`) reports the L0/L1/L2 recovery statistics under the
+Gate-Breaker metrics, with every number traced to the experiment records:
+
+- [`experiments/rename-l2/EXPERIMENT.md`](experiments/rename-l2/EXPERIMENT.md): the renamed-instance re-run
+  (L1 with the hard detector, L2 clustering and the GNN against 1-WL).
+- [`experiments/f3-recovery/EXPERIMENT.md`](experiments/f3-recovery/EXPERIMENT.md): recovery from the cmos6 gate
+  netlist (the L0 provenance ceiling, L1 on the renamed f3 floors, AST and CFG similarity).
 
 ## Documentation
 
@@ -27,6 +34,10 @@ Start at the Yggdrasil III hub; every manual links to the others.
 - Tutorials (PDF): [command line](https://drpaj12.github.io/wyrd/wyrd-tutorial.pdf) and
   [GUI](https://drpaj12.github.io/wyrd/wyrd-gui-tutorial.pdf).
 - [Loki III manual](https://drpaj12.github.io/loki/).
+- [Verdandi III manual](https://drpaj12.github.io/verdandiIII/).
+- [The Norns III](https://github.com/drpaj12/nornsIII) (repository; plan and paper under `docs/`).
+- [Set up the whole suite](https://drpaj12.github.io/YggdrasilIII/getting-started.html) on a clean Linux or
+  Windows machine, and [drive it with Claude Code](https://drpaj12.github.io/YggdrasilIII/ai-agent.html).
 
 ## Development
 
