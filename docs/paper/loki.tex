@@ -282,20 +282,32 @@ vectors (the first run padded per graph and truncated in the zip, which the v1.1
 found; those columns are not comparable to it).
 
 \begin{table}[t]
-\caption{Gate-Breaker metrics on the VerilogEval quartiles (one run, K=10, host model),
-deltas against the paper's O3-Mini.}
+\caption{Gate-Breaker metrics on the VerilogEval quartiles (one run, K=10, 4 workers, 180\,s
+per call, 7,440\,s wall clock, 740 calls; deltas vs the paper's O3-Mini in the text).}
 \label{tab:veval}
 \centering
 \footnotesize
 \begin{tabular}{@{}lrrrrrr@{}}
 \toprule
-Quartile & SR & S@1 & S@5 & S@10 & AST & CFG \\
+Quartile ($n$) & SR & S@1 & S@5 & S@10 & AST & CFG \\
 \midrule
-Q1 & \todo{RUNNING} & \todo{RUNNING} & \todo{RUNNING} & \todo{RUNNING} & \todo{RUNNING} & \todo{RUNNING} \\
-Q2 & \todo{RUNNING} & \todo{RUNNING} & \todo{RUNNING} & \todo{RUNNING} & \todo{RUNNING} & \todo{RUNNING} \\
+Q1 (36) & 0.903 & 0.944 & 1.000 & 1.000 & 0.894 & 0.942 \\
+Q2 (37) & 0.778 & 0.811 & 1.000 & 1.000 & 0.761 & 0.890 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Seventy-four of the 78 Q1+Q2 designs are usable (three excluded because their synthesized
+netlists fail the official testbench self-check, one because its 241\,KB prompt exceeds the
+OS argument limit); every scored design is solved by attempt 5. The deltas against the
+paper's O3-Mini: Q1 success rate -0.092, AST -0.030, CFG -0.011; Q2 success rate -0.039,
+Success@5 +0.125, Success@10 +0.111, AST -0.164, CFG +0.083. The Q1 gap is harness
+no-output, not wrong RTL; the Q2 AST gap is truth-table and case references against the
+model's boolean expressions. Two caveats: the host's only model path routes through a
+gateway that aliases a DeepSeek backend as Claude Opus (so the model column is not
+verifiably the paper's comparison class), and the CLI exposes none of the paper's sampling
+flags ($T{=}0.85$, $p{=}0.95$). The CFG column uses the common-width node kernel (the
+odin3 CFG probe); the AST column uses the paper's pyverilog Algorithm 2.
 
 What the two lines of work measure is complementary. The language model recovers functional
 behaviour from the gates and names nothing reliably; Loki recovers the structures the flow
