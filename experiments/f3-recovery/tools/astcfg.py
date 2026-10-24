@@ -41,19 +41,23 @@ def ref_path(name: str, ref_dir: Path, sanitized: Path) -> tuple[Path, str]:
         return sanitized / f"{name}.v", "sanitized"
 
 
+CLEAN_DIR = Path("/tmp/claude-1000/f3-ast-clean")
+
+
+def _parse_clean(path: Path) -> object:
+    """Parse with pyverilog after stripping (* ... *) attributes (metadata; strings break it)."""
+    CLEAN_DIR.mkdir(parents=True, exist_ok=True)
+    clean = CLEAN_DIR / f"{path.parent.name}__{path.name}"
+    clean.write_text(re.sub(r"\(\*.*?\*\)", "", path.read_text(encoding="utf-8"), flags=re.S),
+                     encoding="utf-8")
+    return metrics.parse_module(str(clean))
+
+
 def ast_pair(ref: Path, l0: Path, l1: Path, top: str) -> tuple[float, float]:
     ref_mod = metrics.parse_module(str(ref), top) if top else metrics.parse_module(str(ref))
-    # pyverilog cannot parse the string-valued (* loki_* *) attributes Loki writes on committed
-    # instances; strip them (metadata only) into a temporary copy for the AST parse.
-    clean_dir = Path("/tmp/claude-1000/f3-ast-clean")
-    clean_dir.mkdir(parents=True, exist_ok=True)
-    clean = clean_dir / l1.name
-    clean.write_text(re.sub(r"\(\*.*?\*\)", "", l1.read_text(encoding="utf-8"), flags=re.S),
-                     encoding="utf-8")
     sims = []
-    for generated in (l0, clean):
-        mod = metrics.parse_module(str(generated))
-        sims.append(metrics.ast_similarity(ref_mod, mod, depth=3))
+    for generated in (l0, l1):
+        sims.append(metrics.ast_similarity(ref_mod, _parse_clean(generated), depth=3))
     return sims[0], sims[1]
 
 
