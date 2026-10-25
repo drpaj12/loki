@@ -232,8 +232,56 @@ PDF is rebuilt. No `/home/jamiespa` in committed files.
 
 ## Rule additions
 
-(none yet)
+Entry 2026-10-25-a (written after the Stage-2 numbers existed; no Stage-0 rule, threshold,
+definition or status changes; the Stage-0 text above is not edited). Implementation notes that
+the Stage-0 text left open:
+
+1. The detector was developed on the corpus train split only (a spread of 150 designs at f2, 60 at
+   f3, `dev_train.py`); `ff_pattern`'s private cone analysis and `arith`'s support-based chain
+   finder are reused (the carry chains of `wordfirst` are `arith`'s chains, emitted by the new
+   detector). Micros, VerilogEval, the corpus test splits and BIG were first run in Stage 2.
+2. The register-word rule is: strongest shared enable and reset per flip-flop (counts over one
+   clock, at least two flip-flops), then a split by the control candidates shared by some but not
+   all members, kept only when every part has at least two flip-flops, then a split of groups above
+   32 by the Q-reader and D-driver signature; plain flip-flops are grouped by (clock, Q-reader
+   signature, D-driver signature). Mux words are limited to exactly three-input 2:1 mux cells.
+3. The FSM rule of Stage 1 (feedback through the word's own D cones plus at least two decoders) was
+   changed during development, before any evaluation run, to: every D cone reads a Q bit of the word
+   and some cone reads at least two distinct bits (decoders are not required: at f2 the decoders are
+   absorbed into the next-state LUTs, the dev census showed 0 of 6 LUTs of an FSM design as a
+   decoder).
+4. Time: eight runs shared the machine in the MI, VT, CI, CO runs, so those wall times are
+   indicative; BIG ran one at a time. WB on MI f3 hit the 900 s limit on 2 of 65 designs (left out
+   of the f3 comparisons; the f3 sets are report-only). `W` on BIG finished all 13 designs in
+   under the 1,800 s limit. MI has 68 designs at f2 for the new arms and 65 for the round-2 arms
+   (the 3 designs without a round-2 run drop out of every paired comparison).
+5. H16f null: one random stream (`random.Random(16)`) over the pooled designs instead of one
+   seeded per design name; 1,000 draws. BIG candidates are scored with `--features none`; a BIG run
+   is the `W` arm only (WB was not run on BIG).
+6. The BIG run was started with a shell `&` inside a tracked background job by mistake (the job
+   kept running untracked and its output was read after it ended); no result depends on it.
+7. The `null` tiling and seeding use `r5lib.seed_rng(design, draw)` (sha256 of the design name and
+   the draw index), as in the Stage-0 text. The chain measure also tabulates the FSM instances
+   (a counted `fsm` candidate with J >= 0.5).
 
 ## Reproduce
 
-(filled in when the scripts exist)
+Paths come from environment variables with workspace-relative defaults (`r5lib.py`): `ODIN3_WS`
+(workspace root), `LOKI_R5_DATA` (default `$ODIN3_WS/work/loki-exp5-data`), `LOKI_R4_DATA`,
+`LOKI_R3_DATA`, `LOKI_R2_DATA`, `LOKI_MICRO`, `LOKI_VEVAL`, `LOKI_CORPUS`, `LOKI_BIG`. Odin III
+needs `ODIN3_ROOT`, `ODIN3_LIB` (the release `libodin3.so`; without it the default library aborts
+under ASan). From `experiments/round5` with `PYTHONPATH=<checkout>:<checkout>/experiments/round5:
+<checkout>/experiments/round4:<checkout>/experiments/round3:<checkout>/experiments/round2:
+$ODIN3_ROOT/plugins/python`:
+
+    python run_arms.py sets          # W and WB: MI VT CI CO f2, MI VT f3, MI f1-k6 (restartable)
+    python run_arms.py big           # W on BIG, one design at a time
+    python l16_eval.py kinds ; python l16_eval.py tiling ; python l16_eval.py chain
+    python l16_eval.py seed ; python l16_big.py
+    python decide.py                 # r5_status.csv, r5_numbers.csv, l16_summary.csv
+    python paper_tables.py           # docs/paper/round5-tables.tex, round5-log.tex
+    python dev_train.py W 150 f2     # development harness (corpus train split only)
+
+The `loki re` runs are not repeated by the analysis scripts; every CSV and generated .tex
+regenerates byte for byte from the run directories. The round-2 baseline runs are read from the
+round-2, round-3 and round-4 data directories.
