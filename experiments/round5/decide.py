@@ -166,6 +166,10 @@ def tiling_hyp(bk: Book, av: dict[Any, Any]) -> None:
             diffs.append(a[1] / a[0] - (b[1] / b[0] if b[0] else 0.0))
     p, nnz = wilcoxon(diffs)
     dq = qw - qb
+
+    def q_arm(arm: str) -> float:
+        return sum(q[(arm, "VT", d)][1] for d in units if (arm, "VT", d) in q) / n if n else 0.0
+
     pairs = [(q[("WB", "VT", d)], q.get((base, "VT", d), [1.0, 0.0])) for d in units
              if ("WB", "VT", d) in q]
     lo, hi = boot(pairs, lambda ps: (sum(a[1] for a, _ in ps) - sum(b[1] for _, b in ps))
@@ -173,6 +177,11 @@ def tiling_hyp(bk: Book, av: dict[Any, Any]) -> None:
     for k, v in (("n_instances", n), ("q_WB", qw), ("q_base", qb), ("q_null", qn), ("delta_q", dq),
                  ("delta_q_lo", lo), ("delta_q_hi", hi), ("wilcoxon_p", p),
                  ("designs", len(diffs)), ("nonzero", nnz), ("baseline_arm", base)):
+        bk.put("H16a", k, v)
+    arm_max = max(q_arm("R2N"), q_arm("R2C"), q_arm("W"), qw)
+    for k, v in (("q_arm_max_VT", arm_max), ("reach_q_diff", qb + 0.15),
+                 ("reach_q_null", qn + 0.10), ("reach_q", max(qb + 0.15, qn + 0.10)),
+                 ("null_above_all_arms", int(qn > arm_max))):
         bk.put("H16a", k, v)
     sup = dq >= 0.15 and qw - qn >= 0.10 and p < 0.05
     bk.decide("H16a", "supported" if sup else "not supported" if dq < 0.05 else "inconclusive",
@@ -202,7 +211,7 @@ def chain_hyp(bk: Book) -> None:
         bk.put("H16d", k, v)
     gain = cw - cb
     if b + c < 8:
-        st = "not supported" if gain <= 1 else "inconclusive"
+        st = "inconclusive"
     else:
         st = ("supported" if gain >= 5 and p < 0.05
               else "not supported" if gain <= 1 else "inconclusive")
@@ -234,6 +243,12 @@ def seed_hyp(bk: Book) -> None:
     bk.put("H16e", "D", d)
     bk.put("H16e", "D_null", dn)
     bk.put("H16e", "constructs_datapath", acc[("W", "datapath")][0])
+    for kind in (*DATAPATH, *CONTROL):
+        if ("W", kind) in acc:
+            bk.put("H16e", f"constructs_{kind}", acc[("W", kind)][0])
+    for kind in DATAPATH:
+        if ("W", kind) in acc:
+            bk.put("H16e", f"gap_{kind}", share("W", kind) - share("null-W", kind))
     st = ("supported" if d >= 0.50 and d - dn >= 0.25
           else "not supported" if d < 0.25 or d - dn < 0.10 else "inconclusive")
     bk.decide("H16e", st, f"D {d:.3f} null {dn:.3f} gap {d - dn:.3f}")
@@ -252,13 +267,22 @@ def big_hyp(bk: Book) -> None:
     fa, ff = f1(c, m, gt), f1(cf, mf, gt)
     nulls = [float(r["f1"]) for r in load("l16_big_null.csv")]
     share = sum(1 for x in nulls if x >= ff) / len(nulls)
+    streams = [float(r["f1"]) for r in load("l16_big_null_stream.csv")]
+    share_s = sum(1 for x in streams if x >= ff) / len(streams)
+    # Best F1 any filter could reach: keep exactly the matched candidates (all m of them).
+    bound = f1(m, m, gt)
     for k, v in (("counted", c), ("matched", m), ("gt", gt), ("counted_F", cf), ("matched_F", mf),
                  ("f1_all", fa), ("f1_F", ff), ("delta", ff - fa), ("null_share_ge", share),
-                 ("null_mean", sum(nulls) / len(nulls))):
+                 ("null_mean", sum(nulls) / len(nulls)), ("null_share_ge_stream", share_s),
+                 ("null_mean_stream", sum(streams) / len(streams)), ("f1_bound", bound),
+                 ("delta_bound", bound - fa), ("margin_reachable", int(bound - fa >= 0.05))):
         bk.put("H16f", k, v)
     st = ("supported" if ff - fa >= 0.05 and share <= 0.05
           else "not supported" if ff - fa < 0.01 or share > 0.20 else "inconclusive")
-    bk.decide("H16f", st, f"dF1 {ff - fa:.4f} null share {share:.3f}")
+    note = f"dF1 {ff - fa:.4f} null share {share:.3f}"
+    if bound - fa < 0.05:
+        note += f"; degenerate: margin unreachable (F1 bound {bound:.4f})"
+    bk.decide("H16f", st, note)
 
 
 def summary(kt: dict[Any, Any]) -> None:

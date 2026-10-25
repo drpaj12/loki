@@ -1,5 +1,8 @@
 """H16f: repetition evidence on the BIG set (arm W). Writes ``l16_big.csv`` (per design and kind),
-``l16_big_null.csv`` (pooled F1 of the shuffled-flag draws) and ``l16_big_time.csv``.
+``l16_big_null.csv`` (pooled F1 of the shuffled-flag draws, one ``random.Random`` per design seeded
+by the sha256 of the design name, as Stage 0 says), ``l16_big_null_stream.csv`` (the same with one
+``random.Random(16)`` stream over the designs: the seeding of the first Stage-2 run, a deviation
+from Stage 0 kept for comparison) and ``l16_big_time.csv``.
 """
 
 from __future__ import annotations
@@ -21,8 +24,9 @@ from loki.score.metrics import Pred, construct_matches
 DRAWS = 1000
 
 
-def design_rows(name: str, ds: Path, sub: str) -> tuple[list[list[Any]], list[list[Any]]]:
-    rd = r5lib.run_dir("W", "BIG", "f2", name)
+def design_rows(name: str, ds: Path, sub: str,
+                arm: str = "W") -> tuple[list[list[Any]], list[list[Any]]]:
+    rd = r5lib.run_dir(arm, "BIG", "f2", name)
     fd = ds / sub / "f2"
     gts = derive_instances(json.loads((fd / "words.json").read_text(encoding="utf-8")))
     preds = l16_eval.counted(rd)
@@ -70,18 +74,26 @@ def main() -> int:
     r5lib.write_csv(r5lib.OUT / "l16_big.csv",
                     ["design", "kind", "counted", "matched", "gt", "counted_F", "matched_F"], rows)
     r5lib.write_csv(r5lib.OUT / "l16_big_time.csv", ["design", "status", "seconds"], times)
-    rng = random.Random(16)
-    nulls = []
+    gt_total = sum(int(r[4]) for r in rows)
+    stream = random.Random(16)
+    per_design = {d: r5lib.seed_rng(d) for d, _k, _f in allflags}
+    nulls: list[list[Any]] = []
+    nulls_stream: list[list[Any]] = []
     for draw in range(DRAWS):
-        kept = matched = 0
-        for _d, _k, fl in allflags:
+        kept = matched = kept_s = matched_s = 0
+        for d, _k, fl in allflags:
             n_keep = sum(a for a, _ in fl)
-            pick = rng.sample(range(len(fl)), n_keep) if fl else []
+            pick = per_design[d].sample(range(len(fl)), n_keep) if fl else []
+            pick_s = stream.sample(range(len(fl)), n_keep) if fl else []
             kept += n_keep
             matched += sum(fl[i][1] for i in pick)
-        gt_total = sum(int(r[4]) for r in rows)
+            kept_s += n_keep
+            matched_s += sum(fl[i][1] for i in pick_s)
         nulls.append([draw, kept, matched, round(f1(matched, kept, gt_total), 6)])
+        nulls_stream.append([draw, kept_s, matched_s, round(f1(matched_s, kept_s, gt_total), 6)])
     r5lib.write_csv(r5lib.OUT / "l16_big_null.csv", ["draw", "kept", "matched", "f1"], nulls)
+    r5lib.write_csv(r5lib.OUT / "l16_big_null_stream.csv", ["draw", "kept", "matched", "f1"],
+                    nulls_stream)
     return 0
 
 

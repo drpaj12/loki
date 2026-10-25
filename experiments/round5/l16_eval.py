@@ -25,7 +25,7 @@ PLAN = (("f2", ("MI", "VT", "CI", "CO")), ("f3", ("MI", "VT")), ("f1-k6", ("MI",
 BASE_SETS = {("MI", "f2"): ("M2N", "M2C"), ("VT", "f2"): ("V2N", "V2C"),
              ("MI", "f3"): ("M3N", "M3C"), ("VT", "f3"): ("V3N", "V3C"),
              ("MI", "f1-k6"): ("M1N", "M1N")}
-NEW_ARMS = ("W", "WB")
+NEW_ARMS = ("W", "WB", "W1", "WB1")  # W1, WB1: Stage-0 FSM rule variants (l16_explore.py)
 ALL_ARMS = ("R2N", "R2C", "W", "WB")
 FRAG = 0.8
 DRAWS = 5
@@ -185,7 +185,7 @@ def tiling_rows() -> int:
             preds = counted(rd)
             for k, (n, c) in sorted(tally(preds, gts).items()):
                 rows.append([arm, name, d, k, n, c])
-            if arm in NEW_ARMS:
+            if arm in ("W", "WB"):
                 pool, nk = node_pool(fd), node_kinds(fd)
                 acc: dict[str, float] = defaultdict(float)
                 tot: dict[str, int] = {}
@@ -201,9 +201,10 @@ def tiling_rows() -> int:
 
 
 # -- chains --------------------------------------------------------------------------------------
-def chain_rows() -> int:
+def chain_table(triples: list[tuple[str, str, str]]) -> list[list[Any]]:
+    """Chain and FSM rows of (floor, set, arm) triples (floor f2, sets MI and VT only)."""
     rows: list[list[Any]] = []
-    for floor, name, arm in plan():
+    for floor, name, arm in triples:
         if floor != "f2" or name not in ("MI", "VT"):
             continue
         for d in designs(name, floor):
@@ -241,6 +242,11 @@ def chain_rows() -> int:
                     hit = int(any(p.kind == "fsm" and jaccard(p.cells, g.footprint) >= 0.5
                                   for p in preds))
                     rows.append([arm, name, d, f"fsm_{g.gid}", hit, hit, 0, 0, 0])
+    return rows
+
+
+def chain_rows() -> int:
+    rows = chain_table(plan())
     r5lib.write_csv(r5lib.OUT / "l16_chain.csv",
                     ["arm", "set", "design", "item", "complete", "kind_correct", "reg", "dec",
                      "sink"], rows)
@@ -287,7 +293,7 @@ def seed_rows() -> int:
                 tot[k][1] += hit.get(g, 0)
             for k in sorted(tot):
                 rows.append([arm, name, d, k, tot[k][0], tot[k][1]])
-            if arm in NEW_ARMS:
+            if arm in ("W", "WB"):
                 pool, nk = node_pool(fd), node_kinds(fd)
                 allw = preds + live_buses(rd)
                 nacc: dict[str, float] = defaultdict(float)

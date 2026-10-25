@@ -35,7 +35,9 @@ OUT = HERE
 
 WF_DETECTORS = "wordfirst"
 WB_DETECTORS = "wordfirst,hard,ff_pattern,mux,arith,seqfn,fsm,bus,unit,role,wordgroup"
-ARMS = {"W": WF_DETECTORS, "WB": WB_DETECTORS}
+# W1, WB1: the same detector lists with the Stage-0 FSM rule (``LOKI_WF_FSM_RULE=stage0``), run by
+# ``run_arms.py variants``; exploratory (review fixes), no status uses them.
+ARMS = {"W": WF_DETECTORS, "WB": WB_DETECTORS, "W1": WF_DETECTORS, "WB1": WB_DETECTORS}
 KDICT = ("ff_en", "ff_srst", "register", "adder", "subtractor", "comparator", "eq_const", "mux",
          "mux_tree", "counter", "fsm")
 HARD = frozenset({"hard_add", "hard_mul", "hard_mem"})

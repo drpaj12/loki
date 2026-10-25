@@ -1,6 +1,10 @@
 """Stage 2 runs: arms W and WB over the evaluation sets (smallest design first).
 
-Usage: run_arms.py sets | big     (``sets``: MI VT CI CO at f2, MI VT at f3, MI at f1-k6)
+Usage: run_arms.py sets | variants | big [ARM]
+``sets``: MI VT CI CO at f2, MI VT at f3, MI at f1-k6;
+``big``: one arm on BIG, one design at a time, smallest f2 graph first, 1800 s per run; ARM is
+W (default, Stage 2) or WB (review-fix run))
+``variants`` runs arms W1 and WB1 (the Stage-0 FSM rule, exploratory) on MI VT CI CO at f2.
 Runs are restartable (a run with ``score.json`` is skipped); ``seconds.txt`` holds the wall time of
 a run (up to 8 runs share the machine, so times are indicative; BIG runs one at a time).
 """
@@ -39,7 +43,24 @@ def sets_run() -> int:
     return 0
 
 
-def big_run() -> int:
+def variants_run() -> int:
+    import os
+    os.environ["LOKI_WF_FSM_RULE"] = "stage0"
+    for arm in ("W1", "WB1"):
+        jobs = []
+        for name in ("MI", "VT", "CI", "CO"):
+            pairs = r5lib.eval_sets("f2")[name]
+            sized = sorted(((nodes(ds, d, "f2"), ds, d) for ds, d in pairs),
+                           key=lambda t: (t[0], t[2]))
+            for _n, ds, d in sized:
+                out = r5lib.run_dir(arm, name, "f2", d)
+                jobs.append((f"{arm} {name} f2 {d}", ds / d / "f2" / "netlist.blif", "f2",
+                             r5lib.ARMS[arm], out, ds, d, 900, "all"))
+        r5lib.run_jobs(jobs, WORKERS)
+    return 0
+
+
+def big_run(arm: str = "W") -> int:
     import json
     rows = []
     for d in sorted(p.name for p in r5lib.BIGDIR.iterdir() if (p / "dataset").is_dir()):
@@ -51,13 +72,16 @@ def big_run() -> int:
     rows.sort()
     (r5lib.DATA / "big_order.json").write_text(json.dumps([r[1] for r in rows]))
     for _size, d, ds, sub in rows:
-        out = r5lib.run_dir("W", "BIG", "f2", d)
-        job = (f"W BIG f2 {d}", ds / sub / "f2" / "netlist.blif", "f2", r5lib.ARMS["W"], out, ds,
-               sub, 1800, "none")
+        out = r5lib.run_dir(arm, "BIG", "f2", d)
+        job = (f"{arm} BIG f2 {d}", ds / sub / "f2" / "netlist.blif", "f2", r5lib.ARMS[arm], out,
+               ds, sub, 1800, "none")
         r5lib.run_jobs([job], 1)
     return 0
 
 
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else ""
-    raise SystemExit({"sets": sets_run, "big": big_run}.get(what, lambda: print(__doc__) or 2)())
+    if what == "big":
+        raise SystemExit(big_run(sys.argv[2] if len(sys.argv) > 2 else "W"))
+    table = {"sets": sets_run, "variants": variants_run}
+    raise SystemExit(table.get(what, lambda: print(__doc__) or 2)())
