@@ -1,0 +1,5 @@
+floor,set,x_axis,B,n_designs,slope,ci_lo,ci_hi
+f2,vetest,nominal,2000,29,-0.002636,-0.009685,0.009384
+f2,vetest,nominal,20000,29,-0.002636,-0.009767,0.009646
+f2,vetest,actual,2000,29,-0.002661,-0.009799,0.009484
+f2,vetest,actual,20000,29,-0.002661,-0.009866,0.009757

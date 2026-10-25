@@ -1,0 +1,13 @@
+floor,set,designs,with_logic
+f2,iid,120,118
+f2,ood,240,231
+f2,micro,68,62
+f2,vetest,33,29
+f2,corpus_train,840,810
+f2,ve_train,117,106
+f3,iid,120,118
+f3,ood,240,231
+f3,micro,65,59
+f3,vetest,33,29
+f3,corpus_train,840,810
+f3,ve_train,117,106
