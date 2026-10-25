@@ -540,22 +540,22 @@ LaTeX Font Info:    ... okay on input line 43.
 -- Lines per column: 56 (exact).
 \c@lstlisting=\count321
 
-Underfull \hbox (badness 10000) in paragraph at lines 73--75
+Underfull \hbox (badness 10000) in paragraph at lines 76--78
 []\OT1/ptm/b/it/9 Index Terms\OT1/ptm/b/n/9 ---reverse en-gi-neer-ing, netlist,
  prove-nance,
  []
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 89.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 92.
 
 (umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 89.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 92.
 
  (umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Underfull \hbox (badness 5050) in paragraph at lines 100--106
+Underfull \hbox (badness 5050) in paragraph at lines 103--109
 []\OT1/ptm/m/n/10 The con-tri-bu-tions are: (1) a bench-mark method --
  []
 
@@ -564,146 +564,161 @@ Underfull \hbox (badness 5050) in paragraph at lines 100--106
 
 ]
 LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 1
-44.
+47.
  (ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
-Underfull \hbox (badness 10000) in paragraph at lines 164--164
+Underfull \hbox (badness 10000) in paragraph at lines 167--167
 []|\OT1/pcr/m/n/8 read_arch k6_frac_N10_
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 170--170
+Underfull \hbox (badness 10000) in paragraph at lines 173--173
 []|\OT1/pcr/m/n/8 read_techlib
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 170--170
+Underfull \hbox (badness 10000) in paragraph at lines 173--173
 []|\OT1/pcr/m/n/8 lower; abc --gates cmos6;
  []
 
 
-Overfull \hbox (2.26274pt too wide) in paragraph at lines 160--174
+Overfull \hbox (2.26274pt too wide) in paragraph at lines 163--177
  [][] 
  []
 
-[2]
-Underfull \hbox (badness 2012) in paragraph at lines 258--273
+
+Underfull \vbox (badness 1902) has occurred while \output is active []
+
+ [2]
+Underfull \hbox (badness 2012) in paragraph at lines 261--276
 \OT1/ptm/m/n/10 true when it matches an L0 con-struct (Sec-tion [][]).
  []
 
 
-Underfull \hbox (badness 6641) in paragraph at lines 258--273
+Underfull \hbox (badness 6641) in paragraph at lines 261--276
 \OT1/ptm/m/n/10 The prior is the Laplace-smoothed pre-ci-sion of the
  []
 
 
-Underfull \hbox (badness 2103) in paragraph at lines 258--273
+Underfull \hbox (badness 2103) in paragraph at lines 261--276
 \OML/cmm/m/it/10 tp$ \OT1/ptm/m/n/10 are true. For ex-am-ple, the \OT1/pcr/m/n/
 10 f3 \OT1/ptm/m/n/10 com-para-tor de-tec-tor
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 258--273
+Underfull \hbox (badness 10000) in paragraph at lines 261--276
 \OT1/ptm/m/n/10 made 31,036 pro-pos-als of which 2 were true, so
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 258--273
+Underfull \hbox (badness 10000) in paragraph at lines 261--276
 \OT1/ptm/m/n/10 (\OT1/pcr/m/n/10 experiments/f3-recovery/calib/f3.json\OT1/ptm/
 m/n/10 ). A
  []
 
 LaTeX Font Info:    Trying to load font information for TS1+pcr on input line 2
-79.
+82.
 (ts1pcr.fd
 File: ts1pcr.fd 2001/06/04 font definitions for TS1/pcr.
 ) [3]
-Underfull \hbox (badness 1796) in paragraph at lines 371--381
+Underfull \hbox (badness 1796) in paragraph at lines 374--384
 \OT1/ptm/m/n/10 can-di-date blocks: k-means on the fea-ture space ($\OML/cmm/m/
 it/10 k \OT1/cmr/m/n/10 =
  []
 
-
-Underfull \hbox (badness 1776) in paragraph at lines 432--436
+[4]
+Underfull \hbox (badness 1776) in paragraph at lines 435--439
 []|\OT1/pcr/m/n/8 equiv-check \OT1/ptm/m/n/8 of the flat-tened fi-nal de-sign a
 gainst the \OT1/ptm/m/it/8 in-put netlist\OT1/ptm/m/n/8 :
  []
 
-[4]
-Underfull \vbox (badness 1158) has occurred while \output is active []
 
-
-Underfull \hbox (badness 3895) in paragraph at lines 494--501
+Underfull \hbox (badness 3895) in paragraph at lines 497--504
 []\OT1/ptm/m/it/10 L2, step by step. \OT1/ptm/m/n/10 (1) The same split ap-plie
 s. (2)
  []
 
 
-Underfull \hbox (badness 2608) in paragraph at lines 494--501
+Underfull \hbox (badness 2608) in paragraph at lines 497--504
 \OT1/ptm/m/n/10 and de-sign, with its mod-u-lar-ity and NMI/ARI against
  []
 
 (IMAGE/fig_loki)
 ODINFIT: figure scaled from 257.32794pt to 252.0pt
-[5]
-Underfull \hbox (badness 3158) in paragraph at lines 533--538
+
+Underfull \hbox (badness 3158) in paragraph at lines 536--541
 \OT1/pcr/m/n/10 netlist.blif \OT1/ptm/m/n/10 and \OT1/pcr/m/n/10 netlist.v\OT1/
 ptm/m/n/10 , \OT1/pcr/m/n/10 graph.json
  []
 
-
-Underfull \hbox (badness 5147) in paragraph at lines 541--545
+[5]
+Underfull \hbox (badness 5147) in paragraph at lines 544--548
 []\OT1/ptm/m/it/10 L1: nor-malise. \OT1/pcr/m/n/10 loki re \OT1/ptm/m/n/10 read
 s \OT1/pcr/m/n/10 netlist.blif
  []
 
 
-Underfull \hbox (badness 2119) in paragraph at lines 553--555
+Underfull \hbox (badness 2119) in paragraph at lines 556--558
 \OT1/ptm/m/n/10 tural fea-tures, four clus-ter-ings and a GNN (Sec-
  []
 
-[6] (veval-tables)
-Underfull \vbox (badness 7379) has occurred while \output is active []
 
- [7]
-Underfull \hbox (badness 1681) in paragraph at lines 704--718
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [6]
+(veval-tables)
+Underfull \hbox (badness 1681) in paragraph at lines 707--721
 \OT1/ptm/m/n/10 gate and are recorded as failed rather than forced in:
  []
 
-
-Underfull \hbox (badness 5652) in paragraph at lines 759--770
+[7]
+Underfull \hbox (badness 5652) in paragraph at lines 762--773
 \OT1/ptm/m/n/10 turns inferred-latch paths into don't-care and \OT1/pcr/m/n/10 
 lower
  []
 
-[8] [9]
+
+Underfull \vbox (badness 2277) has occurred while \output is active []
+
+ [8]
+[9]
 LaTeX Font Info:    Font shape `OT1/pcr/m/it' in size <8> not available
-(Font)              Font shape `OT1/pcr/m/sl' tried instead on input line 926.
+(Font)              Font shape `OT1/pcr/m/sl' tried instead on input line 929.
  [10] (round2-tables) [11] [12]
-Underfull \hbox (badness 4168) in paragraph at lines 1120--1139
+Underfull \hbox (badness 4168) in paragraph at lines 1143--1165
 \OT1/ptm/m/it/10 sure? \OT1/ptm/m/n/10 Fol-low-ing the graph-sandwich fram-ing 
 (must is
  []
 
 
-Underfull \hbox (badness 4060) in paragraph at lines 1120--1139
+Underfull \hbox (badness 4060) in paragraph at lines 1143--1165
 \OT1/ptm/m/n/10 what L1 proved and com-mit-ted, may adds the can-
  []
 
 
-Underfull \hbox (badness 3735) in paragraph at lines 1120--1139
+Underfull \hbox (badness 3735) in paragraph at lines 1143--1165
 \OT1/ptm/m/n/10 di-dates it lists), the bracket of a run is read from
  []
 
+(round3-tables)
+Underfull \hbox (badness 1484) in paragraph at lines 1172--1187
+\OT1/ptm/m/n/10 HDL when the struc-ture is there to see: muxes, wide
+ []
 
-Underfull \hbox (badness 1360) in paragraph at lines 1190--1194
+[13] [14] [15]
+Underfull \hbox (badness 1360) in paragraph at lines 1395--1399
 \OT1/ptm/m/n/10 struc-ture does Loki re-cover with-out a lan-guage model?
  []
 
-[13] (round2-log
-Underfull \hbox (badness 3525) in paragraph at lines 23--23
-[]|\OT1/ptm/m/n/8 AST Q1/Q2 0.754/0.455 vs
+[16] (round2-log
+Underfull \hbox (badness 10000) in paragraph at lines 23--23
+[]|\OT1/ptm/m/n/8 full mi-nus priors-only
+ []
+
+
+Underfull \hbox (badness 6910) in paragraph at lines 23--23
+[]|\OT1/ptm/m/n/8 Spearman 0.087 ($\OML/cmm/m/it/8 p \OT1/cmr/m/n/8 =
  []
 
 
@@ -716,12 +731,47 @@ Underfull \hbox (badness 10000) in paragraph at lines 23--23
 []|\OT1/ptm/m/n/8 operator F1 sep-a-rates
  []
 
-
-Underfull \hbox (badness 2538) in paragraph at lines 23--23
-[]|\OT1/ptm/m/n/8 tie pair dF1 0.0173; flat-ten
+) (round3-log
+Underfull \hbox (badness 10000) in paragraph at lines 19--19
+[]|\OT1/ptm/m/n/8 related-fragment share
  []
 
-) (loki-local.bbl)
+
+Underfull \hbox (badness 2837) in paragraph at lines 19--19
+\OT1/ptm/m/n/8 0 by con-struc-tion (ev-ery
+ []
+
+
+Underfull \hbox (badness 2913) in paragraph at lines 19--19
+\OT1/ptm/m/n/8 cell is in a GT word);
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 19--19
+\OT1/ptm/m/n/8 0.415, with-out \OT1/pcr/m/n/8 ff_en
+ []
+
+
+Underfull \hbox (badness 4144) in paragraph at lines 19--19
+[]|\OT1/ptm/m/n/8 datapath words reached
+ []
+
+
+Underfull \hbox (badness 6300) in paragraph at lines 19--19
+\OT1/ptm/m/n/8 design mean 0.326, ex-
+ []
+
+
+Underfull \hbox (badness 2529) in paragraph at lines 19--19
+[]|\OT1/ptm/m/n/8 not sup-ported (un-in-
+ []
+
+
+Underfull \hbox (badness 6300) in paragraph at lines 19--19
+\OT1/ptm/m/n/8 design mean 0.286, ex-
+ []
+
+) (loki-local.bbl [17])
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -733,11 +783,11 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[14
+[18
 
 ] (loki-local.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) )
-Output written on loki-local.xdv (14 pages, 131332 bytes).
+Output written on loki-local.xdv (18 pages, 167724 bytes).

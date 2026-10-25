@@ -1,0 +1,5 @@
+hypothesis,status,deciding_number
+H9a,S,pooled fragment_related 0.583; kinds >= 0.5: 3/4; pooled noise 0.000
+H9b,N,pooled q 0.065; kinds >= 0.5: 0/4
+H10a,N,datapath reached at h<=2: 0.095
+H10b,N,control reached at h<=2: 0.605
