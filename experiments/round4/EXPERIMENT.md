@@ -346,3 +346,29 @@ value 0 or all ones) because plain registers produced duplicate text and the fam
 train designs; the corpus is 1,200 designs (840 train, 120 iid, 240 ood). The mux twin set has 4
 styles per base (`ternary`, `ifelse`, `case`, `index`; `casez` needs the priority kind), so the
 twin set is 396 designs, not 408 (pilot build of the pipeline: 60 of 60 designs).
+
+## Reproduce
+
+Paths come from environment variables with workspace-relative defaults (`r4lib.py`): `ODIN3_WS`
+(workspace root), `LOKI_R4_DATA` (default `$ODIN3_WS/work/loki-exp4-data`), `LOKI_R2_DATA`,
+`LOKI_MICRO`, `LOKI_VEVAL`, `LOKI_CORPUS`, `LOKI_TWINS`, `VERILOG_EVAL`, `LOKI_GB2`; Odin III
+needs `ODIN3_ROOT`, `ODIN3_LIB`, `VTR_ROOT`, and the Wyrd venv on `PATH`. Every Odin III or Wyrd
+batch runs under `flock -x /tmp/claude-1000/odin3-heavy.lock`. Order, from `experiments/round4`
+with `PYTHONPATH=<checkout>:<checkout>/experiments/round4:<checkout>/experiments/round3:<checkout>/experiments/round2:$ODIN3_ROOT/plugins/python`:
+
+    python -m gen.corpus $DATA/corpus-project                 # 1,200 designs
+    python -m gen.corpus $DATA/twins-project --twins 12       # 396 twin designs
+    flock -x $LOCK wyrd run --project $DATA/corpus-project --jobs 3 --mem-budget 8G
+    flock -x $LOCK wyrd run --project $DATA/twins-project --jobs 3 --mem-budget 8G
+    loki assemble --project $DATA/corpus-project --out $DATA/corpus ; loki check $DATA/corpus
+    loki assemble --project $DATA/twins-project --out $DATA/twins  ; loki check $DATA/twins
+    python l12a_report.py                  # corpus_report.csv, manifest split rewrite
+    python l12b_dict.py                    # l12b_dict_rows/radius/stability.csv
+    python l12b_detectors.py calibrate ; flock -x $LOCK python l12b_detectors.py run
+    python l12b_detectors.py score ; python l12b_detectors.py rows
+    python l12b_overlap.py
+    python l12c_gnn.py run ; python l12c_gnn.py summarize
+    python l13_run.py                      # big designs, one at a time, peak RSS, heavy lock
+    python l13_measure.py small ; python l13_measure.py big
+    python l14_ident.py ; python l14_mdl.py
+    python decide.py ; python paper_tables.py
