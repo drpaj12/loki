@@ -321,4 +321,28 @@ iteration, fixed seeds, no timestamps).
 
 ## Rule additions
 
-(none yet)
+Entry 2026-10-25-a (written after the corpus generator and the matcher code existed, before any
+corpus build finished and before any dictionary, detector or GNN number was computed; the only
+matcher run so far is a smoke test on the 24 train / 6 test pilot designs, whose output is not
+kept). None of the thresholds, margins or definitions of the hypotheses changes. The Stage-0 text
+above is not edited; the three points below add variants, and the paper reports the hypotheses
+under each.
+
+1. Leaf limit. The Stage-0 cone rule limits cuts to 4 leaves. A LUT with more than 4 inputs has no
+   cut of at most 4 leaves that contains the LUT itself, so at f2 the cone class of such a cell is a
+   placeholder ("wide"). Variant `V1` raises the limit to 6 (exact NPN canonical form for up to 4
+   support inputs, a cofactor-sorted semi-canonical form for 5 and 6 inputs; two NPN-equivalent
+   functions with symmetric cofactors may get different classes, which only splits a class).
+2. Grouping. The Stage-0 rule never lets a clock pin join cells, so plain registers (no enable or
+   reset, so no shared control net) stay single-bit candidates. Grouping `G2` lets a shared clock
+   net join equal-signature cells for the storage kinds ff_en, ff_srst, register, counter, fsm.
+3. Variants: `V0` = the Stage-0 rule as written (4 leaves, clock never joins); `V1` = 6 leaves,
+   clock never joins; `V2` = 6 leaves, G2. The radius r is selected per floor and variant. H12b and
+   H12b2 are evaluated for V0, V1 and V2; a status is reported for each. Floor stability is
+   reported for V0 and V1.
+
+Implementation notes (no rule changes): the register template got a second parameter `rv` (reset
+value 0 or all ones) because plain registers produced duplicate text and the family fell to 60
+train designs; the corpus is 1,200 designs (840 train, 120 iid, 240 ood). The mux twin set has 4
+styles per base (`ternary`, `ifelse`, `case`, `index`; `casez` needs the priority kind), so the
+twin set is 396 designs, not 408 (pilot build of the pipeline: 60 of 60 designs).
