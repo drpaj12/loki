@@ -1,0 +1,11 @@
+dataset,floor,rule,designs,designs_with_port_word,input_words,output_words,designs_capped
+micro,f2,relaxed,68,54,158,22,0
+micro,f2,strict,68,54,158,22,0
+micro,f3,relaxed,65,51,150,29,0
+micro,f3,strict,65,51,150,29,0
+micro,f1-k6,relaxed,68,54,158,38,0
+micro,f1-k6,strict,68,54,158,38,0
+veval,f2,relaxed,150,63,103,13,0
+veval,f2,strict,150,63,103,13,0
+veval,f3,relaxed,150,63,103,13,0
+veval,f3,strict,150,63,103,13,0

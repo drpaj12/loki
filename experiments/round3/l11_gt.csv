@@ -1,0 +1,6 @@
+dataset,floor,designs,designs_with_fb,designs_with_chain,fb_registers,fb_fsm_flagged,decoders,sinks,chains,muxes_s,muxes_s_chain,muxes_s_any_decoder,enabled_words,enabled_chain,enabled_any_decoder
+micro,f2,68,3,1,3,0,11,3,12,41,3,27,3,0,2
+micro,f3,65,3,1,3,0,11,3,12,41,3,27,3,0,2
+micro,f1-k6,68,3,1,3,0,11,3,12,41,3,27,3,0,2
+veval,f2,150,55,12,197,16,41,30,89,43,15,27,152,15,145
+veval,f3,150,55,12,197,16,41,30,89,43,15,27,152,15,145

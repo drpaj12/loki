@@ -204,4 +204,14 @@ iteration, no randomness, no timestamps).
 
 ## Rule additions
 
-(none yet; each entry here is dated and keeps the old rule)
+No rule was changed. Implementation notes, 2026-10-24, added after the data (they alter no
+threshold or definition above):
+
+- `l10_design.csv` and the per-design macro-average of the h <= 2 shares are an extra,
+  report-only output (the decision rule uses the pooled counts); it was added after the pooled
+  numbers were seen, because one VerilogEval design holds 1,793 of the 2,124 datapath
+  constructs.
+- M3N has 64 scored runs of 65: `micro_bm_arithmetic_unused_bits` (15,225 nodes) hit the 900 s
+  timeout. Candidates and `loki re` options were as in round 2; the micro runs were made under
+  the heavy lock.
+- Environment of the new runs: venv of `work/loki-f3-exp`, Odin III checkout 1.1.0 (ABI 6).
