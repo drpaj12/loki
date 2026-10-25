@@ -183,6 +183,7 @@ def main() -> int:
     false_out: list[list[object]] = []
     conf_out: list[list[object]] = []
     h9b_out: list[list[object]] = []
+    design_out: list[list[object]] = []
     only = set(sys.argv[1:])
     for name, rs in r3lib.SETS.items():
         designs = r3lib.run_designs(rs)
@@ -196,6 +197,11 @@ def main() -> int:
             run = load_run(rs, d)
             gt_rows(rs, run, gt_acc)
             false_rows(run, fa)
+            da: dict[str, Counter[str]] = {}
+            false_rows(run, da)
+            for kind in DECISIVE:
+                c = da.get(kind, Counter())
+                design_out.append([name, d, kind, c["cand"], c["false"], *(c[k] for k in CLASSES)])
             h9b_rows(run, hb)
             for p, inter in zip(run.preds, run.inter, strict=True):
                 conf[(p.kind, confusion_type(inter, len(p.cells), run.gts))] += 1
@@ -220,6 +226,8 @@ def main() -> int:
     r3lib.write_csv(out / "l9_false.csv",
                     ["set", "runs", "kind", "n_cand", "n_matched", "n_false", *CLASSES],
                     false_out)
+    r3lib.write_csv(out / "l9_false_design.csv",
+                    ["set", "design", "kind", "n_cand", "n_false", *CLASSES], design_out)
     r3lib.write_csv(out / "l9_confusion.csv", ["set", "cand_kind", "gt_type", "n"], conf_out)
     r3lib.write_csv(out / "l9_h9b.csv",
                     ["set", "kind", "n_gt", "n_matched", "n_cov_frag_ge08", "n_cov_any_ge08",

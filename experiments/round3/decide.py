@@ -59,6 +59,26 @@ def h9a(sets: tuple[str, ...] = PRIMARY) -> dict[str, object]:
     return out
 
 
+def h9a_without_top() -> dict[str, object]:
+    """Report-only sensitivity: H9a pooled shares with the design that holds the most false
+    candidates of the four kinds in P left out."""
+    rows = [r for r in read("l9_false_design.csv") if r["set"] in PRIMARY]
+    per: dict[str, int] = {}
+    for r in rows:
+        per[r["design"]] = per.get(r["design"], 0) + int(r["n_false"])
+    top = sorted(per.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+    keep = [r for r in rows if r["design"] != top]
+    nf = sum(int(r["n_false"]) for r in keep)
+    out: dict[str, object] = {"design": top, "false": nf}
+    for c in CLASSES:
+        out[c] = share(sum(int(r[c]) for r in keep), nf)
+    for k in DECISIVE:
+        sel = [r for r in keep if r["kind"] == k]
+        out[f"{k}_frag"] = share(sum(int(r["fragment_related"]) for r in sel),
+                                 sum(int(r["n_false"]) for r in sel))
+    return out
+
+
 def h9b(sets: tuple[str, ...] = PRIMARY) -> dict[str, object]:
     rows = [r for r in read("l9_h9b.csv") if r["set"] in sets]
     out: dict[str, object] = {}

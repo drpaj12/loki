@@ -70,12 +70,22 @@ def l9_block() -> tuple[str, str, str]:
     macro("rttNinePoolNoise", f3(sget(a, "pool_noise")))
     macro("rttNineKindsOk", str(a["kinds_ok"]))
     macro("rttNineKindsOkB", str(b["kinds_ok"]))
+    lo = decide.h9a_without_top()
+    macro("rttNineTopFalse", fi(sget(lo, "false")))
+    macro("rttNineTopFrag", f3(sget(lo, "fragment_related")))
+    macro("rttNineTopOther", f3(sget(lo, "fragment_other")))
+    macro("rttNineTopDesign", tex(str(lo["design"])))
+    macro("rttNineTopFfenFrag", f3(sget(lo, "ff_en_frag")))
+    macro("rttNineTopRegisterFrag", f3(sget(lo, "register_frag")))
     macro("rttNinePoolQ", f3(sget(b, "pool_q")))
     macro("rttNineGtN", fi(sget(b, "pool_n")))
     body = []
     for k in DECISIVE:
         macro(f"rttNine{k.replace('_', '').title()}Frag", f3(sget(a, f"{k}_fragment_related")))
         macro(f"rttNine{k.replace('_', '').title()}Q", f3(sget(b, f"{k}_q")))
+        macro(f"rttNine{k.replace('_', '').title()}Other", f3(sget(a, f"{k}_fragment_other")))
+        macro(f"rttNine{k.replace('_', '').title()}Cov", f3(sget(b, f"{k}_meancov")))
+        macro(f"rttNine{k.replace('_', '').title()}Any", f3(sget(b, f"{k}_qany")))
         body.append([tex(k), fi(sget(a, f"{k}_cand")), fi(sget(a, f"{k}_false")),
                      *(f3(sget(a, f"{k}_{c}"), 2) for c in decide.CLASSES)])
     t1 = table(
@@ -139,9 +149,9 @@ def l10_block() -> tuple[str, str, str]:
     macro("rttTenFthreeDatapath", f3(sget(x3, "datapath_share")))
     macro("rttTenFthreeControl", f3(sget(x3, "control_share")))
     macro("rttTenAdderN", fi(sget(r, "adder_n")))
-    macro("rttTenRegH1", f3(sget(r, "register_h1")))
-    macro("rttTenRegH2", f3(sget(r, "register_h2")))
-    macro("rttTenEqH2", f3(sget(r, "eq_const_h2")))
+    macro("rttTenRegHone", f3(sget(r, "register_h1")))
+    macro("rttTenRegHtwo", f3(sget(r, "register_h2")))
+    macro("rttTenEqHtwo", f3(sget(r, "eq_const_h2")))
     body = []
     for k in (*decide.DATAPATH, *decide.CONTROL):
         body.append([tex(k), "datapath" if k in decide.DATAPATH else "control",
@@ -217,13 +227,17 @@ def l11_block() -> str:
         f = sel["fsm_instance"]
         cells.append(f"{f['proposed_j05']}/{f['n']}")
         body.append(cells)
-    for s in ("V2N", "M2N"):
+    for s, tag in (("V2N", "VtwoN"), ("M2N", "MtwoN")):
         sel = {r["element"]: r for r in det if r["set"] == s}
-        macro(f"rttEleven{s}Chain", f"{sel['chain']['proposed_j05']}/{sel['chain']['n']}")
-        macro(f"rttEleven{s}Dec", f"{sel['decoder']['proposed_j05']}/{sel['decoder']['n']}")
-        macro(f"rttEleven{s}Fb",
+        macro(f"rttEleven{tag}Chain", f"{sel['chain']['proposed_j05']}/{sel['chain']['n']}")
+        macro(f"rttEleven{tag}Dec", f"{sel['decoder']['proposed_j05']}/{sel['decoder']['n']}")
+        macro(f"rttEleven{tag}Fb",
               f"{sel['fb_register']['proposed_j05']}/{sel['fb_register']['n']}")
-        macro(f"rttEleven{s}Sink", f"{sel['sink']['proposed_j05']}/{sel['sink']['n']}")
+        macro(f"rttEleven{tag}Sink", f"{sel['sink']['proposed_j05']}/{sel['sink']['n']}")
+        macro(f"rttEleven{tag}Fsm",
+              f"{sel['fsm_instance']['proposed_j05']}/{sel['fsm_instance']['n']}")
+        macro(f"rttEleven{tag}FbKc", sel["fb_register"]["kind_correct"])
+        macro(f"rttEleven{tag}FbCom", sel["fb_register"]["committed"])
     t2 = table(
         r"RQ-L11, detectors: chain elements proposed by a counted candidate with Jaccard at "
         r"least 0.5 of any kind (in brackets: of the right scored type), chains with all three "

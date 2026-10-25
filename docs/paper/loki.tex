@@ -1161,6 +1161,112 @@ across the eight run sets. The bound that holds for any rule is simpler: a rule 
 (\rtLfiveNonEquivFrac{} of all).
 
 
+\subsection{Round 3: fragments or noise, and where the words are}
+\label{sec:round3}
+
+\input{round3-tables}
+
+Round 2 left a puzzle. Uncalibrated, the detectors propose many candidates that almost never
+match (Table~\ref{tab:r3-false}); calibrated, they commit almost nothing. Peter's question
+(Appendix~\ref{app:log}) is why netlists are hard to bring back to HDL when the structure is
+there to see: muxes, wide signals that behave as words, state feedback with decode and select,
+and input and output words that mark where the datapath lies. Round 3 is compute-only on the
+round-2 runs and the L0 ground truth (no language-model call, no new detector). Unlike round 2, its
+rules were committed before any number was computed (commit \code{5f8de24}, \code{experiments/round3/EXPERIMENT.md});
+every figure below is a macro generated from the summary CSVs of \code{experiments/round3}.
+We added the runs the round-2 sets lacked (micro f3, calibrated and not, and micro f1-k6,
+uncalibrated; one micro f3 design timed out) and score every set, but the decisions use the
+primary set P: the micro and VerilogEval f2 runs without calibration.
+
+\emph{RQ-L9: are the wrong candidates fragments of real words?} A false candidate is a counted
+candidate the one-to-one scorer does not match. We classify each (rules in the protocol): the
+same extent as a ground-truth instance of its family (a lost tie or a type slip), a fragment
+of a larger instance of its family, a fragment of an instance of another type, a straddle of
+several, a partial overlap, or noise. Over the \rttNinePoolFalse{} false candidates of the four
+kinds in P, \rttNinePoolFrag{} are fragments of an instance of the matching or a related
+family, and \rttNinePoolNoise{} are noise: every false candidate lies inside some ground-truth
+construct. Per kind the related-fragment share is \rttNineFfenFrag{} for \code{ff\_en},
+\rttNineRegisterFrag{} for \code{register}, \rttNineMuxbitFrag{} for \code{mux\_bit} and only
+\rttNineEqconstFrag{} for \code{eq\_const}; \rttNineKindsOk{} of four kinds reach 0.5, so H9a is
+\rttLNineaStatus. The split is informative. The \code{ff\_en} candidates are two-cell pieces (an enable
+multiplexer and its flip-flop) of a larger construct, most of them in one VerilogEval design
+(\code{\rttNineTopDesign}), where they sit inside a mux tree; the word-level ground truth
+cannot match a piece, a grouping problem. The \code{eq\_const} candidates are \rttNineEqconstOther{} fragments of an
+instance of another type (mostly single-LUT \code{\$and} and \code{\$or} words, registers and
+\code{fsm} instances), a detector problem: the LUT computes something that looks like a constant
+compare and is not one. The \code{mux\_bit} candidates are \rttNineMuxbitOther{} inside an instance of another
+type (\code{\$shiftx} words among them). H9b asks whether grouping the fragments would recover the word:
+the share of ground-truth instances whose fragment union covers 0.8 of them is
+\rttNinePoolQ{} pooled (\code{ff\_en} \rttNineFfenQ, \code{register} \rttNineRegisterQ,
+\code{eq\_const} \rttNineEqconstQ, \code{mux\_bit} \rttNineMuxbitQ), and no kind reaches 0.5, so
+H9b is \rttLNinebStatus. Even with candidates of any kind the cover stays low (\code{register}
+\rttNineRegisterAny, \code{mux\_bit} \rttNineMuxbitAny). The fragments exist, but they do not
+tile the words: a merge step over the present detector output would recover few words. The result
+is sensitive to the largest design: with \code{\rttNineTopDesign} left out (an exploratory
+check, not the rule) \rttNineTopFalse{} false candidates remain, \rttNineTopFrag{} of them
+related fragments and \rttNineTopOther{} fragments of another type, so the pooled share falls
+under the 0.5 of the rule and H9a would be inconclusive; \code{ff\_en} stays at
+\rttNineTopFfenFrag{} and \code{register} drops to \rttNineTopRegisterFrag. The other sets
+(Table~\ref{tab:r3-sets}) have fewer candidates when calibrated, and the gate floor f3
+proposes far more false \code{eq\_const} candidates than any f2 set.
+
+\emph{RQ-L10: do the I/O words find the datapath?} A top-level port bus is a word the
+reverse engineer usually has by name. A group of cells is a propagated word if, bit by bit, a
+known word drives (or is driven by) one cell per bit of the group with the same cell type, truth
+table and pin, and at least three quarters of the bits qualify (the strict rule asks for all);
+we propagate for up to four hops. A ground-truth construct is reached when a group of at most
+$h$ hops lies for the most part inside it. In the f2 floor, \rttTenDatapathN{} datapath word
+constructs (registers, muxes, adders, comparators, counters) and \rttTenControlN{} control
+constructs (\code{eq\_const} and FSMs) have two or more bits; \rttTenDatapath{} of the datapath and
+\rttTenControl{} of the control constructs are reached within two hops, so H10a is
+\rttLTenaStatus{} and H10b is \rttLTenbStatus. Both numbers need reading. The datapath share
+is pooled and one VerilogEval design alone holds most of the \rttTenAdderN{} adder
+constructs, which the rule never reaches because the carry chain breaks the bit-for-bit
+isomorphism; the mean of the per-design shares is \rttTenDatapathMacro{} (datapath,
+\rttTenDatapathDesigns{} designs) against \rttTenControlMacro{} (control, \rttTenControlDesigns{}
+designs), a difference of the sign the hypothesis expects but not of its size. Registers are
+reached best (\rttTenRegHone{} at one hop, \rttTenRegHtwo{} at two), muxes less, adders and
+counters almost never, and a second hop adds little: bit-sliced isomorphism stalls after
+the first layer of logic. The control constructs are reached not because FSM logic follows
+the ports but because the constant compares read input ports directly (\code{eq\_const}
+\rttTenEqHtwo{} at two hops); the FSMs themselves are not. The strict rule reaches
+\rttTenStrictDatapath{} and \rttTenStrictControl, and the gate floor f3 \rttTenFthreeDatapath{} and
+\rttTenFthreeControl: at f3 a cell group lands inside a gate-level footprint almost by
+construction, so that figure measures the floor, not the idea. The honest summary is that I/O
+words seed registers and input-side muxes well, and nothing else.
+
+\emph{RQ-L11: the FSM chain.} Measurement only. In the f2 ground truth of VerilogEval
+(\rttElevenVeDesigns{} designs) \rttElevenVeFb{} registers feed back to themselves, of which
+\rttElevenVeFsm{} the front end flags as FSM state; \rttElevenVeDec{} constant-compare decoders
+read such a register, and the chains (register, decoder, select or enable) occur in
+\rttElevenVeDesignsChain{} designs. Of the muxes with a select, \rttElevenVeMuxChain{} of
+\rttElevenVeMuxS{} (VerilogEval) and \rttElevenMiMuxChain{} of \rttElevenMiMuxS{} (micro) take it from
+such a decoder, \rttElevenMuxShare{} together, so the FSM, decode, select chain is real but covers a
+minority of the control muxes of these small designs. The detectors see little of it
+(Table~\ref{tab:r3-detect}): in V2N they propose \rttElevenVtwoNFb{} feedback registers,
+\rttElevenVtwoNDec{} decoders, \rttElevenVtwoNSink{} sinks, all three elements of
+\rttElevenVtwoNChain{} chains, and \rttElevenVtwoNFsm{} FSM instances as an \code{fsm} candidate.
+
+\emph{Implication for a word-first detector.} The wrong candidates are not noise: none lies
+outside the ground-truth constructs, so the evidence is there. The fragment share depends on the
+kind and, for the pooled figure, on one design: \code{ff\_en}, \code{mux\_bit} and
+(less so) \code{register} fail as pieces of larger constructs, while \code{eq\_const} fails as
+a detector problem (the local pattern is too weak, and a word-level view, the select and enable
+fan-out across a word, must decide whether a compare is a decoder). Because the fragments do
+not tile the words, grouping the present candidates is not enough, and a detector should
+construct the word first and score it as a unit. Concretely, we propose to find (i) register words by shared clock, enable and reset
+across flip-flops; (ii) datapath words by per-bit cones that are NPN-isomorphic, seeded from the
+ports but not limited to them (the port words reach registers and nothing past the first
+layer); (iii) control nets by select and enable fan-out across a word; and (iv) FSMs by a
+feedback strongly connected component plus the decoders on it. Related work attacks the word
+problem along the same lines: WordRev~\cite{li2013wordrev} derives word-level structure from
+a gate netlist by matching sequences of word-level operations and by propagating from known
+words, and DANA~\cite{albartus2020dana} recovers registers from the dataflow between
+flip-flops. We have not run either tool on these sets and do not claim a comparison. The
+next round builds this detector (L8, the language model given the ReverseProvenance record,
+stays deferred).
+
+
 \section{Discussion}
 \label{sec:discussion}
 
@@ -1191,6 +1297,15 @@ uncertainty measure, a structural prefilter before the prover) did not on the re
 tests, and the one new instrument that
 earned its place is the operator F1, which sees recovery where AST and CFG see only form.
 
+A fifth observation comes from round 3 (Section~\ref{sec:round3}): \emph{the wrong candidates
+are pieces of real constructs, not noise, but the pieces do not tile the words}. Every false
+candidate of the four kinds lies inside some ground-truth construct, about half as a
+fragment of an instance of a related kind (H9a \rttLNineaStatus, sensitive to one design), yet
+a word's fragments rarely cover it (H9b \rttLNinebStatus). Propagation from the I/O words
+reaches registers but not the arithmetic or the FSMs (H10a \rttLTenaStatus, H10b
+\rttLTenbStatus), and the FSM, decode, select chain covers \rttElevenMuxShare{} of the
+control muxes. The next detector is therefore word-first, not a regrouping of the present one.
+
 \section{Conclusion}
 \label{sec:conclusion}
 
@@ -1211,7 +1326,8 @@ suggested, and what became of the next set of hypotheses, so that the progress o
 visible and not only its end state. The decision rules of round 2 are in
 \code{experiments/round2/EXPERIMENT.md}; their thresholds were set by the implementer during
 the round (the file was committed after the scripts and the result CSVs), so they are not
-pre-registered.
+pre-registered. The rules of round 3 (\code{experiments/round3/EXPERIMENT.md}) were committed
+before any round-3 number was computed (commit \code{5f8de24}).
 
 \emph{Round 0 (2026-10-21 to 22): build.} Question: how much structure does Loki recover
 without a language model? Built L0 (provenance-labelled, anonymised datasets and the
@@ -1249,11 +1365,38 @@ candidates from $p=0.1$ gives Spearman \rtLfiveRhoCal), and a structural prefilt
 the prover without losing proved constructs (H5b, \rtLfivebStatus). The head-to-head
 (Section~\ref{sec:round2}) fills in the positioning of the discussion.
 
+\emph{What round 2 suggested.} The calibrated flow commits almost nothing and the uncalibrated
+one proposes many wrong candidates. Are the wrong candidates fragments of real word constructs
+(a grouping problem) or unrelated (a detector problem)? Peter (2026-10-24) put the same
+question from the reverse-engineering side: ``for Loki - the question is from a reverse
+engineering perspective why is it hard to reconstruct to HDL - going from if structures (which
+we know are muxes) and then down it seems like many of the patterns are constant - so
+hypothesizing that things are a bus (and by a bus I mean a signal that could be a traditional
+bus, but also a wide wordsize signal that has regular oprtations to it - for example figuing
+out that there is a word in the datapath or control then allows us to look for patterns to
+reconstruct. Control flow is usually in the form of muxin and FSMs have pattern of feedback
+(state equals next state) and then control based on state. How do we find these patterns
+better?'' and ``Also, the outputs (words) and the inputs as words also provide hints of where
+the words are''.
+
+\emph{Round 3 (2026-10-24): the hypotheses and what happened.} Table~\ref{tab:r3-log};
+Section~\ref{sec:round3}. Rules committed first (\code{5f8de24}). H9a (wrong candidates are
+related fragments) is \rttLNineaStatus{} with related-fragment share \rttNinePoolFrag{} of
+\rttNinePoolFalse{} false candidates and no noise, but not robust to leaving out the largest design
+(\rttNineTopFrag); H9b (fragments cover the word) is \rttLNinebStatus{} at \rttNinePoolQ; H10a (datapath
+words reached from the ports within two hops) is \rttLTenaStatus{} at \rttTenDatapath{} and H10b
+(control is not) \rttLTenbStatus{} at \rttTenControl; the FSM chain (L11) is measured only. The
+next step is a word-first detector (register words by shared clock, enable and reset; datapath
+words by per-bit isomorphic cones; control nets by select fan-out; FSMs by feedback components
+and their decoders); L8 stays deferred.
+
 \emph{Next.} L3, a cross-suite GNN (train on one suite, test on the other); L6, a motif null
 model for the graphlet counts; and L8, a language model given the ReverseProvenance document
 (deferred by Peter), which is the experiment that tests the combination directly.
 
 \input{round2-log}
+
+\input{round3-log}
 
 \bibliographystyle{IEEEtran}
 \bibliography{joined}
