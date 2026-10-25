@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib
 import itertools
+import math
 import json
 from collections import Counter
 from typing import Any
@@ -17,7 +18,7 @@ import dictlib
 import r4lib
 
 nx: Any = importlib.import_module("networkx")
-EXACT_MAX_NODES = 400
+EXACT_MAX_NODES = 100
 ROUNDS = 6
 FLOORS3 = ("f1-k6", "f2", "f3")
 
@@ -30,7 +31,13 @@ def p_canonical(tab: int, w: int) -> int:
     order = sorted(range(w), key=lambda v: sig[v])
     groups = [list(g) for _, g in itertools.groupby(order, key=lambda v: sig[v])]
     best: int | None = None
-    for combo in itertools.product(*[itertools.permutations(g) for g in groups]):
+    n_perm = 1
+    for g in groups:
+        n_perm *= math.factorial(len(g))
+    # More than 24 tied orders: keep the signature order only (a coarser, still deterministic key).
+    perms = [itertools.permutations(g) for g in groups] if n_perm <= 24 \
+        else [[tuple(g)] for g in groups]
+    for combo in itertools.product(*perms):
         perm = [v for g in combo for v in g]
         out = 0
         for i in range(1 << w):

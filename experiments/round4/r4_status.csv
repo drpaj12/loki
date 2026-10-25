@@ -10,5 +10,7 @@ H12b2,V0,inconclusive,R=0.3288 iid=0.1866 ood=0.0614 (iid < 0.20: ratio uninform
 H12b2,V1,inconclusive,R=0.6402 iid=0.1980 ood=0.1267 (iid < 0.20: ratio uninformative)
 H12b2,V2,inconclusive,R=0.6429 iid=0.2576 ood=0.1656
 H12c,-,not supported,"slope=-0.0026/doubling CI=[-0.0097,0.0094] n_designs=29"
+H14a,f3,supported,ceiling_f3=0.5000 f2=0.4823 f1=0.4697
+H14b,-,inconclusive,f3-f2=0.0177
 H14c,-,inconclusive,l0-f2=0.860 l0-f3=0.913 f2-none=0.940 f3-none=0.940 f2-calib=0.867 f3-calib=0.913
 H14d,-,inconclusive,rho=-0.5110 (p=1.1e-35) partial=0.3029 (p=2.1e-12) n=516

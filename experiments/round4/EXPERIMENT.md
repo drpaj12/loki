@@ -347,6 +347,21 @@ train designs; the corpus is 1,200 designs (840 train, 120 iid, 240 ood). The mu
 styles per base (`ternary`, `ifelse`, `case`, `index`; `casez` needs the priority kind), so the
 twin set is 396 designs, not 408 (pilot build of the pipeline: 60 of 60 designs).
 
+Entry 2026-10-25-b (before the identifiability numbers were computed; no hypothesis rule changes):
+1. The exact-isomorphism confirmation of the twin set is limited to netlists of at most 100 nodes
+   (Stage 0 said 400): the VF2 check on larger regular netlists did not finish in a useful time.
+   H14a and H14b use the WL class ceiling (`ceiling_wl`), which is unaffected; `ceiling_exact`
+   is reported for the small netlists only (it is the WL ceiling where both agree).
+2. The permutation canonical form of a LUT table (the initial colour of the WL class) enumerates
+   the input orders that are tied by cofactor counts; when more than 24 orders are tied only the
+   signature order is used (a coarser key; it can only split a class, never merge two).
+3. Big designs: the list of Stage 0 was built in order with the 14 GiB address limit. A design
+   that hit the limit (`MemoryError`) is recorded as skipped in `l13_builds.csv`; floors that
+   Odin III's cmos6 flow refused (`unresolved_module`: designs that instantiate library
+   blocks) are recorded as skipped for f3 only. H13a and H13b use the f3 floor of the designs
+   that built there; H13c uses f2.
+4. 41 corpus designs have no labelled logic cell and are left out of the GNN train and test sets.
+
 ## Reproduce
 
 Paths come from environment variables with workspace-relative defaults (`r4lib.py`): `ODIN3_WS`
