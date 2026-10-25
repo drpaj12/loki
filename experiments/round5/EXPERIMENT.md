@@ -221,7 +221,7 @@ ruff and `mypy --strict` clean per CLAUDE.md; the unittest suite passes except t
 `test_4b_real_micros_beats_wl` (confirmed by name); new unit tests for the detector. Generated
 CSVs and the generated .tex regenerate byte-identically. Tectonic builds `docs/paper/loki.tex`
 clean from the worktree and from a `git archive` copy under `/tmp/claude-1000/le5-*`; the tracked
-PDF is rebuilt. No `/home/jamiespa` in committed files.
+PDF is rebuilt. No absolute home-directory path in committed files.
 
 ## Outputs
 
@@ -263,6 +263,8 @@ the Stage-0 text left open:
 7. The `null` tiling and seeding use `r5lib.seed_rng(design, draw)` (sha256 of the design name and
    the draw index), as in the Stage-0 text. The chain measure also tabulates the FSM instances
    (a counted `fsm` candidate with J >= 0.5).
+8. The Stage-0 gate sentence that named the home-directory prefix was reworded (it made the file
+   contain the string it forbids); no rule changed.
 
 ## Reproduce
 
