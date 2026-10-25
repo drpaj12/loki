@@ -33,7 +33,7 @@ def fi(x: float | int | str) -> str:
 
 
 def tex(t: str) -> str:
-    return t.replace("_", r"\_").replace("#", r"\#")
+    return t.replace("_", r"\_").replace("#", r"\#").replace("<", "$<$")
 
 
 def macro(name: str, value: str) -> None:
@@ -124,7 +124,27 @@ def curve_block() -> str:
     return t1 + "\n\n" + t2
 
 
+def big_skips() -> None:
+    path = r4lib.DATA / "big" / "l13_builds.csv"
+    if not path.is_file():
+        return
+    f3: list[str] = []
+    mem: list[str] = []
+    built = 0
+    for r in r4lib.read_csv(path):
+        if "MemoryError" in (r["f1-k6"] + r["f2"] + r["f3"]):
+            mem.append(tex(r["design"]))
+        elif r["f3"].startswith("skipped"):
+            f3.append(tex(r["design"]))
+        if r["status"] == "ok":
+            built += 1
+    macro("rfsBigF3Skipped", ", ".join(f3) if f3 else "none")
+    macro("rfsBigMemSkipped", ", ".join(mem) if mem else "none")
+    macro("rfsBigBuilt", str(built))
+
+
 def big_block() -> str:
+    big_skips()
     try:
         big = rows("l13_big.csv")
     except FileNotFoundError:

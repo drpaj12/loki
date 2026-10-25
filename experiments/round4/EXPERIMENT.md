@@ -360,7 +360,10 @@ Entry 2026-10-25-b (before the identifiability numbers were computed; no hypothe
    Odin III's cmos6 flow refused (`unresolved_module`: designs that instantiate library
    blocks) are recorded as skipped for f3 only. H13a and H13b use the f3 floor of the designs
    that built there; H13c uses f2.
-4. 41 corpus designs have no labelled logic cell and are left out of the GNN train and test sets.
+4. `arm_core` had run for more than three CPU hours without finishing its f1-k6 floor when the
+   results were fixed, `mcml` and `LU64PEEng` were not started (the build queue was still running
+   in the background); they are not part of any big-design number.
+5. 41 corpus designs have no labelled logic cell and are left out of the GNN train and test sets.
 
 ## Reproduce
 

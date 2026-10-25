@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import importlib
 import itertools
-import math
 import json
+import math
 from collections import Counter
 from typing import Any
 

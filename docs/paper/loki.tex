@@ -1364,8 +1364,8 @@ cells and joins labelled cells into words by adjacency or by a shared net. Again
 detectors on the micros and the 33 held-out VerilogEval designs (f2, seven eligible kinds) the
 dictionary as written (V0) wins on none: H12b is \rfsTwelveBVzeroStatus{} (\rfsTwelveBVzeroNumbers).
 V1 (cuts of up to six leaves) and V2 (a shared clock also joins storage cells), added after
-Stage 0, win on \rfsTwelveBVoneNumbers{} and \rfsTwelveBVtwoNumbers{} respectively and do not
-change the status. Table~\ref{tab:r4-kinds} gives the F1 per kind: on the real designs the
+Stage 0, also win on none (\rfsTwelveBVoneNumbers; \rfsTwelveBVtwoNumbers) and change no
+status. Table~\ref{tab:r4-kinds} gives the F1 per kind: on the real designs the
 dictionary finds almost nothing the corpus signatures were mined for. It does not even
 generalise inside the corpus: the iid test micro-F1 is low and H12b2 is \rfsTwelveBTwoVzeroStatus{}
 (\rfsTwelveBTwoVzeroNumbers; V2: \rfsTwelveBTwoVtwoNumbers). Signatures by cone class alone are
@@ -1381,9 +1381,11 @@ train split itself reaches a higher macro-F1 on its held-out designs than any co
 
 \emph{RQ-L13: big designs.} Table~\ref{tab:r4-big} lists the VTR designs built one at a time
 with Odin III's peak resident set measured. Big designs are \emph{not} equivalence-checked
-(agent default, as in Odin III itself; \code{meta.json} records \code{skipped:big}). The f3 floor
-of \code{mkPktMerge} and \code{spree} was skipped by Odin III's reader
-(\code{unresolved\_module}); their f1-k6 and f2 floors are built. Share of words in a repeat
+(agent default, as in Odin III itself; \code{meta.json} records \code{skipped:big}).
+\rfsBigBuilt{} designs built. Odin III's reader refuses the f3 floor (\code{unresolved\_module})
+of \rfsBigF3Skipped{}, whose f1-k6 and f2 floors are built (the \code{mkPktMerge} case among
+them); \rfsBigMemSkipped{} exceeded the 14\,GiB address limit (60\% of the VM) and are
+skipped, partly or wholly. \code{arm\_core} had not finished after more than three CPU hours (a hang in the linked ABC is documented for this design in the Odin III notes) when this section was written, and \code{mcml} and \code{LU64PEEng} (which Odin III's goldens do not cover) were not started; the results use the designs listed in Table~\ref{tab:r4-big}. Share of words in a repeat
 group in the small designs: \rfsSmallShare{} (\rfsSmallDesigns{} design-floors). H13a is
 \rfsThirteenAStatus{} (\rfsThirteenANumbers), H13b \rfsThirteenBStatus{} (\rfsThirteenBNumbers)
 and H13c \rfsThirteenCStatus{} (\rfsThirteenCNumbers).
