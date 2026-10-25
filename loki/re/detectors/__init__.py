@@ -20,7 +20,11 @@ if TYPE_CHECKING:
     from loki.re.structural import StructFeatures
     from loki.re.view import View
 
-DETECTOR_ORDER = ("hard", "ff_pattern", "mux", "arith", "seqfn", "fsm", "bus", "unit", "role")
+DETECTOR_ORDER = (
+    "wordfirst", "hard", "ff_pattern", "mux", "arith", "seqfn", "fsm", "bus", "unit", "role",
+    "wordgroup",
+)
+OPT_IN = ("wordfirst", "wordgroup")  # round 5: named in --detectors, not in the default list
 ENTRY_GROUP = "loki.detectors"
 # Built-in detectors that exist so far: name -> (module, class). Later tasks add their line.
 _BUILTINS: dict[str, tuple[str, str]] = {
@@ -33,6 +37,8 @@ _BUILTINS: dict[str, tuple[str, str]] = {
     "fsm": ("loki.re.detectors.fsm", "FsmDetector"),
     "unit": ("loki.re.detectors.unit", "UnitDetector"),
     "role": ("loki.re.detectors.role", "RoleDetector"),
+    "wordfirst": ("loki.re.detectors.wordfirst", "WordFirstDetector"),
+    "wordgroup": ("loki.re.detectors.wordfirst", "WordGroupDetector"),
 }
 
 K_EDGES = (2, 3, 5, 9)
@@ -129,7 +135,7 @@ def load_detectors(names: Sequence[str] | None) -> list[Detector]:
     ``ValueError``."""
     plugins = {ep.name: ep for ep in importlib.metadata.entry_points(group=ENTRY_GROUP)}
     if names is None:
-        builtin = [n for n in DETECTOR_ORDER if n in _BUILTINS]
+        builtin = [n for n in DETECTOR_ORDER if n in _BUILTINS and n not in OPT_IN]
         extra: list[str] = []
     else:
         for n in names:
