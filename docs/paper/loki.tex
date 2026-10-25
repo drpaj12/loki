@@ -1495,6 +1495,213 @@ decided at word level. The repeat measures of Table~\ref{tab:r4-big} show real r
 near the null on small real designs, so repetition is a hint for word grouping in large designs
 only.
 
+\subsection{Round 5: the word-first detector}
+\label{sec:round5}
+
+\input{round5-tables}
+
+Rounds 3 and 4 said what to build: words from structure, the corpus as a test bed for grouping
+rules, repetition only where it is real. Round 5 builds it (question L~Q2.4 of the purpose page:
+can words, control nets and FSMs be found first, and the rest built around them?). Two opt-in
+detectors, \code{wordfirst} and \code{wordgroup} (\code{loki/re/detectors/wordfirst.py},
+\code{docs/user/wordfirst.md}), were added to \code{loki re}; the default detector list and every
+earlier calibration are unchanged. \code{wordfirst} groups flip-flops by clock, enable and reset
+into register words (with \code{ff\_en} and \code{ff\_srst} words labelled by the control net),
+groups 2:1 mux cells by their shared select, takes the carry chains of the \code{arith} detector
+so that the carry net joins the bits, decides \code{eq\_const} at word level (a single-minterm
+cone whose support lies in one register word or the primary inputs), proposes an FSM for a
+register word coupled through its own D cones, and grows words along isomorphic bit slices
+(readers and drivers) across registers, mux words and adders into \code{bus} words.
+\code{wordgroup} runs last and links the per-bit hypotheses to the words that contain them. The
+outputs are ordinary candidates with claims, so the prover, the commit step, the scorers and the
+Verilog writer work unchanged. Every threshold is an agent default (no fitted parameter): groups
+above 32 flip-flops are split by the Q-reader and D-driver signature, \code{eq\_const} supports
+are at most 16, growth needs 0.75 of the bits and two levels.
+
+The rules were committed first (commit \code{ce02fa4}, \code{experiments/round5/EXPERIMENT.md});
+the detector was developed on the corpus train split only. Two things differ from the committed
+text and are disclosed here, with the review fixes that follow from them (entries 2026-10-25-b
+and -c of that file). First, the FSM rule of the committed text (feedback plus at least two
+word-level decoders) was relaxed in the code committed at \code{6e97d88}, eleven minutes after
+the protocol, to a feedback-coupling test alone; the entry that records the change was committed
+only at \code{aaae4d7}, after the Stage-2 numbers existed. This is a late disclosure, and commit
+order alone does not show whether an evaluation run preceded the change. The committed rule is
+reported as a labelled variant (arms W1 and WB1, Table~\ref{tab:r5x-fsm}); the statuses below
+use the rule that was evaluated. Second, the shuffles of the H16f null were drawn from one random
+stream instead of one stream per design as the committed text says; the committed seeding was
+rerun and is reported with the first (Section on H16f below). The thresholds were set knowing the round-3 and round-4 numbers (H9b
+0.065, 732 \code{ff\_en} candidates with one correct, 5 of 89 chains, the 0.095 hop-two reach) and
+the ground-truth kind counts of the evaluation sets. The evaluation sets are the micros (MI), the
+33 held-out VerilogEval designs (VT), the corpus iid and ood test splits (CI, CO) and the 13 big
+designs that built at f2 (BIG). The arms are the round-2 detectors uncalibrated and calibrated
+(R2N, R2C), \code{wordfirst} alone (W) and \code{wordfirst} with the per-bit detectors and
+\code{wordgroup} (WB); all runs are uncalibrated. Table~\ref{tab:r5-rq} lists the questions.
+
+\begin{table}[t]
+\caption{Round 5 research questions. Each serves L~Q2.4; the measure is the recovery of the
+Odin~III ground truth (precision, recall, word tiling), not area, speed or power.}
+\label{tab:r5-rq}
+\centering\footnotesize
+\begin{tabular}{@{}lp{0.72\columnwidth}@{}}
+\toprule
+RQ & Question \\
+\midrule
+L16a & Do word-first candidates tile the ground-truth words (round 3: 0.065)? \\
+L16b & Does clock, enable and reset grouping recover the enabled words? \\
+L16c & Does word-level \code{eq\_const} beat the per-bit detector? \\
+L16d & Does the FSM, decode, control chain complete more often (round 3: 5 of 89)? \\
+L16e & Do words grown from registers reach the datapath beyond a size-matched null? \\
+L16f & Is repetition real evidence on big designs, against shuffled groups? \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{Outcome.} Under the Stage-0 rules: H16a (tiling, VT) is \rfvHaStatus{}, H16b (\code{ff\_en}
+words) \rfvHbStatus{}, H16c (word-level \code{eq\_const}) \rfvHcStatus{}, H16d (chains)
+\rfvHdStatus{}, H16e (growth beyond a null) \rfvHeStatus{} and H16f (repetition on BIG)
+\rfvHfStatus{} (Table~\ref{tab:r5-status}). No hypothesis is supported. Two of the statuses
+carry a qualification: H16f is degenerate (its margin cannot be reached on this data, see below),
+and the null clause of H16a is empty on VT.
+
+\emph{H16a: tiling.} On VT the pooled tiling of WB is \rfvHaqwb{} against \rfvHaqbase{} for the
+better round-2 arm (difference \rfvHadeltaq{}, bootstrap interval \rfvHadeltaqlo{} to
+\rfvHadeltaqhi{}, \rfvHaninstances{} instances over \rfvHadesigns{} designs, Wilcoxon p
+\rfvHawilcoxonp{}). Word grouping does not tile the held-out real words; on the micros and the
+synthetic splits the tiling of WB and of the round-2 arm are close (Table~\ref{tab:r5-tiling}).
+The null columns replace each counted candidate by random cells of the same size. On VT the null
+of WB (\rfvHaqnull{}) is above WB itself and above every arm (the largest arm value is
+\rfvHaqarmmaxvt{}), so the null clause of the Stage-0 rule (q(WB) minus the null at least 0.10)
+cannot hold on VT. The Stage-0 reachability sentence (WB at least 0.215) used the round-3
+baseline and ignored that clause; with the VT baseline the difference clause needs q(WB) of
+\rfvHareachqdiff{} and the null clause \rfvHareachqnull{}, so a supported verdict needed
+q(WB) of about \rfvHareachq{}. The status does not depend on the null: the difference is below
+0.05. The null depends on the size mix of the candidates: WB has \rfvXNullVtWbAllBig{} counted
+candidates of at least ten cells on VT against \rfvXNullVtRtwoNAllBig{} for R2N, the largest has
+\rfvXNullVtWbAllMax{} cells (R2N: \rfvXNullVtRtwoNAllMax{}), and the null of all of WB's counted
+candidates is \rfvXNullVtWbAllNull{} against \rfvXNullVtRtwoNAllNull{} for R2N, while the
+\code{ff\_en} candidates alone give \rfvXNullVtWbFfenNull{} for WB and \rfvXNullVtRtwoNFfenNull{} for
+R2N (exploratory, Table~\ref{tab:r5x-null}). The tiling measure cannot separate structure from
+chance when a few candidates are large.
+
+\emph{H16b: \code{ff\_en} words.} Pooled over all four sets the recall of \code{ff\_en} rises from
+\rfvHbrecallbase{} (best round-2 arm) to \rfvHbrecallwb{} for WB (precision \rfvHbprecisionbase{}
+to \rfvHbprecisionwb{}); the gain in recall (\rfvHbdeltarecall{}) and in F1 (\rfvHbdeltafone{}) is
+below the Stage-0 margins (0.20 and 0.10) although the paired test over \rfvHbdesignswithgt{}
+designs is significant, so the status is inconclusive. Grouping by shared control matches some
+enabled words that per-bit slices never matched, at a precision of \rfvHbprecisionwb{} (F1
+\rfvHbfonewb{}); the recall stays at \rfvHbrecallwb{}. Why it stops there was not measured. Three
+reasons are plausible and untested: the enable is often a function of several nets, the cone depth
+limit of the \code{ff\_pattern} analysis cuts it, and the ground-truth footprints of such words
+are whole arrays that share cells.
+
+\emph{H16c: word-level \code{eq\_const}.} The word-level decision changes nothing measurable:
+F1 is \rfvHcprecisionwb{} precision and \rfvHcrecallwb{} recall for WB against
+\rfvHcprecisionbase{} and \rfvHcrecallbase{} for the baseline, over \rfvHcdesignswithgt{} designs
+with the kind (\rfvHcStatus). WB says nothing about the word-level rule, and the reason is in the
+code. The per-bit \code{eq\_const} of \code{arith} applies the same single-minterm test to every
+cone with at most 16 support nets; the word-level rule applies it only to cones whose support lies
+in one register word or the primary inputs, so it is a subset. On MI and VT (\rfvXEqDesigns{}
+designs) the number of counted word-level candidates of W with cells that R2N lacks is
+\rfvXEqWNotInRtwoN{}, and WB ends with the same cell sets as R2N in \rfvXEqWbSame{} of those
+designs (\rfvXEqVtWb{} against \rfvXEqVtRtwoN{} counted on VT): the overlay merges two candidates
+of equal kind, cells and parameters into one hypothesis, so a word-level candidate that
+\code{arith} also proposes is not a second one and WB does not drop it. Arm W alone is the
+reading of the word-level rule (exploratory variant, no status): it counts \rfvXEqVtW{} candidates
+on VT against \rfvXEqVtRtwoN{} for R2N at the same recall, with F1 \rfvHcfonew{} against
+\rfvHcfonebase{}. Why the word-level rule finds fewer cones is not established. One development
+design (a corpus FSM design in which none of the LUTs is a pure decoder) suggests that the f2
+mapping absorbs decoders into next-state LUTs; this was not measured on the evaluation sets.
+Across the four sets only \rfvXFsmDecW{} of the \rfvXFsmCandWTotal{} \code{fsm} hypotheses of W contain a
+word-level decoder (exploratory). The \code{ne\_const} branch of the detector has a defect (the
+inverted table is masked with the wrong width, so a constant of four or more bits reads back as
+$-1$ and the prover refutes the candidate): \rfvXEqNeRefuted{} of \rfvXEqNe{} \code{ne} candidates
+of W on MI and VT are refuted by it. It was left in place so that the evaluated results stand.
+
+\emph{H16d: the chain.} Of the \rfvHdpairedchains{} ground-truth chains of MI and VT, WB completes
+\rfvHdcompletewb{}, W \rfvHdcompletew{} and the round-2 uncalibrated arm \rfvHdcompletertwon{}
+(calibrated: \rfvHdcompletertwoc{}); the two chains that WB completes and R2N does not are fewer than
+the margin of five and fewer than the eight discordant chains the test needs (with fewer than
+eight discordant chains the rule gives inconclusive whatever the gain). FSM instances matched:
+R2N \rfvHdfsmhitrtwon{} of \rfvHdfsmgtrtwon{}, WB \rfvHdfsmhitwb{}, W \rfvHdfsmhitw{}.
+The FSM rule that was evaluated (a feedback-coupling test, no decoder required) over-generates.
+Of the \rfvXFsmCandWTotal{} \code{fsm} hypotheses of W on the four f2 sets, \rfvXFsmCandWFsm{} have their
+flip-flops in a ground-truth FSM, \rfvXFsmCandWCounter{} in a counter, \rfvXFsmCandWRegister{} in a
+register that is neither (the ground truth has no shift-register or LFSR kind, so these fall
+here) and \rfvXFsmCandWNone{} in none; of the \rfvXFsmCntWTotal{} that are counted only
+\rfvXFsmCntWFsm{} are FSMs and \rfvXFsmCntWCounter{} are counters (exploratory, Table~\ref{tab:r5x-fsm}).
+The committed Stage-0 rule (W1, WB1) proposes \rfvXFsmCandWOneTotal{} and \rfvXFsmCandWbOneTotal{}
+hypotheses in W and WB where the evaluated rule proposes \rfvXFsmCandWTotal{} and
+\rfvXFsmCandWbTotal{}; the chains it completes are \rfvXChainWOneComplete{} (W) and
+\rfvXChainWbOneComplete{} (WB), the FSM instances it hits \rfvXChainWOneFsm{} and
+\rfvXChainWbOneFsm{}, and the pooled F1 of kind \code{fsm} is \rfvXFsmKindWbOneF{} for WB1
+against \rfvXFsmKindWbF{} for WB (R2N \rfvXFsmKindRtwoNF{}, R2C \rfvXFsmKindRtwoCF{}). Of the
+\rfvXFsmCompTotalW{} W hypotheses that match a ground-truth FSM (Jaccard at least 0.5) only
+\rfvXFsmCompCountedW{} are counted, and \rfvXFsmCompRegW{} conflict with a register hypothesis over
+the same cells and stay open below $p = 0.5$. Which features keep them below that was not measured.
+
+\emph{H16e: growth.} The seeded share of the datapath constructs is \rfvHed{} for W (WB
+\rfvHedatapathwb{}, R2N \rfvHedatapathrtwon{}), far above the 0.095 of I/O-port propagation, but
+a size-matched random null reaches \rfvHednull{}: the gap (\rfvHeNote) is below the margin and the
+level alone is not evidence, because the ground-truth instances partition the non-I/O cells.
+By kind, the gap to the null is smallest for registers (\rfvHegapregister{}: \rfvHeregisterw{}
+against \rfvHeregisternullW{} over \rfvHeconstructsregister{} constructs), the kind the growth
+starts from, and larger for subtractors (\rfvHegapsubtractor{}), adders (\rfvHegapadder{}),
+comparators (\rfvHegapcomparator{}) and muxes (\rfvHegapmux{}); counters and mux trees have a gap
+of zero (\rfvHeconstructscounter{} and \rfvHeconstructsmuxtree{} constructs, both at the ceiling
+of their null). The per-kind numbers come from \code{r5\_numbers.csv}; the kinds are few and no
+interval was computed for them.
+
+\emph{H16f: repetition.} On the \rfvHfdesignsfinished{} BIG designs W counts \rfvHfcounted{}
+candidates and matches \rfvHfmatched{} of \rfvHfgt{} ground-truth words; keeping only the
+candidates in a repeat group lowers the matches to \rfvHfmatchedf{} and F1 from \rfvHffoneall{}
+to \rfvHffonef{}, and every shuffled draw reaches that F1 or more (share
+\rfvHfnullsharege{}): repetition of the candidates themselves is not evidence of a correct word
+here, in line with the near-null repeat key on small designs in round 4.
+H16f is degenerate: even a filter that kept exactly the matched candidates would reach an F1 of
+\rfvHffonebound{}, a gain of at most \rfvHfdeltabound{} over keeping all, below the margin of 0.05,
+so no outcome but \emph{not supported} was reachable and the literal status says nothing about
+repetition. The first run drew the shuffles from one random stream, which Stage 0 does not say;
+with the Stage-0 per-design seeding the share of null draws at or above F1 of the filtered set is
+still \rfvHfnullsharege{} (null mean \rfvHfnullmean{}, against \rfvHfnullmeanstream{} for the
+stream), and the status is unchanged. Arm WB was run on BIG as an exploratory addition with the
+Stage-0 cap of 1800 s: it finished \rfvXBigWbDone{} of \rfvXBigWbTotal{} designs
+(\rfvXBigWbTimeout{} timed out; Table~\ref{tab:r5x-bigwb}). On those designs W counts
+\rfvXBigWbCountedW{} candidates and matches \rfvXBigWbMatchedW{} of \rfvXBigWbGtW{} words (F1
+\rfvXBigWbFAllW{}, \rfvXBigWbFFiltW{} with the repetition filter); WB counts
+\rfvXBigWbCountedWb{} and matches \rfvXBigWbMatchedWb{} (F1 \rfvXBigWbFAllWb{},
+\rfvXBigWbFFiltWb{} filtered). The filter lowers F1 for both arms.
+
+\emph{Run time.} \code{wordfirst} is cheap: the median W run takes \rfvXTimeWMedLo{} to
+\rfvXTimeWMedHi{} s per design on MI, VT, CI and CO (by set), and W takes between
+\rfvXTimeBigMin{} s (\rfvXTimeBigMinName) and \rfvXTimeBigMax{} s (\rfvXTimeBigMaxName) on BIG
+with \code{--features none}; the median WB run takes \rfvXTimeWbMedLo{} to \rfvXTimeWbMedHi{} s on
+the same sets (Table~\ref{tab:r5-time}, Table~\ref{tab:r5-big}). WB hit the 900 s limit on
+\rfvXFthreeWbMissing{} micro f3 designs (f3 is report-only).
+
+\emph{What remains for L15.} The loss audit (L Q3.1) asks which pass loses each construct. The
+results above separate two reasons a word is not found. For registers and enable words the
+information is in the netlist and the detector or the grouping rule misses it (a fixable
+detector problem). For FSM decoders, comparators and the word boundaries of muxes the evaluated
+rules found nothing beyond the per-bit detectors (H16c) and the data do not show why. One
+development design suggests that the f2 mapping absorbs decoders into next-state LUTs, and
+register-file words are known to share one ground-truth footprint; neither is measured on the
+evaluation sets, and whether any word-level rule could recover these constructs is open. Which
+pass erases them (lowering of the \code{\$eq}, the absorption into LUTs, the merging of mux and
+enable) needs the construct chain that the Odin~III D14 provenance export will give at every
+granularity; with it the audit can label each missing construct with the pass that joined it to
+its neighbours.
+
+\emph{Limits.} The detector reuses the \code{ff\_pattern} cone analysis (depth three, twelve
+inputs) and the \code{arith} chain finder, so its adders are those of the baseline; carry chains
+are not rebuilt from isomorphic slices. At f3 every arm has zero recall on muxes and comparators,
+and the word-level \code{eq\_const} of W counts \rfvXFthreeEqWCounted{} candidates on MI and VT
+for \rfvXFthreeEqWMatched{} match (R2N: \rfvXFthreeEqRtwoNCounted{} for \rfvXFthreeEqRtwoNMatched{};
+Table~\ref{tab:r5-f3}). The rules were developed on 150 synthetic train designs and did not
+transfer to the real held-out set, the same pattern as the dictionary of round 4. The FSM test
+over-generates (counters, LFSRs and other coupled registers pass it) and the \code{ne\_const}
+branch has the constant-mask defect described under H16c.
+
+
 \section{Discussion}
 \label{sec:discussion}
 
@@ -1542,6 +1749,16 @@ idioms, did not transfer to real logic, and the flow destroys part of the style}
 dictionary wins on no eligible kind (H12b \rfsTwelveBVzeroStatus) and the GNN does not improve on
 real designs with more synthetic data (H12c \rfsTwelveCStatus); on the twin set the style-recovery
 ceiling is \rfsCeilThree{} at f3.
+
+A seventh observation comes from round 5 (Section~\ref{sec:round5}): \emph{a word-first detector
+built from structure raises the recall of enabled-register words from \rfvHbrecallbase{} to
+\rfvHbrecallwb{} at a precision of \rfvHbprecisionwb{} (F1 \rfvHbfonewb{}), and no hypothesis
+reaches its margin} (H16a \rfvHaStatus, H16b \rfvHbStatus, H16c \rfvHcStatus, H16d \rfvHdStatus,
+H16e \rfvHeStatus, H16f \rfvHfStatus{} and degenerate). The word-level \code{eq\_const} is a subset of
+the per-bit rule and adds nothing in the combined arm, the FSM test finds counters and registers as
+often as FSMs, and the tiling null is dominated by a few large candidates. Where the missed
+constructs went was not measured; saying which pass joined each of them to its neighbours is the
+loss audit (L15), which needs the Odin~III provenance export.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1652,6 +1869,24 @@ dictionary result (entry 2026-10-25-a) and change no status. RQs: L12a corpus (H
 word-first detector of the discussion, built and tested on the corpus. Statuses are those of the Stage-0 rules; exploratory checks (entry 2026-10-25-c) show H13b flipping with the small baseline (inconclusive against micros and VerilogEval, not supported against VerilogEval alone) and the repeat key near its null on small real designs, so H13b and the ``free evidence'' reading are uninformative or fragile by the letter of the rule; H13a and H13c stay informative.
 
 \input{round4-log}
+
+\emph{Round 5 (2026-10-25): the hypotheses and what happened.} Table~\ref{tab:r5-log};
+Section~\ref{sec:round5}. Question L~Q2.4 (hub purpose page): can words, control nets and FSMs be
+found first, and the rest built around them? What round 3 and round 4 suggested: build words
+directly from structure, use the corpus as a test bed for grouping rules, use repetition only
+where it is real. Rules committed first (\code{ce02fa4}); a dated entry in
+\code{experiments/round5/EXPERIMENT.md} (2026-10-25-a) records the implementation choices, among
+them the relaxed FSM rule, disclosed late (the code of \code{6e97d88} already carried it); entries
+2026-10-25-b and -c (review fixes) correct two statements of entry a (the FSM rule and the null
+seeding were deviations from the committed text), label H16f degenerate, correct the H16a
+reachability arithmetic and add exploratory measurements. No status changed. RQs: L16a tiling (H16a \rfvHaStatus), L16b enabled
+words (H16b \rfvHbStatus), L16c word-level \code{eq\_const} (H16c \rfvHcStatus), L16d chains
+(H16d \rfvHdStatus), L16e growth against a null (H16e \rfvHeStatus), L16f repetition on big
+designs (H16f \rfvHfStatus, degenerate). Word grouping raises \code{ff\_en} recall to \rfvHbrecallwb{}
+at a precision of \rfvHbprecisionwb{} and nothing else reaches its margin; why is not measured
+here, and the provenance-export audit (L15) can attribute missing constructs to a pass.
+
+\input{round5-log}
 
 \bibliographystyle{IEEEtran}
 \bibliography{joined}

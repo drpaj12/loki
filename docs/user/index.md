@@ -31,6 +31,7 @@ install
 dataset
 formats
 hypotheses
+wordfirst
 llm
 results
 ```
