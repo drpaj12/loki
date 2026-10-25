@@ -22,8 +22,16 @@ Module: `loki/re/detectors/wordfirst.py` (`WordFirstDetector`, `WordGroupDetecto
   (`adder`, `subtractor`, `adder_cin`, with claims).
 - Word-level `eq_const`: a cone whose support lies inside one register word (or the primary
   inputs) and is a single minterm (`eq_const` / `ne_const` claim).
-- FSMs: a register word whose D cones read the word's own Q bits (feedback), with the next-state
-  cone as the footprint.
+- FSMs: a register word that passes a feedback-coupling test (every D cone reads a Q bit of the
+  word and some cone reads at least two distinct bits), with the next-state cone as the
+  footprint. No decoder is required (the `decoders` parameter only counts the word-level
+  `eq_const` decoders inside the word). The test is necessary, not sufficient: it over-generates,
+  because counters (carry chain), LFSRs (XOR taps) and any word whose bits feed each other pass it
+  and are proposed as `fsm`; a plain shift register does not (one Q bit per cone) unless a stage
+  also reads another bit. Nothing distinguishes an FSM from these. Round 5 measured the share
+  by ground-truth kind (exploratory entry 2026-10-25-c of `experiments/round5/EXPERIMENT.md`).
+  The Stage-0 text required at least two decoders; that rule can be selected for comparison with
+  the environment variable `LOKI_WF_FSM_RULE=stage0` (default `round5`, the evaluated rule).
 - Propagation: readers and drivers of a known word (registers, mux words, adder words) that form
   isomorphic slices of at least max(2, ceil(0.75 k)) bits become `bus` words, two levels deep.
 

@@ -10,8 +10,10 @@
 * carry chains: the support-based chains of ``arith`` (the carry net joins the bits);
 * word-level ``eq_const``: a cone whose support lies inside one register word (or the primary
   inputs) and is a single minterm;
-* FSMs: a register word with feedback through its D cone that at least two word-level
-  ``eq_const`` decoders read;
+* FSMs: a register word whose D cones all read a Q bit of the word and one of them reads at least
+  two distinct bits (a feedback coupling; no decoder is required, the decoders inside the word are
+  only counted in the ``decoders`` parameter). The rule over-generates: counters, shift registers
+  and LFSRs are coupled too and are proposed as FSMs (see ``_coupled``);
 * propagation: readers and drivers of a known word that form isomorphic slices (same cell class
   and pin role) of at least ``max(2, ceil(0.75 k))`` bits become ``bus`` words, depth
   ``GROW_DEPTH``, seeded from registers, mux words and adder words (so growth crosses adders).
@@ -23,6 +25,7 @@ words. Both are opt-in: ``loki re --detectors wordfirst,...,wordgroup``.
 
 from __future__ import annotations
 
+import os
 from collections import defaultdict
 from collections.abc import Hashable
 from dataclasses import dataclass
@@ -40,6 +43,10 @@ EQ_SUPPORT_MAX = 16
 GROW_DEPTH = 2
 GROW_TAU = 0.75
 MAX_SEEDS = 4000
+# Exploratory switch (round 5 review fixes): "round5" is the rule that was evaluated; "stage0" is
+# the Stage-0 text (feedback into some D cone plus at least two word-level decoders reading the
+# word). Read at import; the default changes no behaviour.
+FSM_RULE = os.environ.get("LOKI_WF_FSM_RULE", "round5")
 
 if TYPE_CHECKING:
     from loki.re.overlay import Hypothesis
@@ -294,10 +301,11 @@ def word_decoders(ctx: RoundContext, words: list[RegWord]) -> list[Decoder]:
     g = ctx.graph
     member: dict[int, int] = {q: i for i, w in enumerate(words) for q in w.q}
     pis = set(g.pis)
+    free = set(ctx.view.free_cells)
     found: dict[tuple[frozenset[int], str, int], Decoder] = {}
     for net in sorted(g.driver):
         cid = g.driver[net]
-        if cid not in set(ctx.view.free_cells) or g.cells[cid].kind != "lut":
+        if cid not in free or g.cells[cid].kind != "lut":
             continue
         sup = ctx.view.support.of(net)
         if sup is None or not 2 <= len(sup) <= EQ_SUPPORT_MAX:
@@ -319,12 +327,13 @@ def word_decoders(ctx: RoundContext, words: list[RegWord]) -> list[Decoder]:
 
 def _eq_cands(ctx: RoundContext, decs: list[Decoder]) -> list[Candidate]:
     out: list[Candidate] = []
+    pos = set(ctx.graph.pos)
     for d in decs:
         srcs = tuple(sorted(d.support))
         m = len(srcs)
         claim = Claim("eq_const" if d.op == "eq" else "ne_const", (("A_WIDTH", m), ("C", d.const)),
                       (("A", srcs),), (("Y", (d.net,)),))
-        reads = "yes" if d.net in set(ctx.graph.pos) or any(
+        reads = "yes" if d.net in pos or any(
             ctx.graph.cells[r].kind in ("ff", "latch") for r, _ in ctx.graph.readers.get(d.net, ())
         ) else "no"
         out.append(Candidate(
@@ -339,22 +348,33 @@ def _next_state_cone(ctx: RoundContext, w: RegWord) -> frozenset[int]:
     """Cells of the fan-in of the D nets that feed only the cone and the word's flip-flops."""
     g = ctx.graph
     cells, _ = cone(g, frozenset(), list(w.d), frozenset())
-    inside = set(cells) | set(w.ff_cells)
+    ffc = set(w.ff_cells)
+    pos = set(g.pos)
+    inside = set(cells) | ffc
     changed = True
     while changed:
         changed = False
-        for c in sorted(inside - set(w.ff_cells)):
+        for c in sorted(inside - ffc):
             outs = g.cells[c].outs
             if any(r not in inside for n in outs for r, _ in g.readers.get(n, ())) or any(
-                    n in set(g.pos) for n in outs):
+                    n in pos for n in outs):
                 inside.discard(c)
                 changed = True
     return frozenset(inside)
 
 
 def _coupled(ctx: RoundContext, w: RegWord) -> bool:
-    """Feedback SCC over the word: every D cone reads a Q bit of the word and some cone reads
-    at least two distinct bits (the state bits feed each other)."""
+    """Feedback coupling of a register word: every D cone reads a Q bit of the word and some cone
+    reads at least two distinct bits.
+
+    This is a necessary condition for an FSM, not a sufficient one. It over-generates: counters
+    (the carry chain makes bit i read the lower bits), LFSRs (the XOR taps read several bits) and
+    any other word whose bits feed each other pass it and are proposed as ``fsm``. A plain shift
+    register does not pass (each D cone reads one Q bit, so ``widest`` stays 1) unless some stage
+    also reads another bit (a tap, a load mux with a second state input). Nothing here tells an FSM
+    from those: no decoder is required and no state encoding is tested. The share of ``fsm``
+    candidates that are counters or shift registers by ground-truth kind is measured in
+    ``experiments/round5/l16_explore.py`` (exploratory)."""
     qs = set(w.q)
     widest = 0
     for d in w.d:
@@ -365,14 +385,31 @@ def _coupled(ctx: RoundContext, w: RegWord) -> bool:
     return widest >= 2
 
 
+def _feedback(ctx: RoundContext, w: RegWord) -> bool:
+    """Stage-0 feedback test (exploratory ``LOKI_WF_FSM_RULE=stage0``): some D cone reads a Q bit
+    of the word."""
+    qs = set(w.q)
+    for d in w.d:
+        sup = ctx.view.support.of(d)
+        if sup is not None and qs & sup:
+            return True
+    return False
+
+
 def _fsm_cands(ctx: RoundContext, words: list[RegWord], decs: list[Decoder]) -> list[Candidate]:
-    """A register word coupled through its own D cones (feedback SCC) that is read by a decoder
-    or whose cones read other inputs as well."""
+    """A register word that passes ``_coupled`` becomes an ``fsm`` candidate over its next-state
+    cone; no decoder is needed. ``decoders`` (the word-level ``eq_const`` decoders inside the word)
+    and the ``decoder_readers`` feature only record whether there is one. With
+    ``FSM_RULE == "stage0"`` the Stage-0 text applies instead: some D cone reads the word and at
+    least two decoders read it."""
     out: list[Candidate] = []
     for w in words:
         qs = set(w.q)
         mine = [d for d in decs if d.support <= qs]
-        if not _coupled(ctx, w):
+        if FSM_RULE == "stage0":
+            if len(mine) < 2 or not _feedback(ctx, w):
+                continue
+        elif not _coupled(ctx, w):
             continue
         cells = _next_state_cone(ctx, w)
         out.append(Candidate(
