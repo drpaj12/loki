@@ -8,6 +8,8 @@
 \newcommand{\rfvHadesigns}{17}
 \newcommand{\rfvHaninstances}{1{,}388}
 \newcommand{\rfvHanonzero}{1}
+\newcommand{\rfvHanullaboveallarms}{1}
+\newcommand{\rfvHaqarmmaxvt}{0.023}
 \newcommand{\rfvHaqbase}{0.022}
 \newcommand{\rfvHaqnull}{0.203}
 \newcommand{\rfvHaqnullWbci}{0.294}
@@ -35,6 +37,9 @@
 \newcommand{\rfvHaqwco}{0.180}
 \newcommand{\rfvHaqwmi}{0.223}
 \newcommand{\rfvHaqwvt}{0.017}
+\newcommand{\rfvHareachq}{0.303}
+\newcommand{\rfvHareachqdiff}{0.172}
+\newcommand{\rfvHareachqnull}{0.303}
 \newcommand{\rfvHawilcoxonp}{1}
 \newcommand{\rfvHbNote}{dR 0.138 dF1 0.025 p 0.0000 n 113}
 \newcommand{\rfvHbStatus}{inconclusive}
@@ -104,7 +109,16 @@
 \newcommand{\rfvHecomparatorrtwon}{0.700}
 \newcommand{\rfvHecomparatorw}{0.650}
 \newcommand{\rfvHecomparatorwb}{0.750}
+\newcommand{\rfvHeconstructsadder}{59}
+\newcommand{\rfvHeconstructscomparator}{20}
+\newcommand{\rfvHeconstructscounter}{8}
 \newcommand{\rfvHeconstructsdatapath}{391}
+\newcommand{\rfvHeconstructseqconst}{625}
+\newcommand{\rfvHeconstructsfsm}{4}
+\newcommand{\rfvHeconstructsmux}{43}
+\newcommand{\rfvHeconstructsmuxtree}{4}
+\newcommand{\rfvHeconstructsregister}{240}
+\newcommand{\rfvHeconstructssubtractor}{17}
 \newcommand{\rfvHecontrolnullW}{0.916}
 \newcommand{\rfvHecontrolnullWb}{0.930}
 \newcommand{\rfvHecontrolrtwoc}{0.865}
@@ -137,6 +151,13 @@
 \newcommand{\rfvHefsmrtwon}{1}
 \newcommand{\rfvHefsmw}{1}
 \newcommand{\rfvHefsmwb}{1}
+\newcommand{\rfvHegapadder}{0.176}
+\newcommand{\rfvHegapcomparator}{0.190}
+\newcommand{\rfvHegapcounter}{0}
+\newcommand{\rfvHegapmux}{0.219}
+\newcommand{\rfvHegapmuxtree}{0}
+\newcommand{\rfvHegapregister}{0.078}
+\newcommand{\rfvHegapsubtractor}{0.129}
 \newcommand{\rfvHemuxnullW}{0.526}
 \newcommand{\rfvHemuxnullWb}{0.670}
 \newcommand{\rfvHemuxrtwoc}{0.442}
@@ -161,19 +182,180 @@
 \newcommand{\rfvHesubtractorrtwon}{0.824}
 \newcommand{\rfvHesubtractorw}{0.647}
 \newcommand{\rfvHesubtractorwb}{0.824}
-\newcommand{\rfvHfNote}{dF1 -0.0033 null share 1.000}
+\newcommand{\rfvHfNote}{dF1 -0.0033 null share 1.000; degenerate: margin unreachable (F1 bound 0.0165)}
 \newcommand{\rfvHfStatus}{not supported}
 \newcommand{\rfvHfcounted}{3{,}825}
 \newcommand{\rfvHfcountedf}{2{,}616}
 \newcommand{\rfvHfdelta}{$-$0.003}
+\newcommand{\rfvHfdeltabound}{0.003}
 \newcommand{\rfvHfdesignsfinished}{13}
 \newcommand{\rfvHffoneall}{0.013}
+\newcommand{\rfvHffonebound}{0.017}
 \newcommand{\rfvHffonef}{0.010}
 \newcommand{\rfvHfgt}{15{,}618}
+\newcommand{\rfvHfmarginreachable}{0}
 \newcommand{\rfvHfmatched}{130}
 \newcommand{\rfvHfmatchedf}{92}
 \newcommand{\rfvHfnullmean}{0.011}
+\newcommand{\rfvHfnullmeanstream}{0.011}
 \newcommand{\rfvHfnullsharege}{1}
+\newcommand{\rfvHfnullsharegestream}{1}
+\newcommand{\rfvXBigWbCountedW}{1{,}657}
+\newcommand{\rfvXBigWbCountedWb}{23{,}389}
+\newcommand{\rfvXBigWbDone}{11}
+\newcommand{\rfvXBigWbError}{0}
+\newcommand{\rfvXBigWbFAllW}{0.008}
+\newcommand{\rfvXBigWbFAllWb}{0.004}
+\newcommand{\rfvXBigWbFFiltW}{0.002}
+\newcommand{\rfvXBigWbFFiltWb}{0.001}
+\newcommand{\rfvXBigWbGtW}{9{,}208}
+\newcommand{\rfvXBigWbGtWb}{9{,}208}
+\newcommand{\rfvXBigWbMatchedW}{44}
+\newcommand{\rfvXBigWbMatchedWb}{58}
+\newcommand{\rfvXBigWbTimeout}{2}
+\newcommand{\rfvXBigWbTotal}{13}
+\newcommand{\rfvXChainRtwoCComplete}{1}
+\newcommand{\rfvXChainRtwoCFsm}{0}
+\newcommand{\rfvXChainRtwoNComplete}{1}
+\newcommand{\rfvXChainRtwoNFsm}{2}
+\newcommand{\rfvXChainWComplete}{2}
+\newcommand{\rfvXChainWFsm}{0}
+\newcommand{\rfvXChainWOneComplete}{2}
+\newcommand{\rfvXChainWOneFsm}{0}
+\newcommand{\rfvXChainWbComplete}{3}
+\newcommand{\rfvXChainWbFsm}{1}
+\newcommand{\rfvXChainWbOneComplete}{3}
+\newcommand{\rfvXChainWbOneFsm}{2}
+\newcommand{\rfvXEqDesigns}{98}
+\newcommand{\rfvXEqMiRtwoN}{538}
+\newcommand{\rfvXEqMiW}{399}
+\newcommand{\rfvXEqMiWb}{539}
+\newcommand{\rfvXEqNe}{48}
+\newcommand{\rfvXEqNeRefuted}{3}
+\newcommand{\rfvXEqVtRtwoN}{163}
+\newcommand{\rfvXEqVtW}{39}
+\newcommand{\rfvXEqVtWb}{163}
+\newcommand{\rfvXEqWNotInRtwoN}{0}
+\newcommand{\rfvXEqWbSame}{97}
+\newcommand{\rfvXFsmCandWCounter}{31}
+\newcommand{\rfvXFsmCandWFsm}{59}
+\newcommand{\rfvXFsmCandWNone}{5}
+\newcommand{\rfvXFsmCandWOneCounter}{6}
+\newcommand{\rfvXFsmCandWOneFsm}{8}
+\newcommand{\rfvXFsmCandWOneNone}{0}
+\newcommand{\rfvXFsmCandWOneRegister}{1}
+\newcommand{\rfvXFsmCandWOneTotal}{15}
+\newcommand{\rfvXFsmCandWRegister}{43}
+\newcommand{\rfvXFsmCandWTotal}{138}
+\newcommand{\rfvXFsmCandWbCounter}{37}
+\newcommand{\rfvXFsmCandWbFsm}{62}
+\newcommand{\rfvXFsmCandWbNone}{4}
+\newcommand{\rfvXFsmCandWbOneCounter}{6}
+\newcommand{\rfvXFsmCandWbOneFsm}{7}
+\newcommand{\rfvXFsmCandWbOneNone}{0}
+\newcommand{\rfvXFsmCandWbOneRegister}{1}
+\newcommand{\rfvXFsmCandWbOneTotal}{14}
+\newcommand{\rfvXFsmCandWbRegister}{62}
+\newcommand{\rfvXFsmCandWbTotal}{165}
+\newcommand{\rfvXFsmCntWCounter}{8}
+\newcommand{\rfvXFsmCntWFsm}{4}
+\newcommand{\rfvXFsmCntWNone}{0}
+\newcommand{\rfvXFsmCntWOneCounter}{5}
+\newcommand{\rfvXFsmCntWOneFsm}{1}
+\newcommand{\rfvXFsmCntWOneNone}{0}
+\newcommand{\rfvXFsmCntWOneRegister}{0}
+\newcommand{\rfvXFsmCntWOneTotal}{6}
+\newcommand{\rfvXFsmCntWRegister}{18}
+\newcommand{\rfvXFsmCntWTotal}{30}
+\newcommand{\rfvXFsmCntWbCounter}{6}
+\newcommand{\rfvXFsmCntWbFsm}{3}
+\newcommand{\rfvXFsmCntWbNone}{0}
+\newcommand{\rfvXFsmCntWbOneCounter}{5}
+\newcommand{\rfvXFsmCntWbOneFsm}{0}
+\newcommand{\rfvXFsmCntWbOneNone}{0}
+\newcommand{\rfvXFsmCntWbOneRegister}{0}
+\newcommand{\rfvXFsmCntWbOneTotal}{5}
+\newcommand{\rfvXFsmCntWbRegister}{20}
+\newcommand{\rfvXFsmCntWbTotal}{29}
+\newcommand{\rfvXFsmCompCountedW}{2}
+\newcommand{\rfvXFsmCompCountedWb}{1}
+\newcommand{\rfvXFsmCompRegW}{48}
+\newcommand{\rfvXFsmCompRegWb}{48}
+\newcommand{\rfvXFsmCompTotalW}{50}
+\newcommand{\rfvXFsmCompTotalWb}{51}
+\newcommand{\rfvXFsmDecW}{27}
+\newcommand{\rfvXFsmDecWOne}{15}
+\newcommand{\rfvXFsmDecWb}{25}
+\newcommand{\rfvXFsmDecWbOne}{14}
+\newcommand{\rfvXFsmKindRtwoCCounted}{59}
+\newcommand{\rfvXFsmKindRtwoCF}{0.959}
+\newcommand{\rfvXFsmKindRtwoCGt}{64}
+\newcommand{\rfvXFsmKindRtwoCMatched}{59}
+\newcommand{\rfvXFsmKindRtwoNCounted}{47}
+\newcommand{\rfvXFsmKindRtwoNF}{0.703}
+\newcommand{\rfvXFsmKindRtwoNGt}{64}
+\newcommand{\rfvXFsmKindRtwoNMatched}{39}
+\newcommand{\rfvXFsmKindWCounted}{30}
+\newcommand{\rfvXFsmKindWF}{0.043}
+\newcommand{\rfvXFsmKindWGt}{64}
+\newcommand{\rfvXFsmKindWMatched}{2}
+\newcommand{\rfvXFsmKindWOneCounted}{6}
+\newcommand{\rfvXFsmKindWOneF}{0.029}
+\newcommand{\rfvXFsmKindWOneGt}{64}
+\newcommand{\rfvXFsmKindWOneMatched}{1}
+\newcommand{\rfvXFsmKindWbCounted}{68}
+\newcommand{\rfvXFsmKindWbF}{0.561}
+\newcommand{\rfvXFsmKindWbGt}{64}
+\newcommand{\rfvXFsmKindWbMatched}{37}
+\newcommand{\rfvXFsmKindWbOneCounted}{45}
+\newcommand{\rfvXFsmKindWbOneF}{0.679}
+\newcommand{\rfvXFsmKindWbOneGt}{64}
+\newcommand{\rfvXFsmKindWbOneMatched}{37}
+\newcommand{\rfvXFthreeEqRtwoNCounted}{3{,}405}
+\newcommand{\rfvXFthreeEqRtwoNMatched}{1}
+\newcommand{\rfvXFthreeEqWCounted}{898}
+\newcommand{\rfvXFthreeEqWMatched}{1}
+\newcommand{\rfvXFthreeEqWbCounted}{3{,}064}
+\newcommand{\rfvXFthreeEqWbMatched}{1}
+\newcommand{\rfvXFthreeWbMissing}{2}
+\newcommand{\rfvXNullVtRtwoNAllBig}{20}
+\newcommand{\rfvXNullVtRtwoNAllCands}{1{,}453}
+\newcommand{\rfvXNullVtRtwoNAllMax}{64}
+\newcommand{\rfvXNullVtRtwoNAllNull}{0.203}
+\newcommand{\rfvXNullVtRtwoNAllQ}{0.022}
+\newcommand{\rfvXNullVtRtwoNFfenBig}{0}
+\newcommand{\rfvXNullVtRtwoNFfenCands}{732}
+\newcommand{\rfvXNullVtRtwoNFfenMax}{5}
+\newcommand{\rfvXNullVtRtwoNFfenNull}{0.004}
+\newcommand{\rfvXNullVtRtwoNFfenQ}{0.003}
+\newcommand{\rfvXNullVtRtwoNOtherBig}{20}
+\newcommand{\rfvXNullVtRtwoNOtherCands}{721}
+\newcommand{\rfvXNullVtRtwoNOtherMax}{64}
+\newcommand{\rfvXNullVtRtwoNOtherNull}{0.018}
+\newcommand{\rfvXNullVtRtwoNOtherQ}{0.022}
+\newcommand{\rfvXNullVtWbAllBig}{34}
+\newcommand{\rfvXNullVtWbAllCands}{1{,}845}
+\newcommand{\rfvXNullVtWbAllMax}{1{,}016}
+\newcommand{\rfvXNullVtWbAllNull}{0.203}
+\newcommand{\rfvXNullVtWbAllQ}{0.023}
+\newcommand{\rfvXNullVtWbFfenBig}{1}
+\newcommand{\rfvXNullVtWbFfenCands}{867}
+\newcommand{\rfvXNullVtWbFfenMax}{11}
+\newcommand{\rfvXNullVtWbFfenNull}{0.192}
+\newcommand{\rfvXNullVtWbFfenQ}{0.003}
+\newcommand{\rfvXNullVtWbOtherBig}{33}
+\newcommand{\rfvXNullVtWbOtherCands}{978}
+\newcommand{\rfvXNullVtWbOtherMax}{1{,}016}
+\newcommand{\rfvXNullVtWbOtherNull}{0.203}
+\newcommand{\rfvXNullVtWbOtherQ}{0.023}
+\newcommand{\rfvXTimeBigMax}{708}
+\newcommand{\rfvXTimeBigMaxName}{stereovision2}
+\newcommand{\rfvXTimeBigMin}{0.6}
+\newcommand{\rfvXTimeBigMinName}{mkPktMerge}
+\newcommand{\rfvXTimeWMedHi}{0.29}
+\newcommand{\rfvXTimeWMedLo}{0.25}
+\newcommand{\rfvXTimeWbMedHi}{0.44}
+\newcommand{\rfvXTimeWbMedLo}{0.29}
 \begin{table}[t]
 \caption{Round 5: the six hypotheses, their status under the Stage-0 rules and the numbers the rules use.}
 \label{tab:r5-status}
@@ -189,7 +371,7 @@ H16b & inconclusive & dR 0.138 dF1 0.025 p 0.0000 n 113 \\
 H16c & not supported & dR 0.000 dF1 -0.000 p 1.0000 n 25 \\
 H16d & inconclusive & gain 2 WB 3 R2N 1 discordant 2/0 p 0.2500 \\
 H16e & inconclusive & D 0.829 null 0.715 gap 0.114 \\
-H16f & not supported & dF1 -0.0033 null share 1.000 \\
+H16f & not supported & dF1 -0.0033 null share 1.000; degenerate: margin unreachable (F1 bound 0.0165) \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -382,6 +564,73 @@ WB MI f2 & 68 & 2.82 & 0.29 & 29.06 \\
 WB MI f3 & 63 & 49.75 & 0.26 & 697.06 \\
 WB VT f2 & 33 & 2.18 & 0.35 & 44.29 \\
 WB VT f3 & 33 & 13.29 & 0.39 & 339.61 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[t]
+\caption{Round 5, exploratory (2026-10-25-c): the FSM rule. W and WB use the evaluated rule (feedback coupling, no decoder), W1 and WB1 the Stage-0 rule (feedback plus at least two word-level decoders). Kind-level counted/matched/GT of \code{fsm} and F1 pooled over MI, VT, CI and CO at f2; chains complete and FSM instances hit on MI and VT; the last columns classify every \code{fsm} hypothesis by the ground-truth kind of its flip-flops (FSM, counter, register that is neither, none).}
+\label{tab:r5x-fsm}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llccccccccc@{}}
+\toprule
+Arm & Rule & fsm c/m/GT & F1 & Chains & FSM hit & Hyp. & FSM & Counter & Register & None \\
+\midrule
+R2N & per-bit & 47/39/64 & 0.70 & 1/22 & 2/4 & -- & -- & -- & -- & -- \\
+R2C & per-bit & 59/59/64 & 0.96 & 1/22 & 0/4 & -- & -- & -- & -- & -- \\
+W & round 5 & 30/2/64 & 0.04 & 2/22 & 0/4 & 138 & 59 & 31 & 43 & 5 \\
+WB & round 5 & 68/37/64 & 0.56 & 3/22 & 1/4 & 165 & 62 & 37 & 62 & 4 \\
+W1 & Stage 0 & 6/1/64 & 0.03 & 2/22 & 0/4 & 15 & 8 & 6 & 1 & 0 \\
+WB1 & Stage 0 & 45/37/64 & 0.68 & 3/22 & 2/4 & 14 & 7 & 6 & 1 & 0 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[t]
+\caption{Round 5, exploratory (2026-10-25-c): tiling on VT and its random null by candidate subset. Candidates of at least ten cells and the largest candidate drive the null; the same \code{ff\_en} candidates give a null of a few percent for R2N and 0.19 for WB.}
+\label{tab:r5x-null}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+Arm & Subset & Candidates & $\ge$10 cells & Max cells & q & q null \\
+\midrule
+R2N & all & 1453 & 20 & 64 & 0.022 & 0.203 \\
+R2N & ff\_en & 732 & 0 & 5 & 0.003 & 0.004 \\
+R2N & other & 721 & 20 & 64 & 0.022 & 0.018 \\
+WB & all & 1845 & 34 & 1016 & 0.023 & 0.203 \\
+WB & ff\_en & 867 & 1 & 11 & 0.003 & 0.192 \\
+WB & other & 978 & 33 & 1016 & 0.023 & 0.203 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[t]
+\caption{Round 5, exploratory (2026-10-25-c): arm WB on BIG with the Stage-0 cap of 1800 s per design (smallest first). Counted/matched for W and WB on the designs where WB finished; GT words of the design.}
+\label{tab:r5x-bigwb}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llrccr@{}}
+\toprule
+Design & WB status & s & W c/m & WB c/m & GT \\
+\midrule
+stereovision3 & ok & 8.45 & 38/8 & 285/7 & 204 \\
+mkPktMerge & ok & 1.0 & 10/10 & 238/18 & 45 \\
+boundtop & ok & 27.6 & 136/2 & 798/2 & 731 \\
+spree & ok & 40.14 & 58/5 & 502/9 & 443 \\
+mkSMAdapter4B & ok & 175.38 & 374/3 & 1747/3 & 530 \\
+mkDelayWorker32B & ok & 73.0 & 5/0 & 460/0 & 910 \\
+sha & ok & 91.88 & 69/0 & 1185/0 & 402 \\
+raygentop & ok & 111.01 & 295/6 & 1245/7 & 492 \\
+blob\_merge & ok & 848.46 & 142/0 & 2164/0 & 1392 \\
+or1200 & ok & 733.63 & 120/0 & 1675/0 & 938 \\
+stereovision0 & ok & 651.97 & 410/10 & 13090/12 & 3121 \\
+stereovision1 & timeout & -- & -- & -- & -- \\
+stereovision2 & timeout & -- & -- & -- & -- \\
 \bottomrule
 \end{tabular}}
 \end{table}

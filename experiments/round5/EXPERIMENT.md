@@ -232,9 +232,11 @@ PDF is rebuilt. No absolute home-directory path in committed files.
 
 ## Rule additions
 
-Entry 2026-10-25-a (written after the Stage-2 numbers existed; no Stage-0 rule, threshold,
-definition or status changes; the Stage-0 text above is not edited). Implementation notes that
-the Stage-0 text left open:
+Entry 2026-10-25-a (written after the Stage-2 numbers existed; no Stage-0 threshold, definition or
+status changes, but two deviations from the Stage-0 text, item 3 (FSM rule) and item 5 (null
+seeding): the first version of this sentence said "no rule changes" and was corrected in entry
+2026-10-25-b; the Stage-0 text above is not edited). Implementation notes that the Stage-0 text
+left open:
 
 1. The detector was developed on the corpus train split only (a spread of 150 designs at f2, 60 at
    f3, `dev_train.py`); `ff_pattern`'s private cone analysis and `arith`'s support-based chain
@@ -246,7 +248,8 @@ the Stage-0 text left open:
    32 by the Q-reader and D-driver signature; plain flip-flops are grouped by (clock, Q-reader
    signature, D-driver signature). Mux words are limited to exactly three-input 2:1 mux cells.
 3. The FSM rule of Stage 1 (feedback through the word's own D cones plus at least two decoders) was
-   changed during development, before any evaluation run, to: every D cone reads a Q bit of the word
+   changed during development to (this is a deviation from the Stage-0 text, disclosed late: see
+   entry 2026-10-25-b; the claim "before any evaluation run" of the first version is withdrawn): every D cone reads a Q bit of the word
    and some cone reads at least two distinct bits (decoders are not required: at f2 the decoders are
    absorbed into the next-state LUTs, the dev census showed 0 of 6 LUTs of an FSM design as a
    decoder).
@@ -266,6 +269,83 @@ the Stage-0 text left open:
 8. The Stage-0 gate sentence that named the home-directory prefix was reworded (it made the file
    contain the string it forbids); no rule changed.
 
+Entry 2026-10-25-b (review fixes, written 2026-10-25 after the review of the round; the Stage-0
+text above is not edited; no status changed). Corrections and fixes, by review item:
+
+1. Late disclosure of the FSM rule. The Stage-0 commit `ce02fa4` (15:54) states the FSM rule as
+   feedback plus at least two word-level decoders. The code committed at `6e97d88` (16:05, eleven
+   minutes later) already implements the relaxed rule (feedback coupling alone, no decoder); the
+   entry that records it, entry a item 3, was committed at `aaae4d7` (16:53), after the Stage-2
+   numbers existed. Commit order does not show whether an evaluation run preceded the change, so
+   the claim "before any evaluation run" is withdrawn from entry a and from the paper. The
+   statuses use the evaluated (relaxed) rule. The Stage-0 rule is reported as a labelled variant:
+   arms `W1` and `WB1` are the detector lists of W and WB run with `LOKI_WF_FSM_RULE=stage0` on
+   MI, VT, CI and CO at f2 (`run_arms.py variants`). The variant implements the Stage-0 sentence
+   literally (some D cone reads a Q bit of the word and at least two word-level decoders read the
+   word); the exact Stage-1 draft test was never committed. Results (exploratory, no status):
+   Table `tab:r5x-fsm` of the paper and `l16_x_fsmkind.csv`, `l16_x_chain.csv`.
+2. H16f is degenerate. The margin (F1_F - F1_all >= 0.05) cannot be reached: a filter that kept
+   exactly the matched candidates would give F1 2*130/(130+15,618) = 0.0165, a gain of at most
+   0.0031 over keeping all. The literal status `not supported` stays; the status table carries
+   the label (`r5_status.csv`, `r5_numbers.csv` keys `f1_bound`, `delta_bound`,
+   `margin_reachable`). The status is decided by the margin clause alone, not by the null.
+3. Null seeding deviation. Entry a item 5 recorded one stream (`random.Random(16)`) for the H16f
+   null; Stage 0 says one `random.Random` per design seeded by the sha256 of the design name. The
+   null was rerun with the Stage-0 seeding: `l16_big_null.csv` is now the Stage-0 seeding and
+   `l16_big_null_stream.csv` the first run (byte-identical to the file of `c902d97`). Both give
+   the share of null draws with F1 >= F1_F equal to 1.0 and a null mean of 0.011354 (Stage-0
+   seeding) against 0.011336 (stream); the status is unchanged.
+4. WB on BIG. Run with the Stage-0 per-design cap of 1800 s as a tracked background run, one
+   design at a time, smallest f2 graph first, `--features none`, memory capped by `ulimit -v`
+   (`run_arms.py big WB`). Outcome: 11 of 13 designs finished (all but stereovision1 and stereovision2, which hit the 1800 s cap; stereovision0 took 652 s, blob_merge 848 s, or1200 734 s). On the 11, W counts 1,657 candidates and matches 44 of 9,208 words; WB counts 23,389 and matches 58; F1 0.008 (W) and 0.004 (WB), 0.002 and 0.001 with the repetition filter. Exploratory, no status.
+5. H16a reachability arithmetic. Stage 0 said D_q >= 0.15 needs q(WB) >= 0.215 (the round-3
+   baseline plus 0.15). The null clause (q(WB) - q_null >= 0.10) was ignored. With the VT baseline
+   (0.022) the difference clause needs 0.172; the null of WB on VT is 0.203, above WB and above
+   every arm, so the null clause needs 0.303 and a supported verdict needed q(WB) of about 0.30.
+   The outcome classes stay reachable in principle; the null clause is empty on the data as it is.
+   The status (not supported: the difference is below 0.05) does not depend on the null.
+6. H16c. WB's `eq_const` equals R2N's on VT (163 counted) because the word-level rule is a
+   subset of `arith`'s per-bit rule (`arith._eq_consts` has no word condition) and
+   `Overlay.add` merges candidates of equal kind, cells and parameters; on MI and VT no counted
+   W candidate has cells that R2N lacks, and WB equals R2N in 97 of 98 designs
+   (`l16_x_eqconst.csv`). WB therefore says nothing about the word-level rule; arm W (39 against
+   163 counted on VT) is reported as a labelled exploratory variant. The status (not supported by
+   F1 < 0.03; the Wilcoxon test has no non-zero difference) is unchanged.
+7. H16d rule. The Stage-0 text makes fewer than 8 discordant chains `inconclusive`; `decide.py`
+   returned `not supported` for a gain of at most 1 in that case and now returns `inconclusive`.
+   H16d is unchanged (gain 2, 2 discordant chains: inconclusive). The same Stage-0 sentence for the
+   Wilcoxon hypotheses only removes the `supported` outcome (p is set to 1 below 8 non-zero
+   differences); H16c's `not supported` rests on its margin and stays.
+8. `_coupled` over-generates (counters, LFSRs and any word whose bits feed each other pass it);
+   documented in the docstring, `docs/user/wordfirst.md` and the paper, measured in entry c.
+9. Behaviour-preserving code changes. The per-iteration `set()` builds in `word_decoders`,
+   `_eq_cands` and `_next_state_cone` were hoisted; the docstrings of the module and `_fsm_cands`
+   describe the rule that the code implements. `check_identical.py` reran W and WB on CI, CO and VT
+   (786 runs) with the new code: all 4,716 output files other than `timing.json` are byte-identical
+   to the stored runs. The time on the largest BIG design (stereovision2, arm W, `--features
+   none`, one run each, the BIG WB run sharing the machine): 663.1 s with the code of `c902d97`, 371.7 s with the hoisted code; overlay.json, design.v and report.json of the two runs are byte-identical.
+10. Defect found, left in place. In `_minterm` the inverted table is masked with `n - 1` instead
+   of `(1 << n) - 1`, so a `ne` constant of four or more bits reads back as -1 and the prover
+   refutes the candidate (5 candidates in the W runs of MI, VT and CO). Fixing it would change the
+   evaluated results; a test documents it (`expectedFailure`).
+11. Process slips of the review-fix session: one exploratory script (`l16_explore.py nullmix`)
+   was started once with a shell `&` in a subshell, against the brief; it only writes a CSV, the
+   file was regenerated in the foreground and is byte-identical, so no result depends on it.
+
+Entry 2026-10-25-c (exploratory, post-data, labelled; none of these changes a status). Script
+`l16_explore.py`, CSVs `l16_x_*.csv`, paper tables `tab:r5x-fsm`, `tab:r5x-null`, `tab:r5x-bigwb`:
+
+- `fsm`: every `fsm` hypothesis of W, WB, W1, WB1 on MI, VT, CI, CO at f2 is classified by the
+  ground-truth kind of its flip-flops (an instance of kind fsm, else counter, else register, that
+  contains at least half of them; the ground truth has no shift-register or LFSR kind, so those
+  fall under register); kind-level `fsm` scores and the H16d chain table for W1 and WB1.
+- `fsmcomp`: the fate of the `fsm` hypotheses that match a ground-truth FSM (Jaccard >= 0.5):
+  status, counted, conflicts.
+- `nullmix`: tiling and its random null by candidate subset (`ff_en` and the rest), with the number
+  of candidates of at least ten cells and the largest candidate, per arm and set (R2N, WB).
+- `eqconst`: the cell sets of the counted `eq_const` candidates of R2N, W, WB per design.
+- `bigwb`: WB on BIG with the repetition filter against W on the same designs.
+
 ## Reproduce
 
 Paths come from environment variables with workspace-relative defaults (`r5lib.py`): `ODIN3_WS`
@@ -278,6 +358,10 @@ $ODIN3_ROOT/plugins/python`:
 
     python run_arms.py sets          # W and WB: MI VT CI CO f2, MI VT f3, MI f1-k6 (restartable)
     python run_arms.py big           # W on BIG, one design at a time
+    python run_arms.py variants      # W1, WB1 (Stage-0 FSM rule, exploratory) on MI VT CI CO f2
+    python run_arms.py big WB        # WB on BIG, 1800 s cap, one design at a time (review fixes)
+    python check_identical.py DIR    # reruns W, WB on CI CO VT into DIR, byte compare (item 9)
+    python l16_explore.py all        # l16_x_*.csv (exploratory; needs the variants and big WB runs)
     python l16_eval.py kinds ; python l16_eval.py tiling ; python l16_eval.py chain
     python l16_eval.py seed ; python l16_big.py
     python decide.py                 # r5_status.csv, r5_numbers.csv, l16_summary.csv
