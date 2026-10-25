@@ -107,11 +107,11 @@ def curve_block() -> str:
             line.append(f3(sum(ve) / len(ve)) if ve else "--")
             body.append(line)
     sl = {(r["floor"], r["set"]): r for r in rows("l12c_slope.csv")}
-    s = sl[("f2", "vetest")]
-    macro("rfsGnnSlope", f3(s["slope_per_doubling"], 4))
-    macro("rfsGnnCiLo", f3(s["ci_lo"], 4))
-    macro("rfsGnnCiHi", f3(s["ci_hi"], 4))
-    macro("rfsGnnVeDesigns", s["n_designs"])
+    sv = sl[("f2", "vetest")]
+    macro("rfsGnnSlope", f3(sv["slope_per_doubling"], 4))
+    macro("rfsGnnCiLo", f3(sv["ci_lo"], 4))
+    macro("rfsGnnCiHi", f3(sv["ci_hi"], 4))
+    macro("rfsGnnVeDesigns", sv["n_designs"])
     t1 = table("GNN macro-F1 (f2, mean of 3 seeds) by corpus train size, on four test sets; last "
                "column: trained on the VerilogEval train split.", "tab:r4-curve",
                ["test set", *[str(n) for n in sizes], "VE train"], body,

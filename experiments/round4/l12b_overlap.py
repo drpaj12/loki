@@ -39,9 +39,9 @@ def covered(g: GtInstance, preds: list[Pred]) -> bool:
     fams = {f for f, t in FAMILIES.items() if g.type in t}
     cover: set[str] = set()
     for p in preds:
-        if KIND_FAMILY.get(p.kind) in fams and p.cells:
-            if len(p.cells & g.footprint) / len(p.cells) >= FRAG:
-                cover |= p.cells & g.footprint
+        if (KIND_FAMILY.get(p.kind) in fams and p.cells
+                and len(p.cells & g.footprint) / len(p.cells) >= FRAG):
+            cover |= p.cells & g.footprint
     return len(cover) / len(g.footprint) >= FRAG
 
 

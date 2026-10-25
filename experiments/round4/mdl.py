@@ -6,10 +6,13 @@ import math
 import re
 from collections import Counter
 
-KEYWORDS = frozenset("""module endmodule input output inout wire reg assign always begin end if else
-case casez casex endcase default for while integer parameter localparam posedge negedge or and not
-xor nand nor xnor buf signed unsigned function endfunction task endtask generate endgenerate
-genvar initial""".split())
+KEYWORDS = frozenset([
+    "module", "endmodule", "input", "output", "inout", "wire", "reg", "assign", "always",
+    "begin", "end", "if", "else", "case", "casez", "casex", "endcase", "default", "for",
+    "while", "integer", "parameter", "localparam", "posedge", "negedge", "or", "and", "not",
+    "xor", "nand", "nor", "xnor", "buf", "signed", "unsigned", "function", "endfunction",
+    "task", "endtask", "generate", "endgenerate", "genvar", "initial",
+])
 _COMMENT = re.compile(r"//[^\n]*|/\*.*?\*/", re.S)
 _TOKEN = re.compile(
     r"\d*'[sS]?[bBoOdDhH][0-9a-fA-F_xXzZ?]+|\d+|[A-Za-z_][A-Za-z0-9_$]*|<<<|>>>|===|!==|"

@@ -33,7 +33,7 @@ def main() -> int:
         own[p.stem] = model.add(texts[p.stem])
     ast = {r["design"]: r for r in json.loads(
         (r4lib.R2DATA / "l2" / "astcfg.json").read_text(encoding="utf-8"))}
-    ok_llm: dict[str, list[Path]] = {}
+    ok_llm: dict[str, list[str]] = {}
     val = json.loads((GB / "validations" / "validations.json").read_text(encoding="utf-8"))
     for v in val:
         if v["category"] == "success":
@@ -47,24 +47,24 @@ def main() -> int:
         ref_dl = model.dl(texts[stem], own[stem])
         a = ast.get(des, {})
 
-        def row(variant: str, dl: float, ntok: int, key: str, des: str = des,
-                stem: str = stem, ref_dl: float = ref_dl, a: dict[str, Any] = a) -> None:
-            rows.append([des, e["split"], variant, ntok, round(dl, 3), round(ref_dl, 3),
-                         round(dl / ref_dl, 6) if ref_dl else "", a.get(f"{key}:ast", ""),
-                         a.get(f"{key}:cfg", "")])
+        def row(variant: str, dl: float, ntok: int, key: str, ctx: tuple[Any, ...] = ()) -> None:
+            rows.append([ctx[0], ctx[1], variant, ntok, round(dl, 3), round(ctx[2], 3),
+                         round(dl / ctx[2], 6) if ctx[2] else "", ctx[3].get(f"{key}:ast", ""),
+                         ctx[3].get(f"{key}:cfg", "")])
 
-        row("ref", ref_dl, len(mdl.tokens(texts[stem])), "")
+        ctx = (des, e["split"], ref_dl, a)
+        row("ref", ref_dl, len(mdl.tokens(texts[stem])), "", ctx)
         for fl in ("f2", "f3"):
             p = r4lib.VEVAL / des / fl / "netlist.v"
             if p.is_file():
                 t = p.read_text(encoding="utf-8")
-                row(f"l0-{fl}", model.dl(t), len(mdl.tokens(t)), f"{fl}-l0")
+                row(f"l0-{fl}", model.dl(t), len(mdl.tokens(t)), f"{fl}-l0", ctx)
         for var in RUNVARS:
             fl = var.split("-")[0]
             p = r4lib.R2DATA / "l2" / "runs" / var / f"{des}__{fl}" / "re" / "design.v"
             if p.is_file():
                 t = p.read_text(encoding="utf-8")
-                row(var, model.dl(t), len(mdl.tokens(t)), var)
+                row(var, model.dl(t), len(mdl.tokens(t)), var, ctx)
         names = ok_llm.get(stem, [])
         if names:
             dls = []
@@ -73,7 +73,7 @@ def main() -> int:
                 t = (GB / "llm" / stem / nm).read_text(encoding="utf-8")
                 dls.append(model.dl(t))
                 nts.append(len(mdl.tokens(t)))
-            row("llm", sum(dls) / len(dls), round(sum(nts) / len(nts)), "llm")
+            row("llm", sum(dls) / len(dls), round(sum(nts) / len(nts)), "llm", ctx)
     r4lib.write_csv(r4lib.OUT / "l14_mdl.csv",
                     ["design", "split", "variant", "tokens", "dl", "ref_dl", "ratio", "ast",
                      "cfg"], rows)

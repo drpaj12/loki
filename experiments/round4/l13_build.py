@@ -8,11 +8,12 @@ equivalence-checked, as in Odin III); everything else is ``python -m loki.build`
 
 from __future__ import annotations
 
+import importlib
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
-import loki.build as lb
 from loki.equiv import EquivResult
 
 
@@ -25,10 +26,12 @@ def main() -> int:
     vtr = Path(os.environ["VTR_ROOT"])
     src = vtr / "vtr_flow" / "benchmarks" / "verilog" / f"{design}.v"
     arch = vtr / "vtr_flow" / "arch" / "timing" / "k6_frac_N10_frac_chain_mem32K_40nm.xml"
+    lb: Any = importlib.import_module("loki.build")
     lb.check_equiv = _skip
     lb._EQUIV_OK = (*lb._EQUIV_OK, "skipped:big")
-    return lb.main(["--design", f"vtr_{design}", "--files", str(src), "--arch-xml", str(arch),
+    rc: int = lb.main(["--design", f"vtr_{design}", "--files", str(src), "--arch-xml", str(arch),
                     "--floors", "f1-k6,f2,f3", "--out", out])
+    return rc
 
 
 if __name__ == "__main__":

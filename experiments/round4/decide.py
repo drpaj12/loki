@@ -7,6 +7,7 @@ variant: status plus the deciding numbers), ``l12b_kinds.csv``, ``l12b_h12b2.csv
 
 from __future__ import annotations
 
+import importlib
 import json
 import math
 import random
@@ -16,11 +17,11 @@ from typing import Any
 
 import l12c_gnn
 import r4lib
-from scipy import stats
 
 ELIGIBLE = ("adder", "subtractor", "comparator", "eq_const", "mux", "register", "ff_srst")
 VARIANTS = ("V0", "V1", "V2")
 MARGIN, ALPHA, MIN_PAIRED = 0.05, 0.05, 8
+stats: Any = importlib.import_module("scipy.stats")
 Row = tuple[int, int, int]  # counted, matched, gt
 
 
@@ -65,7 +66,8 @@ def h12a() -> list[list[Any]]:
     sup = p_ok >= 0.95 and min(fam.values()) >= 60 and share("ood") >= share("train") - 0.05
     nsup = p_ok < 0.80 or min(fam.values()) < 30
     return [["H12a", "-", status(sup, nsup), f"P_ok={p_ok:.4f} generated={gen} ok={ok} "
-             f"min_family_ok={min(fam.values())} ood={share('ood'):.4f} train={share('train'):.4f}"]]
+             f"min_family_ok={min(fam.values())} ood={share('ood'):.4f} "
+             f"train={share('train'):.4f}"]]
 
 
 # -- H12b / H12b2 ------------------------------------------------------------------------------
@@ -240,7 +242,8 @@ def h14ab() -> list[list[Any]]:
     c2 = float(rows[("*", "f2")]["ceiling_wl"])
     c1 = float(rows[("*", "f1-k6")]["ceiling_wl"])
     return [
-        ["H14a", "f3", status(c3 <= 0.60, c3 >= 0.85), f"ceiling_f3={c3:.4f} f2={c2:.4f} f1={c1:.4f}"],
+        ["H14a", "f3", status(c3 <= 0.60, c3 >= 0.85),
+         f"ceiling_f3={c3:.4f} f2={c2:.4f} f1={c1:.4f}"],
         ["H14b", "-", status(c3 - c2 >= 0.05, c3 - c2 <= 0.0), f"f3-f2={c3 - c2:.4f}"],
     ]
 

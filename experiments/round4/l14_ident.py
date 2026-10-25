@@ -1,5 +1,5 @@
-"""RQ-L14 identifiability: canonical netlist classes of the twin set, style-recovery ceiling, and the
-Bayes ceiling of the signature classifier on the corpus.
+"""RQ-L14 identifiability: canonical netlist classes of the twin set, style-recovery ceiling and
+the Bayes ceiling of the signature classifier on the corpus.
 
 Writes ``l14_twins.csv`` (per base position and floor), ``l14_ident.csv`` (per family and floor,
 pooled) and ``l14_bayes.csv``. See EXPERIMENT.md, Stage 4.
@@ -7,15 +7,16 @@ pooled) and ``l14_bayes.csv``. See EXPERIMENT.md, Stage 4.
 
 from __future__ import annotations
 
+import importlib
 import itertools
 import json
 from collections import Counter
 from typing import Any
 
 import dictlib
-import networkx as nx
 import r4lib
 
+nx: Any = importlib.import_module("networkx")
 EXACT_MAX_NODES = 400
 ROUNDS = 6
 FLOORS3 = ("f1-k6", "f2", "f3")
@@ -119,7 +120,7 @@ def bayes() -> list[list[Any]]:
     out: list[list[Any]] = []
     for fl in r4lib.FLOORS:
         for kmax in (4, 6):
-            tab: list[dict[tuple[int, int], Counter[frozenset[str]]]] = [{} for _ in range(4)]
+            bt: list[dict[tuple[int, int], Counter[frozenset[str]]]] = [{} for _ in range(4)]
             for d in r4lib.ok_designs(r4lib.CORPUS, fl):
                 if d not in cs:
                     continue
@@ -127,22 +128,22 @@ def bayes() -> list[list[Any]]:
                 sg = dictlib.signatures(dictlib.load_fg(fdir / "graph.json"), kmax)
                 words = json.loads((fdir / "words.json").read_text(encoding="utf-8"))
                 kinds = dictlib.kinds_of_cells(words)
-                for c in sg.g.cells:
-                    ks = frozenset(kinds.get(c, set()))
+                for cell in sg.g.cells:
+                    ks = frozenset(kinds.get(cell, set()))
                     for r in range(4):
-                        tab[r].setdefault(sg.key(c, r), Counter())[ks] += 1
+                        bt[r].setdefault(sg.key(cell, r), Counter())[ks] += 1
             for r in range(4):
-                total = sum(sum(c.values()) for c in tab[r].values())
-                acc = sum(max(c.values()) for c in tab[r].values()) / total
+                total = sum(sum(x.values()) for x in bt[r].values())
+                acc = sum(max(x.values()) for x in bt[r].values()) / total
                 per: dict[str, list[int]] = {k: [0, 0] for k in dictlib.KDICT}
-                for c in tab[r].values():
-                    n = sum(c.values())
+                for cnt in bt[r].values():
+                    n = sum(cnt.values())
                     for k in dictlib.KDICT:
-                        nk = sum(v for ks, v in c.items() if k in ks)
+                        nk = sum(v for ks, v in cnt.items() if k in ks)
                         per[k][1] += nk
                         if nk / n >= 0.5:
                             per[k][0] += nk
-                out.append([fl, kmax, r, total, len(tab[r]), round(acc, 6)]
+                out.append([fl, kmax, r, total, len(bt[r]), round(acc, 6)]
                            + [round(per[k][0] / per[k][1], 6) if per[k][1] else "" for k in
                               dictlib.KDICT])
     return out
@@ -169,9 +170,9 @@ def pooled(rows: list[list[Any]]) -> list[list[Any]]:
             continue
         ceil = sum(v) / sum(acc[(fam, fl + "#w")])
         ve = acce.get((fam, fl))
-        cex = sum(ve) / sum(acce[(fam, fl + "#w")]) if ve else ""
+        cex = round(sum(ve) / sum(acce[(fam, fl + "#w")]), 6) if ve else ""
         out.append([fam, fl, sum(acc[(fam, fl + "#w")]), round(ceil, 6),
-                    round(1 - ceil, 6), "" if cex == "" else round(cex, 6)])
+                    round(1 - ceil, 6), cex])
     return out
 
 

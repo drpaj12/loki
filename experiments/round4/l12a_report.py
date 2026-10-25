@@ -35,7 +35,8 @@ def main() -> int:
         e["split"] = "train" if split == "train" else "test"
         a = acc[(fam, split)]
         a["generated"] += 1
-        row = [des, fam, split, gen[des]["seed"], gen[des]["n_test_params"], gen[des]["params"]]
+        row: list[Any] = [des, fam, split, gen[des]["seed"], gen[des]["n_test_params"],
+                          gen[des]["params"]]
         for fl in FLOORS3:
             info = e["floors"].get(fl, {})
             st = info.get("status", "missing")
@@ -51,7 +52,7 @@ def main() -> int:
         a["all_ok"] += all(e["floors"].get(f, {}).get("status") == "ok" for f in FLOORS3)
         table.append(row)
     man_path.write_text(json.dumps(man, sort_keys=True, indent=1) + "\n", encoding="utf-8")
-    rows = []
+    rows: list[list[Any]] = []
     for (fam, split), a in sorted(acc.items()):
         row = [fam, split, int(a["generated"]), int(a["all_ok"])]
         for fl in FLOORS3:

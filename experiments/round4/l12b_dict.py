@@ -10,11 +10,9 @@ from __future__ import annotations
 
 import json
 import sys
-from collections import Counter
 from pathlib import Path
 from typing import Any
 
-import dictlib
 import r4lib
 from dictlib import KDICT, Dictionary, kinds_of_cells, load_fg, match, signatures
 
@@ -121,9 +119,6 @@ def main() -> int:
     r4lib.write_csv(r4lib.OUT / "l12b_stability.csv",
                     ["variant", "kind", "n_f2", "n_f3", "shared", "jaccard", "lost_at_f2",
                      "lost_at_f3"], stability(dicts))
-    tot = Counter()
-    for r in rows:
-        tot[(r[0], r[1], r[2])] += 1
     print(len(rows), "rows")
     return 0
 

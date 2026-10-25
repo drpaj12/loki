@@ -90,8 +90,9 @@ def _ripple_add(w: int, a: str, b: str, cin: str, s: str, co: str) -> str:
     lines = []
     for i in range(w):
         c_in = cin if i == 0 else f"c{i}"
-        lines.append(f"  wire c{i + 1};\n  assign {s}[{i}] = {a}[{i}] ^ {b}[{i}] ^ {c_in};\n"
-                     f"  assign c{i + 1} = ({a}[{i}] & {b}[{i}]) | ({c_in} & ({a}[{i}] ^ {b}[{i}]));")
+        x = f"{a}[{i}] ^ {b}[{i}]"
+        lines.append(f"  wire c{i + 1};\n  assign {s}[{i}] = {x} ^ {c_in};\n"
+                     f"  assign c{i + 1} = ({a}[{i}] & {b}[{i}]) | ({c_in} & ({x}));")
     lines.append(f"  assign {co} = c{w};")
     return "\n".join(lines) + "\n"
 
@@ -105,7 +106,7 @@ def _arith_top(p: Params, op: str) -> str:
     out = f"module top({', '.join(ports)});\n"
     out += f"  wire {rng(w)} sw;\n  wire cw;\n"
     sign = "+" if op == "add" else "-"
-    c = "ci" if cin else f"1'b0"
+    c = "ci" if cin else "1'b0"
     if st == "ripple":
         out += _ripple_add(w, "a", "b", c, "sw", "cw")
     elif st == "twos":
@@ -113,7 +114,7 @@ def _arith_top(p: Params, op: str) -> str:
         out += f"  wire cx;\n  assign {{cx, sw}} = a + ~b + {cn};\n  assign cw = ~cx;\n"
     elif st == "always":
         out += f"  reg {rng(w + 1)} t;\n  always @* t = a {sign} b {sign} {c};\n"
-        out += "  assign sw = t[%d:0];\n  assign cw = t[%d];\n" % (w - 1, w)
+        out += f"  assign sw = t[{w - 1}:0];\n  assign cw = t[{w}];\n"
     else:
         out += f"  assign {{cw, sw}} = a {sign} b {sign} {c};\n"
     if reg:
@@ -240,7 +241,7 @@ def gen_mux(p: Params, rnd: random.Random) -> str:
                 out += f"      {n - 1}'b{pat}: y = d{i};\n"
             out += f"      default: y = d{n - 1};\n    endcase\n  end\n"
         elif st == "case":
-            out += "  always @* begin\n    y = d%d;\n" % (n - 1)
+            out += f"  always @* begin\n    y = d{n - 1};\n"
             for i in range(n - 2, -1, -1):
                 out += f"    if (r{i}) y = d{i};\n"
             out += "  end\n"
@@ -269,7 +270,7 @@ def gen_fsm(p: Params, rnd: random.Random) -> str:
     for i in range(n):
         out += f"  localparam S{i} = {_code(enc, i, n)[1]};\n"
     trans: list[list[tuple[int, int]]] = []
-    for i in range(n):
+    for _ in range(n):
         k = rnd.choice([1, 1, 2])
         conds = rnd.sample(range(1 << nin), min(k, 1 << nin))
         trans.append([(c, rnd.randrange(n)) for c in conds])
@@ -283,7 +284,7 @@ def gen_fsm(p: Params, rnd: random.Random) -> str:
             for j, (c, t) in enumerate(trans[i]):
                 out += f"      {'else ' if j else ''}if (x == {nin}'d{c}) nxt = S{t};\n"
             out += f"      else nxt = S{default[i]};\n    end\n"
-        out += f"    else nxt = S0;\n"
+        out += "    else nxt = S0;\n"
     else:
         out += "    case (state)\n"
         for i in range(n):
