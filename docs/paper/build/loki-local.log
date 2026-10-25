@@ -681,29 +681,42 @@ lower
 LaTeX Font Info:    Font shape `OT1/pcr/m/it' in size <8> not available
 (Font)              Font shape `OT1/pcr/m/sl' tried instead on input line 926.
  [10] (round2-tables) [11] [12]
-Underfull \hbox (badness 4168) in paragraph at lines 1120--1139
+Underfull \hbox (badness 4168) in paragraph at lines 1140--1162
 \OT1/ptm/m/it/10 sure? \OT1/ptm/m/n/10 Fol-low-ing the graph-sandwich fram-ing 
 (must is
  []
 
 
-Underfull \hbox (badness 4060) in paragraph at lines 1120--1139
+Underfull \hbox (badness 4060) in paragraph at lines 1140--1162
 \OT1/ptm/m/n/10 what L1 proved and com-mit-ted, may adds the can-
  []
 
 
-Underfull \hbox (badness 3735) in paragraph at lines 1120--1139
+Underfull \hbox (badness 3735) in paragraph at lines 1140--1162
 \OT1/ptm/m/n/10 di-dates it lists), the bracket of a run is read from
  []
 
+(round3-tables)
+Underfull \hbox (badness 1484) in paragraph at lines 1169--1180
+\OT1/ptm/m/n/10 HDL when the struc-ture is there to see: muxes, wide
+ []
 
-Underfull \hbox (badness 1360) in paragraph at lines 1190--1194
+[13] [14]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [15]
+Underfull \hbox (badness 1360) in paragraph at lines 1332--1336
 \OT1/ptm/m/n/10 struc-ture does Loki re-cover with-out a lan-guage model?
  []
 
-[13] (round2-log
-Underfull \hbox (badness 3525) in paragraph at lines 23--23
-[]|\OT1/ptm/m/n/8 AST Q1/Q2 0.754/0.455 vs
+(round2-log
+Underfull \hbox (badness 10000) in paragraph at lines 23--23
+[]|\OT1/ptm/m/n/8 full mi-nus priors-only
+ []
+
+
+Underfull \hbox (badness 6910) in paragraph at lines 23--23
+[]|\OT1/ptm/m/n/8 Spearman 0.087 ($\OML/cmm/m/it/8 p \OT1/cmr/m/n/8 =
  []
 
 
@@ -716,12 +729,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 23--23
 []|\OT1/ptm/m/n/8 operator F1 sep-a-rates
  []
 
-
-Underfull \hbox (badness 2538) in paragraph at lines 23--23
-[]|\OT1/ptm/m/n/8 tie pair dF1 0.0173; flat-ten
+) (round3-log
+Underfull \hbox (badness 10000) in paragraph at lines 19--19
+[]|\OT1/ptm/m/n/8 related-fragment share
  []
 
-) (loki-local.bbl)
+
+Underfull \hbox (badness 4144) in paragraph at lines 19--19
+[]|\OT1/ptm/m/n/8 datapath words reached
+ []
+
+) (loki-local.bbl [16])
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -733,11 +751,11 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[14
+[17
 
 ] (loki-local.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) )
-Output written on loki-local.xdv (14 pages, 131332 bytes).
+Output written on loki-local.xdv (17 pages, 159796 bytes).
