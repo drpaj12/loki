@@ -1327,6 +1327,84 @@ next round builds this detector (L8, the language model given the ReverseProvena
 stays deferred).
 
 
+\subsection{Round 4: patterns from our own data, big designs, and what is recoverable}
+\label{sec:round4}
+
+\input{round4-tables}
+
+Round 3 pointed to a word-first detector. Round 4 builds what such a detector needs: labelled
+data of our own, a dictionary of netlist patterns mined from it, a look at what the larger VTR
+designs add, and a statement of what the flow destroys. Peter (Appendix~\ref{app:log}) asked
+for ``patterns from our data (what about the bigger designs, do they provide other insights of
+patterns)''. No language-model call and no new detector in \code{loki/} were used; the prototypes
+live in \code{experiments/round4}. The rules were committed before the corpus was generated
+(commit \code{c6c66bf}, \code{experiments/round4/EXPERIMENT.md}); two variants of the dictionary
+(V1, V2) were added in a dated entry after Stage 0 and before any dictionary result, and they are
+reported next to the rule as written (V0), which alone gives the primary status. The thresholds
+were set knowing the round-2 and round-3 counts and the ground-truth kind counts of the real
+designs (which fixed the seven eligible kinds of H12b).
+
+\emph{RQ-L12a: a synthetic corpus.} A seeded generator of twelve idiom families (muxes, counters,
+adders, subtractors, comparators, shifters, FSMs, register files, pipelines, registers, a
+datapath with an FSM controller, an ALU), each parameterised by width, depth, encoding, reset and
+enable style and coding style, gives \rfsCorpusTotal{} designs split by parameter region: train
+values only (840), the same region with unseen text (120, iid), and at least one test-only value,
+such as an unseen width or coding style (240, ood). Built by Odin III on f1-k6, f2 and f3,
+\rfsCorpusOk{} of \rfsCorpusTotal{} pass every equivalence check on all three floors
+(Table~\ref{tab:r4-corpus}); H12a is \rfsTwelveAStatus. Forty-one corpus designs have no labelled
+logic cell (constant shifts, constant-only comparators) and are excluded from the GNN train and
+test sets (the trainer needs a labelled logic node per train design); the dictionary scores them
+with no candidates and no ground truth.
+
+\emph{RQ-L12b: a signature dictionary.} For each cell the signature is the canonical class of the
+Boolean function of its largest cut and the Weisfeiler-Lehman context of radius $r$; the
+dictionary keeps, per construct kind, the signatures that occur at least three times in the
+corpus train split and lie in that kind at least 60\% of the time; a matcher labels the test
+cells and joins labelled cells into words by adjacency or by a shared net. Against the round-2
+detectors on the micros and the 33 held-out VerilogEval designs (f2, seven eligible kinds) the
+dictionary as written (V0) wins on none: H12b is \rfsTwelveBVzeroStatus{} (\rfsTwelveBVzeroNumbers).
+V1 (cuts of up to six leaves) and V2 (a shared clock also joins storage cells), added after
+Stage 0, win on \rfsTwelveBVoneNumbers{} and \rfsTwelveBVtwoNumbers{} respectively and do not
+change the status. Table~\ref{tab:r4-kinds} gives the F1 per kind: on the real designs the
+dictionary finds almost nothing the corpus signatures were mined for. It does not even
+generalise inside the corpus: the iid test micro-F1 is low and H12b2 is \rfsTwelveBTwoVzeroStatus{}
+(\rfsTwelveBTwoVzeroNumbers; V2: \rfsTwelveBTwoVtwoNumbers). Signatures by cone class alone are
+mostly floor-specific (\code{l12b\_stability.csv}): few classes that fire for a kind at f2 also
+fire at f3.
+
+\emph{RQ-L12c: GNN scaling.} Trained on corpus subsets of 36 to 840 designs (three seeds each),
+the GNN improves on the corpus test sets but not on real designs
+(Tables~\ref{tab:r4-curve}, \ref{tab:r4-slope}): on the \rfsGnnVeDesigns{} VerilogEval held-out
+designs with a labelled logic cell the slope is \rfsGnnSlope{} per doubling (95\% interval
+[\rfsGnnCiLo, \rfsGnnCiHi]), so H12c is \rfsTwelveCStatus. A GNN trained on the VerilogEval
+train split itself reaches a higher macro-F1 on its held-out designs than any corpus size.
+
+\emph{RQ-L13: big designs.} Table~\ref{tab:r4-big} lists the VTR designs built one at a time
+with Odin III's peak resident set measured. Big designs are \emph{not} equivalence-checked
+(agent default, as in Odin III itself; \code{meta.json} records \code{skipped:big}). The f3 floor
+of \code{mkPktMerge} and \code{spree} was skipped by Odin III's reader
+(\code{unresolved\_module}); their f1-k6 and f2 floors are built. Share of words in a repeat
+group in the small designs: \rfsSmallShare{} (\rfsSmallDesigns{} design-floors). H13a is
+\rfsThirteenAStatus{} (\rfsThirteenANumbers), H13b \rfsThirteenBStatus{} (\rfsThirteenBNumbers)
+and H13c \rfsThirteenCStatus{} (\rfsThirteenCNumbers).
+
+\emph{RQ-L14: what is recoverable.} On the twin set (the same design in every coding style) the
+style-recovery ceiling is \rfsCeilOne{} at f1-k6, \rfsCeilTwo{} at f2 and \rfsCeilThree{} at f3
+(Table~\ref{tab:r4-ident}): H14a is \rfsFourteenAStatus{} and H14b \rfsFourteenBStatus{}
+(\rfsFourteenBNumbers). The MDL score ranks the reference above the recovered RTL in the shares
+of Table~\ref{tab:r4-mdl} (H14c \rfsFourteenCStatus); its correlation with the round-2 AST
+similarity is \rfsFourteenDNumbers{} (H14d \rfsFourteenDStatus), and the partial correlation
+controlling for size does not support a readability reading: the score is largely a size measure.
+
+\emph{What it means for the round-5 word-first detector.} The data say what not to do: a
+signature dictionary mined from idiom-shaped synthetic designs does not transfer to real logic
+(H12b, H12c), so the corpus is a test bed for word-grouping rules, not a source of a lookup table.
+The detector should build words from structure that is stable across designs: registers by shared
+clock, enable and reset; datapath words by per-bit isomorphic cones; control nets by select and
+enable fan-out; FSMs by feedback components and their decoders, with the \code{eq\_const} decoder
+decided at word level. The repeat measures of Table~\ref{tab:r4-big} say how far repetition gives
+word evidence for free.
+
 \section{Discussion}
 \label{sec:discussion}
 
@@ -1368,6 +1446,12 @@ reaches registers but not the arithmetic or the FSMs (H10a \rttLTenaStatus; H10b
 \rttLTenbStatus{} but uninformative once H10a fails), and the FSM, decode, select chain covers
 \rttElevenMuxShare{} of the
 control muxes. The next detector is therefore word-first, not a regrouping of the present one.
+
+A sixth observation comes from round 4 (Section~\ref{sec:round4}): \emph{patterns mined from
+synthetic idioms do not transfer to real logic, and the flow destroys part of the style}. The
+dictionary wins on no eligible kind (H12b \rfsTwelveBVzeroStatus) and the GNN does not improve on
+real designs with more synthetic data (H12c \rfsTwelveCStatus); on the twin set the style-recovery
+ceiling is \rfsCeilThree{} at f3.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1462,6 +1546,22 @@ model for the graphlet counts; and L8, a language model given the ReverseProvena
 \input{round2-log}
 
 \input{round3-log}
+
+\emph{Round 4 (2026-10-25): the hypotheses and what happened.} Table~\ref{tab:r4-log};
+Section~\ref{sec:round4}. Peter (2026-10-24): ``Queue those as round 4 after round 3 finishes -
+we're trying to make these better - I like the Loki ideas so yes (especially the idea of patterns
+from our data (what about the bigger designs, do they provide other insights of patterns).'' What
+round 3 suggested: the wrong candidates are real constructs that do not tile the words, so a
+word-first detector needs labelled data and pattern knowledge. Rules committed first
+(\code{c6c66bf}); variants V1 and V2 of the dictionary were added after Stage 0 and before any
+dictionary result (entry 2026-10-25-a) and change no status. RQs: L12a corpus (H12a
+\rfsTwelveAStatus), L12b dictionary (H12b \rfsTwelveBVzeroStatus, H12b2
+\rfsTwelveBTwoVzeroStatus), L12c GNN scaling (H12c \rfsTwelveCStatus), L13 big designs (H13a--c
+\rfsThirteenAStatus, \rfsThirteenBStatus, \rfsThirteenCStatus), L14 recoverability (H14a--d
+\rfsFourteenAStatus, \rfsFourteenBStatus, \rfsFourteenCStatus, \rfsFourteenDStatus). Next: the
+word-first detector of the discussion, built and tested on the corpus.
+
+\input{round4-log}
 
 \bibliographystyle{IEEEtran}
 \bibliography{joined}

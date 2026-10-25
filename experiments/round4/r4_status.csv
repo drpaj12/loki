@@ -10,6 +10,9 @@ H12b2,V0,inconclusive,R=0.3288 iid=0.1866 ood=0.0614 (iid < 0.20: ratio uninform
 H12b2,V1,inconclusive,R=0.6402 iid=0.1980 ood=0.1267 (iid < 0.20: ratio uninformative)
 H12b2,V2,inconclusive,R=0.6429 iid=0.2576 ood=0.1656
 H12c,-,not supported,"slope=-0.0026/doubling CI=[-0.0097,0.0094] n_designs=29"
+H13a,-,supported,share_rep(big)=0.9283 (6653/7167) designs=6
+H13b,-,supported,big=0.9283 small=0.6879 (6233/9061) diff=0.2404
+H13c,-,supported,same_signature=0.9374 groups=911
 H14a,f3,supported,ceiling_f3=0.5000 f2=0.4823 f1=0.4697
 H14b,-,inconclusive,f3-f2=0.0177
 H14c,-,inconclusive,l0-f2=0.860 l0-f3=0.913 f2-none=0.940 f3-none=0.940 f2-calib=0.867 f3-calib=0.913
