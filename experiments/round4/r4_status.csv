@@ -1,0 +1,14 @@
+id,variant,status,numbers
+H12a,-,supported,P_ok=1.0000 generated=1200 ok=1200 min_family_ok=100 ood=1.0000 train=1.0000
+H12b,V0,not supported,won=0/7 floor=f2
+H12b,V1,not supported,won=0/7 floor=f2
+H12b,V2,not supported,won=0/7 floor=f2
+H12b-f3(report),V0,not supported (report only),won=0/7 floor=f3
+H12b-f3(report),V1,not supported (report only),won=0/7 floor=f3
+H12b-f3(report),V2,not supported (report only),won=0/7 floor=f3
+H12b2,V0,inconclusive,R=0.3288 iid=0.1866 ood=0.0614 (iid < 0.20: ratio uninformative)
+H12b2,V1,inconclusive,R=0.6402 iid=0.1980 ood=0.1267 (iid < 0.20: ratio uninformative)
+H12b2,V2,inconclusive,R=0.6429 iid=0.2576 ood=0.1656
+H12c,-,not supported,"slope=-0.0026/doubling CI=[-0.0097,0.0094] n_designs=29"
+H14c,-,inconclusive,l0-f2=0.860 l0-f3=0.913 f2-none=0.940 f3-none=0.940 f2-calib=0.867 f3-calib=0.913
+H14d,-,inconclusive,rho=-0.5110 (p=1.1e-35) partial=0.3029 (p=2.1e-12) n=516
