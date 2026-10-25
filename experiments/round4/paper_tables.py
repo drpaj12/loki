@@ -138,7 +138,7 @@ def big_skips() -> None:
             f3.append(tex(r["design"]))
         if r["status"] == "ok":
             built += 1
-    macro("rfsBigF3Skipped", ", ".join(f3) if f3 else "none")
+    macro("rfsBigFThreeSkipped", ", ".join(f3) if f3 else "none")
     macro("rfsBigMemSkipped", ", ".join(mem) if mem else "none")
     macro("rfsBigBuilt", str(built))
 
