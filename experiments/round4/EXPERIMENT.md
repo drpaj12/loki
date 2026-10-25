@@ -365,13 +365,69 @@ Entry 2026-10-25-b (before the identifiability numbers were computed; no hypothe
    in the background); they are not part of any big-design number.
 5. 41 corpus designs have no labelled logic cell and are left out of the GNN train and test sets.
 
+Entry 2026-10-25-c (exploratory, written after all round-4 numbers existed; review fixes of
+2026-10-25; no Stage-0 rule, threshold or status changes; Stage 0 and entries -a, -b above are not
+edited, the corrections below supersede their wording). Every number from this entry is labelled
+exploratory wherever it is reported.
+
+Corrections of provenance statements.
+1. Entry -a says it was written "before any corpus build finished". That is false: the corpus
+   `meta.json` files date from 03:14:15-03:19:51 and the entry's commit is at 03:20:30. The correct
+   statement is: committed before any dictionary, detector or GNN number was computed. The "24 train
+   / 6 test pilot" it mentions was the pilot of Stage 0 (60 pilot designs: 24 train, 12 iid, 24 ood).
+2. Entry -b says "before the identifiability numbers were computed". That is false: the `l14_*`
+   CSVs (08:11-08:13) predate its commit (08:16) and the VF2 check had already been run. The correct
+   statement is: after a first run of the stage, statuses not yet computed. Its items 3 (big-design
+   skip rules), 4 (the `arm_core` stop) and 5 (the GNN exclusion) are post-result decisions.
+3. GNN sets. `l12c_gnn.has_logic` also drops designs without a labelled logic node from the test
+   sets, not only 41 corpus designs from training: at f2 micros 68 -> 62, VerilogEval test 33 -> 29,
+   corpus iid 120 -> 118, ood 240 -> 231, corpus train 840 -> 810 (30), VerilogEval train 117 ->
+   106 (`x12_filter.csv`). The 41 corpus designs are 30 train + 2 iid + 9 ood. Actual train sizes
+   are 36, 72, 144, 288, 570, 810 (nominal 36 ... 840).
+4. `arm_core` was stopped by the controller (signal 15) after 3:33:49 wall, 12,822 CPU seconds and
+   a peak RSS of 14.3 GB in its f1-k6 floor, no floor finished; `mcml` and `LU64PEEng` were not
+   run. `l13_builds.csv` is copied from the data directory into `experiments/round4` (plus an
+   `arm_core` row from its `time.txt`); `paper_tables.py` reads the copy.
+5. H13c followed neither Stage 0 nor entry -a: it used V1 and 6 leaves. It is now computed for V0
+   (primary: 4 leaves, r from H12b at f2 for V0), V1 and V2; the status follows V0. The result is
+   `supported` for all three (0.861, 0.937, 0.963 of 911 groups).
+6. The bootstrap percentile index of `decide.py` was asymmetric (50th and 1950th of 2000 sorted
+   draws became the 51st and 1950th); it now takes ranks ceil(0.025 B) and ceil(0.975 B). The
+   H12c interval moves by at most 0.0001; the status is unchanged.
+7. Report-only items of Stage 0 now produced: H14d for CFG similarity (`r4_status.csv`), the
+   word-overlap q_K (`l12b_overlap.csv`, table), the ceiling statement table, H12b on the corpus
+   ood split and at f3 (`l12b_kinds.csv`, `sets` column).
+
+Exploratory analyses (scripts `x12_explore.py`, `x13_explore.py`, `x14_ident.py`, `x14_mdl.py`).
+- X13a null. The repeat key (type, width, cell count, WL-2 hash of the footprint subgraph) has no
+  cross-word context. Null: every eligible word is replaced by random cells with the same multiset
+  of cell labels (kind, cell type, LUT table), five draws, seed from the design name, and the key
+  recomputed. Context key K1: the key plus the sorted multiset of the full-graph WL_2 colours of the
+  footprint cells. Module key: words in repeat groups that span two or more module paths.
+  `x13_repeat.csv`, `x13_summary.csv`.
+- X13b baselines of H13b: small pooled (registered), micro + VerilogEval, VerilogEval only.
+- X13c H13c null: groups of the same sizes built from random label-matched footprints.
+- X14a rerun of `l14_ident` with all tied LUT input orders enumerated (720 instead of 24).
+- X14b position-consistent pin labels (a LUT input is labelled by the cofactor counts of its
+  variable, a gate input by its symmetry class), so f2 classes stop merging non-isomorphic netlists
+  and f3 stops splitting symmetric-gate swaps. Also with the twin set deduplicated by sha256 of the
+  Verilog text (design name masked): 7 duplicates (5 of 12 register bases, 2 of 12 counter bases).
+- X12a netlist-level duplicates of the corpus test designs against same-family train designs
+  (multiset of cell labels and edges, and the 1-WL class), and H12b2 and the GNN curves restricted
+  to test designs absent from train.
+- X12b GNN slope against the actual n_train, and the bootstrap with B = 20,000.
+- X14c H14d per variant and with a design-clustered bootstrap (B = 2000).
+Bayes ceiling (`l14_bayes.csv`) is in-sample (train and test pooled, a signature seen once counts as
+classified, memorisation at radius 3) and the per-kind figure counts cells in signatures where the
+kind has a share of at least 0.5, not necessarily the majority.
+
 ## Reproduce
 
 Paths come from environment variables with workspace-relative defaults (`r4lib.py`): `ODIN3_WS`
 (workspace root), `LOKI_R4_DATA` (default `$ODIN3_WS/work/loki-exp4-data`), `LOKI_R2_DATA`,
 `LOKI_MICRO`, `LOKI_VEVAL`, `LOKI_CORPUS`, `LOKI_TWINS`, `VERILOG_EVAL`, `LOKI_GB2`; Odin III
 needs `ODIN3_ROOT`, `ODIN3_LIB`, `VTR_ROOT`, and the Wyrd venv on `PATH`. Every Odin III or Wyrd
-batch runs under `flock -x /tmp/claude-1000/odin3-heavy.lock`. Order, from `experiments/round4`
+batch runs under `flock -x $LOCK` with `LOCK=${ODIN3_HEAVY_LOCK:-/tmp/claude-1000/odin3-heavy.lock}`. Order, from `experiments/round4`
 with `PYTHONPATH=<checkout>:<checkout>/experiments/round4:<checkout>/experiments/round3:<checkout>/experiments/round2:$ODIN3_ROOT/plugins/python`:
 
     python -m gen.corpus $DATA/corpus-project                 # 1,200 designs
@@ -387,6 +443,20 @@ with `PYTHONPATH=<checkout>:<checkout>/experiments/round4:<checkout>/experiments
     python l12b_overlap.py
     python l12c_gnn.py run ; python l12c_gnn.py summarize
     python l13_run.py                      # big designs, one at a time, peak RSS, heavy lock
+    cp $DATA/big/l13_builds.csv l13_builds.csv   # plus the arm_core row (entry -c)
     python l13_measure.py small ; python l13_measure.py big
     python l14_ident.py ; python l14_mdl.py
     python decide.py ; python paper_tables.py
+    # exploratory (entry -c)
+    python x12_explore.py sets ; python x12_explore.py dup ; python x12_explore.py gnn
+    python x13_explore.py repeat ; python x13_explore.py summary ; python x13_explore.py h13c
+    python x14_ident.py ; python x14_mdl.py
+
+Which stages were run how often (2026-10-25, entry -c). Rerun after the last edit of their script
+and byte-identical to the committed CSV: `l12b_dict.py` and `l12b_overlap.py` (first run 04:08,
+scripts edited at 04:10, rerun in the fix round), `l14_ident.py` (first run 08:11, edited 10:39,
+rerun), `l14_mdl.py`, `l12c_gnn.py summarize`, `l13_measure.py small` (the `big` run was redone
+with the V0/V1/V2 groups), `decide.py`, `paper_tables.py` and the `x*` scripts. Run once, not
+repeated (they train models, call `loki re` or build with Odin III; no reproduction claim beyond
+the recorded logs): the corpus and twin generation and builds, `l12b_detectors.py run`, the GNN
+training runs of `l12c_gnn.py run` and `l13_run.py`.

@@ -286,8 +286,9 @@ def explore_macros() -> None:
         macro(f"rfsN{nm}", flt[("f2", s)]["with_logic"])
         macro(f"rfsNAll{nm}", flt[("f2", s)]["designs"])
     nt = {(r["floor"], r["set"]): r["mean_n_train_by_per_family"] for r in rows("x12_ntrain.csv")}
-    macro("rfsTrainActual", ", ".join(v.split(":")[1] for v in nt[("f2", "iid")].split("|")))
-    macro("rfsTrainActualMax", nt[("f2", "iid")].split("|")[-1].split(":")[1])
+    macro("rfsTrainActual", ", ".join(str(round(float(v.split(":")[1])))
+                                       for v in nt[("f2", "iid")].split("|")))
+    macro("rfsTrainActualMax", str(round(float(nt[("f2", "iid")].split("|")[-1].split(":")[1]))))
     builds = {r["design"]: r for r in rows("l13_builds.csv")}
     if "arm_core" in builds:
         macro("rfsArmHours", f3(float(builds["arm_core"]["seconds"]) / 3600, 1))
@@ -364,9 +365,9 @@ def explore_macros() -> None:
         macro(f"rfsIdent{nm}N", xi[(v, "*", "f3")]["n_designs"])
     tw = rows("l14_twins.csv")
     for fl, fn in (("f1-k6", "One"), ("f2", "Two"), ("f3", "Three")):
-        macro(f"rfsExact{fn}", str(sum(1 for r in tw if r["floor"] == fl
-                                       and r["classes_exact"] != "")))
-        macro(f"rfsExact{fn}Of", str(sum(1 for r in tw if r["floor"] == fl)))
+        macro(f"rfsExact{fn}", str(sum(int(r["n_styles"]) for r in tw if r["floor"] == fl
+                                        and r["classes_exact"] != "")))
+        macro(f"rfsExact{fn}Of", str(sum(int(r["n_styles"]) for r in tw if r["floor"] == fl)))
     # twin designs covered by the exact check, and disagreements with WL
     ex = [r for r in tw if r["classes_exact"] != ""]
     macro("rfsExactBases", str(len(ex)))
