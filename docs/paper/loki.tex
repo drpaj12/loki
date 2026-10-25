@@ -1342,7 +1342,10 @@ live in \code{experiments/round4}. The rules were committed before the corpus wa
 (V1, V2) were added in a dated entry after Stage 0 and before any dictionary result, and they are
 reported next to the rule as written (V0), which alone gives the primary status. The thresholds
 were set knowing the round-2 and round-3 counts and the ground-truth kind counts of the real
-designs (which fixed the seven eligible kinds of H12b).
+designs (which fixed the seven eligible kinds of H12b). Analyses added after the numbers were
+known (entry 2026-10-25-c of \code{EXPERIMENT.md}) are marked \emph{exploratory}; they change no
+status. Where one shows that the measure of a rule is vacuous or confounded, the status is
+reported by the letter of the rule and called uninformative, with the reason.
 
 \emph{RQ-L12a: a synthetic corpus.} A seeded generator of twelve idiom families (muxes, counters,
 adders, subtractors, comparators, shifters, FSMs, register files, pipelines, registers, a
@@ -1351,10 +1354,18 @@ enable style and coding style, gives \rfsCorpusTotal{} designs split by paramete
 values only (840), the same region with unseen text (120, iid), and at least one test-only value,
 such as an unseen width or coding style (240, ood). Built by Odin III on f1-k6, f2 and f3,
 \rfsCorpusOk{} of \rfsCorpusTotal{} pass every equivalence check on all three floors
-(Table~\ref{tab:r4-corpus}); H12a is \rfsTwelveAStatus. Forty-one corpus designs have no labelled
+(Table~\ref{tab:r4-corpus}); H12a is \rfsTwelveAStatus. In all \rfsNoLogic{} corpus designs have no labelled
 logic cell (constant shifts, constant-only comparators) and are excluded from the GNN train and
-test sets (the trainer needs a labelled logic node per train design); the dictionary scores them
-with no candidates and no ground truth.
+test sets (the trainer needs a labelled logic node per train design); the same filter also
+shrinks the test sets, so the GNN is scored on \rfsNIid{} of 120 iid and \rfsNOod{} of 240 ood
+corpus designs, \rfsNMicro{} of \rfsNAllMicro{} micros and \rfsNVeTest{} of \rfsNAllVeTest{}
+VerilogEval test designs, and trained on \rfsNCorpusTrain{} of 840 corpus designs at the largest
+size (actual train sizes \rfsTrainActual); the dictionary scores the excluded designs with no
+candidates and no ground truth. About \rfsDupTwoIidShare{} of the iid test designs
+(\rfsDupTwoIid{} of \rfsDupTwoIidN{} at f2) and \rfsDupTwoOodShare{} of the ood ones
+(\rfsDupTwoOod{} of \rfsDupTwoOodN) have a netlist, up to the multiset of cell labels and edges,
+identical to a train design of the same family (exploratory; this is the same collapse as the
+identifiability result of RQ-L14: different texts, same netlist).
 
 \emph{RQ-L12b: a signature dictionary.} For each cell the signature is the canonical class of the
 Boolean function of its largest cut and the Weisfeiler-Lehman context of radius $r$; the
@@ -1367,16 +1378,33 @@ V1 (cuts of up to six leaves) and V2 (a shared clock also joins storage cells), 
 Stage 0, also win on none (\rfsTwelveBVoneNumbers; \rfsTwelveBVtwoNumbers) and change no
 status. Table~\ref{tab:r4-kinds} gives the F1 per kind: on the real designs the
 dictionary finds almost nothing the corpus signatures were mined for. It does not even
-generalise inside the corpus: the iid test micro-F1 is low and H12b2 is \rfsTwelveBTwoVzeroStatus{}
-(\rfsTwelveBTwoVzeroNumbers; V2: \rfsTwelveBTwoVtwoNumbers). Signatures by cone class alone are
+generalise inside the corpus: the iid test micro-F1 is low (0.19 to 0.26) and H12b2 is
+\rfsTwelveBTwoVzeroStatus{} (\rfsTwelveBTwoVzeroNumbers; V2: \rfsTwelveBTwoVtwoNumbers).
+Exploratory: restricted to the test designs whose netlist is absent from train
+(\rfsDupRestrIidN{} iid, \rfsDupRestrOodN{} ood) the ratio R is \rfsDupRestrVzeroR{} (V0),
+\rfsDupRestrVoneR{} (V1) and \rfsDupRestrVtwoR{} (V2) against \rfsDupAllVzeroR, and so on:
+duplicates do not explain the failure. Reported, not deciding: at f3 the dictionary wins on none
+of the seven kinds either (\rfsXTwelveBFThreeVzero), and on the corpus ood split the variants win
+\rfsXTwelveBOodVzero{} (V0), \rfsXTwelveBOodVone{} (V1) and \rfsXTwelveBOodVtwo{} (V2), i.e. inside
+the corpus a dictionary does recover kinds. The word-level overlap $q_K$ (Table~\ref{tab:r4-overlap})
+is zero for V0 on every kind; the ceiling statement is Table~\ref{tab:r4-ceiling} (the Bayes
+ceiling is in-sample: train and test pooled, so large radii memorise). Signatures by cone class alone are
 mostly floor-specific (\code{l12b\_stability.csv}): few classes that fire for a kind at f2 also
 fire at f3.
 
-\emph{RQ-L12c: GNN scaling.} Trained on corpus subsets of 36 to 840 designs (three seeds each),
+\emph{RQ-L12c: GNN scaling.} Trained on corpus subsets of \rfsTrainMin{} to \rfsTrainMax{} designs (three seeds each),
 the GNN improves on the corpus test sets but not on real designs
 (Tables~\ref{tab:r4-curve}, \ref{tab:r4-slope}): on the \rfsGnnVeDesigns{} VerilogEval held-out
 designs with a labelled logic cell the slope is \rfsGnnSlope{} per doubling (95\% interval
-[\rfsGnnCiLo, \rfsGnnCiHi]), so H12c is \rfsTwelveCStatus. A GNN trained on the VerilogEval
+[\rfsGnnCiLo, \rfsGnnCiHi]), so H12c is \rfsTwelveCStatus. The upper bound is
+\rfsGnnMargin{} under the limit of 0.010 of the rule (not a wide margin). Exploratory: on the actual
+train sizes (\rfsTrainActual) the slope is \rfsGnnActSmallSlope{} (interval [\rfsGnnActSmallCiLo,
+\rfsGnnActSmallCiHi]); with 20,000 bootstrap draws instead of 2,000 the upper bound is
+\rfsGnnNomLargeCiHi{} (nominal sizes) and \rfsGnnActLargeCiHi{} (actual sizes), margin
+\rfsGnnMarginLarge, so the status holds but is close to the boundary. On the corpus iid test the
+slope is \rfsDupGnnTwoIidAllSlope{} and \rfsDupGnnTwoIidRestrSlope{} when restricted to designs absent
+from train; on ood \rfsDupGnnTwoOodAllSlope{} and \rfsDupGnnTwoOodRestrSlope: the corpus gain is
+not a duplicate effect. A GNN trained on the VerilogEval
 train split itself reaches a higher macro-F1 on its held-out designs than any corpus size.
 
 \emph{RQ-L13: big designs.} Table~\ref{tab:r4-big} lists the VTR designs built one at a time
@@ -1384,11 +1412,40 @@ with Odin III's peak resident set measured. Big designs are \emph{not} equivalen
 (agent default, as in Odin III itself; \code{meta.json} records \code{skipped:big}).
 \rfsBigBuilt{} designs built. Odin III's reader refuses the f3 floor (\code{unresolved\_module})
 of \rfsBigFThreeSkipped{}, whose f1-k6 and f2 floors are built (the \code{mkPktMerge} case among
-them); \rfsBigMemSkipped{} exceeded the 14\,GiB address limit (60\% of the VM) and are
-skipped, partly or wholly. \code{arm\_core} had not finished after more than three CPU hours (a hang in the linked ABC is documented for this design in the Odin III notes) when this section was written, and \code{mcml} and \code{LU64PEEng} (which Odin III's goldens do not cover) were not started; the results use the designs listed in Table~\ref{tab:r4-big}. Share of words in a repeat
-group in the small designs: \rfsSmallShare{} (\rfsSmallDesigns{} design-floors). H13a is
-\rfsThirteenAStatus{} (\rfsThirteenANumbers), H13b \rfsThirteenBStatus{} (\rfsThirteenBNumbers)
-and H13c \rfsThirteenCStatus{} (\rfsThirteenCNumbers).
+them); \rfsBigMemSkipped{} exceeded the \rfsAsLimitGiB\,GiB address limit (60\% of the VM) and are
+skipped, partly or wholly. \code{arm\_core} was stopped by the controller after \rfsArmHours{}
+wall-clock hours (3.56 CPU hours, a hang in the linked ABC is documented for this design in the Odin III notes) without finishing its
+f1-k6 floor, and \code{mcml} and \code{LU64PEEng} (which Odin III's goldens do not cover) were not
+run; the results use the designs of Table~\ref{tab:r4-big}. \emph{Scope of the big set:} the f3
+big set is six designs, three of them near-clone stereovision designs (\code{stereovision0}--\code{2}:
+5707 of the 7167 eligible words), no library-block design (all seven are excluded at f3 by
+\code{unresolved\_module}) and none with a memory, so H13 says what repeats in these designs, not in
+big designs in general. Share of words in a repeat group in the small designs:
+\rfsSmallShare{} (\rfsSmallDesigns{} designs at f3, among them 840 synthetic corpus train designs).
+H13a is \rfsThirteenAStatus{} (\rfsThirteenANumbers), H13b \rfsThirteenBStatus{}
+(\rfsThirteenBNumbers) and H13c \rfsThirteenCStatus{} for the primary dictionary variant V0
+(\rfsThirteenCNumbers; V1 \rfsThirteenCVoneStatus, V2 \rfsThirteenCVtwoStatus).
+
+\emph{Exploratory checks of RQ-L13.} (1) The repeat key has no cross-word context, so same-type
+same-width words with no connection to anything else could repeat trivially. Against a null in
+which every word is replaced by random cells with the same cell labels, the share is
+\rfsXRepZeroBig{} observed and \rfsXNullZeroBig{} null for the big designs (excess \rfsXExcZeroBig),
+\rfsXRepZeroSmall{} and \rfsXNullZeroSmall{} for the small designs (excess \rfsXExcZeroSmall), and for
+the real small designs (micros and VerilogEval) \rfsXRepZeroReal{} and \rfsXNullZeroReal{} (excess
+only \rfsXExcZeroReal{}; VerilogEval alone \rfsXRepZeroVe{} against \rfsXNullZeroVe). With a context
+key (the footprint cells' full-graph WL colours also must agree) the big share is \rfsXRepOneBig{}
+against a null of \rfsXNullOneBig. So the repetition of the big designs is real structure (the
+statuses of H13a stand), while on the small real designs the key is close to its null and is not
+evidence. (2) The registered small baseline pools 840 synthetic corpus designs; the difference
+big minus small is \rfsXThirteenBSmall{} (\rfsXThirteenBSmallStatus) as registered, \rfsXThirteenBReal{}
+against the real small designs (micros and VerilogEval: \rfsXThirteenBRealStatus{} by the rule) and
+\rfsXThirteenBVe{} against VerilogEval alone (\rfsXThirteenBVeStatus): the status of H13b flips with the
+baseline, and the null-adjusted contrast (\rfsXExcZeroBig{} against \rfsXExcZeroSmall{} and
+\rfsXExcZeroReal) is the fairer one. (3) Only \rfsXCrossBig{} of the big designs' words lie in repeat
+groups that span two or more module paths, so the repeats are mostly within a module, not
+module-level instance evidence. (4) For H13c the null (random label-matched footprints of the same
+group sizes) shares equal signatures in \rfsXThirteenCVzeroNull{} of groups against the observed
+share of H13c (V0), so H13c is informative.
 
 \emph{RQ-L14: what is recoverable.} On the twin set (the same design in every coding style) the
 style-recovery ceiling is \rfsCeilOne{} at f1-k6, \rfsCeilTwo{} at f2 and \rfsCeilThree{} at f3
@@ -1397,15 +1454,46 @@ style-recovery ceiling is \rfsCeilOne{} at f1-k6, \rfsCeilTwo{} at f2 and \rfsCe
 of Table~\ref{tab:r4-mdl} (H14c \rfsFourteenCStatus); its correlation with the round-2 AST
 similarity is \rfsFourteenDNumbers{} (H14d \rfsFourteenDStatus), and the partial correlation
 controlling for size does not support a readability reading: the score is largely a size measure.
+The H14d p value pools four variants of the same 129 designs; per variant rho runs from
+\rfsMdlAstFThreeNoneRho{} to \rfsMdlAstFTwoCalibRho{}, and the design-clustered bootstrap interval of the
+pooled rho is \rfsMdlAstCi{} (partial \rfsMdlAstPartCi), exploratory. The same for CFG similarity
+(report only, \rfsXFourteenCfgStatus): \rfsXFourteenCfgNumbers. Exploratory robustness of the
+identifiability result: enumerating all tied LUT input orders (720 instead of 24), using
+isomorphism-invariant pin labels (the registered form anonymises LUT inputs but names gate pins, so
+f2 could merge and f3 split netlists) or both leaves the pooled ceilings at 
+fsIdentCapPinsOne{},
 
-\emph{What it means for the round-5 word-first detector.} The data say what not to do: a
-signature dictionary mined from idiom-shaped synthetic designs does not transfer to real logic
-(H12b, H12c), so the corpus is a test bed for word-grouping rules, not a source of a lookup table.
+fsIdentCapPinsTwo{} and 
+fsIdentCapPinsThree{} (f3 minus f2 
+fsIdentCapPinsDiff), identical to the
+registered values; removing the 7 twin designs whose text is byte-identical to a sibling style
+changes them to 
+fsIdentDedupeOne, 
+fsIdentDedupeTwo{} and 
+fsIdentDedupeThree{} (difference
+
+fsIdentDedupeDiff). Exact isomorphism confirms the WL classes for 
+fsExactThree{} of
+
+fsExactThreeOf{} designs at f3 (
+fsExactTwo{} f2, 
+fsExactOne{} f1-k6, netlists of at most 100
+nodes) with 
+fsExactDisagree{} disagreements with WL in 
+fsExactBases{} bases. The Bayes ceiling is
+in-sample.
+
+\emph{What it means for the round-5 word-first detector.} The data say what not to do: this
+signature dictionary and this GNN did not transfer to real logic (H12b for the dictionary, H12c
+for the GNN), and the dictionary also fails inside the corpus (iid micro-F1 0.19 to 0.26), so the
+cause is not settled by the data; the corpus is a test bed for word-grouping rules, not a source of a lookup table.
 The detector should build words from structure that is stable across designs: registers by shared
 clock, enable and reset; datapath words by per-bit isomorphic cones; control nets by select and
 enable fan-out; FSMs by feedback components and their decoders, with the \code{eq\_const} decoder
-decided at word level. The repeat measures of Table~\ref{tab:r4-big} say how far repetition gives
-word evidence for free.
+decided at word level. The repeat measures of Table~\ref{tab:r4-big} show real repeated structure in the big designs
+(\rfsXRepZeroBig{} of words against a null of \rfsXNullZeroBig) but mostly within a module and
+near the null on small real designs, so repetition is a hint for word grouping in large designs
+only.
 
 \section{Discussion}
 \label{sec:discussion}
@@ -1449,8 +1537,8 @@ reaches registers but not the arithmetic or the FSMs (H10a \rttLTenaStatus; H10b
 \rttElevenMuxShare{} of the
 control muxes. The next detector is therefore word-first, not a regrouping of the present one.
 
-A sixth observation comes from round 4 (Section~\ref{sec:round4}): \emph{patterns mined from
-synthetic idioms do not transfer to real logic, and the flow destroys part of the style}. The
+A sixth observation comes from round 4 (Section~\ref{sec:round4}): \emph{this dictionary and this GNN, trained on synthetic
+idioms, did not transfer to real logic, and the flow destroys part of the style}. The
 dictionary wins on no eligible kind (H12b \rfsTwelveBVzeroStatus) and the GNN does not improve on
 real designs with more synthetic data (H12c \rfsTwelveCStatus); on the twin set the style-recovery
 ceiling is \rfsCeilThree{} at f3.
@@ -1561,7 +1649,7 @@ dictionary result (entry 2026-10-25-a) and change no status. RQs: L12a corpus (H
 \rfsTwelveBTwoVzeroStatus), L12c GNN scaling (H12c \rfsTwelveCStatus), L13 big designs (H13a--c
 \rfsThirteenAStatus, \rfsThirteenBStatus, \rfsThirteenCStatus), L14 recoverability (H14a--d
 \rfsFourteenAStatus, \rfsFourteenBStatus, \rfsFourteenCStatus, \rfsFourteenDStatus). Next: the
-word-first detector of the discussion, built and tested on the corpus.
+word-first detector of the discussion, built and tested on the corpus. Statuses are those of the Stage-0 rules; exploratory checks (entry 2026-10-25-c) show H13b flipping with the small baseline (inconclusive against micros and VerilogEval, not supported against VerilogEval alone) and the repeat key near its null on small real designs, so H13b and the ``free evidence'' reading are uninformative or fragile by the letter of the rule; H13a and H13c stay informative.
 
 \input{round4-log}
 
