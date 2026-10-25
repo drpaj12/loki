@@ -22,8 +22,13 @@ WS = Path(os.environ.get("ODIN3_WS", str(HERE.parents[3])))
 WORK = WS / "work"
 R2DATA = Path(os.environ.get("LOKI_R2_DATA", str(WORK / "loki-exp2-data")))
 DATA = Path(os.environ.get("LOKI_R3_DATA", str(WORK / "loki-exp3-data")))
-MICRO = WORK / "loki-rename-exp" / "dataset-rebuild"
-VEVAL = WORK / "loki-veval-exp" / "dataset"
+MICRO = Path(os.environ.get("LOKI_MICRO", str(WORK / "loki-rename-exp" / "dataset-rebuild")))
+VEVAL = Path(os.environ.get("LOKI_VEVAL", str(WORK / "loki-veval-exp" / "dataset")))
+# Plain-gate GT word types (generic logic glue), used by the exploratory noise' class only.
+PLAIN_GATES = frozenset({
+    "$and", "$or", "$not", "$xor", "$xnor", "$logic_not", "$logic_and", "$logic_or",
+    "$reduce_and", "$reduce_or", "$reduce_xor", "$reduce_bool",
+})
 HARD = frozenset({"hard_add", "hard_mul", "hard_mem"})
 P_MIN = 0.5
 

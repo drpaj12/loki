@@ -79,6 +79,113 @@ def h9a_without_top() -> dict[str, object]:
     return out
 
 
+def h9a_without_kind(drop: str = "ff_en", drop_top: bool = False) -> dict[str, object]:
+    """Exploratory (2026-10-24 addition, non-deciding): pooled H9a shares over the decisive kinds
+    except ``drop``, optionally also without the design that holds most false candidates."""
+    if drop_top:
+        top = str(h9a_without_top()["design"])
+        rows = [r for r in read("l9_false_design.csv")
+                if r["set"] in PRIMARY and r["design"] != top]
+    else:
+        rows = [r for r in read("l9_false.csv") if r["set"] in PRIMARY]
+    kinds = [k for k in DECISIVE if k != drop]
+    out: dict[str, object] = {"kinds": len(kinds)}
+    nf = fr = ok = 0
+    for k in kinds:
+        sel = [r for r in rows if r["kind"] == k]
+        a = sum(int(r["n_false"]) for r in sel)
+        b = sum(int(r["fragment_related"]) for r in sel)
+        nf, fr = nf + a, fr + b
+        ok += 1 if share(b, a) >= A_KIND else 0
+    out.update({"false": nf, "frag": share(fr, nf), "kinds_ok": ok})
+    return out
+
+
+def expl_false() -> dict[str, object]:
+    """Exploratory: noise' (cells only in plain-gate GT words) and distinct-cell shares, in P."""
+    rows = [r for r in read("l9_exploratory_false.csv") if r["set"] in PRIMARY]
+    out: dict[str, object] = {}
+    t_f = t_n = t_cf = t_cr = 0
+    for k in DECISIVE:
+        sel = [r for r in rows if r["kind"] == k]
+        nf = sum(int(r["n_false"]) for r in sel)
+        npr = sum(int(r["noise_prime_plain_gates"]) for r in sel)
+        cf = sum(int(r["distinct_cells_false"]) for r in sel)
+        cr = sum(int(r["distinct_cells_fragment_related"]) for r in sel)
+        out.update({f"{k}_noise_prime": share(npr, nf), f"{k}_noise_prime_n": npr,
+                    f"{k}_cells": cf, f"{k}_cell_frag": share(cr, cf)})
+        t_f, t_n, t_cf, t_cr = t_f + nf, t_n + npr, t_cf + cf, t_cr + cr
+    out.update({"pool_noise_prime": share(t_n, t_f), "pool_noise_prime_n": t_n,
+                "pool_cells": t_cf, "pool_cell_frag": share(t_cr, t_cf)})
+    return out
+
+
+def expl_h9b() -> dict[str, object]:
+    """Exploratory: H9b share over the GT words touched by at least one candidate."""
+    rows = [r for r in read("l9_exploratory_h9b.csv") if r["set"] in PRIMARY]
+    out: dict[str, object] = {}
+    tt = tf = 0
+    for k in DECISIVE:
+        sel = [r for r in rows if r["kind"] == k]
+        nt = sum(int(r["n_touched"]) for r in sel)
+        nq = sum(int(r["n_cov_frag_ge08"]) for r in sel)
+        out.update({f"{k}_touched": nt, f"{k}_qtouched": share(nq, nt)})
+        tt, tf = tt + nt, tf + nq
+    out.update({"pool_touched": tt, "pool_qtouched": share(tf, tt)})
+    return out
+
+
+def expl_l10(variant: str, floor: str = "f2", rule: str = "relaxed") -> dict[str, float]:
+    """Exploratory: datapath share reached at h <= 2 under a recount ``variant``."""
+    rows = [r for r in read("l10_exploratory.csv")
+            if r["floor"] == floor and r["rule"] == rule and r["variant"] == variant]
+    out: dict[str, float] = {}
+    for cl in ("datapath", "control"):
+        sel = [r for r in rows if r["class"] == cl]
+        n = sum(int(r["n_gt"]) for r in sel)
+        out[f"{cl}_n"] = float(n)
+        out[f"{cl}_share"] = share(sum(int(r["seed_h2"]) for r in sel), n)
+    return out
+
+
+def expl_l10_count(variant: str, floor: str = "f2", rule: str = "relaxed") -> int:
+    return sum(int(r["count"]) for r in read("l10_exploratory.csv")
+               if r["floor"] == floor and r["rule"] == rule and r["variant"] == variant)
+
+
+def write_exploratory() -> list[list[object]]:
+    """``r3_exploratory.csv``: every exploratory, non-deciding number of the 2026-10-24
+    additions to ``EXPERIMENT.md``."""
+    rows: list[list[object]] = []
+
+    def add(name: str, value: object) -> None:
+        rows.append([f"exploratory_{name}", value if isinstance(value, int)
+                     else f"{float(str(value)):.6f}"])
+
+    for tag, d in (("no_ffen", h9a_without_kind()),
+                   ("no_ffen_no_top", h9a_without_kind(drop_top=True))):
+        add(f"h9a_{tag}_false", d["false"])
+        add(f"h9a_{tag}_fragment_related", d["frag"])
+        add(f"h9a_{tag}_kinds_ge05_of_3", d["kinds_ok"])
+    for k, v in expl_false().items():
+        add(f"h9a_{k}", v)
+    for k, v in expl_h9b().items():
+        add(f"h9b_{k}", v)
+    for var in ("deciding", "no_relconst", "dedup_footprint", "no_relconst_dedup"):
+        x = expl_l10(var)
+        for cl in ("datapath", "control"):
+            add(f"h10_{var}_{cl}_n", int(x[f"{cl}_n"]))
+            add(f"h10_{var}_{cl}_share", x[f"{cl}_share"])
+    add("h10_relconst_count_f2", expl_l10_count("relconst_count"))
+    add("h10_subsumed_count_f2", expl_l10_count("subsumed_count"))
+    add("h10_footprint_io_cells_f2", expl_l10_count("footprint_io_cells"))
+    with (HERE / "r3_exploratory.csv").open("w", encoding="utf-8", newline="") as fh:
+        w = csv.writer(fh, lineterminator="\n")
+        w.writerow(["metric", "value"])
+        w.writerows(rows)
+    return rows
+
+
 def h9b(sets: tuple[str, ...] = PRIMARY) -> dict[str, object]:
     rows = [r for r in read("l9_h9b.csv") if r["set"] in sets]
     out: dict[str, object] = {}
@@ -168,6 +275,7 @@ def main() -> int:
         w.writerows(rows)
     for row in rows:
         print(row)
+    write_exploratory()
     return 0
 
 

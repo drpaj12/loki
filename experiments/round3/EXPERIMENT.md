@@ -215,3 +215,84 @@ threshold or definition above):
   timeout. Candidates and `loki re` options were as in round 2; the micro runs were made under
   the heavy lock.
 - Environment of the new runs: venv of `work/loki-f3-exp`, Odin III checkout 1.1.0 (ABI 6).
+
+## Rule additions / exploratory (2026-10-24, after the data, non-deciding)
+
+Added after the round-3 numbers were seen and after a review of the paper. None of them changes a
+rule, threshold, definition or status of the Stage-0 text above (5f8de24), which is not edited.
+Every number below is exploratory and non-deciding, and is labelled exploratory wherever it
+appears (paper, log table, CSV file name or column). The deciding CSVs and `r3_status.csv` are
+unchanged by these additions.
+
+Logged retroactively (added in 475aa53, after the pooled numbers):
+
+- E1. `l9_false_design.csv` and `decide.h9a_without_top()`: the H9a shares with the design that
+  holds the most false candidates in P (`ve_Prob153_gshare`)
+  left out. Sensitivity check only; the rule uses the pooled counts.
+- E2. The per-design means of the shares reached within two hops (`l10_design.csv`,
+  `decide.design_macro()`), added because one VerilogEval design holds most of the adders.
+
+Added in this fix round (2026-10-24):
+
+- E3. Noise is vacuous. The GT instances (`derive_instances`, derived ones included) cover every
+  non-I/O, non-constant cell: 9,381 of 9,381 cells of VerilogEval f2 and 9,130 of 9,130 of micro
+  f2. Rule 6 (noise: less than half of the candidate inside any GT instance) therefore cannot
+  fire, and the arm "not supported when the pooled noise share >= 0.50" of H9a was unreachable by
+  construction. The Stage-0 rule is kept; the paper says so.
+- E4. noise' (exploratory): a false candidate whose cells all lie only in plain-gate GT words,
+  i.e. no cell of it is in a GT instance whose type is outside {`$and`, `$or`, `$not`, `$xor`,
+  `$xnor`, `$logic_not`, `$logic_and`, `$logic_or`, `$reduce_and`, `$reduce_or`, `$reduce_xor`,
+  `$reduce_bool`} (`r3lib.PLAIN_GATES`; derived instances such as register or mux_tree are not
+  plain). Per kind and pooled, in P: `l9_exploratory_false.csv`, column `noise_prime_plain_gates`.
+- E5. H9a without `ff_en` (exploratory): the pooled related-fragment share over mux_bit, register
+  and eq_const in P, the number of those three kinds at or above 0.5, and the same with the
+  largest design also left out (`decide.h9a_without_kind`). Reason: an `ff_en` candidate is two
+  cells and the GT footprint of a register or `$dffe` word is the whole word, so a correct
+  per-bit slice is a fragment by the rule's definition.
+- E6. Distinct-cell share (exploratory): the pooled and per-kind share of the distinct (design,
+  cell) pairs covered by false candidates that are also covered by a fragment_related false
+  candidate (`l9_exploratory_false.csv`, columns `distinct_cells_*`), next to the candidate-count
+  share, because overlapping candidates inflate the count.
+- E7. H9b over touched words (exploratory): for the GT instances of H9b, the number touched by at
+  least one candidate of any kind (`n_touched`) and the share with fragment coverage >= 0.8 among
+  them (`l9_exploratory_h9b.csv`); the rule's q keeps its denominator of all instances with at
+  least two cells.
+- E8. H10 recounts (exploratory), f2, relaxed rule, in `l10_exploratory.csv`:
+  `no_relconst` drops `$lt/$le/$gt/$ge` words that have a constant port (Stage 0 counts them as
+  comparators, although the protocol says a comparator has no constant port);
+  `dedup_footprint` drops a counted mux whose footprint lies inside a counted mux_tree footprint
+  and a counted register inside a counted counter footprint (the same cells would otherwise count
+  twice); `no_relconst_dedup` applies both. Also `footprint_io_cells`: the number of pi/po cells
+  in the footprints of counted constructs (0), which makes a level-0 "the construct is itself a
+  port word" empty; the one-hop `full_h1` seeding of `l10_reach.csv` (Jaccard of the propagated
+  group with the construct >= 0.5) is the nearest non-empty reading.
+- E9. H10b is uninformative by construction once H10a fails: with D = 0.095 the rule's "not
+  supported" is C > D - 0.10 = -0.005, true for any C >= 0. Its status stays as the rule gives it.
+- E10. `r3_exploratory.csv` collects the exploratory numbers E5 to E8 (written by `decide.py`).
+- E11. `l9_overlap.py` refuses command-line arguments (a partial run used to overwrite every CSV
+  with the sets it saw); `r3lib.MICRO` and `VEVAL` can be set through `LOKI_MICRO` and
+  `LOKI_VEVAL`.
+
+## Reproduce
+
+Paths come from environment variables with workspace-relative defaults (`r3lib.py`): `ODIN3_WS`
+(workspace root, the directory that holds `work/`; default: three levels above this
+checkout's `experiments` directory, i.e. the parent of `work/` when the checkout is `work/<name>`), `LOKI_R2_DATA` (round-2 runs, default `$ODIN3_WS/work/loki-exp2-data`),
+`LOKI_R3_DATA` (round-3 runs, default `$ODIN3_WS/work/loki-exp3-data`), `LOKI_MICRO` (default
+`$ODIN3_WS/work/loki-rename-exp/dataset-rebuild`), `LOKI_VEVAL` (default
+`$ODIN3_WS/work/loki-veval-exp/dataset`). `run_micro.py` also needs `ODIN3_ROOT` and `ODIN3_LIB`
+(Odin III checkout and `libodin3.so`) and `experiments/round2` on `PYTHONPATH` (`r2lib`). Order:
+
+    export PYTHONPATH=<loki checkout>:<loki checkout>/experiments/round3:<loki checkout>/experiments/round2
+    export ODIN3_ROOT=$ODIN3_WS/odin3 ODIN3_LIB=$ODIN3_ROOT/build/release/libodin3.so
+    export PYTHONPATH=$PYTHONPATH:$ODIN3_ROOT/plugins/python
+    flock -x /tmp/claude-1000/odin3-heavy.lock python experiments/round3/run_micro.py   # M3N, M3C, M1N
+    python experiments/round3/l9_overlap.py        # l9_*.csv, l9_exploratory_*.csv
+    python experiments/round3/l10_propagate.py     # l10_*.csv
+    python experiments/round3/l11_chain.py         # l11_*.csv
+    python experiments/round3/decide.py            # r3_status.csv, r3_exploratory.csv
+    python experiments/round3/paper_tables.py      # docs/paper/round3-tables.tex, round3-log.tex
+
+Only `run_micro.py` runs Odin III and `loki re` (under the heavy lock: another lane may run VPR
+under it); the other scripts read the runs and the L0 datasets and take about five minutes in
+all. Every CSV and the generated .tex regenerate byte for byte.

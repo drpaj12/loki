@@ -130,6 +130,31 @@ def kinds_of(words: dict[str, Any], insts: list[GtInstance]) -> dict[str, str]:
     return out
 
 
+RELATIONAL = ("$lt", "$le", "$gt", "$ge")
+SUBSUMED_BY = {"mux": "mux_tree", "register": "counter"}
+
+
+def relconst_gids(words: dict[str, Any], kinds: dict[str, str]) -> set[str]:
+    """Exploratory: ``comparator`` gids whose word is $lt/$le/$gt/$ge with a constant port (the
+    protocol says a comparator has none; the deciding count keeps them)."""
+    by_id = {int(w["id"]): w for w in words["words"]}
+    return {g for g, k in kinds.items()
+            if k == "comparator" and g[0] == "w" and by_id[int(g[1:])]["type"] in RELATIONAL
+            and by_id[int(g[1:])].get("const_ports")}
+
+
+def subsumed_gids(insts: list[GtInstance], kinds: dict[str, str]) -> set[str]:
+    """Exploratory: counted mux (register) constructs whose footprint lies inside a counted
+    mux_tree (counter) footprint of the design, so the same cells are not counted twice."""
+    foot = {i.gid: i.footprint for i in insts}
+    out: set[str] = set()
+    for gid, kind in kinds.items():
+        outer = SUBSUMED_BY.get(kind)
+        if outer and any(foot[gid] <= foot[o] for o, k in kinds.items() if k == outer):
+            out.add(gid)
+    return out
+
+
 def reach_levels(groups: dict[frozenset[str], int], insts: list[GtInstance],
                  kinds: dict[str, str]) -> dict[str, tuple[int, int]]:
     """gid to (seed level, full level), 99 when never reached."""
@@ -161,11 +186,13 @@ def main() -> int:
     reach_rows: list[list[object]] = []
     port_rows: list[list[object]] = []
     design_rows: list[list[object]] = []
+    expl_rows: list[list[object]] = []
     for ds, root, floor in plan:
         designs = r3lib.designs_of(root, floor)
         for tname, tau in TAUS.items():
             cnt: dict[str, list[int]] = defaultdict(lambda: [0] * 11)
             n_port = n_with = n_pi = n_po = capped = 0
+            ex: dict[tuple[str, str], list[int]] = defaultdict(lambda: [0, 0, 0])
             for d in designs:
                 fd = root / d / floor
                 g = load_graph(fd)
@@ -176,6 +203,22 @@ def main() -> int:
                 kinds = kinds_of(words, insts)
                 lv = reach_levels(groups, insts, kinds)
                 capped += 1 if hit else 0
+                rel = relconst_gids(words, kinds)
+                sub = subsumed_gids(insts, kinds)
+                ex[("footprint_io_cells", "all")][2] += sum(
+                    1 for i in insts if i.gid in kinds for c in i.footprint
+                    if g.sig[c][0] in ("pi", "po"))
+                for gid, (seed, _full) in lv.items():
+                    cl = "datapath" if kinds[gid] in DATAPATH else "control"
+                    for var, drop in (("deciding", False), ("no_relconst", gid in rel),
+                                      ("dedup_footprint", gid in sub),
+                                      ("no_relconst_dedup", gid in rel or gid in sub)):
+                        if not drop:
+                            row = ex[(var, cl)]
+                            row[0] += 1
+                            row[1] += 1 if seed <= 2 else 0
+                    ex[("relconst_count", cl)][2] += 1 if gid in rel else 0
+                    ex[("subsumed_count", cl)][2] += 1 if gid in sub else 0
                 n_port += len(ports)
                 n_with += 1 if ports else 0
                 n_pi += sum(1 for w in ports if g.sig[w[0]][0] == "pi")
@@ -199,6 +242,8 @@ def main() -> int:
                 r = cnt.get(kind, [0] * 11)
                 cls = "datapath" if kind in DATAPATH else "control"
                 reach_rows.append([ds, floor, tname, kind, cls, *r])
+            for (var, cl), (n_v, h2_v, extra) in sorted(ex.items()):
+                expl_rows.append([ds, floor, tname, var, cl, n_v, h2_v, extra])
             port_rows.append([ds, floor, tname, len(designs), n_with, n_pi, n_po, capped])
         print("done", ds, floor, len(designs), flush=True)
     r3lib.write_csv(r3lib.HERE / "l10_reach.csv",
@@ -207,6 +252,9 @@ def main() -> int:
                      "never_seed", "never_full"], reach_rows)
     r3lib.write_csv(r3lib.HERE / "l10_design.csv",
                     ["dataset", "floor", "rule", "design", "class", "n_gt", "seed_h2"], design_rows)
+    r3lib.write_csv(r3lib.HERE / "l10_exploratory.csv",
+                    ["dataset", "floor", "rule", "variant", "class", "n_gt", "seed_h2",
+                     "count"], expl_rows)
     r3lib.write_csv(r3lib.HERE / "l10_ports.csv",
                     ["dataset", "floor", "rule", "designs", "designs_with_port_word",
                      "input_words", "output_words", "designs_capped"], port_rows)

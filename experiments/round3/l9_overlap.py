@@ -45,6 +45,7 @@ class Run:
     inter: list[dict[int, int]]  # per candidate: GT index -> |c & g|
     matched_p: set[str]
     matched_g: set[str]
+    nonplain: frozenset[str]  # cells inside a GT instance that is not a plain gate
 
 
 def index_gts(gts: Sequence[GtInstance]) -> dict[str, list[int]]:
@@ -79,7 +80,8 @@ def load_run(rs: r3lib.RunSet, design: str) -> Run:
             cnt.update(by_cell.get(c, ()))
         inter.append(dict(cnt))
     mp, mg = scorer_matches(preds, gts)
-    return Run(preds, gts, inter, mp, mg)
+    nonplain = frozenset(c for g in gts if g.type not in r3lib.PLAIN_GATES for c in g.footprint)
+    return Run(preds, gts, inter, mp, mg, nonplain)
 
 
 def jac(inter: int, a: int, b: int) -> float:
@@ -138,7 +140,7 @@ def gt_rows(rs: r3lib.RunSet, run: Run, acc: dict[str, list[float]]) -> None:
         row[8] += 1 if size >= 2 else 0
 
 
-def h9b_rows(run: Run, acc: dict[str, list[float]]) -> None:
+def h9b_rows(run: Run, acc: dict[str, list[float]], touched: dict[str, int]) -> None:
     """Per decisive kind K, per GT instance of its types with >= 2 cells: fragment coverage."""
     per_g: dict[int, list[int]] = defaultdict(list)
     for ci, inter in enumerate(run.inter):
@@ -158,6 +160,7 @@ def h9b_rows(run: Run, acc: dict[str, list[float]]) -> None:
                         run.inter[ci][gi] / len(p.cells) >= FRAG_C:
                     frag |= p.cells & g.footprint
             size = len(g.footprint)
+            touched[kind] = touched.get(kind, 0) + (1 if anyc else 0)
             row = acc.setdefault(kind, [0.0] * 6)
             row[0] += 1
             row[1] += 1 if g.gid in run.matched_g else 0
@@ -167,15 +170,27 @@ def h9b_rows(run: Run, acc: dict[str, list[float]]) -> None:
             row[5] += len(anyc) / size
 
 
-def false_rows(run: Run, acc: dict[str, Counter[str]]) -> None:
+def false_rows(run: Run, acc: dict[str, Counter[str]],
+               cells: dict[str, dict[str, set[tuple[str, str]]]] | None = None,
+               design: str = "") -> None:
+    """Class counts per kind; with ``cells``, also the exploratory noise' count and the distinct
+    (design, cell) pairs covered by the false and by the fragment_related false candidates."""
     for p, inter in zip(run.preds, run.inter, strict=True):
         c = acc.setdefault(p.kind, Counter())
         c["cand"] += 1
         if p.id in run.matched_p:
             c["matched"] += 1
-        else:
-            c["false"] += 1
-            c[classify(p, inter, run.gts)] += 1
+            continue
+        cls = classify(p, inter, run.gts)
+        c["false"] += 1
+        c[cls] += 1
+        if cells is None:
+            continue
+        c["noise_prime"] += 0 if p.cells & run.nonplain else 1
+        kc = cells.setdefault(p.kind, {"false": set(), "frag": set()})
+        kc["false"].update((design, x) for x in p.cells)
+        if cls == "fragment_related":
+            kc["frag"].update((design, x) for x in p.cells)
 
 
 def main() -> int:
@@ -184,25 +199,31 @@ def main() -> int:
     conf_out: list[list[object]] = []
     h9b_out: list[list[object]] = []
     design_out: list[list[object]] = []
-    only = set(sys.argv[1:])
+    xfalse_out: list[list[object]] = []
+    xh9b_out: list[list[object]] = []
+    if sys.argv[1:]:
+        print("usage: l9_overlap.py (no arguments: it always rewrites every CSV from all sets)")
+        return 2
     for name, rs in r3lib.SETS.items():
         designs = r3lib.run_designs(rs)
-        if not designs or (only and name not in only):
+        if not designs:
             continue
         gt_acc: dict[str, list[float]] = {}
         fa: dict[str, Counter[str]] = {}
         conf: Counter[tuple[str, str]] = Counter()
         hb: dict[str, list[float]] = {}
+        touched: dict[str, int] = {}
+        cells: dict[str, dict[str, set[tuple[str, str]]]] = {}
         for d in designs:
             run = load_run(rs, d)
             gt_rows(rs, run, gt_acc)
-            false_rows(run, fa)
+            false_rows(run, fa, cells, d)
             da: dict[str, Counter[str]] = {}
             false_rows(run, da)
             for kind in DECISIVE:
                 c = da.get(kind, Counter())
                 design_out.append([name, d, kind, c["cand"], c["false"], *(c[k] for k in CLASSES)])
-            h9b_rows(run, hb)
+            h9b_rows(run, hb, touched)
             for p, inter in zip(run.preds, run.inter, strict=True):
                 conf[(p.kind, confusion_type(inter, len(p.cells), run.gts))] += 1
         for t, r in sorted(gt_acc.items()):
@@ -213,6 +234,13 @@ def main() -> int:
                               *(c[k] for k in CLASSES)])
         for (ck, gtt), n in sorted(conf.items()):
             conf_out.append([name, ck, gtt, n])
+        for kind in DECISIVE:
+            c = fa.get(kind, Counter())
+            kc = cells.get(kind, {"false": set(), "frag": set()})
+            xfalse_out.append([name, kind, c["cand"], c["false"], c["noise_prime"],
+                               len(kc["false"]), len(kc["frag"])])
+            r = hb.get(kind, [0.0] * 6)
+            xh9b_out.append([name, kind, int(r[0]), touched.get(kind, 0), int(r[2])])
         for kind in DECISIVE:
             r = hb.get(kind, [0.0] * 6)
             h9b_out.append([name, kind, int(r[0]), int(r[1]), int(r[2]), int(r[3]),
@@ -228,6 +256,11 @@ def main() -> int:
                     false_out)
     r3lib.write_csv(out / "l9_false_design.csv",
                     ["set", "design", "kind", "n_cand", "n_false", *CLASSES], design_out)
+    r3lib.write_csv(out / "l9_exploratory_false.csv",
+                    ["set", "kind", "n_cand", "n_false", "noise_prime_plain_gates",
+                     "distinct_cells_false", "distinct_cells_fragment_related"], xfalse_out)
+    r3lib.write_csv(out / "l9_exploratory_h9b.csv",
+                    ["set", "kind", "n_gt", "n_touched", "n_cov_frag_ge08"], xh9b_out)
     r3lib.write_csv(out / "l9_confusion.csv", ["set", "cand_kind", "gt_type", "n"], conf_out)
     r3lib.write_csv(out / "l9_h9b.csv",
                     ["set", "kind", "n_gt", "n_matched", "n_cov_frag_ge08", "n_cov_any_ge08",

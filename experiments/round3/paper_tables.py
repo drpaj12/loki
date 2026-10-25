@@ -77,6 +77,32 @@ def l9_block() -> tuple[str, str, str]:
     macro("rttNineTopDesign", tex(str(lo["design"])))
     macro("rttNineTopFfenFrag", f3(sget(lo, "ff_en_frag")))
     macro("rttNineTopRegisterFrag", f3(sget(lo, "register_frag")))
+    for tag, d in (("NoFfen", decide.h9a_without_kind()),
+                   ("NoFfenTop", decide.h9a_without_kind(drop_top=True))):
+        macro(f"rttNine{tag}False", fi(sget(d, "false")))
+        macro(f"rttNine{tag}Frag", f3(sget(d, "frag")))
+        macro(f"rttNine{tag}KindsOk", str(d["kinds_ok"]))
+    ex = decide.expl_false()
+    macro("rttNineNoisePrime", f3(sget(ex, "pool_noise_prime")))
+    macro("rttNineNoisePrimeN", fi(sget(ex, "pool_noise_prime_n")))
+    macro("rttNineCellFrag", f3(sget(ex, "pool_cell_frag")))
+    macro("rttNineCells", fi(sget(ex, "pool_cells")))
+    for k in DECISIVE:
+        kk = k.replace("_", "").title()
+        macro(f"rttNine{kk}NoisePrime", f3(sget(ex, f"{k}_noise_prime")))
+        macro(f"rttNine{kk}NoisePrimeN", fi(sget(ex, f"{k}_noise_prime_n")))
+        macro(f"rttNine{kk}CellFrag", f3(sget(ex, f"{k}_cell_frag")))
+    xb = decide.expl_h9b()
+    macro("rttNinePoolQTouched", f3(sget(xb, "pool_qtouched")))
+    macro("rttNinePoolTouched", fi(sget(xb, "pool_touched")))
+    for k in DECISIVE:
+        kk = k.replace("_", "").title()
+        macro(f"rttNine{kk}QTouched", f3(sget(xb, f"{k}_qtouched")))
+        macro(f"rttNine{kk}Touched", fi(sget(xb, f"{k}_touched")))
+    frag_n = {k: int(round(sget(a, f"{k}_fragment_related") * sget(a, f"{k}_false")))
+              for k in DECISIVE}
+    macro("rttNinePoolFragN", fi(sum(frag_n.values())))
+    macro("rttNineFfenFragN", fi(frag_n["ff_en"]))
     macro("rttNinePoolQ", f3(sget(b, "pool_q")))
     macro("rttNineGtN", fi(sget(b, "pool_n")))
     body = []
@@ -122,7 +148,20 @@ def l9_block() -> tuple[str, str, str]:
         r"candidates and the share that are related fragments, other-type fragments, noise.",
         "tab:r3-sets", ["set", "runs", "cand.", "false", "frag. rel.", "frag. other", "noise"],
         body, "lrrrrrr")
-    return "\n\n".join([t1, t2, t3]), a["status"] if isinstance(a["status"], str) else "I", \
+    body = [[tex(k), f3(sget(a, f"{k}_fragment_related"), 2),
+             f3(sget(ex, f"{k}_cell_frag"), 2), f3(sget(ex, f"{k}_noise_prime"), 2),
+             f3(sget(b, f"{k}_q"), 3), f3(sget(xb, f"{k}_qtouched"), 3)] for k in DECISIVE]
+    body.append(["pooled", f3(sget(a, "pool_frag"), 2), f3(sget(ex, "pool_cell_frag"), 2),
+                 f3(sget(ex, "pool_noise_prime"), 2), f3(sget(b, "pool_q"), 3),
+                 f3(sget(xb, "pool_qtouched"), 3)])
+    t4 = table(
+        r"Exploratory, non-deciding additions (2026-10-24, after the data), set P: share of "
+        r"false candidates that are related fragments (by candidate, by distinct cell), the "
+        r"noise$'$ share (cells only in plain-gate ground-truth words), $q$ over all words and "
+        r"over the words touched by a candidate.",
+        "tab:r3-expl", ["kind", "frag. rel.", "frag. rel. (cells)", "noise$'$", "$q$",
+                        "$q$ touched"], body, "lccccc")
+    return "\n\n".join([t1, t2, t3, t4]), a["status"] if isinstance(a["status"], str) else "I", \
         str(b["status"])
 
 
@@ -138,6 +177,21 @@ def l10_block() -> tuple[str, str, str]:
     macro("rttTenControlMacro", f3(mac["control_macro"]))
     macro("rttTenDatapathDesigns", fi(mac["datapath_designs"]))
     macro("rttTenControlDesigns", fi(mac["control_designs"]))
+    for var, tag in (("no_relconst", "NoRel"), ("dedup_footprint", "Dedup"),
+                     ("no_relconst_dedup", "NoRelDedup")):
+        xv = decide.expl_l10(var)
+        macro(f"rttTen{tag}Datapath", f3(xv["datapath_share"], 4))
+        macro(f"rttTen{tag}DatapathN", fi(xv["datapath_n"]))
+    macro("rttTenDecidingFour", f3(decide.expl_l10("deciding")["datapath_share"], 4))
+    macro("rttTenRelConstN", fi(decide.expl_l10_count("relconst_count")))
+    macro("rttTenSubsumedN", fi(decide.expl_l10_count("subsumed_count")))
+    macro("rttTenIoCells", fi(decide.expl_l10_count("footprint_io_cells")))
+    full = [r for r in rows("l10_reach.csv")
+            if r["floor"] == "f2" and r["rule"] == "relaxed"]
+    for cls, tag in (("datapath", "Datapath"), ("control", "Control")):
+        sel = [r for r in full if r["class"] == cls]
+        n = sum(int(r["n_gt"]) for r in sel)
+        macro(f"rttTenFullHone{tag}", f3(decide.share(sum(int(r["full_h1"]) for r in sel), n)))
     for ds in ("micro", "veval"):
         x = decide.reach(dataset=ds)
         macro(f"rttTen{ds.title()}Datapath", f3(sget(x, "datapath_share")))
@@ -185,6 +239,7 @@ def l11_block() -> str:
     gt = {(r["dataset"], r["floor"]): r for r in rows("l11_gt.csv")}
     v, m = gt[("veval", "f2")], gt[("micro", "f2")]
     for tag, r in (("Ve", v), ("Mi", m)):
+        macro(f"rttEleven{tag}Sinks", fi(r["sinks"]))
         macro(f"rttEleven{tag}Fb", fi(r["fb_registers"]))
         macro(f"rttEleven{tag}Dec", fi(r["decoders"]))
         macro(f"rttEleven{tag}Chains", fi(r["chains"]))
@@ -251,15 +306,21 @@ def l11_block() -> str:
 def log_table(st: dict[str, str]) -> str:
     m = MACROS
     body = [
-        ["L9a", "wrong candidates are fragments of GT words", "3", st["L9a"],
-         f"related-fragment share {m['rttNinePoolFrag']} of {m['rttNinePoolFalse']} false "
-         f"(noise {m['rttNinePoolNoise']})"],
+        ["L9a", "wrong candidates are fragments of GT words", "3",
+         st["L9a"] + " by the letter of the rule; not robust",
+         f"related-fragment share {m['rttNinePoolFrag']} of {m['rttNinePoolFalse']} false; "
+         f"noise 0 by construction (every cell is in a GT word); without the largest design "
+         f"{m['rttNineTopFrag']}, without \\code{{ff\\_en}} {m['rttNineNoFfenFrag']} "
+         f"(exploratory)"],
         ["L9b", "fragments of a word cover it", "3", st["L9b"],
-         f"share with coverage $\\geq0.8$: {m['rttNinePoolQ']}"],
+         f"share with coverage $\\geq0.8$: {m['rttNinePoolQ']} "
+         f"(touched words only, exploratory: {m['rttNinePoolQTouched']})"],
         ["L10a", "datapath words reached from I/O within 2 hops", "3", st["L10a"],
-         f"share reached {m['rttTenDatapath']} (per-design mean {m['rttTenDatapathMacro']})"],
-        ["L10b", "control words are not", "3", st["L10b"],
-         f"share reached {m['rttTenControl']} (per-design mean {m['rttTenControlMacro']})"],
+         f"share reached {m['rttTenDatapath']} (per-design mean {m['rttTenDatapathMacro']}, "
+         f"exploratory)"],
+        ["L10b", "control words are not", "3", st["L10b"] + " (uninformative by construction)",
+         f"share reached {m['rttTenControl']} (per-design mean {m['rttTenControlMacro']}, "
+         f"exploratory)"],
         ["L11", "FSM chain: feedback, decode, select", "3", "measurement only",
          f"{m['rttElevenMuxShare']} of muxes with a select are chain sinks"],
     ]
