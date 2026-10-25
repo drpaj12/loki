@@ -1,0 +1,18 @@
+design,source_bytes,status,seconds,peak_rss_mb,f1-k6,f2,f3,nodes_f3,note
+stereovision3,35847,ok,132.5,75.8,ok,ok,ok,914,
+sha,38061,ok,151.0,841.7,ok,ok,ok,10706,
+mkPktMerge,39878,ok,9.5,71.2,ok,ok,skipped:odin3: ODIN3_ERR_PARSE mkPktMerge.v:566:1: unresolved_module,0,
+blob_merge,58879,ok,616.4,4915.6,ok,ok,ok,32013,
+stereovision2,63099,ok,1185.7,4793.1,ok,ok,ok,254753,
+spree,68099,ok,7.9,88.6,ok,ok,skipped:odin3: ODIN3_ERR_PARSE spree.v:1720:1: unresolved_module: mo,0,
+bgm,71508,exit 1,6044.6,14243.1,fail:internal: MemoryError:,fail:internal: MemoryError:,fail:internal: MemoryError:,0,
+boundtop,72116,ok,8.6,92.8,ok,ok,skipped:odin3: ODIN3_ERR_PARSE boundtop.v:1653:1: unresolved_module:,0,
+raygentop,84801,ok,13.6,151.6,ok,ok,skipped:odin3: ODIN3_ERR_PARSE raygentop.v:571:1: unresolved_module:,0,
+stereovision1,102964,ok,531.0,1863.8,ok,ok,ok,143213,
+stereovision0,131550,ok,152.9,1665.9,ok,ok,ok,56577,
+or1200,135776,ok,66.2,2559.3,ok,ok,skipped:odin3: ODIN3_ERR_PARSE or1200.v:3101:1: unresolved_module: m,0,
+mkSMAdapter4B,137869,ok,5.7,143.9,ok,ok,skipped:odin3: ODIN3_ERR_PARSE mkSMAdapter4B.v:3391:1: unresolved_mo,0,
+LU8PEEng,140203,exit 1,429.5,14079.5,ok,fail:internal: MemoryError:,skipped:odin3: ODIN3_ERR_PARSE LU8PEEng.v:2250:1: unresolved_module:,0,
+LU32PEEng,155750,exit 1,3563.0,14262.3,ok,fail:internal: MemoryError:,skipped:odin3: ODIN3_ERR_PARSE LU32PEEng.v:2609:1: unresolved_module,0,
+mkDelayWorker32B,204602,ok,20.2,847.6,ok,ok,skipped:odin3: ODIN3_ERR_PARSE mkDelayWorker32B.v:1506:3: unresolved,0,
+arm_core,346864,stopped (signal 15),12829.0,14314.4,stopped,,,0,stopped by the controller after 3:33:49 wall and 12822 CPU seconds in the f1-k6 floor

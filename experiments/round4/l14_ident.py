@@ -7,11 +7,13 @@ pooled) and ``l14_bayes.csv``. See EXPERIMENT.md, Stage 4.
 
 from __future__ import annotations
 
+import hashlib
 import importlib
 import itertools
 import json
 import math
 from collections import Counter
+from collections.abc import Callable
 from typing import Any
 
 import dictlib
@@ -21,6 +23,16 @@ nx: Any = importlib.import_module("networkx")
 EXACT_MAX_NODES = 100
 ROUNDS = 6
 FLOORS3 = ("f1-k6", "f2", "f3")
+TIE_CAP = 24  # tied input orders enumerated per LUT table (the registered value)
+PinFn = Callable[[dictlib.FG, str, str], str]
+
+
+def pin_registered(g: dictlib.FG, n: str, p: str) -> str:
+    """Registered pin labels: LUT inputs anonymous, every other pin by its name."""
+    return g.pin_of(n, p)
+
+
+PIN: PinFn = pin_registered
 
 
 def p_canonical(tab: int, w: int) -> int:
@@ -34,8 +46,8 @@ def p_canonical(tab: int, w: int) -> int:
     n_perm = 1
     for g in groups:
         n_perm *= math.factorial(len(g))
-    # More than 24 tied orders: keep the signature order only (a coarser, still deterministic key).
-    perms = [itertools.permutations(g) for g in groups] if n_perm <= 24 \
+    # More than TIE_CAP tied orders: keep the signature order only (a coarser deterministic key).
+    perms = [itertools.permutations(g) for g in groups] if n_perm <= TIE_CAP \
         else [[tuple(g)] for g in groups]
     for combo in itertools.product(*perms):
         perm = [v for g in combo for v in g]
@@ -63,7 +75,7 @@ def node_colour(g: dictlib.FG, n: str, cache: dict[tuple[int, int], int]) -> int
 def class_of(g: dictlib.FG, cache: dict[tuple[int, int], int]) -> tuple[int, dict[str, int]]:
     cur = {n: node_colour(g, n, cache) for n in g.kind}
     for _ in range(ROUNDS):
-        cur = {n: dictlib.h64((cur[n], sorted((g.pin_of(n, p), cur[s]) for p, s, _ in g.fin[n])))
+        cur = {n: dictlib.h64((cur[n], sorted((PIN(g, n, p), cur[s]) for p, s, _ in g.fin[n])))
                for n in g.kind}
     return dictlib.h64(sorted(cur.values())), cur
 
@@ -74,7 +86,7 @@ def to_nx(g: dictlib.FG, col: dict[str, int]) -> Any:
         G.add_node(n, c=col[n])
     for n, ins in g.fin.items():
         for p, s, _ in ins:
-            G.add_edge(s, n, p=g.pin_of(n, p))
+            G.add_edge(s, n, p=PIN(g, n, p))
     return G
 
 
@@ -98,10 +110,24 @@ def exact_classes(items: list[tuple[str, dictlib.FG]], cache: dict[tuple[int, in
     return len(reps)
 
 
-def twins() -> list[list[Any]]:
+def text_hash(design: str) -> str:
+    """sha256 of the Verilog text of a twin design with its own name replaced."""
+    path = r4lib.DATA / "twins-project" / "designs" / design / f"{design}.v"
+    return hashlib.sha256(path.read_text(encoding="utf-8").replace(design, "TOP")
+                          .encode()).hexdigest()
+
+
+def twins(dedupe: bool = False) -> list[list[Any]]:
+    """Per (family, base, floor) rows; ``dedupe`` keeps one design among byte-identical texts."""
     rows = r4lib.read_csv(r4lib.DATA / "twins-project" / "corpus.csv")
     groups: dict[tuple[str, str], list[str]] = {}
+    seen: set[tuple[str, str, str]] = set()
     for r in rows:
+        if dedupe:
+            key = (r["family"], r["split"], text_hash(r["design"]))
+            if key in seen:
+                continue
+            seen.add(key)
         groups.setdefault((r["family"], r["split"]), []).append(r["design"])
     cache: dict[tuple[int, int], int] = {}
     man = r4lib.manifest(r4lib.TWINS)
@@ -123,6 +149,10 @@ def twins() -> list[list[Any]]:
 
 
 def bayes() -> list[list[Any]]:
+    """In-sample Bayes ceiling: train and test designs are pooled and scored on themselves, so
+    a signature seen once counts as perfectly classified (memorisation at large radius). The
+    per-kind recall counts the cells of K in signatures where K has a share of at least 0.5
+    (not necessarily the majority kind set)."""
     cs = r4lib.corpus_split()
     out: list[list[Any]] = []
     for fl in r4lib.FLOORS:

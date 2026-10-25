@@ -1,0 +1,37 @@
+what,floor,set_or_variant,key,n,a,b
+dup_rate,f2,iid,multiset,120,48,
+dup_rate,f2,iid,wl,120,48,
+dup_rate,f2,ood,multiset,240,26,
+dup_rate,f2,ood,wl,240,26,
+dup_rate,f3,iid,multiset,120,51,
+dup_rate,f3,iid,wl,120,50,
+dup_rate,f3,ood,multiset,240,26,
+dup_rate,f3,ood,wl,240,26,
+h12b2_all,f2,V0,multiset,,0.186584,0.061355
+h12b2_restricted,f2,V0,multiset,72/214,0.187359,0.024679
+h12b2_all,f2,V1,multiset,,0.197952,0.126739
+h12b2_restricted,f2,V1,multiset,72/214,0.192534,0.119847
+h12b2_all,f2,V2,multiset,,0.257635,0.165644
+h12b2_restricted,f2,V2,multiset,72/214,0.24238,0.150768
+h12b2_all,f2,V0,wl,,0.186584,0.061355
+h12b2_restricted,f2,V0,wl,72/214,0.187359,0.024679
+h12b2_all,f2,V1,wl,,0.197952,0.126739
+h12b2_restricted,f2,V1,wl,72/214,0.192534,0.119847
+h12b2_all,f2,V2,wl,,0.257635,0.165644
+h12b2_restricted,f2,V2,wl,72/214,0.24238,0.150768
+gnn_all,f2,iid,multiset,,0.3364 0.3576 0.3672 0.3738 0.4018 0.4225,0.017263
+gnn_restricted,f2,iid,multiset,72,0.3124 0.3545 0.3729 0.3755 0.4080 0.4316,0.023175
+gnn_all,f2,ood,multiset,,0.2443 0.3078 0.2939 0.3055 0.3253 0.3463,0.017526
+gnn_restricted,f2,ood,multiset,205,0.2470 0.3072 0.2899 0.3009 0.3240 0.3450,0.016759
+gnn_all,f2,iid,wl,,0.3364 0.3576 0.3672 0.3738 0.4018 0.4225,0.017263
+gnn_restricted,f2,iid,wl,72,0.3124 0.3545 0.3729 0.3755 0.4080 0.4316,0.023175
+gnn_all,f2,ood,wl,,0.2443 0.3078 0.2939 0.3055 0.3253 0.3463,0.017526
+gnn_restricted,f2,ood,wl,205,0.2470 0.3072 0.2899 0.3009 0.3240 0.3450,0.016759
+gnn_all,f3,iid,multiset,,0.2998 0.2858 0.3125 0.3070 0.3259 0.3273,0.007729
+gnn_restricted,f3,iid,multiset,69,0.2802 0.2683 0.2953 0.2961 0.3147 0.3159,0.009801
+gnn_all,f3,ood,multiset,,0.2033 0.2024 0.2244 0.2341 0.2452 0.2476,0.011159
+gnn_restricted,f3,ood,multiset,205,0.2019 0.2010 0.2221 0.2318 0.2431 0.2453,0.010937
+gnn_all,f3,iid,wl,,0.2998 0.2858 0.3125 0.3070 0.3259 0.3273,0.007729
+gnn_restricted,f3,iid,wl,70,0.2807 0.2683 0.2958 0.2967 0.3149 0.3160,0.009782
+gnn_all,f3,ood,wl,,0.2033 0.2024 0.2244 0.2341 0.2452 0.2476,0.011159
+gnn_restricted,f3,ood,wl,205,0.2019 0.2010 0.2221 0.2318 0.2431 0.2453,0.010937

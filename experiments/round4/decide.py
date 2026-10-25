@@ -115,23 +115,23 @@ def kind_table(floor: str, var: str, sets: tuple[str, ...]
     return rows, wins
 
 
-KIND_HEAD = ["floor", "variant", "kind", "role", "designs", "designs_with_gt", "dict_counted",
-             "dict_matched", "gt", "f1_dict", "best_det", "f1_det", "f1_det_N", "f1_det_C",
-             "wilcoxon_p", "won"]
+KIND_HEAD = ["sets", "floor", "variant", "kind", "role", "designs", "designs_with_gt",
+             "dict_counted", "dict_matched", "gt", "f1_dict", "best_det", "f1_det",
+             "f1_det_N", "f1_det_C", "wilcoxon_p", "won"]
 
 
 def h12b() -> tuple[list[list[Any]], list[list[Any]]]:
     status_rows: list[list[Any]] = []
     detail: list[list[Any]] = []
-    for floor in r4lib.FLOORS:
+    for floor, sets, tag in (("f2", ("micro", "vetest"), "H12b"),
+                             ("f3", ("micro", "vetest"), "H12b-f3(report)"),
+                             ("f2", ("ood",), "H12b-corpus-ood(report)")):
         for var in VARIANTS:
-            rows, wins = kind_table(floor, var, ("micro", "vetest"))
-            detail += rows
-            n_el = len(ELIGIBLE)
+            rows, wins = kind_table(floor, var, sets)
+            detail += [[",".join(sets), *r] for r in rows]
             st = status(wins >= 4, wins <= 1)
-            tag = "H12b" if floor == "f2" else "H12b-f3(report)"
-            status_rows.append([tag, f"{var}", st if floor == "f2" else f"{st} (report only)",
-                                f"won={wins}/{n_el} floor={floor}"])
+            status_rows.append([tag, f"{var}", st if tag == "H12b" else f"{st} (report only)",
+                                f"won={wins}/{len(ELIGIBLE)} floor={floor} sets={','.join(sets)}"])
     return status_rows, detail
 
 
@@ -197,7 +197,8 @@ def h12c() -> tuple[list[list[Any]], list[list[Any]]]:
             rnd = random.Random(4)
             boots = sorted(curve_slope(conf, floor, which, [rnd.choice(des) for _ in des])
                            for _ in range(2000))
-            lo, hi = boots[int(0.025 * len(boots))], boots[int(0.975 * len(boots)) - 1]
+            lo = boots[math.ceil(0.025 * len(boots)) - 1]
+            hi = boots[math.ceil(0.975 * len(boots)) - 1]
             detail.append([floor, which, len(des), round(b, 6), round(lo, 6), round(hi, 6)])
             if floor == "f2" and which == "vetest":
                 st = status(b >= 0.020 and lo > 0, hi < 0.010)
@@ -226,12 +227,14 @@ def h13() -> list[list[Any]]:
         ["H13a", "-", st_a, f"share_rep(big)={sb:.4f} ({nb}/{eb}) designs={len(big)}"],
         ["H13b", "-", st_b, f"big={sb:.4f} small={ss:.4f} ({ns}/{es}) diff={sb - ss:.4f}"],
     ]
-    if groups:
-        same = sum(int(g["same_signature"]) for g in groups) / len(groups)
-        out.append(["H13c", "-", status(same >= 0.70, same < 0.40),
-                    f"same_signature={same:.4f} groups={len(groups)}"])
-    else:
-        out.append(["H13c", "-", "inconclusive", "no repeat groups"])
+    for var in ("V0", "V1", "V2"):
+        gv = [g for g in groups if g["variant"] == var]
+        if gv:
+            same = sum(int(g["same_signature"]) for g in gv) / len(gv)
+            out.append(["H13c", var, status(same >= 0.70, same < 0.40),
+                        f"same_signature={same:.4f} groups={len(gv)}"])
+        else:
+            out.append(["H13c", var, "inconclusive", "no repeat groups"])
     return out
 
 
@@ -259,17 +262,24 @@ def h14cd() -> list[list[Any]]:
     nsup = sum(1 for v in shares.values() if v < 0.70) >= 3
     out.append(["H14c", "-", status(sup, nsup),
                 " ".join(f"{k}={v:.3f}" for k, v in shares.items())])
-    pairs = [(math.log(float(r["ratio"])), float(r["ast"]), math.log(max(1, int(r["tokens"]))),
-              float(r["cfg"]) if r["cfg"] else float("nan"))
-             for r in rows if r["variant"] in ("f2-none", "f3-none", "f2-calib", "f3-calib")
-             and r["ast"] != ""]
-    x = [p[0] for p in pairs]
-    y = [p[1] for p in pairs]
-    z = [p[2] for p in pairs]
+    d_rows = [r for r in rows if r["variant"] in ("f2-none", "f3-none", "f2-calib", "f3-calib")]
+    for tag, col in (("H14d", "ast"), ("H14d-cfg(report)", "cfg")):
+        rr = [r for r in d_rows if r[col] != ""]
+        r_, p_, pr, pp = spearman_partial(
+            [math.log(float(r["ratio"])) for r in rr], [float(r[col]) for r in rr],
+            [math.log(max(1, int(r["tokens"]))) for r in rr])
+        sup2 = r_ <= -0.30 and pr <= -0.15 and pp < 0.05
+        st = status(sup2, r_ > -0.15)
+        out.append([tag, "-", st if col == "ast" else f"{st} (report only)",
+                    f"rho={r_:.4f} (p={p_:.2g}) partial={pr:.4f} (p={pp:.2g}) n={len(rr)}"])
+    return out
+
+
+def spearman_partial(x: list[float], y: list[float], z: list[float]
+                     ) -> tuple[float, float, float, float]:
+    """Spearman rho of x and y, and the partial rho controlling for z (rank residuals)."""
     rho = stats.spearmanr(x, y)
-    rx = stats.rankdata(x)
-    ry = stats.rankdata(y)
-    rz = stats.rankdata(z)
+    rx, ry, rz = stats.rankdata(x), stats.rankdata(y), stats.rankdata(z)
 
     def resid(a: Any, b: Any) -> Any:
         slope = ols_slope(list(b), list(a))
@@ -277,12 +287,7 @@ def h14cd() -> list[list[Any]]:
         return [ai - (ma + slope * (bi - mb)) for ai, bi in zip(a, b, strict=True)]
 
     part = stats.spearmanr(resid(rx, rz), resid(ry, rz))
-    r_, p_ = float(rho.statistic), float(rho.pvalue)
-    pr, pp = float(part.statistic), float(part.pvalue)
-    sup2 = r_ <= -0.30 and pr <= -0.15 and pp < 0.05
-    out.append(["H14d", "-", status(sup2, r_ > -0.15),
-                f"rho={r_:.4f} (p={p_:.2g}) partial={pr:.4f} (p={pp:.2g}) n={len(pairs)}"])
-    return out
+    return float(rho.statistic), float(rho.pvalue), float(part.statistic), float(part.pvalue)
 
 
 def main() -> int:

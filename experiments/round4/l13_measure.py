@@ -1,7 +1,7 @@
 """RQ-L13: structure measures of designs (repeat groups, memories, depth, buses, fan-out, FSMs).
 
 Usage: l13_measure.py big | small   (writes ``l13_big.csv`` or ``l13_small.csv``, and for ``big``
-also ``l13_groups.csv`` with the signature test of H13c)
+also ``l13_groups.csv`` with the signature test of H13c for V0, V1, V2)
 Definitions are those of EXPERIMENT.md, Stage 3: a *repeat group* is a set of at least two GT
 words (at least 2 cells, width >= 2) with equal (type, width, cell count, WL-2 hash of the
 footprint-induced subgraph); `share_rep` is the share of such words in a group.
@@ -111,27 +111,36 @@ def _levels(fdir: Path) -> dict[str, int]:
     return {str(n["id"]): int(n["features"]["level"]) for n in obj["nodes"]}
 
 
-def group_signature_test(dataset: Path, design: str, radius: int) -> list[list[Any]]:
-    """H13c rows at f2: per repeat group, whether all members have equal signature multisets."""
+VARIANT_KMAX = {"V0": 4, "V1": 6, "V2": 6}
+
+
+def group_signature_test(dataset: Path, design: str, radii: dict[str, int]
+                         ) -> list[list[Any]]:
+    """H13c rows at f2: per repeat group and dictionary variant (leaf limit and radius of the
+    variant, EXPERIMENT.md), whether all members have equal signature multisets."""
     fdir = dataset / design / "f2"
     g = dictlib.load_fg(fdir / "graph.json")
     groups, _ = repeat_groups(g, words_of(fdir))
     if not groups:
         return []
-    sg = dictlib.signatures(g, 6, max(radius, 0))
     out = []
-    for gi, grp in enumerate(groups):
-        ms = [tuple(sorted(sg.key(c, radius) for c in w["footprint"])) for w in grp]
-        out.append([design, gi, grp[0]["type"], len(grp), len(grp[0]["footprint"]),
-                    int(len(set(ms)) == 1), len(set(ms))])
+    for var, kmax in VARIANT_KMAX.items():
+        radius = radii[var]
+        sg = dictlib.signatures(g, kmax, radius)
+        for gi, grp in enumerate(groups):
+            ms = [tuple(sorted(sg.key(c, radius) for c in w["footprint"])) for w in grp]
+            out.append([var, design, gi, grp[0]["type"], len(grp), len(grp[0]["footprint"]),
+                        int(len(set(ms)) == 1), len(set(ms))])
     return out
 
 
-def selected_radius() -> int:
-    for r in r4lib.read_csv(r4lib.OUT / "l12b_radius.csv"):
-        if r["floor"] == "f2" and r["variant"] == "V1" and r["selected"] == "1":
-            return int(r["radius"])
-    raise SystemExit("l12b_radius.csv has no selected V1 radius at f2")
+def selected_radii() -> dict[str, int]:
+    """Radius selected on the corpus iid test at f2 (H12b), per dictionary variant."""
+    out = {r["variant"]: int(r["radius"]) for r in r4lib.read_csv(r4lib.OUT / "l12b_radius.csv")
+           if r["floor"] == "f2" and r["selected"] == "1"}
+    if set(out) != set(VARIANT_KMAX):
+        raise SystemExit("l12b_radius.csv lacks a selected radius at f2")
+    return out
 
 
 def small_items(floor: str) -> list[tuple[Path, str, str]]:
@@ -153,17 +162,17 @@ def main() -> int:
         name = "l13_small.csv"
     elif which == "big":
         big = r4lib.DATA / "big"
-        radius = selected_radius()
+        radii = selected_radii()
         for d in sorted(p.name for p in big.iterdir() if (p / "metrics.json").is_file()):
             ds = big / d / "dataset"
             for floor in ("f2", "f3"):
                 if (ds / f"vtr_{d}" / floor / "graph.json").is_file():
                     out.append(measure(ds, f"vtr_{d}", floor, "big"))
             if (ds / f"vtr_{d}" / "f2" / "graph.json").is_file():
-                grp += group_signature_test(ds, f"vtr_{d}", radius)
+                grp += group_signature_test(ds, f"vtr_{d}", radii)
         name = "l13_big.csv"
         r4lib.write_csv(r4lib.OUT / "l13_groups.csv",
-                        ["design", "group", "type", "members", "cells", "same_signature",
+                        ["variant", "design", "group", "type", "members", "cells", "same_signature",
                          "distinct_signatures"], grp)
     else:
         raise SystemExit(__doc__)
