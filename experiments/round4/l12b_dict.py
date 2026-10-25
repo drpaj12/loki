@@ -51,7 +51,7 @@ def score_design(
             preds = match(sg, d, r, cu)
             sc = construct_scores(preds, inst, 0.5)
             out[(r, cu)] = {k: (int(sc[k]["counted"]), int(sc[k]["matched"]), int(sc[k]["gt"]))
-                            for k in KDICT}
+                            if k in sc else (0, 0, 0) for k in KDICT}
     return out
 
 

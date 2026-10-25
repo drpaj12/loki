@@ -10,6 +10,7 @@ Every run is its own process (restartable: a finished run has ``conf.json``). ``
 
 from __future__ import annotations
 
+import csv
 import json
 import random
 import sys
@@ -53,9 +54,18 @@ def test_items(floor: str) -> tuple[list[tuple[Path, str]], dict[str, str]]:
     which: dict[str, str] = {}
     for s in SETNAMES:
         for dataset, des in sets[s]:
+            if not has_logic(dataset, des, floor):
+                continue
             items.append((dataset, des))
             which[des] = s
     return items, which
+
+
+def has_logic(dataset: Path, design: str, floor: str) -> bool:
+    """True when some logic node carries a construct type (the GNN needs one per train design)."""
+    with (dataset / design / floor / "labels.csv").open(encoding="utf-8", newline="") as fh:
+        return any(r["kind"] in ("lut", "ff", "gate", "hard") and r["construct_type"]
+                   for r in csv.DictReader(fh))
 
 
 def subset(floor: str, m: int, seed: int) -> list[tuple[Path, str]]:
@@ -64,7 +74,7 @@ def subset(floor: str, m: int, seed: int) -> list[tuple[Path, str]]:
     out: list[tuple[Path, str]] = []
     ok = r4lib.ok_designs(r4lib.CORPUS, floor)
     for fam in sorted({f for f, _ in cs.values()}):
-        pool = [d for d in ok if cs[d] == (fam, "train")]
+        pool = [d for d in ok if cs[d] == (fam, "train") and has_logic(r4lib.CORPUS, d, floor)]
         rnd.shuffle(pool)
         out += [(r4lib.CORPUS, d) for d in sorted(pool[:m])]
     return out
@@ -102,7 +112,8 @@ def run_one(job: tuple[str, str, int, int]) -> str:
 
     items, which = test_items(floor)
     if tag == "ve":
-        ve = r4lib.ok_designs(r4lib.VEVAL, floor, "train")
+        ve = [d for d in r4lib.ok_designs(r4lib.VEVAL, floor, "train")
+              if has_logic(r4lib.VEVAL, d, floor)]
         train = [(r4lib.VEVAL, d) for d in ve]
     else:
         train = subset(floor, m, seed)

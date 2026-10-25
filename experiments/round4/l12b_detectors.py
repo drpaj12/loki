@@ -82,6 +82,7 @@ def _rows_of(arm: str, floor: str, sname: str, design: str, path: Path) -> list[
 
 def rows() -> int:
     out: list[list[Any]] = []
+    have: list[list[Any]] = []
     for floor in r4lib.FLOORS:
         sets = r4lib.eval_sets(floor)
         for (sname, fl), (n_arm, c_arm) in REAL.items():
@@ -90,16 +91,23 @@ def rows() -> int:
             for arm_name, label in ((n_arm, "det-N"), (c_arm, "det-C")):
                 rs = r3lib.SETS[arm_name]
                 for _, d in sets[sname]:
-                    out += _rows_of(label, floor, sname, d, r3lib.run_dir(rs, d) / "score.json")
+                    sj = r3lib.run_dir(rs, d) / "score.json"
+                    if sj.is_file():
+                        have.append([label, floor, sname, d])
+                    out += _rows_of(label, floor, sname, d, sj)
         if floor == "f2":
             for sname in ("iid", "ood"):
                 for _, d in sets[sname]:
                     for arm in ("N", "C"):
+                        if (corpus_run_dir(arm, d) / "score.json").is_file():
+                            have.append([f"det-{arm}", floor, sname, d])
                         out += _rows_of(f"det-{arm}", floor, sname, d,
                                         corpus_run_dir(arm, d) / "score.json")
     r4lib.write_csv(r4lib.OUT / "l12b_det_rows.csv",
                     ["arm", "floor", "set", "design", "kind", "counted", "matched", "gt"],
                     sorted(out, key=lambda r: (r[0], r[1], r[2], r[3], r[4])))
+    r4lib.write_csv(r4lib.OUT / "l12b_det_designs.csv", ["arm", "floor", "set", "design"],
+                    sorted(have))
     print(len(out), "rows")
     return 0
 
