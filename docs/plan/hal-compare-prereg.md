@@ -132,3 +132,125 @@ later), no change to Odin III, VTR or Loki detector code, no use of `hal-benchma
 ## Rule additions
 
 (none)
+
+## Amendment 1 (2026-10-26, before any run)
+
+Written before any HAL run and before any word score of any HAL group; the original text above is
+unchanged and where an item here conflicts with it, this amendment rules. Review of commit
+ca4cbace; findings are numbered as in `loki-hal-fix1`. The pre-registration SHA above stays the
+anchor; this amendment has its own SHA, quoted in the paper beside it.
+
+**A1. The shared scorer is not the round-5 scorer; each difference is now stated.** (finding 1)
+`loki.hal.wordscore` (comparison scorer) and the round-5 scorer (`construct_scores`, kind
+register, `loki.score.metrics`) differ in four places:
+
+| # | comparison scorer | round-5 scorer | reason for the comparison scorer |
+|---|---|---|---|
+| 1 | predicted sets deduplicated (a repeated set counts once) | a repeated set is a further false positive | DANA groups are a partition and cannot repeat; Loki repeats come from overlapping hypotheses. Dedup flatters Loki, so see the rule below |
+| 2 | Loki cells cut to flip-flops; GT footprint cut to flip-flops | cells and footprints are full node sets | HAL/DANA groups can only hold the gates it was given as flip-flops; both tools on FF sets is the common ground |
+| 3 | GT word = storage word with WIDTH >= 2 and >= 2 FFs after the cut | WIDTH >= 2 only | see correction below |
+| 4 | prediction ids `p<i>` over lexicographically sorted sets | hypothesis ids, natural order | HAL groups have no Loki ids; ties in Jaccard are the only place it matters |
+
+Correction to the original "Ground truth" paragraph: it said a GT word is a storage word "with a
+footprint that holds at least two FFs". Read literally that counts WIDTH-1 words, because two
+WIDTH-1 `$dff` can share one footprint (`micro_bm_DL_2_cascaded_flip_flops`: two WIDTH-1 words,
+both with footprint {n4, n5}): MI f2 would hold 159 GT words instead of 94. A scored GT word is
+a storage word with WIDTH >= 2 whose footprint cut to FFs still holds >= 2 FFs; WIDTH-1 words
+stay purity labels only, as the original paragraph's second half already said. Code:
+`wordscore.gt_words` (the `scored` flag).
+
+Measured effect of each difference on Loki's own counts, round-5 W runs, kind register, sum over
+designs (`tests/test_hal_score.py::RealDataTest`, run with `LOKI_MICRO`, `LOKI_VEVAL`,
+`LOKI_R5_DATA` set; the test also asserts that the scorer in round-5 mode, `round5=True`, no
+dedup, no cut, reproduces `construct_scores` on every design). P = predicted words, M = matched,
+G = GT words.
+
+| run | round 5 (P / M / G) | comparison (P / M / G) | dedup only (P / M) | FF cut only (P / M) |
+|---|---|---|---|---|
+| W-MI-f2 (68) | 136 / 25 / 94 | 120 / 30 / 94 | 136 / 25 | 136 / 26 |
+| W-MI-f3 (65) | 48 / 4 / 94 | 42 / 20 / 94 | 48 / 4 | 48 / 4 |
+| W-VT-f2 (33) | 150 / 9 / 146 | 148 / 13 / 146 | 150 / 9 | 150 / 6 |
+| W-VT-f3 (33) | 19 / 6 / 146 | 19 / 14 / 146 | 19 / 6 | 19 / 0 |
+
+("dedup only" and "FF cut only" change that one thing against round 5, GT as round 5; the FF cut
+of the GT footprint is what moves f3, where footprints hold the gates of the word's logic.)
+
+Rules for reporting: Loki's round-5-scorer numbers (`wordscore.round5_register`, CLI
+`--round5`) are printed beside the comparison numbers in every table. The "Loki ahead" outcome
+below must also hold with Loki's round-5-scorer counts in place of its comparison counts (HAL
+counts unchanged); if it holds only under the comparison scorer the outcome is `inconclusive`.
+"HAL ahead" and "comparable" need no such condition (the round-5 counts can only lower Loki).
+
+**A2. Decision statistic (finding 2).** Per-design F1_i has heavy ties (many 0 and 1) and the MI
+designs are template families, so a paired test over designs is not enough alone. Added: a
+design-level bootstrap CI of D = pooled F1_J(Loki W) - pooled F1_J(HAL headline arm) on E_real
+at f2: resample clusters with replacement, 10000 resamples, `random.Random(20261026)`, a cluster
+is one VT design or one MI family (MI family = the first two `_` tokens of the design name after
+`micro_`, digits removed, lower case), recompute the pooled counts and D per resample, percentile
+interval. The Wilcoxon call is pinned: `scipy.stats.wilcoxon(x, y, zero_method="wilcox",
+alternative=..., method="approx", correction=False)` (approx because ties rule out the exact
+distribution); scipy is not in the base install and is added to the driver environment.
+**Loki ahead** = D >= 0.05 and the 95 percent bootstrap CI lies entirely above +0.05 and the
+Wilcoxon (Loki greater) p < 0.05 and the A1 round-5 condition. **HAL ahead** = mirror image
+(CI entirely below -0.05, Wilcoxon HAL greater).
+
+**A3. "Comparable" needs evidence (finding 3).** |D| < 0.05 alone no longer gives
+**comparable**. Comparable = the 90 percent bootstrap CI of D lies inside (-0.05, 0.05) (an
+equivalence test at alpha 0.05, TOST in effect). |D| < 0.05 with a wider CI is `inconclusive`,
+reported as "no difference shown".
+
+**A4. DANA arms (finding 4).** The best-of-two choice on E_real is dropped: it selected the
+analysis setting on the test data. The headline HAL arm is the **library default**
+`min_group_size` 8 (`dataflow_analysis/api/configuration.h:77`), fixed now. Setting B
+(`min_group_size` 2) is a sensitivity run reported beside it, never the headline. What the
+parameter does (read in the HAL clone, v4.5.0): `--bad_group_size` sets `min_group_size`; in
+`evaluation.cpp` (lines 109-216) groups smaller than it are "bad": they rank below larger groups
+when overlapping candidate groups are chosen and are replaced by a larger group that contains a
+gate when one exists (a penalty), and `pre_processing.cpp:96` uses it only to skip user-supplied
+known net groups (none are given). It is not a filter that removes small groups, so setting 2 is
+not "report small groups too"; it removes the penalty. `plugin_dataflow.cpp:98` parses it.
+
+**A5. Threat to validity: f2 flip-flop pins (finding 5).** The f2 `FF` of `lut6.hgl` has a
+clock and a data pin only: the L0 f2 netlist carries enable and reset in the LUT feeding D, so
+DANA loses the EN/R/S control-net evidence it uses at gate level. This is kept as pre-registered
+(f2 stays the headline floor, as in round 5) and is a threat to validity: a HAL result on f2 is
+a result for a LUT-mapped netlist without control pins, not for HAL on a netlist with enable
+and reset flip-flops. To make the effect visible, **f3 (cmos6, DFFSR with set and reset pins) is
+reported beside f2 in the headline table** (same columns, same two tools), still without a rule.
+The paper says that f2 is the more favourable floor for Loki and f3 for DANA.
+
+**A6. Ordering leakage (finding 7).** L0 node ids (`n<k>`) come from one counter, so instance
+names and instance order in the converted Verilog carry the L0 construction order, which DANA
+could exploit through HAL's id order. Plan step before the E_real HAL run: on 6 designs (the
+smallest 5 of E_real with a GT word and the median-size one) convert twice more with instance
+names replaced by a seeded random permutation of the names and the instance lines shuffled
+(`random.Random(7)`, mapping kept for scoring), run DANA, map names back, and compare the group
+partitions. Any difference is reported and the permuted version is then also run on all of E_real
+and reported beside the headline.
+
+**A7. DANA determinism (finding 8).** `dataflow.cpp:48` sets `num_threads` to
+`hardware_concurrency()`, so the grouping may depend on thread timing. Plan step before the
+E_real run: run the smallest 5 designs of E_real at f2 twice and diff the sorted group
+partitions. A difference is reported and then every design is run twice, the partitions are
+compared, and the first run is the scored one. No thread option is assumed to exist.
+
+**A8. Round trip scope (finding 9).** The original "Development data" paragraph uses MI/VT/BIG
+designs for the function round trip; only the micros were run so far. Added driver step before
+the first HAL run on a set: `python -m loki.hal.sim --floor <f> --probe ffq <netlist.blif>
+--workdir <empty dir>` for every VT and BIG design (BIG at `--probe out` if the BLIF simulator
+is too slow), 256 cycles; a design that fails is dropped from both arms and listed. The micro test
+reads the micro dataset from `$LOKI_MICRO` and skips when it is unset.
+
+**A9. Converter checks (findings 6, 11, 12, 13).** `tests/test_hal_convert.py` now compares every
+FF Q net and every gate output per cycle (`probe="all"`), 256 cycles, seeds 1, 2, 3, with a
+4-cycle init phase (inputs all 0, then all 1); the simulation library is hand-written, so the
+round trip checks the converter and that the `.hgl` files agree with it, not the libraries or
+HAL. A model of HAL's LUT `bit_order` rule (gate.cpp) shows `lut6.hgl` had `ascending`, which
+bit-reverses INIT and disagrees with the converter; it is now `descending` (the HAL parser
+`hgl_parser.cpp:588` maps the string to `init_ascending`). Unverified until a HAL build loads
+the files; DANA itself does not read LUT functions. `.latch` init 2 and 3 emit no INIT (the
+README note); instance names must differ from net and port names; a flip-flop without `.cname`
+makes `convert` raise, and the design is dropped from both arms.
+
+Changes in this amendment alter the converter and `lut6.hgl` before any HAL run on any design, so
+they are not "Rule additions" in the sense of the Stop rules.
