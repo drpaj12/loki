@@ -2,7 +2,10 @@
 
 A predicted word is a set of flip-flop node ids (L0 ``.cname`` ids). The ground truth words are
 the L0 storage words whose footprint holds at least two flip-flops (footprint intersected with
-the ``ff`` nodes of ``graph.json``). Definitions: ``docs/plan/hal-compare-prereg.md``.
+the ``ff`` nodes of ``graph.json``). Definitions: ``docs/plan/hal-compare-prereg.md``
+(Amendment 1 lists the four deliberate differences from the round-5 scorer). The ``round5``
+switches below reproduce the round-5 choices (duplicates counted, Loki cells not cut to FFs,
+full footprints with WIDTH >= 2) so the differences can be measured.
 
     python -m loki.hal.wordscore --floor-dir <ds>/<design>/f2 --dana groups.txt
     python -m loki.hal.wordscore --floor-dir <ds>/<design>/f2 --loki-re <run>/re
@@ -18,31 +21,49 @@ from dataclasses import dataclass, fields
 from pathlib import Path
 
 from loki.hal.dana import hal_words, parse_groups_txt
-from loki.score.gt import STORAGE, load_netmap
+from loki.score.gt import REGISTER, STORAGE, derive_instances, load_netmap
 from loki.score.match import match_greedy
-from loki.score.metrics import load_preds
+from loki.score.metrics import construct_scores, load_preds
 
 MATCH_J = 0.5
 LOKI_KINDS = ("register",)
 
 
+def _width(params: dict[str, object]) -> int:
+    w = params.get("WIDTH", 1)
+    return w if isinstance(w, int) and not isinstance(w, bool) else 1
+
+
 @dataclass(frozen=True)
 class GtWord:
+    """``scored`` is False for a width-1 word: a label carrier for purity, never a GT word."""
+
     wid: str
     ffs: frozenset[str]
+    scored: bool = True
 
 
-def gt_words(floor_dir: Path) -> tuple[list[GtWord], frozenset[str]]:
-    """(all storage words that hold at least one FF, the FF node ids) of an L0 floor directory."""
+def gt_words(floor_dir: Path, *, round5: bool = False) -> tuple[list[GtWord], frozenset[str]]:
+    """(all storage words that hold at least one FF, the FF node ids) of an L0 floor directory.
+
+    A word is scored when its ``WIDTH`` is at least 2 and its footprint holds at least 2 FFs.
+    Width-1 words are kept as purity labels only (two width-1 words can share one footprint).
+
+    ``round5=True``: the round-5 ground truth instead, the full footprint of every storage word
+    with ``WIDTH >= 2`` (``loki.score.gt.derive_instances``, kind register)."""
     kinds = load_netmap(floor_dir).kinds
     ffs = frozenset(n for n, k in kinds.items() if k == "ff")
     obj = json.loads((floor_dir / "words.json").read_text(encoding="utf-8"))
+    if round5:
+        return [GtWord(i.gid, i.footprint) for i in derive_instances(obj)
+                if i.type == REGISTER], ffs
     out = []
     for w in obj.get("words", []):
         if w["type"] in STORAGE:
             bits = frozenset(w["footprint"]) & ffs
             if bits:
-                out.append(GtWord(f"w{w['id']}", bits))
+                scored = _width(w.get("params", {})) >= 2 and len(bits) >= 2
+                out.append(GtWord(f"w{w['id']}", bits, scored))
     return out, ffs
 
 
@@ -92,11 +113,17 @@ def _best_overlap(group: frozenset[str], words: Iterable[frozenset[str]]) -> int
     return max((len(group & w) for w in words), default=0)
 
 
-def score_words(pred: Iterable[Iterable[str]], gt: Sequence[GtWord]) -> WordScore:
-    """Score predicted words (FF id sets; groups of fewer than 2 FFs are dropped)."""
-    groups = sorted({frozenset(g) for g in pred if len(set(g)) >= 2}, key=sorted)
+def score_words(
+    pred: Iterable[Iterable[str]], gt: Sequence[GtWord], *, dedup: bool = True
+) -> WordScore:
+    """Score predicted words (FF id sets; groups of fewer than 2 FFs are dropped).
+
+    ``dedup=True`` scores each distinct set once; ``dedup=False`` counts a repeated set as a
+    further prediction (round 5: a duplicate is a false positive)."""
+    sets = [frozenset(g) for g in pred if len(set(g)) >= 2]
+    groups = sorted(set(sets) if dedup else sets, key=sorted)
     labels = [w.ffs for w in gt]
-    words = [w for w in gt if len(w.ffs) >= 2]
+    words = [w for w in gt if w.scored and len(w.ffs) >= 2]
     wsets = {w.ffs for w in words}
     gsets = set(groups)
     pairs = match_greedy(
@@ -115,10 +142,23 @@ def score_words(pred: Iterable[Iterable[str]], gt: Sequence[GtWord]) -> WordScor
 
 
 def loki_words(re_dir: Path, ffs: frozenset[str], kinds: Sequence[str] = LOKI_KINDS,
-               score_p: float = 0.5) -> list[frozenset[str]]:
-    """Counted candidates of the given kinds of a ``loki re`` run, cells cut to flip-flops."""
+               score_p: float = 0.5, *, cut: bool = True) -> list[frozenset[str]]:
+    """Counted candidates of the given kinds of a ``loki re`` run; ``cut=True`` intersects the
+    cells with the flip-flops, ``cut=False`` keeps the full cell sets (round 5)."""
     overlay = json.loads((re_dir / "overlay.json").read_text(encoding="utf-8"))
-    return [p.cells & ffs for p in load_preds(overlay) if p.kind in kinds and p.counted(score_p)]
+    return [p.cells & ffs if cut else p.cells
+            for p in load_preds(overlay) if p.kind in kinds and p.counted(score_p)]
+
+
+def round5_register(re_dir: Path, floor_dir: Path, score_p: float = 0.5) -> dict[str, int]:
+    """Loki's numbers under the round-5 scorer (``construct_scores``, kind register): counted,
+    matched, gt. Duplicates count, cells are not cut, GT is the full footprint with WIDTH >= 2."""
+    overlay = json.loads((re_dir / "overlay.json").read_text(encoding="utf-8"))
+    words = json.loads((floor_dir / "words.json").read_text(encoding="utf-8"))
+    row = construct_scores(load_preds(overlay), derive_instances(words), score_p).get("register")
+    if row is None:
+        return {"counted": 0, "matched": 0, "gt": 0}
+    return {k: int(row[k]) for k in ("counted", "matched", "gt")}
 
 
 def dana_words(groups_txt: Path, ffs: frozenset[str]) -> list[frozenset[str]]:
@@ -131,7 +171,15 @@ def main(argv: list[str]) -> int:
     src = ap.add_mutually_exclusive_group(required=True)
     src.add_argument("--dana", type=Path, help="HAL dataflow groups.txt")
     src.add_argument("--loki-re", type=Path, help="a loki re output directory")
+    ap.add_argument("--round5", action="store_true",
+                    help="with --loki-re: print the round-5 scorer's counts instead")
     args = ap.parse_args(argv)
+    if args.round5:
+        if not args.loki_re:
+            ap.error("--round5 needs --loki-re")
+        sys.stdout.write(json.dumps(round5_register(args.loki_re, args.floor_dir), sort_keys=True)
+                         + "\n")
+        return 0
     gt, ffs = gt_words(args.floor_dir)
     pred = dana_words(args.dana, ffs) if args.dana else loki_words(args.loki_re, ffs)
     sys.stdout.write(json.dumps(score_words(pred, gt).as_dict(), indent=1, sort_keys=True) + "\n")

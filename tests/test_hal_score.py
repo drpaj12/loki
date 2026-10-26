@@ -1,16 +1,32 @@
 """DANA groups.txt reader and the shared word scorer, on hand-written fixtures."""
 
 import json
+import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 from loki.hal.dana import DanaError, hal_words, parse_groups_txt
-from loki.hal.wordscore import GtWord, WordScore, dana_words, gt_words, loki_words, score_words
+from loki.hal.wordscore import (
+    GtWord,
+    WordScore,
+    dana_words,
+    gt_words,
+    loki_words,
+    round5_register,
+    score_words,
+)
 from loki.score.gt import derive_instances
 from loki.score.metrics import Pred, construct_scores
 
 DATA = Path(__file__).resolve().parent / "data" / "hal"
+WORK = Path(__file__).resolve().parents[2]
+R5 = Path(os.environ.get("LOKI_R5_DATA", str(WORK / "loki-exp5-data")))
+MICRO = Path(os.environ.get("LOKI_MICRO", str(WORK / "loki-rename-exp" / "dataset-rebuild")))
+VEVAL = Path(os.environ.get("LOKI_VEVAL", str(WORK / "loki-veval-exp" / "dataset")))
+REAL = (("W-MI-f2", MICRO, "f2"), ("W-MI-f3", MICRO, "f3"),
+        ("W-VT-f2", VEVAL, "f2"), ("W-VT-f3", VEVAL, "f3"))
 
 
 def floor_dir() -> Path:
@@ -91,6 +107,25 @@ class ScoreTest(unittest.TestCase):
         self.assertEqual((s.comp_num, s.comp_den), (2, 4))
         self.assertEqual((s.cov_num, s.cov_den), (2, 4))
 
+    def test_dedup_switch(self) -> None:
+        gt = [GtWord("w1", frozenset({"a", "b"}))]
+        pred = [{"a", "b"}, {"a", "b"}]
+        self.assertEqual(score_words(pred, gt).n_pred, 1)
+        s = score_words(pred, gt, dedup=False)
+        self.assertEqual((s.n_pred, s.matched, s.exact_pred), (2, 1, 2))
+
+    def test_width_one_word_is_label_only(self) -> None:
+        d = floor_dir()
+        words = json.loads((d / "words.json").read_text(encoding="utf-8"))
+        words["words"][2]["footprint"] = ["n7", "n8"]  # width 1 but two FFs
+        (d / "words.json").write_text(json.dumps(words), encoding="utf-8")
+        gt, _ = gt_words(d)
+        self.assertEqual({w.wid for w in gt if w.scored}, {"w1", "w2"})
+        self.assertEqual(score_words([{"n7", "n8"}], gt).n_gt, 2)
+        self.assertEqual(score_words([{"n7", "n8"}], gt).matched, 0)
+        r5, _ = gt_words(d, round5=True)
+        self.assertEqual({w.wid for w in r5}, {"r1", "r2"})
+
     def test_empty_prediction(self) -> None:
         gt = [GtWord("w1", frozenset({"a", "b"}))]
         s = score_words([], gt)
@@ -133,6 +168,53 @@ class ScoreTest(unittest.TestCase):
         (d / "overlay.json").write_text(json.dumps({"hypotheses": hyps}), encoding="utf-8")
         _, ffs = gt_words(floor_dir())
         self.assertEqual(loki_words(d, ffs), [frozenset({"n1", "n2"})])
+
+
+def real_deltas(arm: str, dataset: Path, floor: str) -> dict[str, int]:
+    """Sum over the designs of one round-5 W run: the round-5 counts, the comparison scorer's
+    counts, and the effect of each deviation alone. Asserts that the scorer in round-5 mode
+    (``round5=True``, no dedup, no FF cut) reproduces ``construct_scores`` per design."""
+    tot: dict[str, int] = {}
+
+    def add(**kw: int) -> None:
+        for k, v in kw.items():
+            tot[k] = tot.get(k, 0) + v
+
+    for run in sorted((R5 / "runs" / arm).iterdir()):
+        re_dir, fd = run / "re", dataset / run.name.rsplit("__", 1)[0] / floor
+        if not (re_dir / "overlay.json").is_file():
+            continue
+        ref = round5_register(re_dir, fd)
+        g5, ffs = gt_words(fd, round5=True)
+        mine5 = score_words(loki_words(re_dir, ffs, cut=False), g5, dedup=False)
+        assert (mine5.matched, mine5.n_pred, mine5.n_gt) == (
+            ref["matched"], ref["counted"], ref["gt"]), run.name
+        gt, _ = gt_words(fd)
+        cmp_ = score_words(loki_words(re_dir, ffs), gt)
+        dedup_only = score_words(loki_words(re_dir, ffs, cut=False), g5)
+        cut_only = score_words(loki_words(re_dir, ffs), g5, dedup=False)
+        add(designs=1, r5_pred=ref["counted"], r5_matched=ref["matched"], r5_gt=ref["gt"],
+            cmp_pred=cmp_.n_pred, cmp_matched=cmp_.matched, cmp_gt=cmp_.n_gt,
+            dedup_pred=dedup_only.n_pred, dedup_matched=dedup_only.matched,
+            cut_pred=cut_only.n_pred, cut_matched=cut_only.matched)
+    return tot
+
+
+class RealDataTest(unittest.TestCase):
+    """The comparison scorer against the round-5 scorer on the round-5 W runs (skips if absent)."""
+
+    def test_round5_mode_and_deltas(self) -> None:
+        ran = 0
+        for arm, dataset, floor in REAL:
+            if not (R5 / "runs" / arm).is_dir() or not dataset.is_dir():
+                continue
+            tot = real_deltas(arm, dataset, floor)
+            ran += 1
+            sys.stderr.write(f"\n[deltas] {arm}: {json.dumps(tot, sort_keys=True)}\n")
+            self.assertGreater(tot["designs"], 10, arm)
+            self.assertLessEqual(tot["dedup_pred"], tot["r5_pred"], arm)
+        if ran == 0:
+            self.skipTest("round-5 W runs or datasets not present")
 
 
 if __name__ == "__main__":
