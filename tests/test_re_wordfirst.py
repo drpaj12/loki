@@ -233,12 +233,9 @@ class NeConstTest(unittest.TestCase):
         self.assertEqual(cand.claim.op, "ne_const")
         self.assertEqual(dict(cand.claim.params)["C"], 1)
 
-    @unittest.expectedFailure
-    def test_ne_const_high_constant_known_defect(self) -> None:
-        """Known defect, left in place on purpose: ``_minterm`` masks the inverted table with
-        ``n - 1`` instead of ``(1 << n) - 1``, so a ``ne`` constant of 4 or more bits reads back
-        as ``-1`` and the prover refutes the candidate (5 such candidates in the round-5 W runs).
-        Fixing it would change the evaluated results."""
+    def test_ne_const_high_constant(self) -> None:
+        """A ``ne`` constant of 4 or more bits reads back exactly (the round-5 runs had a mask
+        defect here: ``n - 1`` instead of ``(1 << n) - 1``, so these read back as ``-1``)."""
         decs, _ = self.decoders(NAND4)
         self.assertEqual([(d.op, d.const) for d in decs], [("ne", 15)])
 

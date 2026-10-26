@@ -291,7 +291,7 @@ def _minterm(ctx: RoundContext, net: int, srcs: list[int]) -> Decoder | None:
     if ones == 1:
         return Decoder(net, frozenset(srcs), frozenset(cells), "eq", table.bit_length() - 1)
     if ones == n - 1:
-        inv = (~table & (n - 1)).bit_length() - 1
+        inv = (~table & ((1 << n) - 1)).bit_length() - 1
         return Decoder(net, frozenset(srcs), frozenset(cells), "ne", inv)
     return None
 
