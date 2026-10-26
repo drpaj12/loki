@@ -1,0 +1,22 @@
+State:
+
+ID:1, Size:4, CLK: {7}, EN: {12}, R: {}, S: {}
+  Successors:   {2}
+  Predecessors: {}
+n1, type: FF, id: 3, RS: 
+n2, type: FF, id: 4, RS: 
+n3, type: FF, id: 5, RS: 
+n4, type: FF, id: 6, RS: 
+
+ID:2, Size:3, CLK: {7}, EN: {}, R: {9}, S: {}
+  Successors:   {}
+  Predecessors: {1}
+n5, type: FF, id: 7, RS: 
+n6, type: FF, id: 8, RS: 
+n7, type: FF, id: 9, RS: 
+
+ID:3, Size:1, CLK: {7}, EN: {}, R: {}, S: {}
+  Successors:   {}
+  Predecessors: {}
+n8, type: FF, id: 10, RS: 
+
