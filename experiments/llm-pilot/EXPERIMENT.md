@@ -51,7 +51,7 @@ Python that reads VE text or Verilog runs with `python -I`; no VE script is run.
 
 40 problems, 10 per quartile. Eligible: in the quartile file and `*_prompt.txt` <= 40000 bytes.
 Rank by SHA-256 of `yggdrasil-llm-pilot-20261026:<problem>` ascending, take 10 per quartile, list
-by netlist line count (`select.py` -> `selection.csv`; it reproduces the brief's table exactly).
+by netlist line count (`pick_designs.py` -> `selection.csv`; it reproduces the brief's table exactly).
 A problem whose reference (as `TopModule`) fails the pre-flight is replaced by the next in rank
 and logged as an amendment. The cap removed the largest netlists, so big designs are
 under-represented (limitation).
@@ -67,7 +67,7 @@ Task `netlist-to-rtl`, `--examples=2`, no `--rules`, no `--explain` of `scripts/
   `suffix` asks for `[BEGIN]`...`[DONE]` and only code. Regression pin: for Prob024_hadd the arm A
   user message is 7986 characters with md5 ebc2f2899a6e55a4d8689c1ae3fac87e.
 - Arm B: arm A with `prompt.strip() + "\n\n" + hints block + "\n"` in place of
-  `prompt.strip() + "\n"`. The block is: a 5-line preface (the network of facts: Loki is a program,
+  `prompt.strip() + "\n"`. The block is: a 5-line preface (Loki is a program,
   not a language model; the worked examples carried no hints; net names are the netlist's own;
   how many claims were removed), `[LOKI-HINTS-BEGIN]`, the Loki document, `[LOKI-HINTS-END]`, and
   the designer-prior sentence ("designers write RTL from familiar patterns. If a signal looks like a

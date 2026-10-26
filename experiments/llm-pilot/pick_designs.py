@@ -3,17 +3,18 @@
 Eligible: in the quartile file and ``*_prompt.txt`` at most 40000 bytes. Rank by SHA-256 of
 ``<seed>:<problem>`` ascending, take the first 10 per quartile, list by netlist line count.
 A problem whose reference fails the pre-flight (score.py preflight) is replaced by the next in
-rank; replacements are listed in selection.csv column ``note``.
+rank by hand and logged as an amendment in EXPERIMENT.md.
 """
 
 from __future__ import annotations
 
 import csv
+import importlib
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import common  # noqa: E402  (path set above)
+common = importlib.import_module("common")
 
 
 def read_list(path: Path) -> list[str]:
