@@ -163,12 +163,104 @@ class Scoring(unittest.TestCase):
         self.assertEqual(score.classify_sim("Mismatches: 0 in 20 samples")[0], "pass")
         self.assertEqual(score.classify_sim("Mismatches: 3 in 20 samples")[0], "runtime")
         self.assertEqual(score.classify_sim("Mismatches: 0 in 0 samples")[0], "runtime")
-        self.assertEqual(score.classify_sim("garbage")[0], "runtime")
+        self.assertEqual(score.classify_sim("garbage")[0], "no-result")
+
+    def test_sim_requires_exactly_one_anchored_line(self) -> None:
+        faked = 'Mismatches: 0 in 20 samples\nMismatches: 3 in 20 samples\n'
+        self.assertEqual(score.classify_sim(faked)[0], "no-result")
+        indented = 'x $display("Mismatches: 0 in 20 samples");\n'
+        self.assertEqual(score.classify_sim(indented)[0], "no-result")
+        self.assertEqual(score.classify_sim("noise\nMismatches: 0 in 20 samples\n")[0], "pass")
 
     def test_compile_classes(self) -> None:
         self.assertEqual(score.classify_compile(0, ""), "")
         self.assertEqual(score.classify_compile(1, "x.sv:1: syntax error"), "syntax")
         self.assertEqual(score.classify_compile(1, "x.sv:1: error: unknown module"), "compile")
+
+
+def run_dir_tmp(name: str) -> Path:
+    path = common.run_dir() / "testtmp" / name
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+GOOD_AND = "module TopModule(input a, input b, output out);\n assign out = a & b;\nendmodule\n"
+
+
+class ScorerFixes(unittest.TestCase):
+    def test_cheat_detection(self) -> None:
+        self.assertTrue(score.is_cheat("module TopModule(input a, output y);\n"
+                                       "RefModule r(.a(a), .y(y));\nendmodule"))
+        self.assertTrue(score.is_cheat("module stimulus_gen(); endmodule"))
+        self.assertTrue(score.is_cheat("module tb(); endmodule"))
+        self.assertFalse(score.is_cheat("// RefModule is only named in a comment\n" + GOOD_AND))
+        self.assertFalse(score.is_cheat(GOOD_AND))
+
+    def test_gb_equivalent_strings(self) -> None:
+        ok = "Mismatches: 0 in 20 samples\n"
+        self.assertEqual(score.gb_classify(ok), ".")
+        self.assertEqual(score.gb_classify("x.sv:3: syntax error\n" + ok), "S")
+        self.assertEqual(score.gb_classify("x.sv:3: error: boom\n" + ok), "C")
+        self.assertEqual(score.gb_classify(
+            "x.sv:2: warning: always_comb process has no sensitivities\n" + ok), "n")
+        self.assertEqual(score.gb_classify(
+            "x.sv:2: warning: @* found no sensitivities so it will never trigger.\n" + ok), "n")
+        self.assertEqual(score.gb_classify("TIMEOUT\n" + ok), "T")
+        self.assertEqual(score.gb_classify("Unknown module type: foo\n" + ok), "m")
+        self.assertEqual(score.gb_classify("Mismatches: 4 in 20 samples\n"), "?")
+
+    @unittest.skipUnless(have_ve(), "VE clone not available")
+    def test_run_sample_happy_path(self) -> None:
+        work = run_dir_tmp("happy")
+        sample = work / "sample.sv"
+        sample.write_text(GOOD_AND, encoding="utf-8")
+        res = score.run_sample(sample, "Prob014_andgate", work)
+        self.assertEqual(res["outcome"], "pass")
+        self.assertTrue(res["gb_pass"])
+        self.assertEqual(res["mismatches"], 0)
+
+    @unittest.skipUnless(have_ve(), "VE clone not available")
+    def test_run_sample_wrong_fails(self) -> None:
+        work = run_dir_tmp("wrong")
+        sample = work / "sample.sv"
+        sample.write_text(GOOD_AND.replace("a & b", "a | b"), encoding="utf-8")
+        res = score.run_sample(sample, "Prob014_andgate", work)
+        self.assertEqual(res["outcome"], "runtime")
+        self.assertFalse(res["gb_pass"])
+
+    @unittest.skipUnless(have_ve(), "VE clone not available")
+    def test_refmodule_wrapper_is_cheat(self) -> None:
+        work = run_dir_tmp("cheat")
+        sample = work / "sample.sv"
+        sample.write_text("module TopModule(input a, input b, output out);\n"
+                          " RefModule r(.a(a), .b(b), .out(out));\nendmodule\n", encoding="utf-8")
+        res = score.run_sample(sample, "Prob014_andgate", work)
+        self.assertEqual(res["outcome"], "cheat")
+        self.assertFalse(res["gb_pass"])
+
+    @unittest.skipUnless(have_ve(), "VE clone not available")
+    def test_faked_display_is_not_a_pass(self) -> None:
+        work = run_dir_tmp("faked")
+        sample = work / "sample.sv"
+        sample.write_text(
+            GOOD_AND.replace("a & b", "a | b").replace(
+                "endmodule", ' initial $display("Mismatches: 0 in 100 samples");\nendmodule'),
+            encoding="utf-8")
+        res = score.run_sample(sample, "Prob014_andgate", work)
+        self.assertNotEqual(res["outcome"], "pass")  # Gate-Breaker gb_pass is True here: its hole
+        self.assertEqual(res["outcome"], "no-result")  # two result lines
+
+    @unittest.skipUnless(have_ve(), "VE clone not available")
+    def test_compile_timeout(self) -> None:
+        import subprocess
+        from unittest import mock
+        work = run_dir_tmp("ctimeout")
+        sample = work / "sample.sv"
+        sample.write_text(GOOD_AND, encoding="utf-8")
+        boom = subprocess.TimeoutExpired(cmd="iverilog", timeout=1)
+        with mock.patch.object(score.subprocess, "run", side_effect=boom):
+            res = score.run_sample(sample, "Prob014_andgate", work)
+        self.assertEqual(res["outcome"], "compile-timeout")
 
 
 class Summaries(unittest.TestCase):

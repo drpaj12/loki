@@ -44,14 +44,14 @@ def rate(passed: int, total: int) -> str:
 
 
 def pass_table(res: dict[tuple[str, str], dict[str, Any]], quart: dict[str, str],
-               arms: list[str]) -> list[str]:
+               arms: list[str], key: str = "pass") -> list[str]:
     lines = ["| quartile | " + " | ".join(f"arm {a}" for a in arms) + " |",
              "| --- | " + " | ".join("---" for _ in arms) + " |"]
     for q in [*common.QUARTILES, "all"]:
         cells = []
         for a in arms:
             rows = [r for (arm, p), r in res.items() if arm == a and q in ("all", quart[p])]
-            cells.append(rate(sum(r["pass"] for r in rows), len(rows)))
+            cells.append(rate(sum(bool(r.get(key)) for r in rows), len(rows)))
         lines.append(f"| {q} | " + " | ".join(cells) + " |")
     return lines
 
@@ -155,7 +155,9 @@ def summarize(records: Path, hints: Path) -> str:
     gt = read_csv(common.REPO / "experiments" / "veval-l0" / "features.csv", "design")
     arms = [a for a in common.ARMS if any(k[0] == a for k in res)]
     out = ["# Pilot tables", "", "## Pass rate by quartile and arm", "",
-           *pass_table(res, quart, arms)]
+           *pass_table(res, quart, arms),
+           "", "## Pass rate, Gate-Breaker-equivalent scorer", "",
+           *pass_table(res, quart, arms, "gb_pass")]
     if "A" in arms and "B" in arms:
         out += ["", "## Paired A/B", "", *paired(res)]
     out += ["", "## Outcome codes", "", *outcome_table(res, arms)]

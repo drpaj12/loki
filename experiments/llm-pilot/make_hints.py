@@ -8,6 +8,7 @@ Python with cffi. Writes ``run/hints/<problem>/{f3/netlist.v,out/,hints.md,hints
 
 from __future__ import annotations
 
+import argparse
 import copy
 import csv
 import importlib
@@ -213,8 +214,12 @@ def selected() -> list[str]:
 
 
 def main(argv: list[str]) -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--problems", nargs="+", default=None, metavar="P",
+                    help="subset of selection.csv (default: all; the stats csv is then rewritten)")
+    args = ap.parse_args(argv)
     odin = Path(os.environ.get("ODIN3_ROOT", str(common.workspace() / "odin3")))
-    names = argv or selected()
+    names = args.problems or selected()
     common.run_dir().mkdir(parents=True, exist_ok=True)
     rows = []
     for name in names:
