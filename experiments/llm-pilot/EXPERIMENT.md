@@ -27,9 +27,25 @@ are Loki's labels right. A difference under about 5 problems per arm is within s
 7. Model: a fresh Claude subagent per problem per arm, spawned by the controller session (Agent
    tool, model sonnet); the model id is recorded; no `claude -p`, no external gateway, no API key.
    This supersedes section 7 of the brief. This lane (dispatch 1) makes no model call.
-8. Arm B hints go through a name-translation step: Loki names (`c9`, `$n15`) are mapped to netlist
-   names through ports and flip-flop pin nets; claims that name an unmappable net are dropped and
-   counted per problem (`make_hints.py`, `hints_stats.csv`).
+8. (Superseded by decision 10 for the drop rule.) Arm B hints go through a name-translation step
+   (`make_hints.py`, `netmap.py`, `hints_stats.csv`).
+10. (Peter, after phase 1) Arm B passes EVERY claim Loki makes from the flat netlist alone (non-L0
+   run: no provenance names, no L0 ground truth as input). Nothing is dropped. Loki-internal nets
+   (`$nN`, `cN`) are resolved to an original netlist wire by random-simulation signature (512
+   vectors; ports and flip-flop outputs free), a method ported from the reviewer's prototype
+   `yield.py` (review of dispatch 1) into `netmap.py`. Nets with no equal wire get neutral helper
+   names `w1`, `w2`, ... (not `h`: claim ids are `hN`), numbered by `$nN` integer then sorted `cN`,
+   and a "Helper nets" section of the hints block defines each as a function of netlist wires and
+   other helper nets from the driving Loki LUT (`w3 = NOT(reset)`). Loki's `rp_min_p` stays at its
+   default 0.5 (claims below it are not claims Loki makes; agent default). Claims 792 of 792 named
+   (name resolution counts in the fix-1 result). The hints block carries no `$nN`/`cN`/L0/
+   provenance string (leak gate, `build_prompts.leak_hits`, 0 hits over all 120 prompts). Arm-B
+   prompts may exceed the 40,000 B selection cap: the cap only filtered dataset prompts.
+   Signature equality is strong evidence of equivalence, not a proof.
+11. (Peter) Blinding deviation accepted: subagents keep the harness system prompt and tools; the
+   pilot system message cannot replace it. State it in the results and the paper. All wall-clock
+   timeouts are pinned in `score.py` (simulation 30 s, compile 60 s); a valid run has
+   `timeout` and `compile-timeout` counts of 0 (report.json timeouts == 0).
 9. Citations: VTR 9 (TRETS 2025, doi 10.1145/3734798) and `rose2012vtr` (doi 10.1145/2145694.2145708)
    for runs on the VTR checkout (commit 3c9a4d23b2); Gate-Breaker pages resolved against IEEE
    Xplore before the paper uses them (staged entries in `briefs/citations-staged.md`). This pilot
@@ -89,25 +105,22 @@ Per problem, on scratch copies only (the prompt netlist is never renamed):
 2. `loki re <netlist.v> --floor f3 --calib none --detectors wordfirst,hard,ff_pattern,mux,arith,
    seqfn,fsm,bus,unit,role,wordgroup` (the f3 directory name is required), using the installed
    Odin III release library as is. No Odin III build, no heavy lock.
-3. Translation of `reverse-provenance.json`. Mappable nets: ports of the original netlist and
-   nets on flip-flop pins (DFF, DFFSR) of the original netlist; Loki reuses these names unchanged
-   (checked: each mappable name must also occur as a wire in the original netlist). A claim
-   (element) names the nets in its `ports` and `nets`; a bus names all its bit nets; an FSM names
-   its state, control and reset nets. An object that names an unmappable net (an internal Loki net
-   `$nN`) is dropped; an object that names no net is kept. Claims with empty `ports` and a `nets`
-   map (flip-flop claims) show `nets` as ports: `q` as outputs, the others as inputs. Cell lists
-   are never shown (cell names `cN` have no counterpart in the Yosys netlist). Conflict, parent
-   and child ids that point at dropped claims are removed (conflicts become "more not listed").
-   Coverage figures are recomputed from the kept claims; the "nets driven by uncovered cells" line
-   is removed (Loki-internal names).
+3. Naming (decision 10, `netmap.py`). Every net a claim names (elements' `ports` and `nets`, bus
+   bits, FSM state/control/reset nets) that is not a declared wire or port of the original
+   netlist is a Loki-internal net. It is mapped to an equal-signature original wire (preference:
+   ports, then sorted names) or to a helper net `wK` defined in a "Helper nets" section. Nothing
+   is dropped. Claims with empty `ports` and a `nets` map (flip-flop claims) show `nets` as
+   ports: `q` as outputs, the others as inputs. Cell lists are never shown.
 4. Document: `loki.rp.doc` text of the translated file, section 2 (how to read `design.v`) removed,
-   at most 8000 characters; the document names what it omitted when it cuts.
-5. Counts per problem to `hints_stats.csv`: claims, buses and FSMs total/kept/dropped, document
-   bytes, whether Loki ran.
+   never truncated (`MAX_CHARS` is effectively unbounded and `render_hints` raises if the document
+   would be cut).
+5. Counts per problem to `hints_stats.csv`: claims, claims fully named, buses, FSMs, internal
+   names, names resolved to a wire, helper nets, document and block bytes. `--problems` reruns a
+   subset and merges into the csv.
 
 Known limits (reported in the results): hint precision is uncalibrated at f3; the FSM test
 over-generates; roles are almost always `datapath`; no partitions (L2 needs a graph.json);
-combinational internals cannot be named, so most claims about gates inside the logic are dropped.
+claims about combinational internals name wires by signature or via helper nets.
 
 ## Calls (this dispatch builds the manifest; the controller makes the calls later)
 
@@ -139,8 +152,14 @@ As `VE/Makefile.in`: `iverilog -Wall -Winfloop -Wno-timescale -g2012 -s tb -o <b
 <problem>_test.sv <problem>_ref.sv`, then `timeout 30 ./<bin>` (vvp-compiled output is executed
 with `vvp`; a 124 exit adds `TIMEOUT`). Icarus Verilog 12.0 (v13 is not supported by VE). The test
 and reference files are read from VE in the scoring step only. Outcome codes in order: no-output
-(no `[BEGIN]`/`[DONE]`), syntax, compile, runtime (Mismatches > 0 or no Mismatches line), timeout,
-pass. The binary and logs go under `run/`, never into VE. A timeout on a reference-passing
+(no `[BEGIN]`/`[DONE]`), cheat (the sample names `RefModule`, `stimulus_gen` or `tb`, outside
+comments and strings), syntax, compile, compile-timeout (60 s), runtime (Mismatches > 0), timeout,
+no-result (not exactly one line matching `^Mismatches: N in M samples$`), pass. `gb_pass` is the
+Gate-Breaker-equivalent pass reported beside ours (`gb_classify`, strings copied from
+`scripts/sv-iv-analyze` lines 311-368 of the Gate-Breaker VerilogEval clone). Deviation: Gate-Breaker
+has the same hole as the one closed here: its scorer does not forbid a sample that instantiates the
+hidden `RefModule` (or prints its own "Mismatches: 0" line), so its pass rates can be inflated by such
+samples; our `pass` rejects them and `gb_pass` does not. The binary and logs go under `run/`, never into VE. A timeout on a reference-passing
 problem is a harness fault. Negative controls: one deliberately wrong `TopModule` per quartile,
 one syntax error and one no-output reply must not pass. `score.py preflight` checks every
 reference as `TopModule`.
@@ -177,3 +196,8 @@ part of this protocol unless Peter asks.
   the 40 references as `TopModule` pass 40/40 through `collect.py` and `score.py`; four wrong
   modules (one per quartile) fail with `runtime`, a syntax error gives `syntax`, a reply without
   markers gives `no-output`.
+- 2026-10-26 (fix round 1): scorer fixes (cheat gate, anchored single result line, GB-equivalent
+  pass, compile timeout), decision 10 naming, decisions 10 and 11 recorded. Hint stats: 792 of 792
+  claims named; 641 internal names, 478 resolved to a wire, 185 helper nets (163 unresolved plus 22
+  reached through definitions). Arm B totals 711,151 B (est 222,235 tokens at 3.2 B/token), largest
+  call Prob055_conditional arm B 62,881 B.

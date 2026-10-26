@@ -15,7 +15,7 @@ REPO = HERE.parents[1]
 SEED = "yggdrasil-llm-pilot-20261026"
 QUARTILES = {"Q1": "low", "Q2": "mid-low", "Q3": "mid-high", "Q4": "high"}
 PER_QUARTILE = 10
-MAX_PROMPT_BYTES = 40000
+MAX_PROMPT_BYTES = 40000  # selection filter on dataset prompts only; arm B may exceed it
 VE_NAME = "Gate-Breaker-verilog-eval"
 VARIANT = "cot"
 ARMS = ("A", "B", "C")
@@ -33,9 +33,11 @@ HINTS_PREFACE = (
     "Loki structural hints for the netlist above. Loki is a netlist analysis program (no language "
     "model).\n"
     "Its output follows between the markers. The worked examples above did not carry hints.\n"
-    "Net names in the hints are the netlist's own (ports and flip-flop pins). Claims that would "
-    "need\n"
-    "Loki-internal names were removed: {dropped} of {total} claims.\n"
+    "Net names in the hints are wires and ports of the netlist above, except the names w1, w2, "
+    "...:\n"
+    "those are helper nets that have no wire of their own; each is defined in the list of helper "
+    "nets\n"
+    "at the end of the hints, in terms of netlist wires or other helper nets.\n"
     "[LOKI-HINTS-BEGIN]\n"
 )
 HINTS_POSTFACE = (

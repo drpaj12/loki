@@ -12,6 +12,7 @@ import csv
 import hashlib
 import importlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -23,6 +24,15 @@ NETLIST_HEAD = "Gate-level netlist:"
 PIN_PROBLEM = "Prob024_hadd"
 PIN_LEN = 7986
 PIN_MD5 = "ebc2f2899a6e55a4d8689c1ae3fac87e"
+
+
+LEAK = re.compile(r"\$n\d|\bc\d+\b|loki_|Prob\d|\bL0\b|provenance|key\.json|level0",
+                  re.I)
+
+
+def leak_hits(text: str) -> list[str]:
+    """Loki-internal names and L0/provenance strings that must not reach a prompt."""
+    return sorted({m.group(0) for m in LEAK.finditer(text)})
 
 
 def question_text(prompt: str, arm: str, hints: str = "") -> str:
@@ -86,6 +96,9 @@ def main() -> int:
         if arm == "B":
             hints = (root / "hints" / p / "hints.md").read_text(encoding="utf-8")
         user = user_message(prefix, prompt, arm, hints)
+        bad = leak_hits(user)
+        if bad:
+            raise SystemExit(f"leak gate: {arm} {p}: {bad}")
         base = Path("prompts") / arm / p
         write(root / base / "system.txt", common.SYSTEM_MSG)
         write(root / base / "user.txt", user)

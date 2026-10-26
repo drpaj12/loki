@@ -15,6 +15,7 @@ common = importlib.import_module("common")
 build = importlib.import_module("build_prompts")
 collect = importlib.import_module("collect")
 hints = importlib.import_module("make_hints")
+netmap = importlib.import_module("netmap")
 pick = importlib.import_module("pick_designs")
 score = importlib.import_module("score")
 summ = importlib.import_module("summarize")
@@ -84,7 +85,7 @@ def element(hid: str, ports: dict[str, list[str]], outs: dict[str, list[str]],
             "ports": {"inputs": ports, "outputs": outs}, "nets": nets or {}, "role": "datapath"}
 
 
-class Translate(unittest.TestCase):
+class RenameRp(unittest.TestCase):
     def rp(self) -> dict[str, object]:
         a = element("h1", {"A": ["a[0]", "a[1]"]}, {"Y": ["q"]})
         b = element("h2", {"A": ["a[0]"]}, {"Y": ["$n5"]})
@@ -93,37 +94,60 @@ class Translate(unittest.TestCase):
         bus = {"id": "h4", "bits": [["a[0]"], ["$n9"]], "width": 2, "status": "candidate"}
         d = element("h4", {}, {})
         d["kind"] = "bus"
-        return {"elements": [a, b, c, d], "buses": [bus], "fsms": [],
-                "hierarchy": [{"id": "h2", "module": "m2", "instance": "i2", "children": [
-                    {"id": "h1", "module": "m1", "instance": "i1", "children": []}]}]}
+        fsm = {"id": "h5", "state_nets": ["c7"], "control_nets": ["$n5"], "reset_net": []}
+        return {"elements": [a, b, c, d], "buses": [bus], "fsms": [fsm], "hierarchy": []}
 
-    def test_drops_and_counts(self) -> None:
-        new, stats = hints.translate(self.rp(), {"a[0]", "a[1]", "q", "_1_"})
-        self.assertEqual([e["id"] for e in new["elements"]], ["h1", "h3"])
-        self.assertEqual(stats, {"claims": 4, "claims_kept": 2, "buses": 1, "buses_kept": 0,
-                                 "fsms": 0, "fsms_kept": 0})
-        self.assertEqual(new["buses"], [])
-
-    def test_hierarchy_promotes_children(self) -> None:
-        new, _ = hints.translate(self.rp(), {"a[0]", "a[1]", "q", "_1_"})
-        self.assertEqual([n["id"] for n in new["hierarchy"]], ["h1"])
-
-    def test_conflicts_become_counted(self) -> None:
-        new, _ = hints.translate(self.rp(), {"a[0]", "a[1]", "q", "_1_"})
-        h1 = new["elements"][0]
-        self.assertEqual(h1["conflicts"], [])
-        self.assertEqual(h1["links_outside"]["conflicts"], 1)
+    def test_every_net_list_renamed_nothing_dropped(self) -> None:
+        new = hints.rename_rp(self.rp(), {"$n5": "w1", "$n9": "_7_", "c7": "w2"})
+        self.assertEqual([e["id"] for e in new["elements"]], ["h1", "h2", "h3", "h4"])
+        self.assertEqual(new["elements"][1]["ports"]["outputs"], {"Y": ["w1"]})
+        self.assertEqual(new["buses"][0]["bits"], [["a[0]"], ["_7_"]])
+        self.assertEqual(new["fsms"][0]["state_nets"], ["w2"])
+        self.assertEqual(new["fsms"][0]["control_nets"], ["w1"])
+        left = {n for n in hints.all_names(new) if n.startswith("$n") or n == "c7"}
+        self.assertEqual(left, set())
 
     def test_nets_shown_as_ports(self) -> None:
-        new, _ = hints.translate(self.rp(), {"a[0]", "a[1]", "q", "_1_"})
-        h3 = new["elements"][1]
+        new = hints.rename_rp(self.rp(), {})
+        h3 = new["elements"][2]
         self.assertEqual(h3["ports"]["outputs"], {"q": ["q"]})
         self.assertEqual(h3["ports"]["inputs"], {"d": ["_1_"]})
 
     def test_input_not_mutated(self) -> None:
         rp = self.rp()
-        hints.translate(rp, set())
-        self.assertEqual(len(rp["elements"]), 4)
+        hints.rename_rp(rp, {"$n5": "w1"})
+        self.assertEqual(rp["elements"][1]["ports"]["outputs"], {"Y": ["$n5"]})
+
+
+class NetMap(unittest.TestCase):
+    def test_expr(self) -> None:
+        self.assertEqual(netmap.expr(0b01, ["x"]), "NOT(x)")
+        self.assertEqual(netmap.expr(0b10, ["x"]), "x")
+        self.assertEqual(netmap.expr(0b1000, ["a", "b"]), "AND(a, b)")
+        self.assertEqual(netmap.expr(0b0001, ["a", "b"]), "AND(NOT(a), NOT(b))")
+        self.assertEqual(netmap.expr(0b1110, ["a", "b"]), "OR(a, b)")
+        self.assertEqual(netmap.expr(0, ["a"]), "0")
+        self.assertEqual(netmap.expr(0b11, ["a"]), "1")
+
+    def test_order_key(self) -> None:
+        names = ["c9", "$n10", "$n2", "c10"]
+        self.assertEqual(sorted(names, key=netmap.order_key), ["$n2", "$n10", "c10", "c9"])
+
+    def test_signatures_follow_logic(self) -> None:
+        sig = netmap.orig_signatures(NETLIST)
+        self.assertEqual(sig["_0_"], ~sig["a[0]"] & netmap.MASK)
+        self.assertEqual(sig["_1_"], ~(sig["_0_"] & sig["a[1]"]) & netmap.MASK)
+        self.assertEqual(sig["q"], netmap.vec("q"))
+
+    def test_bits_of(self) -> None:
+        self.assertEqual(netmap.bits_of("{a[1:0], 2'h1}"), ["a[1]", "a[0]", "#0", "#1"])
+
+
+class LeakGate(unittest.TestCase):
+    def test_hits(self) -> None:
+        for bad in ("net $n12", "cell c9 here", "loki_x", "Prob024_hadd", "from L0", "provenance"):
+            self.assertTrue(build.leak_hits(bad), bad)
+        self.assertEqual(build.leak_hits("Y = AND(w1, _03_) and clk, a[0]"), [])
 
 
 class Extract(unittest.TestCase):

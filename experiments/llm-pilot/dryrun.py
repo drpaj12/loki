@@ -60,6 +60,11 @@ def build_responses(root: Path, problems: list[str]) -> dict[tuple[str, str], st
         expect[("B", p)] = "runtime"
     put(root, "B", SYNTAX, wrapped("module TopModule(input a; output y)\nassign y = ;\nendmodule"))
     expect[("B", SYNTAX)] = "syntax"
+    cheat = next(p for p in problems if p not in {*WRONG.values(), SYNTAX, NOOUT, FENCED}
+                 and "input" in top_of(p).split(");")[0])
+    head = top_of(cheat).split(");")[0] + ");\n"
+    put(root, "B", cheat, wrapped(head + " RefModule hidden(.*);\nendmodule"))
+    expect[("B", cheat)] = "cheat"
     put(root, "B", NOOUT, "I think the circuit is an inverter.\n")
     expect[("B", NOOUT)] = "no-output"
     put(root, "B", FENCED, "```verilog\n" + top_of(FENCED).rstrip() + "\n```\n")
