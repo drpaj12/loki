@@ -1,0 +1,406 @@
+{
+    "version": 4,
+    "library": "LOKI_CMOS6",
+    "cells": [
+        {
+            "name": "BUF",
+            "types": [
+                "combinational",
+                "c_buffer"
+            ],
+            "pin_groups": [
+                {
+                    "name": "A",
+                    "direction": "input",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "A",
+                            "direction": "input",
+                            "type": "none"
+                        }
+                    ]
+                },
+                {
+                    "name": "Y",
+                    "direction": "output",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "Y",
+                            "direction": "output",
+                            "type": "none",
+                            "function": "A"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "INV",
+            "types": [
+                "combinational",
+                "c_inverter"
+            ],
+            "pin_groups": [
+                {
+                    "name": "A",
+                    "direction": "input",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "A",
+                            "direction": "input",
+                            "type": "none"
+                        }
+                    ]
+                },
+                {
+                    "name": "Y",
+                    "direction": "output",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "Y",
+                            "direction": "output",
+                            "type": "none",
+                            "function": "(! A)"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "NAND2",
+            "types": [
+                "combinational",
+                "c_nand"
+            ],
+            "pin_groups": [
+                {
+                    "name": "A",
+                    "direction": "input",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "A",
+                            "direction": "input",
+                            "type": "none"
+                        }
+                    ]
+                },
+                {
+                    "name": "B",
+                    "direction": "input",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "B",
+                            "direction": "input",
+                            "type": "none"
+                        }
+                    ]
+                },
+                {
+                    "name": "Y",
+                    "direction": "output",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "Y",
+                            "direction": "output",
+                            "type": "none",
+                            "function": "(! (A & B))"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "NOR2",
+            "types": [
+                "combinational",
+                "c_nor"
+            ],
+            "pin_groups": [
+                {
+                    "name": "A",
+                    "direction": "input",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "A",
+                            "direction": "input",
+                            "type": "none"
+                        }
+                    ]
+                },
+                {
+                    "name": "B",
+                    "direction": "input",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "B",
+                            "direction": "input",
+                            "type": "none"
+                        }
+                    ]
+                },
+                {
+                    "name": "Y",
+                    "direction": "output",
+                    "type": "none",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "Y",
+                            "direction": "output",
+                            "type": "none",
+                            "function": "(! (A | B))"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "DFF",
+            "types": [
+                "sequential",
+                "ff"
+            ],
+            "ff_config": {
+                "state": "IQ",
+                "neg_state": "IQN",
+                "data_category": "generic",
+                "data_identifier": "INIT",
+                "next_state": "D",
+                "clocked_on": "C"
+            },
+            "pin_groups": [
+                {
+                    "name": "C",
+                    "direction": "input",
+                    "type": "clock",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "C",
+                            "direction": "input",
+                            "type": "clock"
+                        }
+                    ]
+                },
+                {
+                    "name": "D",
+                    "direction": "input",
+                    "type": "data",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "D",
+                            "direction": "input",
+                            "type": "data"
+                        }
+                    ]
+                },
+                {
+                    "name": "Q",
+                    "direction": "output",
+                    "type": "state",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "Q",
+                            "direction": "output",
+                            "type": "state",
+                            "function": "IQ"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "DFFSR",
+            "types": [
+                "sequential",
+                "ff"
+            ],
+            "ff_config": {
+                "state": "IQ",
+                "neg_state": "IQN",
+                "data_category": "generic",
+                "data_identifier": "INIT",
+                "next_state": "D",
+                "clocked_on": "C",
+                "clear_on": "R",
+                "preset_on": "S",
+                "state_clear_preset": "H",
+                "neg_state_clear_preset": "L"
+            },
+            "pin_groups": [
+                {
+                    "name": "C",
+                    "direction": "input",
+                    "type": "clock",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "C",
+                            "direction": "input",
+                            "type": "clock"
+                        }
+                    ]
+                },
+                {
+                    "name": "D",
+                    "direction": "input",
+                    "type": "data",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "D",
+                            "direction": "input",
+                            "type": "data"
+                        }
+                    ]
+                },
+                {
+                    "name": "S",
+                    "direction": "input",
+                    "type": "set",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "S",
+                            "direction": "input",
+                            "type": "set"
+                        }
+                    ]
+                },
+                {
+                    "name": "R",
+                    "direction": "input",
+                    "type": "reset",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "R",
+                            "direction": "input",
+                            "type": "reset"
+                        }
+                    ]
+                },
+                {
+                    "name": "Q",
+                    "direction": "output",
+                    "type": "state",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "Q",
+                            "direction": "output",
+                            "type": "state",
+                            "function": "IQ"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "GND",
+            "types": [
+                "combinational",
+                "ground"
+            ],
+            "pin_groups": [
+                {
+                    "name": "O",
+                    "direction": "output",
+                    "type": "ground",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "O",
+                            "direction": "output",
+                            "type": "ground",
+                            "function": "0b0"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "VCC",
+            "types": [
+                "combinational",
+                "power"
+            ],
+            "pin_groups": [
+                {
+                    "name": "O",
+                    "direction": "output",
+                    "type": "power",
+                    "ascending": false,
+                    "start_index": 0,
+                    "ordered": false,
+                    "pins": [
+                        {
+                            "name": "O",
+                            "direction": "output",
+                            "type": "power",
+                            "function": "0b1"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
