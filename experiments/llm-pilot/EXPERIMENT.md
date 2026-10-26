@@ -170,4 +170,10 @@ part of this protocol unless Peter asks.
 
 ## Amendments
 
-(none yet)
+- 2026-10-26 (before any model call): `select.py` was named `pick_designs.py` (a `select.py` next to
+  the scripts would shadow the standard-library `select` module). Prompts, hints and records live
+  under `run/`, which is git-ignored; the repo keeps `selection.csv`, `hints_stats.csv`,
+  `prompt_sizes.csv` (sha256 of every user message) and `dryrun_result.json`. Dry run (no model):
+  the 40 references as `TopModule` pass 40/40 through `collect.py` and `score.py`; four wrong
+  modules (one per quartile) fail with `runtime`, a syntax error gives `syntax`, a reply without
+  markers gives `no-output`.
