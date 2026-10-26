@@ -33,6 +33,7 @@ class BlifSim:
     def __init__(self, b: Blif) -> None:
         self.b = b
         self.gates = {c.output: c for c in b.cells if isinstance(c, Gate)}
+        self.tables = {out: g.table() for out, g in self.gates.items()}
         self.latches = [c for c in b.cells if isinstance(c, Latch)]
         self.srffs = [c for c in b.cells if isinstance(c, Subckt)]
         for s in self.srffs:
@@ -59,7 +60,7 @@ class BlifSim:
                 raise SimError(f"combinational loop at {net}")
             busy.add(net)
             idx = sum(get(n) << j for j, n in enumerate(g.inputs))
-            val[net] = (g.table() >> idx) & 1
+            val[net] = (self.tables[net] >> idx) & 1
             busy.discard(net)
             return val[net]
 
