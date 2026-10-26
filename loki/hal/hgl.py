@@ -39,12 +39,16 @@ def _comb(name: str, kind: str, ins: list[str], out: str, function: str) -> Json
 
 
 def _lut(k: int) -> Json:
+    # HAL (gate.cpp, get_boolean_function_from_lut): "ascending" bit-reverses INIT over 2^k bits;
+    # INIT bit i then selects input assignment i with the first input pin as the least
+    # significant bit. The converter writes INIT bit i = assignment with I0 as LSB, so the
+    # no-reversal order ("descending") is the matching one.
     groups = [_group(p, "input", "none") for p in LUT_PINS[:k]]
     groups.append(_group("O", "output", "lut"))
     return {
         "name": f"LUT{k}", "types": ["combinational", "c_lut"],
         "lut_config": {
-            "bit_order": "ascending", "data_category": "generic", "data_identifier": "INIT",
+            "bit_order": "descending", "data_category": "generic", "data_identifier": "INIT",
         },
         "pin_groups": groups,
     }

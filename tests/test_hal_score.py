@@ -21,10 +21,10 @@ from loki.score.gt import derive_instances
 from loki.score.metrics import Pred, construct_scores
 
 DATA = Path(__file__).resolve().parent / "data" / "hal"
-WORK = Path(__file__).resolve().parents[2]
-R5 = Path(os.environ.get("LOKI_R5_DATA", str(WORK / "loki-exp5-data")))
-MICRO = Path(os.environ.get("LOKI_MICRO", str(WORK / "loki-rename-exp" / "dataset-rebuild")))
-VEVAL = Path(os.environ.get("LOKI_VEVAL", str(WORK / "loki-veval-exp" / "dataset")))
+NONE = "/nonexistent-loki-data"  # the real-data test skips unless the variables are set
+R5 = Path(os.environ.get("LOKI_R5_DATA", NONE))
+MICRO = Path(os.environ.get("LOKI_MICRO", NONE))
+VEVAL = Path(os.environ.get("LOKI_VEVAL", NONE))
 REAL = (("W-MI-f2", MICRO, "f2"), ("W-MI-f3", MICRO, "f3"),
         ("W-VT-f2", VEVAL, "f2"), ("W-VT-f3", VEVAL, "f3"))
 

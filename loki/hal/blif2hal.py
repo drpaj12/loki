@@ -2,8 +2,12 @@
 
 Every ``.names`` and ``.latch`` becomes one instance of a cell of the matching ``.hgl`` library
 (``loki.hal.hgl``). The instance name is the ``.cname`` node id of the L0 answer key, so a HAL
-gate name is an L0 node id. A cell without a ``.cname`` gets ``_c<index>``. Nets keep their BLIF
-names (``n<k>``). ``python -m loki.hal.blif2hal --floor f2 netlist.blif out.v``.
+gate name is an L0 node id. A combinational cell without a ``.cname`` gets ``_c<index>``; a
+flip-flop without one makes ``convert`` raise (its name could not be scored), so the design is
+dropped from both arms. Instance names must differ from net and port names. Nets keep their BLIF
+names (``n<k>``). A ``.latch`` with init 2 or 3 (don't care, unknown) emits no ``INIT``, so the
+flip-flop starts at the library default 0; only init 0 and 1 are carried over.
+``python -m loki.hal.blif2hal --floor f2 netlist.blif out.v``.
 """
 
 from __future__ import annotations
@@ -85,6 +89,18 @@ def _nets(b: Blif) -> list[str]:
     return list(seen)
 
 
+def _check_names(b: Blif, nets: set[str]) -> None:
+    named = [c.cname for c in b.cells if c.cname]
+    if len(set(named)) != len(named):
+        raise ConvertError("duplicate .cname")
+    clash = sorted(set(named) & nets)
+    if clash:
+        raise ConvertError(f".cname equal to a net or port name: {clash[:3]}")
+    bare = [c for c in b.cells if not isinstance(c, Gate) and not c.cname]
+    if bare:
+        raise ConvertError(f"{len(bare)} flip-flop(s) without .cname")
+
+
 def convert(b: Blif, floor: str) -> str:
     """The structural Verilog of ``b`` for ``floor`` (``f2`` or ``f3``)."""
     if floor not in FLOORS:
@@ -97,9 +113,7 @@ def convert(b: Blif, floor: str) -> str:
     lines = [f"module {b.model} ({', '.join([*b.inputs, *b.outputs])});"]
     lines += [f"  input {n};" for n in b.inputs] + [f"  output {n};" for n in b.outputs]
     lines += [f"  wire {n};" for n in _nets(b)]
-    used = {c.cname for c in b.cells if c.cname}
-    if len(used) != len([c for c in b.cells if c.cname]):
-        raise ConvertError("duplicate .cname")
+    _check_names(b, set(names))
     for i, c in enumerate(b.cells):
         inst = _name(c.cname, i)
         if isinstance(c, Gate):

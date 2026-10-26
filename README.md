@@ -22,6 +22,16 @@ Gate-Breaker metrics, with every number traced to the experiment records:
 - [`experiments/f3-recovery/EXPERIMENT.md`](experiments/f3-recovery/EXPERIMENT.md): recovery from the cmos6 gate
   netlist (the L0 provenance ceiling, L1 on the renamed f3 floors, AST and CFG similarity).
 
+## HAL comparison (branch `exp/hal`)
+
+`loki/hal/` converts an L0 floor `netlist.blif` to HAL structural Verilog (`blif2hal`, libraries
+`experiments/hal/hgl/{lut6,cmos6}.hgl`), reads DANA's `groups.txt` and scores words (`wordscore`);
+plan and rules: `docs/plan/hal-compare-prereg.md` (with Amendment 1). Converter notes: a `.latch`
+with init 2 or 3 (don't care, unknown) drops the `INIT` parameter, so the flip-flop starts at 0;
+a flip-flop without `.cname` makes the conversion fail (the design leaves both arms). The tests
+that read datasets need `LOKI_MICRO` (and `LOKI_VEVAL`, `LOKI_R5_DATA` for the scorer comparison)
+and skip when they are unset. `python -m loki.hal.sim` runs the function round trip on one BLIF.
+
 ## Documentation
 
 Start at the Yggdrasil III hub; every manual links to the others.
