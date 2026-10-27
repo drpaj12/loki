@@ -150,9 +150,9 @@ def label_section(res: dict[tuple[str, str], dict[str, Any]], records: Path, hin
 
 
 def status_section(status: Path, res: dict[tuple[str, str], dict[str, Any]]) -> list[str]:
-    """Refusal-aware pass rates from ``status.csv`` (ok / refused / not_run per call).
+    """Refusal-aware pass rates from ``status.csv`` (ok / refused / no-file / not_run per call).
 
-    View 1: refused counts as a fail (denominator = ok + refused, calls actually made).
+    View 1: refused and no-file count as fails (denominator = ok + refused + no-file).
     View 2: the paired set, problems answered (ok) in all three arms.
     """
     with status.open(encoding="utf-8", newline="") as fh:
@@ -163,15 +163,16 @@ def status_section(status: Path, res: dict[tuple[str, str], dict[str, Any]]) -> 
     def ok(a: str, p: str) -> bool:
         return st[(a, p)]["status"] == "ok"
     paired_set = [p for p in probs if all(ok(a, p) for a in arms)]
-    out = ["| arm | ok | refused | not run | pass | refused = fail | answered only | "
-           "paired set |", "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    out = ["| arm | ok | refused | no-file | not run | pass | refused = fail | answered only | "
+           "paired set |", "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for a in arms:
         n = {k: sum(1 for r in rows if r["arm"] == a and r["status"] == k)
-             for k in ("ok", "refused", "not_run")}
+             for k in ("ok", "refused", "no-file", "not_run")}
         passed = sum(bool(res[(a, p)]["pass"]) for p in probs if ok(a, p) and (a, p) in res)
         pp = sum(bool(res[(a, p)]["pass"]) for p in paired_set)
-        out.append(f"| {a} | {n['ok']} | {n['refused']} | {n['not_run']} | {passed} | "
-                   f"{rate(passed, n['ok'] + n['refused'])} | {rate(passed, n['ok'])} | "
+        out.append(f"| {a} | {n['ok']} | {n['refused']} | {n['no-file']} | {n['not_run']} | "
+                   f"{passed} | {rate(passed, n['ok'] + n['refused'] + n['no-file'])} | "
+                   f"{rate(passed, n['ok'])} | "
                    f"{rate(pp, len(paired_set))} |")
     multi = [f"{r['order']} {r['arm']} {r['problem']} ({r['tool_calls']} tool calls)"
              for r in rows if r["status"] == "ok" and r["tool_calls"] not in ("", "2")]

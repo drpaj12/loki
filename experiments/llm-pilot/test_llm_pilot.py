@@ -377,7 +377,7 @@ class VariantRe(unittest.TestCase):
             path = Path(d) / "s.csv"
             path.write_text("\n".join(rows) + "\n", encoding="utf-8")
             out = "\n".join(summ.status_section(path, res))
-        self.assertIn("| C | 1 | 1 | 0 | 1 | 1/2 (0.50) | 1/1 (1.00) | 1/1 (1.00) |", out)
+        self.assertIn("| C | 1 | 1 | 0 | 0 | 1 | 1/2 (0.50) | 1/1 (1.00) | 1/1 (1.00) |", out)
         self.assertIn("Paired set: 1 problems", out)
 
 

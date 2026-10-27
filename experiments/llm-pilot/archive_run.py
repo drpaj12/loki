@@ -4,7 +4,8 @@ Usage: ``python -I archive_run.py --src DIR --run RUN --model ID [--last-order N
 [--refused 009 027 ...]``. ``DIR/resp-NNN.txt`` is the reply of call order NNN;
 ``DIR/dispatch-log.tsv`` (order, status, tool calls, bytes, note) is copied to
 ``<run>/dispatch-log.tsv``. Orders are mapped to (arm, problem) through ``<run>/calls.jsonl``.
-Status: ``ok`` (response present), ``refused`` (listed, no response file), ``not_run`` (order above
+Status: ``ok`` (response present), ``refused`` (listed, no response file), ``no-file`` (listed with
+``--no-file``: the reply never reached a file; counts as fail, outside the paired set), ``not_run`` (order above
 ``--last-order``). Refused calls are never retried. Nothing is deleted.
 """
 
@@ -18,7 +19,8 @@ import sys
 from pathlib import Path
 
 
-def archive(src: Path, run: Path, model: str, last_order: int, refused: set[int]) -> dict[str, int]:
+def archive(src: Path, run: Path, model: str, last_order: int, refused: set[int],
+            no_file: frozenset[int] = frozenset()) -> dict[str, int]:
     calls = [json.loads(ln) for ln in (run / "calls.jsonl").read_text("utf-8").splitlines()]
     log: dict[int, list[str]] = {}
     log_path = src / "dispatch-log.tsv"
@@ -36,6 +38,10 @@ def archive(src: Path, run: Path, model: str, last_order: int, refused: set[int]
             status = "refused"
             if resp.exists():
                 raise SystemExit(f"order {o:03d} is listed refused but has a response file")
+        elif o in no_file:
+            status = "no-file"
+            if resp.exists():
+                raise SystemExit(f"order {o:03d} is listed no-file but has a response file")
         elif resp.exists():
             status = "ok"
             dest = run / "responses" / c["arm"] / f"{c['problem']}.txt"
@@ -64,9 +70,12 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--model", required=True)
     ap.add_argument("--last-order", type=int, default=120)
     ap.add_argument("--refused", nargs="*", default=[])
+    ap.add_argument("--no-file", nargs="*", default=[], dest="no_file",
+                    help="orders whose reply never reached a file (status no-file)")
     a = ap.parse_args(argv)
     print(json.dumps(archive(a.src, a.run, a.model, a.last_order,
-                             {int(x) for x in a.refused}), sort_keys=True))
+                             {int(x) for x in a.refused},
+                             frozenset(int(x) for x in a.no_file)), sort_keys=True))
     return 0
 
 
