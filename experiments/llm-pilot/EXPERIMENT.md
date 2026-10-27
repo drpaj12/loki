@@ -1,6 +1,7 @@
 # Loki LLM pilot: Gate-Breaker replica with and without Loki hints
 
-Protocol written 2026-10-26, before any model call. This file is committed and pushed first; its
+Protocol written 2026-10-26, before any `standard` or `re` model call. The batch-1 `cot` calls
+(orders 1-10) ran before decision 12, and decisions 12 to 14 were added after calls had run. This file is committed and pushed first; its
 commit SHA is the protocol-provenance SHA for the results. A later change is a dated entry in
 "Amendments" at the end; the old text stays.
 
@@ -12,7 +13,9 @@ the fraction of attempts whose generated `TopModule` passes the reference testbe
 
 This is a pilot: 40 designs, one attempt per design per arm. It cannot support a claim about
 absolute recovery rates. It supports only: does arm B differ from arm A, in which quartiles, and
-are Loki's labels right. A difference under about 5 problems per arm is within single-draw noise.
+are Loki's labels right. A difference under about 5 problems per arm is within single-draw noise (basis: at a pass rate near
+0.8 and n = 40, one arm's count has a standard error of about 2.5 problems, so two standard errors
+are about 5).
 
 ## Frozen decisions (Peter 2026-10-26, "yes looks good to all recommendations")
 
@@ -131,9 +134,19 @@ claims about combinational internals name wires by signature or via helper nets.
 order given by the parity of the last hex digit of the problem's rank digest (even: A then B), then
 arm C. 120 calls.
 
-Blinding rules for each call: the model sees the system message and the user message and nothing
-else: no `ref.sv`, no `test.sv`, no problem id, no dataset path, no files, no web, no memory, no
-prior turns; one fresh subagent per call; no call sees another's output. The controller passes the
+Blinding rules for each call (corrected in fix round 3; the original text claimed "no files, no
+web, no memory, no prior turns", which was wrong). Facts: each call is a fresh subagent with no
+prior turns; no call sees another's output. It had file and web tools loaded (from
+`run/responses/blinding-probe.txt`: Agent, Artifact, Bash, Edit, Read, Skill, ToolSearch, Write,
+and through ToolSearch ArtifactComments, ArtifactData, EnterWorktree, ExitWorktree, LSP, Monitor,
+NotebookEdit, SendMessage, TaskStop, WebFetch, WebSearch; connector tools for Claude Docs, Gmail,
+Google Calendar, Google Drive and code-review-graph). The workspace CLAUDE.md and a memory index
+were in its context. The reference files (`ref.sv`, `test.sv`) sit on the same disk, so only the
+model's observed behaviour kept it from them. The transcript audit (`results/transcript-audit.csv`,
+208 rows: standard 88, re 120) shows that no call used any tool other than Read on its own call
+file and Write or Edit on its own reply file; no Bash, Grep, Glob or web tool was used. The intent
+was: the model sees the system message and the user message: no `ref.sv`, no `test.sv`, no problem
+id, no dataset path in the prompt. The controller passes the
 two files verbatim, records the model id the subagent reports, and writes the raw reply text to
 `run/responses/<arm>/<problem>.txt` and optional metadata to `<problem>.meta.json` (model id,
 tokens, seconds). A blinding probe (a prompt that is not a problem, asking which files the agent
@@ -169,7 +182,7 @@ reference as `TopModule`.
 Counts, not rates: FSM candidate present against the L0 ground truth `fsm` flag
 (`experiments/veval-l0/features.csv`; Prob151 absent), widest bus candidate against `buses_wide`,
 share of claims labelled datapath; uptake (exploratory regex: a clocked state register read by its
-own case or `?:` logic; a vector of the hinted width); right-for-the-wrong-reason counts.
+own case or `?:` logic; a vector of the hinted width); counts of passes with a wrong hint present (co-occurrence, no uptake test).
 Agreement is not a recovery measure.
 
 ## Reporting
@@ -220,7 +233,7 @@ part of this protocol unless Peter asks.
    characters, md5 ebc2f2899a6e55a4d8689c1ae3fac87e).
 
 13. (Peter 2026-10-26, "yes run them") Run all 120 calls with `standard`. A classifier refusal is
-   outcome `refused`: never retried, never reworded. Pass rate is reported two ways: refused =
+   outcome `api_refused` (API safeguard error) or `no_file` (declined or chat reply, no file): never retried, never reworded. Pass rate is reported two ways: refused =
    fail, and on the paired problem set where all three arms answered. Stop and report if refusals
    exceed about 10 percent (12 calls). The probe batch (orders 1-4, 7-10) is part of the run.
 
@@ -242,21 +255,22 @@ part of this protocol unless Peter asks.
 
 ## Amendment 2026-10-26 (Dispatch 4): `standard` partial result
 
-The `standard` run stopped by the decision 13 rule at order 88 of 120: 73 ok, 15 refused (009 027
-048 055 056 057 058 072 074 076 077 080 085 086 088; 009 is from the probe batch), 32 not run
-(089-120). Archived under `run/responses/<arm>/<problem>.txt` (+ `.meta.json`, model
+The `standard` run stopped by the decision 13 rule at order 88 of 120: 73 ok, 15 non-ok (8 api_refused: 009 027
+048 055 056 058 074 085; 7 no_file: 057 072 076 077 080 086 088; 009 is from the probe batch), 32 not run
+(089-120). The stop rule was crossed at order 085, the 13th non-ok call (limit 12); orders 086 and
+088 were launched in the same batch of 10 and also came back non-ok, which makes 15. Archived under `run/responses/<arm>/<problem>.txt` (+ `.meta.json`, model
 claude-sonnet-5-5); `results/standard/` holds status.csv, results.csv, summary.md and the dispatch
 log. Order 073 (Prob128_fsm_ps2, arm A) is ok but used 3 tool calls (the others 2); it is scored
 as answered. Tool-call counts for orders 1-18 were not logged. Pass rates (our strict scorer; the
 Gate-Breaker-equivalent scorer gives the same counts):
 
-| arm | ok | refused | not run | pass | refused = fail | answered only | paired set (19 problems) |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| A | 24 | 6 | 10 | 22 | 22/30 (0.73) | 22/24 (0.92) | 18/19 (0.95) |
-| B | 25 | 4 | 11 | 23 | 23/29 (0.79) | 23/25 (0.92) | 18/19 (0.95) |
-| C | 24 | 5 | 11 | 15 | 15/29 (0.52) | 15/24 (0.62) | 13/19 (0.68) |
+| arm | ok | api_refused | no_file | not run | pass | all calls made | answered only | paired set (19 problems) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A | 24 | 2 | 4 | 10 | 22 | 22/30 (0.73) | 22/24 (0.92) | 18/19 (0.95) |
+| B | 25 | 3 | 1 | 11 | 23 | 23/29 (0.79) | 23/25 (0.92) | 18/19 (0.95) |
+| C | 24 | 3 | 2 | 11 | 15 | 15/29 (0.52) | 15/24 (0.62) | 13/19 (0.68) |
 
-Refused = fail denominators count calls made (ok plus refused). Partial and uneven across arms (the
+The all-calls denominators count calls made (ok plus api_refused plus no_file), refusal = fail. Partial and uneven across arms (the
 run stopped midway through the size order), so no A-versus-B claim is made from it; the `re` run is
 the full comparison. `archive_run.py` does the archiving; `summarize.py --status` adds the table.
 
@@ -270,8 +284,9 @@ The analysis plan names no paired test, so exact two-sided McNemar on discordant
 
 | view | arm A | arm B | arm C |
 | --- | --- | --- | --- |
-| all calls, no-file = fail (strict) | 35/40 (0.88) | 35/40 (0.88) | 30/40 (0.75) |
-| all calls, no-file = fail (Gate-Breaker-equivalent) | 33/40 (0.82) | 33/40 (0.82) | 29/40 (0.72) |
+| all 40 problems; api_refused, no_file and not_run = fail (strict) | 35/40 (0.88) | 35/40 (0.88) | 30/40 (0.75) |
+| all 40 problems; api_refused, no_file and not_run = fail (Gate-Breaker-equivalent) | 33/40 (0.82) | 33/40 (0.82) | 29/40 (0.72) |
+| of which not_run (counted as fail above) | 0 | 0 | 0 |
 | answered only (strict) | 35/40 (0.88) | 35/38 (0.92) | 30/40 (0.75) |
 | paired set, 38 problems (strict) | 33/38 (0.87) | 35/38 (0.92) | 29/38 (0.76) |
 | paired set, 38 problems (Gate-Breaker-equivalent) | 31/38 (0.82) | 33/38 (0.87) | 28/38 (0.74) |
@@ -297,13 +312,13 @@ The analysis plan names no paired test, so exact two-sided McNemar on discordant
 | A vs C | 28 | 5 | 1 | 4 | 0.2188 |
 | B vs C | 28 | 7 | 1 | 2 | 0.0703 |
 
-### Refusal and no-file rate
+### API-refusal and no-file rate
 
-| run | arm | calls made | ok | refused | no-file | refused + no-file |
+| run | arm | calls made | ok | api_refused | no_file | api_refused + no_file |
 | --- | --- | --- | --- | --- | --- | --- |
-| standard | A | 30 | 24 | 6 | 0 | 6/30 (0.20) |
-| standard | B | 29 | 25 | 4 | 0 | 4/29 (0.14) |
-| standard | C | 29 | 24 | 5 | 0 | 5/29 (0.17) |
+| standard | A | 30 | 24 | 2 | 4 | 6/30 (0.20) |
+| standard | B | 29 | 25 | 3 | 1 | 4/29 (0.14) |
+| standard | C | 29 | 24 | 3 | 2 | 5/29 (0.17) |
 | re | A | 40 | 40 | 0 | 0 | 0/40 (0.00) |
 | re | B | 40 | 38 | 0 | 2 | 2/40 (0.05) |
 | re | C | 40 | 40 | 0 | 0 | 0/40 (0.00) |
@@ -319,22 +334,40 @@ The analysis plan names no paired test, so exact two-sided McNemar on discordant
 Reading (data only): in the paired set B passes 2 problems that A fails and A passes none that B
 fails (p = 0.50); A passes 5 that C fails and C passes 1 that A fails (p = 0.22); B passes 7 that C
 fails and C passes 1 that B fails (p = 0.07). No comparison reaches p < 0.05 at n = 38. The
-all-calls B rate equals A because the two B no-file calls count as fail; both of those problems
+all-calls B rate equals A because the two B no_file calls count as fail; both of those problems
 were passed in arm A. Per-quartile cells have 8 to 10 problems each.
 
-#### Deviations from the frozen protocol
+#### Threats to validity: blinding and tools
+
+Each call was a fresh subagent with no prior turns, but it was not tool-less. It had file and web
+tools loaded (`run/responses/blinding-probe.txt`: Agent, Artifact, Bash, Edit, Read, Skill, ToolSearch,
+Write, and through ToolSearch WebFetch, WebSearch and others), and the workspace CLAUDE.md and a memory
+index were in its context. The reference files (`ref.sv`, `test.sv`) sit on the same disk, and nothing
+but observed behaviour kept the model from them. The controller transcript audit
+(`results/transcript-audit.csv`, 208 rows: standard 88, re 120) shows that no call used any tool
+other than Read on its own `call-NNN.txt` and Write or Edit on its own `resp-NNN.txt`: no Bash, Grep,
+Glob or web tool. This is evidence from behaviour, not a technical block. The `re` system prompt
+mentions Loki hints in every arm, including arms A and C that carry none; this is a cue, the same in
+all arms. The tool-use exceptions (standard 073, re 116) are listed above and kept scored.
+
+### Deviations from the frozen protocol
 
 - Decision 11: subagents keep the harness system prompt (blinding deviation, accepted).
 - Decision 12: the batch-1 `cot` prompt was refused by the API safeguard and replaced by
-  `standard`; the `standard` run stopped at 88 of 120 by the decision 13 rule (15 refused).
-- Decision 13: refusal = outcome `refused`, never retried or reworded; two views reported.
+  `standard`; the `standard` run stopped at 88 of 120 by the decision 13 rule (15 non-ok: 8 api_refused, 7 no_file).
+- Decision 13: an API refusal = outcome `api_refused`, never retried or reworded; two views reported.
 - Decision 14: `re` has its own system prompt (md5 c95998c379b2d7e520c508b25a5a4c92, 495 bytes);
   same 2-shot examples, user content and answer format. Exact Gate-Breaker fidelity is dropped.
   All 120 calls were run fresh under `re`.
 - Correction before any `re` call: the system prompt said `[END]`; changed to `[DONE]` to match
   the user suffix and collect.py (commit d5bb4f7f). The call wrapper is unchanged.
-- Orders 074 and 077: `no-file` (above). Order 116: 3 tool calls (above). Order 073 (`standard`):
+- Orders 074 and 077: `no_file` (above). Order 116: 3 tool calls (above). Order 073 (`standard`):
   3 tool calls, scored.
-- `archive_run.py --no-file` and a `no-file` column in the summarize.py status table were added for
+- Tool-use exceptions kept scored (fix round 3, H2; tool sequences from `results/transcript-audit.csv`): `standard` 073 (arm A, Prob128_fsm_ps2): Read call-073.txt, Write resp-073.txt, Edit resp-073.txt (the model corrected two state bits in its own reply file); `re` 116 (arm B, Prob141_count_clock): Read call-116.txt twice, Write resp-116.txt. No-file and refused calls show 0 or 1 tool use (Read only). In both exceptions the model touched only its own call and reply files; both are scored.
+- Rescoring (fix round 3, M1): the scorer now also rejects, as outcome `cheat`, a sample whose raw text contains `$finish`, `$fatal` or the literal `Mismatches`. Both runs were rescored (118 `re` and 73 `standard` records): no outcome changed, no sample was flagged, and `results.csv` is identical.
+- Non-ok statuses (fix round 3, M2) are split: `api_refused` is an API safeguard error (no model reply); `no_file` is a subagent that declined or replied in chat without writing the file. `standard` api_refused: 009 027 048 055 056 058 074 085; `standard` no_file: 057 072 076 077 080 086 088. `re` has no api_refused and two no_file (074, 077). By arm, `standard`: A 2 api_refused + 4 no_file, B 3 + 1, C 3 + 2.
+- Decision 14 note (L9): the `re` system prompt says "Some prompts also include structural hints from Loki" in every arm, including A and C that carry none; a cue, the same in all arms.
+- Hash equality of the `re` and `standard` user messages is checked by `check_hash_equality.py` (tracked `prompt_sizes.csv` against `prompt_sizes_re.csv`): 120 of 120 equal, 0 differences. `build_prompts.py` now writes `prompt_sizes_re.csv` for `re` and also runs the leak gate on the system message (0 hits).
+- `archive_run.py --no-file` and a `no_file` column in the summarize.py status table were added for
   this run (commits after d5bb4f7f); the `standard` summary.md predates the column.
 - Subagent calls are not sampled with a controlled temperature; K = 1.

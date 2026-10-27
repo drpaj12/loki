@@ -4,9 +4,11 @@ Usage: ``python -I archive_run.py --src DIR --run RUN --model ID [--last-order N
 [--refused 009 027 ...]``. ``DIR/resp-NNN.txt`` is the reply of call order NNN;
 ``DIR/dispatch-log.tsv`` (order, status, tool calls, bytes, note) is copied to
 ``<run>/dispatch-log.tsv``. Orders are mapped to (arm, problem) through ``<run>/calls.jsonl``.
-Status: ``ok`` (response present), ``refused`` (listed, no response file), ``no-file`` (listed with
-``--no-file``: the reply never reached a file; counts as fail, outside the
-paired set), ``not_run`` (order above ``--last-order``). Refused calls are never retried.
+Status: ``ok`` (response non-empty), ``no-output`` (response file present but empty; counts as
+fail), ``api_refused`` (listed with ``--refused``: the API safeguard returned an error, no response
+file), ``no_file`` (listed with ``--no-file``: the subagent declined or replied in chat without
+writing the file; counts as fail), ``not_run`` (order above ``--last-order``). An order listed
+under both ``--refused`` and ``--no-file`` is an error. Refused calls are never retried.
 Nothing is deleted.
 """
 
@@ -22,6 +24,9 @@ from pathlib import Path
 
 def archive(src: Path, run: Path, model: str, last_order: int, refused: set[int],
             no_file: frozenset[int] = frozenset()) -> dict[str, int]:
+    both = sorted(refused & no_file)
+    if both:
+        raise SystemExit(f"orders listed as both refused and no-file: {both}")
     calls = [json.loads(ln) for ln in (run / "calls.jsonl").read_text("utf-8").splitlines()]
     log: dict[int, list[str]] = {}
     log_path = src / "dispatch-log.tsv"
@@ -29,22 +34,22 @@ def archive(src: Path, run: Path, model: str, last_order: int, refused: set[int]
         cells = ln.split("\t")
         log[int(cells[0])] = cells
     shutil.copyfile(log_path, run / "dispatch-log.tsv")
-    rows, counts = [], {"ok": 0, "refused": 0, "no-file": 0, "not_run": 0}
+    rows, counts = [], {"ok": 0, "no-output": 0, "api_refused": 0, "no_file": 0, "not_run": 0}
     for c in calls:
         o = c["order"]
         resp = src / f"resp-{o:03d}.txt"
         if o > last_order:
             status = "not_run"
         elif o in refused:
-            status = "refused"
+            status = "api_refused"
             if resp.exists():
                 raise SystemExit(f"order {o:03d} is listed refused but has a response file")
         elif o in no_file:
-            status = "no-file"
+            status = "no_file"
             if resp.exists():
                 raise SystemExit(f"order {o:03d} is listed no-file but has a response file")
         elif resp.exists():
-            status = "ok"
+            status = "ok" if resp.stat().st_size > 0 else "no-output"
             dest = run / "responses" / c["arm"] / f"{c['problem']}.txt"
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(resp, dest)

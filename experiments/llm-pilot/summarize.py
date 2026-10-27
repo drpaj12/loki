@@ -143,16 +143,16 @@ def label_section(res: dict[tuple[str, str], dict[str, Any]], records: Path, hin
         f"{count(lambda x: x['fsm_up'])} of {count(lambda x: x['fsm_up'] is not None)}; bus hint "
         f"with a vector of the hinted width {count(lambda x: x['bus_up'])} of "
         f"{count(lambda x: x['bus_up'] is not None)}",
-        f"- right for the wrong reason: B passes with a wrong FSM or bus hint "
+        f"- pass with a wrong hint present (co-occurrence, no uptake test): "
         f"{sum(1 for x in wrong if x['pass'])}; B failures with right hints "
         f"{sum(1 for x in right if not x['pass'])}",
     ]
 
 
 def status_section(status: Path, res: dict[tuple[str, str], dict[str, Any]]) -> list[str]:
-    """Refusal-aware pass rates from ``status.csv`` (ok / refused / no-file / not_run per call).
+    """Refusal-aware pass rates from ``status.csv`` (ok / api_refused / no_file / not_run per call).
 
-    View 1: refused and no-file count as fails (denominator = ok + refused + no-file).
+    View 1: api_refused, no_file and no-output count as fails (denominator = calls made).
     View 2: the paired set, problems answered (ok) in all three arms.
     """
     with status.open(encoding="utf-8", newline="") as fh:
@@ -163,15 +163,17 @@ def status_section(status: Path, res: dict[tuple[str, str], dict[str, Any]]) -> 
     def ok(a: str, p: str) -> bool:
         return st[(a, p)]["status"] == "ok"
     paired_set = [p for p in probs if all(ok(a, p) for a in arms)]
-    out = ["| arm | ok | refused | no-file | not run | pass | refused = fail | answered only | "
-           "paired set |", "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+    out = ["| arm | ok | api_refused | no_file | not run | pass | all calls made (refused, "
+           "no_file = fail) | answered only | paired set |",
+           "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for a in arms:
         n = {k: sum(1 for r in rows if r["arm"] == a and r["status"] == k)
-             for k in ("ok", "refused", "no-file", "not_run")}
+             for k in ("ok", "no-output", "api_refused", "no_file", "not_run")}
         passed = sum(bool(res[(a, p)]["pass"]) for p in probs if ok(a, p) and (a, p) in res)
         pp = sum(bool(res[(a, p)]["pass"]) for p in paired_set)
-        out.append(f"| {a} | {n['ok']} | {n['refused']} | {n['no-file']} | {n['not_run']} | "
-                   f"{passed} | {rate(passed, n['ok'] + n['refused'] + n['no-file'])} | "
+        made = n["ok"] + n["no-output"] + n["api_refused"] + n["no_file"]
+        out.append(f"| {a} | {n['ok']} | {n['api_refused']} | {n['no_file']} | {n['not_run']} | "
+                   f"{passed} | {rate(passed, made)} | "
                    f"{rate(passed, n['ok'])} | "
                    f"{rate(pp, len(paired_set))} |")
     multi = [f"{r['order']} {r['arm']} {r['problem']} ({r['tool_calls']} tool calls)"
@@ -187,15 +189,16 @@ def summarize(records: Path, hints: Path, status: Path | None = None) -> str:
     quart = {p: r["quartile"] for p, r in sel.items()}
     gt = read_csv(common.REPO / "experiments" / "veval-l0" / "features.csv", "design")
     arms = [a for a in common.ARMS if any(k[0] == a for k in res)]
-    out = ["# Pilot tables", "", "## Pass rate by quartile and arm", "",
+    out = ["# Pilot tables", "", "## Pass rate by quartile and arm (answered calls only)", "",
            *pass_table(res, quart, arms),
-           "", "## Pass rate, Gate-Breaker-equivalent scorer", "",
+           "", "## Pass rate, Gate-Breaker-equivalent scorer (answered calls only)", "",
            *pass_table(res, quart, arms, "gb_pass")]
     if "A" in arms and "B" in arms:
         out += ["", "## Paired A/B", "", *paired(res)]
     out += ["", "## Outcome codes", "", *outcome_table(res, arms)]
     if status is not None and status.exists():
-        out += ["", "## Pass rate with refusals and paired set", "", *status_section(status, res)]
+        out += ["", "## Pass rate, all calls made (refusal = fail) and paired set", "",
+                *status_section(status, res)]
     out += ["", "## Loki-label agreement (arm B, counts)", "",
             *label_section(res, records, hints, gt, sel)]
     return "\n".join(out) + "\n"

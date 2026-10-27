@@ -60,7 +60,10 @@ def main(argv: list[str]) -> int:
             "| view | arm A | arm B | arm C |", "| --- | --- | --- | --- |"]
     for col, tag in (("pass", "strict"), ("gb_pass", "Gate-Breaker-equivalent")):
         row = [frac(sum(passed(res, x, p, col) for p in probs), len(probs)) for x in ARMS]
-        out.append(f"| all calls, no-file = fail ({tag}) | " + " | ".join(row) + " |")
+        out.append(f"| all {len(probs)} problems; api_refused, no_file and not_run = fail "
+                   f"({tag}) | " + " | ".join(row) + " |")
+    nr = [sum(1 for p in probs if st[(x, p)] == "not_run") for x in ARMS]
+    out.append("| of which not_run (counted as fail above) | " + " | ".join(map(str, nr)) + " |")
     ans = [[p for p in probs if st[(x, p)] == "ok"] for x in ARMS]
     out.append("| answered only (strict) | " + " | ".join(
         frac(sum(passed(res, x, p) for p in ps), len(ps))
@@ -88,16 +91,17 @@ def main(argv: list[str]) -> int:
         out.append(f"| {x} vs {y} | {both} | {xo} | {yo} | {len(paired) - both - xo - yo} | "
                    f"{mcnemar(xo, yo):.4f} |")
     sst, sres = load(a.standard)
-    out += ["", "### Refusal and no-file rate", "",
-            "| run | arm | calls made | ok | refused | no-file | refused + no-file |",
+    out += ["", "### API-refusal and no-file rate", "",
+            "| run | arm | calls made | ok | api_refused | no_file | api_refused + no_file |",
             "| --- | --- | --- | --- | --- | --- | --- |"]
     for name, s in (("standard", sst), ("re", st)):
         for x in ARMS:
-            c = {k: sum(1 for p in probs if s[(x, p)] == k) for k in ("ok", "refused", "no-file")}
+            kinds = ("ok", "api_refused", "no_file")
+            c = {k: sum(1 for p in probs if s[(x, p)] == k) for k in kinds}
             made = sum(c.values())
-            bad = c["refused"] + c["no-file"]
-            out.append(f"| {name} | {x} | {made} | {c['ok']} | {c['refused']} | {c['no-file']} | "
-                       f"{frac(bad, made)} |")
+            bad = c["api_refused"] + c["no_file"]
+            out.append(f"| {name} | {x} | {made} | {c['ok']} | {c['api_refused']} | "
+                       f"{c['no_file']} | {frac(bad, made)} |")
     out += ["", "### `standard` against `re`, problems answered (ok) in both runs "
             "(exploratory; the prompts differ)", "",
             "| arm | problems | pass in standard | pass in re | both | standard only | re only |",

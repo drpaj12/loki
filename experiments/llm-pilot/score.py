@@ -4,7 +4,8 @@ Usage: ``python -I score.py run --records DIR [--arm A ...]`` or ``python -I sco
 Compile: ``iverilog -Wall -Winfloop -Wno-timescale -g2012 -s tb -o <bin> sample.sv test.sv ref.sv``;
 run: ``vvp <bin>`` under a 30 s timeout. The test and reference files are read from VE in place
 (read-only); the binary and logs are written in the record directory.
-Outcomes: no-output, cheat, syntax, compile, compile-timeout, runtime, timeout, no-result, pass.
+Outcomes: no-output, cheat (also a raw `$finish`, `$fatal` or `Mismatches`), syntax, compile,
+compile-timeout, runtime, timeout, no-result, pass.
 ``pass`` is our strict pass (exactly one anchored mismatch line, zero mismatches, no hidden-module
 use). ``gb_pass`` is the Gate-Breaker-equivalent pass (``gb_code`` is its one-character class),
 copied from ``scripts/sv-iv-analyze`` in the Gate-Breaker VerilogEval clone (see ``gb_classify``).
@@ -32,6 +33,9 @@ COMPILE_TIMEOUT_S = 60
 _MISMATCH = re.compile(r"^Mismatches: (\d+) in (\d+) samples$", re.M)
 # Hidden harness modules a sample must not define or instantiate (comments and strings removed).
 _CHEAT = re.compile(r"\bRefModule\b|\bstimulus_gen\b|\btb\b")
+# Raw-text tokens a sample must never contain (comments and strings included): a sample that ends
+# the simulation or prints its own result line can fake or hide the testbench's result.
+_FORBIDDEN_RAW = re.compile(r"\$finish|\$fatal|Mismatches")
 _COMMENTS = re.compile(r"//[^\n]*|/\*.*?\*/|\"(?:\\.|[^\"\\\n])*\"", re.S)
 OUTCOMES = ("no-output", "cheat", "syntax", "compile", "compile-timeout", "runtime", "timeout",
             "no-result", "pass")
@@ -51,8 +55,9 @@ _GB_MISMATCH = re.compile(r"^Mismatches: (\d+) in \d+ samples$")  # sv-iv-analyz
 
 
 def is_cheat(code: str) -> bool:
-    """True when the sample names a hidden harness module (RefModule, stimulus_gen, tb)."""
-    return bool(_CHEAT.search(_COMMENTS.sub(" ", code)))
+    """True when the sample names a hidden harness module (RefModule, stimulus_gen, tb), or its
+    raw text holds ``$finish``, ``$fatal`` or the literal ``Mismatches`` (fix 3, M1)."""
+    return bool(_FORBIDDEN_RAW.search(code) or _CHEAT.search(_COMMENTS.sub(" ", code)))
 
 
 def gb_classify(log: str) -> str:

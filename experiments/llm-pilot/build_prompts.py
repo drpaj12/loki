@@ -4,7 +4,8 @@ Usage: ``python -I build_prompts.py``. Run ``make_hints.py`` first (arm B needs 
 Prompt assembly mirrors ``scripts/sv-generate`` (task netlist-to-rtl, 2-shot, no rules, no
 explain); see EXPERIMENT.md. ``LLM_PILOT_VARIANT=re`` builds variant ``re`` (decision 14) into
 ``run-re/``. Writes ``run/prompts/<arm>/<problem>/{system.txt,user.txt}``,
-``run/calls.jsonl`` and ``prompt_sizes.csv``.
+``run/calls.jsonl`` and ``prompt_sizes.csv`` (``prompt_sizes_re.csv`` for variant ``re``). The
+leak gate runs on the system message and on every user message.
 """
 
 from __future__ import annotations
@@ -72,6 +73,13 @@ def call_order(rows: list[dict[str, str]]) -> list[tuple[dict[str, str], str]]:
     return out
 
 
+def sizes_file() -> Path:
+    """Tracked size/hash table of the selected variant (the `standard` file is never overwritten
+    by a `re` build)."""
+    suffix = "" if common.VARIANT == "standard" else f"_{common.VARIANT}"
+    return common.HERE / f"prompt_sizes{suffix}.csv"
+
+
 def write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8", newline="\n")
@@ -99,6 +107,9 @@ def main() -> int:
     check_pin(prefix)
     root = common.run_dir()
     system = common.system_msg()
+    bad_sys = leak_hits(system)
+    if bad_sys:
+        raise SystemExit(f"leak gate: system message: {bad_sys}")
     if common.VARIANT == "re":
         md5 = hashlib.md5(system.encode("utf-8"), usedforsecurity=False).hexdigest()
         if md5 != common.RE_SYSTEM_MD5:
@@ -127,7 +138,7 @@ def main() -> int:
             "est_tokens": round(nbytes / BYTES_PER_TOKEN)})
         sizes.append((arm, p, nbytes))
     write(root / "calls.jsonl", "".join(json.dumps(c, sort_keys=True) + "\n" for c in calls))
-    with (common.HERE / "prompt_sizes.csv").open("w", encoding="utf-8", newline="") as fh:
+    with sizes_file().open("w", encoding="utf-8", newline="") as fh:
         w = csv.writer(fh, lineterminator="\n")
         w.writerow(["order", "problem", "quartile", "arm", "user_bytes", "est_tokens",
                     "user_sha256"])
