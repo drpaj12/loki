@@ -11,34 +11,48 @@ MIN_KIND = 10
 MIN_PASS = 5
 
 
+NULLS = ("stage0", "persist")
+
+
 def rule1_2() -> list[list[object]]:
+    """Rules 1 and 2 under the Stage-0 null and, exploratory, the persistence null (Amendment A).
+    Same thresholds; for the persistence null ``aux2`` of an R2 row is the 95% interval."""
     rows = read_csv(HERE / "l15_kind_pass.csv")
-    by: defaultdict[tuple[str, str, str, str], list[tuple[str, int, float]]] = defaultdict(list)
-    for r in rows:
-        by[(r["set"], r["level"], r["axis"], r["kind"])].append(
-            (r["pass"], int(r["first_losses"]), float(r["null_expected"])))
     out: list[list[object]] = []
-    for (name, level, axis, kind), items in sorted(by.items()):
-        total = sum(n for _, n, _ in items)
-        ntotal = sum(x for _, _, x in items)
-        if total < MIN_KIND:
-            out.append(["R1", name, level, axis, kind, "", total, "", "", "too few"])
-        else:
-            top = max(items, key=lambda t: (t[1], t[0]))
-            s = top[1] / total
-            s0 = top[2] / ntotal if ntotal else 0.0
-            res = "spread" if s < 0.5 else ("dominant" if s - s0 >= 0.2 else "dominant-null")
-            out.append(["R1", name, level, axis, kind, top[0], total, f"{s:.3f}/{s0:.3f}", "", res])
-        for p, n, x in items:
-            if n < MIN_PASS:
-                res = "few"
-            elif n >= 2 * x:
-                res = "above chance"
-            elif n <= 0.5 * x:
-                res = "below chance"
+    for nullname in NULLS:
+        by: defaultdict[tuple[str, str, str, str], list[tuple[str, int, float, str]]]
+        by = defaultdict(list)
+        for r in rows:
+            if nullname == "stage0":
+                x, ival = float(r["null_expected"]), ""
             else:
-                res = "at chance"
-            out.append(["R2", name, level, axis, kind, p, n, f"{x:.3f}", "", res])
+                x = float(r["pnull_mean"])
+                ival = f"{r['pnull_lo']}-{r['pnull_hi']}"
+            by[(r["set"], r["level"], r["axis"], r["kind"])].append(
+                (r["pass"], int(r["first_losses"]), x, ival))
+        for (name, level, axis, kind), items in sorted(by.items()):
+            total = sum(n for _, n, _, _ in items)
+            ntotal = sum(x for _, _, x, _ in items)
+            if total < MIN_KIND:
+                out.append(["R1", name, level, axis, kind, "", total, "", "", "too few", nullname])
+            else:
+                top = max(items, key=lambda t: (t[1], t[0]))
+                sh = top[1] / total
+                s0 = top[2] / ntotal if ntotal else 0.0
+                res = "spread" if sh < 0.5 else (
+                    "dominant" if sh - s0 >= 0.2 else "dominant-null")
+                out.append(["R1", name, level, axis, kind, top[0], total, f"{sh:.3f}/{s0:.3f}",
+                            "", res, nullname])
+            for p, n, x, ival in items:
+                if n < MIN_PASS:
+                    res = "few"
+                elif n >= 2 * x:
+                    res = "above chance"
+                elif n <= 0.5 * x:
+                    res = "below chance"
+                else:
+                    res = "at chance"
+                out.append(["R2", name, level, axis, kind, p, n, f"{x:.3f}", ival, res, nullname])
     return out
 
 
@@ -50,9 +64,9 @@ def rule3() -> list[list[object]]:
         acc[(r["set"], r["level"])][0] += m
         acc[(r["set"], r["level"])][1] += e
         out.append(["R3", r["set"], r["level"], "pass", "", r["pass"], m, e, "",
-                    _share(m, e)])
+                    _share(m, e), ""])
     for (name, level), (m, e) in sorted(acc.items()):
-        out.append(["R3", name, level, "all", "", "", m, e, "", _share(m, e)])
+        out.append(["R3", name, level, "all", "", "", m, e, "", _share(m, e), ""])
     return out
 
 
@@ -99,20 +113,20 @@ def rule4() -> list[list[object]]:
             continue
         w = pooled.get((name, arm, kind, "S8"))
         if w is None or v[3] < MIN_KIND or w[3] < MIN_KIND:
-            out.append(["R4", name, "", arm, kind, "S7>S8", v[3], "", "", "too few"])
+            out.append(["R4", name, "", arm, kind, "S7>S8", v[3], "", "", "too few", ""])
             continue
         r7, r8 = v[2] / v[3], w[2] / w[3]
         d = r8 - r7
         res = "fooled by abc" if d <= -0.2 else ("helped" if d >= 0.2 else "not fooled")
-        out.append(["R4", name, "", arm, kind, "S7>S8", v[3], f"{r7:.3f}", f"{r8:.3f}", res])
+        out.append(["R4", name, "", arm, kind, "S7>S8", v[3], f"{r7:.3f}", f"{r8:.3f}", res, ""])
     return out
 
 
 def main() -> int:
     rows = rule1_2() + rule3() + rule4()
     path = HERE / "r6_status.csv"
-    write_csv(path, ["rule", "set", "level", "axis", "kind", "pass", "n", "aux", "aux2", "outcome"],
-              rows)
+    write_csv(path, ["rule", "set", "level", "axis", "kind", "pass", "n", "aux", "aux2", "outcome",
+                     "null"], rows)
     return 0
 
 

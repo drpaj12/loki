@@ -20,7 +20,11 @@ _CTX = re.compile(r"^ctx=(\d+)$")
 
 @dataclass(frozen=True)
 class ObjView:
-    """A logic object: its type, reduced units, units named by a same-pass join, capped flag."""
+    """A logic object: its type, reduced units, units named by a same-pass join, capped flag.
+
+    ``parents`` holds the reduced unit set of each frontier record of the snapshot's own pass
+    (the records the pass derived this object from; the object itself when the pass did not
+    touch it), for the descent test of an inherited blend."""
 
     name: str
     type: str
@@ -29,6 +33,7 @@ class ObjView:
     capped: bool
     instance_join: frozenset[UnitKey] = frozenset()
     anchors: frozenset[UnitKey] = frozenset()
+    parents: tuple[frozenset[UnitKey], ...] = ()
 
 
 def construct_key(nm: Any, number: int) -> UnitKey:
@@ -139,6 +144,28 @@ def run_matches(nm: Any, step: str, pass_name: str, args: str) -> bool:
     return bool(name == pass_name and rargs.strip() == args.strip())
 
 
+def pass_frontier(
+    nm: Any, records: Mapping[int, Any], start: int, pass_name: str, args: str
+) -> list[int]:
+    """The first records, walking back from ``start``, that are not derived records of the pass
+    run (``pass_name`` with ``args``). A start record that is not such a record is its own
+    frontier. Context parents of a record are not followed (as in ``leaf_constructs``)."""
+    seen: set[int] = set()
+    out: list[int] = []
+    stack = [start]
+    while stack:
+        n = stack.pop()
+        rec = records.get(n)
+        if rec is None or n in seen:
+            continue
+        seen.add(n)
+        if rec.kind == "D" and run_matches(nm, rec.step, pass_name, args):
+            stack.extend(_walk_parents(rec))
+        else:
+            out.append(n)
+    return sorted(out)
+
+
 def _join_units(nm: Any, rec: Any, level: str) -> set[UnitKey]:
     return {construct_key(nm, c) for c in rec.constructs if c}
 
@@ -147,10 +174,22 @@ def view_map(
     nm: Any, types: Mapping[str, str], level: str, pass_name: str, args: str
 ) -> list[ObjView]:
     """The logic objects of a v2 map. ``types`` maps a hash name to its Odin III cell type;
-    ``level`` is ``stmt`` or ``branch``. Wires, ports and constants are not objects."""
+    ``level`` is ``stmt`` or ``branch``. Wires, ports and constants are not objects. Only
+    ``obj.records[0]`` is read: Odin III writes one record per object (checked on the 214,157
+    objects of all 1,768 round-6 maps: none has a second record)."""
     records = {r.number: r for r in nm.records}
     unit_of = anchor if level == "stmt" else branch_unit
     out: list[ObjView] = []
+    memo: dict[int, frozenset[UnitKey]] = {}
+
+    def reduced(rec_no: int) -> frozenset[UnitKey]:
+        if rec_no not in memo:
+            ls = leaf_constructs(nm, records, rec_no)
+            memo[rec_no] = frozenset(
+                construct_key(nm, c) for c in reduce_units(nm, {unit_of(nm, c) for c in ls if c})
+                if c)
+        return memo[rec_no]
+
     for obj in nm.objects:
         typ = types.get(obj.name)
         if obj.kind != "node" or typ is None or typ in SKIP_TYPES or not obj.records:
@@ -171,5 +210,7 @@ def view_map(
             capped = capped or "lossy=cap" in rec.flags
         out.append(ObjView(obj.name, typ, frozenset(construct_key(nm, u) for u in units if u),
                            frozenset(joined), capped, frozenset(inst),
-                           frozenset(construct_key(nm, u) for u in full if u)))
+                           frozenset(construct_key(nm, u) for u in full if u),
+                           tuple(reduced(f) for f in pass_frontier(
+                               nm, records, obj.records[0], pass_name, args))))
     return out

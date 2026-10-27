@@ -13,6 +13,7 @@ HERE = Path(__file__).resolve().parent
 WS = Path(os.environ.get("ODIN3_WS", str(HERE.parents[3])))
 WORK = WS / "work"
 DATA = Path(os.environ.get("LOKI_R6_DATA", str(WORK / "loki-exp6-data")))
+AUDIT = Path(os.environ.get("LOKI_R6_AUDIT", str(DATA / "audit")))
 C826 = Path(os.environ.get("ODIN3_ROOT", str(WORK / "odin3-c826")))
 MICRO = Path(os.environ.get("LOKI_MICRO", str(WORK / "loki-rename-exp" / "dataset-rebuild")))
 VEVAL = Path(os.environ.get("LOKI_VEVAL", str(WORK / "loki-veval-exp" / "dataset")))

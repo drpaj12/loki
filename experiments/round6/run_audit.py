@@ -1,18 +1,20 @@
 """Stage 2: audit every snapshot directory and write the L15 tables (CSV).
 
-``python run_audit.py`` reads ``<DATA>/snap/<set>/<design>`` (ok rows of ``status.csv``), writes
-``<DATA>/audit/<set>/<design>.<level>.json`` and, here in the checkout, ``l15_*.csv``."""
+``python run_audit.py [--force]`` reads ``<DATA>/snap/<set>/<design>`` (ok rows of
+``status.csv``), writes ``<AUDIT>/<set>/<design>.<level>.json`` (``$LOKI_R6_AUDIT``, default
+``<DATA>/audit``) and, here in the checkout, ``l15_*.csv``."""
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from collections import Counter, defaultdict
 from typing import Any
 
-from r6lib import DATA, HERE, SETS, read_csv, write_csv
+from r6lib import AUDIT, DATA, HERE, SETS, read_csv, write_csv
 
-from loki.audit.loss import REASONS
+from loki.audit.loss import PERSIST_DRAWS, REASONS
 from loki.audit.report import audit_design
 from loki.audit.snap import PASSES
 from loki.schemas import dump_json
@@ -22,23 +24,35 @@ HW = ("fsm", "register", "arith", "mux", "compare", "logic")
 PASS_LABEL = [f"S{k}_{n}{'_full' if a == '-full' else ''}" for k, (n, a) in enumerate(PASSES, 1)]
 
 
-def audit_all() -> dict[tuple[str, str], list[dict[str, Any]]]:
-    """(set, level) to the audit objects of the designs whose snapshots are ok."""
+def source_hash() -> str:
+    """Hash of the audit sources: a cached per-design JSON is valid only for this hash."""
+    h = hashlib.sha256()
+    for f in sorted((HERE.parents[1] / "loki" / "audit").glob("*.py")):
+        h.update(f.name.encode() + b"\0" + f.read_bytes())
+    return h.hexdigest()[:16]
+
+
+def audit_all(force: bool = False) -> dict[tuple[str, str], list[dict[str, Any]]]:
+    """(set, level) to the audit objects of the designs whose snapshots are ok. A cached JSON is
+    reused only when it carries the current ``source_hash``; ``force`` recomputes all."""
+    stamp = source_hash()
     out: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for name in SETS:
         root = DATA / "snap" / name
         status = read_csv(root / "status.csv")
-        (DATA / "audit" / name).mkdir(parents=True, exist_ok=True)
+        (AUDIT / name).mkdir(parents=True, exist_ok=True)
         for level in LEVELS:
             res: list[dict[str, Any]] = []
             for row in status:
                 if row["status"] != "ok":
                     continue
-                path = DATA / "audit" / name / f"{row['design']}.{level}.json"
-                if not path.is_file():
-                    obj = audit_design(root / row["design"], row["design"], level)
-                    path.write_text(dump_json(obj), encoding="utf-8")
-                res.append(json.loads(path.read_text(encoding="utf-8")))
+                path = AUDIT / name / f"{row['design']}.{level}.json"
+                cached = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+                if force or cached.get("source_hash") != stamp:
+                    cached = audit_design(root / row["design"], row["design"], level)
+                    cached["source_hash"] = stamp
+                    path.write_text(dump_json(cached), encoding="utf-8")
+                res.append(cached)
             out[(name, level)] = res
     return out
 
@@ -55,25 +69,40 @@ def _units(designs: list[dict[str, Any]]) -> list[tuple[str, dict[str, Any]]]:
     return [(d["design"], u) for d in designs for u in d["units"]]
 
 
+def _pct(vals: list[int], q: float) -> float:
+    """Nearest-rank percentile of a list of per-draw totals."""
+    xs = sorted(vals)
+    return float(xs[min(len(xs) - 1, max(0, round(q * len(xs) + 0.5) - 1))])
+
+
 def table_kind_pass(results: dict[tuple[str, str], list[dict[str, Any]]]) -> list[list[Any]]:
-    """set, level, axis, kind, pass index, at-risk units, real first losses, null expected."""
+    """set, level, axis, kind, pass, at-risk units, real first losses, Stage-0 null expected, and
+    the persistence null (Amendment A): mean and 2.5 / 97.5 percentile of the per-draw totals."""
     rows: list[list[Any]] = []
     for (name, level), designs in sorted(results.items()):
         real: Counter[tuple[str, str, int]] = Counter()
         risk: Counter[tuple[str, str, int]] = Counter()
         null: defaultdict[tuple[str, str, int], float] = defaultdict(float)
+        draws: defaultdict[tuple[str, str, int], list[int]] = defaultdict(
+            lambda: [0] * PERSIST_DRAWS)
         for _, u in _units(designs):
             hw2 = "hier" if u["kind"] == "INSTANCE" else u["hw"]  # post-data, exploratory axis
             for axis, kind in (("hw", u["hw"]), ("ast", u["kind"]), ("hw2", hw2)):
                 for k, frac in u["null"].items():
                     risk[(axis, kind, int(k))] += 1
                     null[(axis, kind, int(k))] += frac
+                    mask = int(u["pnull"][k], 16)
+                    acc = draws[(axis, kind, int(k))]
+                    for d in range(PERSIST_DRAWS):
+                        acc[d] += (mask >> d) & 1
                 if "loss" in u:
                     real[(axis, kind, u["loss"]["at"])] += 1
         for key in sorted(set(risk) | set(real)):
             axis, kind, k = key
+            dr = draws[key] if key in draws else [0] * PERSIST_DRAWS
             rows.append([name, level, axis, kind, PASS_LABEL[k - 1], risk[key], real[key],
-                         f"{null[key]:.3f}"])
+                         f"{null[key]:.3f}", f"{sum(dr) / len(dr):.3f}",
+                         f"{_pct(dr, 0.025):.0f}", f"{_pct(dr, 0.975):.0f}"])
     return rows
 
 
@@ -126,13 +155,14 @@ def table_inherited(results: dict[tuple[str, str], list[dict[str, Any]]]) -> lis
     rows: list[list[Any]] = []
     for (name, level), designs in sorted(results.items()):
         for k in range(2, len(PASSES) + 1):
-            n = inh = 0
+            n = inh = sub = 0
             for _, u in _units(designs):
                 loss = u.get("loss")
                 if loss and loss["at"] == k and loss["reason"] == "unlabelled-merge":
                     n += 1
                     inh += int(loss["inherited"])
-            rows.append([name, level, PASS_LABEL[k - 1], n, inh])
+                    sub += int(loss["inherited_subset"])
+            rows.append([name, level, PASS_LABEL[k - 1], n, inh, sub])
     return rows
 
 
@@ -151,10 +181,45 @@ def table_list(results: dict[tuple[str, str], list[dict[str, Any]]]) -> list[lis
     return rows
 
 
+def table_subsumed(results: dict[tuple[str, str], list[dict[str, Any]]]) -> list[list[Any]]:
+    """Per set, level and pass: first losses, of which subsumed, removed, merged."""
+    rows: list[list[Any]] = []
+    for (name, level), designs in sorted(results.items()):
+        for k in range(2, len(PASSES) + 1):
+            cnt: Counter[str] = Counter()
+            for _, u in _units(designs):
+                loss = u.get("loss")
+                if loss and loss["at"] == k:
+                    cnt["all"] += 1
+                    cnt["sub" if loss["reason"] == "subsumed" else
+                        "rem" if loss["reason"] == "removed" else "mer"] += 1
+            rows.append([name, level, PASS_LABEL[k - 1], cnt["all"], cnt["sub"], cnt["rem"],
+                         cnt["mer"]])
+    return rows
+
+
+def table_size_mad(results: dict[tuple[str, str], list[dict[str, Any]]]) -> list[list[Any]]:
+    """Mean absolute size deviation of the persistence null from the real S_k, per pass, over
+    the designs that drew at least one merge (the deviation is 0.0 for the others)."""
+    rows: list[list[Any]] = []
+    for (name, level), designs in sorted(results.items()):
+        for k in range(2, len(PASSES) + 1):
+            vals = [d["pnull_size_mad"][k - 1] for d in designs if d["pnull_size_mad"][k - 1] > 0]
+            rows.append([name, level, PASS_LABEL[k - 1], len(vals),
+                         f"{sum(vals) / len(vals):.3f}" if vals else "0.000"])
+    return rows
+
+
 def main() -> int:
-    results = pooled(audit_all())
+    results = pooled(audit_all("--force" in sys.argv[1:]))
+    write_csv(HERE / "l15_subsumed.csv",
+              ["set", "level", "pass", "first_losses", "subsumed", "removed", "merged"],
+              table_subsumed(results))
+    write_csv(HERE / "l15_null_size_mad.csv", ["set", "level", "pass", "designs_with_merges",
+                                              "mean_abs_size_dev"], table_size_mad(results))
     write_csv(HERE / "l15_kind_pass.csv",
-              ["set", "level", "axis", "kind", "pass", "at_risk", "first_losses", "null_expected"],
+              ["set", "level", "axis", "kind", "pass", "at_risk", "first_losses", "null_expected",
+               "pnull_mean", "pnull_lo", "pnull_hi"],
               table_kind_pass(results))
     write_csv(HERE / "l15_reason.csv", ["set", "level", "reason", "pass", "losses"],
               table_reason(results))
@@ -163,7 +228,8 @@ def main() -> int:
                "transient", "capped"], table_status(results))
     write_csv(HERE / "l15_explained.csv", ["set", "level", "pass", "merged", "explained"],
               table_explained(results))
-    write_csv(HERE / "l15_x_inherited.csv", ["set", "level", "pass", "unlabelled", "inherited"],
+    write_csv(HERE / "l15_x_inherited.csv",
+              ["set", "level", "pass", "unlabelled", "inherited", "inherited_subset"],
               table_inherited(results))
     write_csv(HERE / "l15_lost_list.csv",
               ["set", "design", "file", "span", "kind", "hw", "pass", "reason", "explained",
