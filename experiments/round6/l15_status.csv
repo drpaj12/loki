@@ -1,0 +1,9 @@
+set,level,designs,units,kept,lost,born_joined,late,transient,capped
+ALL,branch,221,1252,466,548,238,0,0,32
+ALL,stmt,221,1436,474,580,382,0,0,21
+CI,branch,120,630,174,304,152,0,0,31
+CI,stmt,120,765,179,304,282,0,0,20
+MI,branch,68,528,250,192,86,0,0,1
+MI,stmt,68,546,253,193,100,0,0,1
+VT,branch,33,94,42,52,0,0,0,0
+VT,stmt,33,125,42,83,0,0,0,0
