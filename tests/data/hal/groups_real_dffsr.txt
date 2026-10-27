@@ -1,0 +1,8 @@
+State:
+
+ID:0, Size:2, CLK: {10}, EN: {}, R: {14}, S: {13}
+  Successors:   {}
+  Predecessors: {}
+n1, type: DFFSR, id: 1, RS: 
+n2, type: DFFSR, id: 2, RS: 
+

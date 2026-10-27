@@ -1,0 +1,14 @@
+design,status,ffs,groups,groups_ge2,largest,seconds,detail
+stereovision3,ok,120,2,2,82,0.04,
+mkPktMerge,not_convertible,16,0,0,0,0.0,unsupported .subckt dual_port_ram on floor f2
+spree,not_convertible,200,0,0,0,0.0,unsupported .subckt single_port_ram on floor f2
+boundtop,not_convertible,344,0,0,0,0.0,unsupported .subckt single_port_ram on floor f2
+mkSMAdapter4B,not_convertible,632,0,0,0,0.0,unsupported .subckt dual_port_ram on floor f2
+mkDelayWorker32B,not_convertible,6,0,0,0,0.0,unsupported .subckt dual_port_ram on floor f2
+sha,ok,886,1,1,886,0.13,
+raygentop,not_convertible,778,0,0,0,0.0,unsupported .subckt single_port_ram on floor f2
+blob_merge,ok,575,93,41,61,0.31,
+or1200,not_convertible,672,0,0,0,0.0,unsupported .subckt dual_port_ram on floor f2
+stereovision0,ok,11339,1448,306,832,16.07,
+stereovision1,ok,10110,175,128,760,15.83,
+stereovision2,ok,13926,1652,453,492,46.03,

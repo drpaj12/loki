@@ -1,0 +1,7 @@
+key,plain,permuted,partitions
+VT-f2/ve_Prob075_counter_2bc,ok,ok,identical
+VT-f2/ve_Prob120_fsm3s,ok,ok,identical
+VT-f2/ve_Prob035_count1to10,ok,ok,identical
+VT-f2/ve_Prob038_count15,ok,ok,identical
+VT-f2/ve_Prob121_2014_q3bfsm,ok,ok,identical
+VT-f2/ve_Prob037_review2015_count1k,ok,ok,identical

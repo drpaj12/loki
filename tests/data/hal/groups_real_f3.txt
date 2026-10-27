@@ -1,0 +1,37 @@
+State:
+
+ID:0, Size:1, CLK: {15}, EN: {}, R: {}, S: {}
+  Successors:   {0, 1, 2, 3}
+  Predecessors: {0, 5, 6}
+n179, type: DFF, id: 6, RS: 
+
+ID:1, Size:1, CLK: {15}, EN: {}, R: {}, S: {}
+  Successors:   {1, 2, 3}
+  Predecessors: {0, 1, 5, 6}
+n180, type: DFF, id: 7, RS: 
+
+ID:2, Size:1, CLK: {15}, EN: {}, R: {}, S: {}
+  Successors:   {2}
+  Predecessors: {0, 1, 2, 3, 5, 6}
+n182, type: DFF, id: 9, RS: 
+
+ID:3, Size:1, CLK: {15}, EN: {}, R: {}, S: {}
+  Successors:   {2, 3}
+  Predecessors: {0, 1, 3, 5, 6}
+n181, type: DFF, id: 8, RS: 
+
+ID:4, Size:1, CLK: {15}, EN: {}, R: {}, S: {}
+  Successors:   {4, 6}
+  Predecessors: {4, 5}
+n176, type: DFF, id: 3, RS: 
+
+ID:5, Size:1, CLK: {15}, EN: {}, R: {}, S: {}
+  Successors:   {0, 1, 2, 3, 4, 5}
+  Predecessors: {5, 6}
+n177, type: DFF, id: 4, RS: 
+
+ID:6, Size:1, CLK: {15}, EN: {}, R: {}, S: {}
+  Successors:   {0, 1, 2, 3, 5, 6}
+  Predecessors: {4, 6}
+n178, type: DFF, id: 5, RS: 
+
