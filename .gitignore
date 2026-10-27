@@ -9,3 +9,4 @@ dataset/
 datasets/l0/wyrd.toml
 datasets/l0/.wyrd.lock
 experiments/llm-pilot/run/
+experiments/llm-pilot/run-re/

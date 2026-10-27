@@ -399,6 +399,12 @@ class VariantRe(unittest.TestCase):
             self.assertEqual((counts["ok"], counts["no-file"]), (1, 1))
             self.assertIn("002,A,P2,no-file,1,x", (run / "status.csv").read_text("utf-8"))
 
+    def test_mcnemar_exact(self) -> None:
+        import pilot_stats
+        self.assertEqual(pilot_stats.mcnemar(2, 0), 0.5)
+        self.assertAlmostEqual(pilot_stats.mcnemar(7, 1), 0.0703125)
+        self.assertEqual(pilot_stats.mcnemar(0, 0), 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()
