@@ -98,7 +98,7 @@ def make_pairs(runs: Sequence[Run], hal: str, floor: str, sets: Sequence[str]) -
     out = []
     for (tool, s, d), h in sorted(by.items()):
         k = by.get(("lokiW", s, d))
-        if tool != hal or s not in sets or k is None or h.score.n_gt < 1:
+        if tool != hal or s not in sets or k is None:
             continue
         out.append(Pair(cluster_of(s, d), d, (h.score.matched, h.score.n_pred),
                         (k.score.matched, k.score.n_pred), (k.r5[1], k.r5[0]), h.score.n_gt,
@@ -161,11 +161,14 @@ def wilcoxon_p(x: Sequence[float], y: Sequence[float], alternative: str) -> floa
 
 
 def decide(pairs: Sequence[Pair]) -> dict[str, object]:
-    """The pre-registered rule with Amendments A1 to A3 on the pairs of E_real at f2."""
+    """The pre-registered rule with Amendments A1 to A3 on the pairs of E_real at f2: D and its
+    bootstrap are pooled over every design in both arms (predictions on a design with no GT word
+    are false positives); the Wilcoxon runs on the designs with at least one GT word."""
     fk, fh, d, d5 = pooled_d(pairs)
     bd, bd5 = bootstrap(pairs)
     ci95, ci90, ci95_5 = interval(bd, 0.95), interval(bd, 0.90), interval(bd5, 0.95)
-    xk, xh, xk5 = ([f(p) for p in pairs] for f in (Pair.f1_k, Pair.f1_h, Pair.f1_k5))
+    gtp = [p for p in pairs if p.g >= 1]
+    xk, xh, xk5 = ([f(p) for p in gtp] for f in (Pair.f1_k, Pair.f1_h, Pair.f1_k5))
     nonzero = sum(a != b for a, b in zip(xk, xh, strict=True))
     p_k = wilcoxon_p(xk, xh, "greater")
     p_h = wilcoxon_p(xh, xk, "greater")
@@ -188,7 +191,8 @@ def decide(pairs: Sequence[Pair]) -> dict[str, object]:
     else:
         note = "no difference shown" if abs(d) < MARGIN else ""
     return {
-        "outcome": outcome, "note": note, "designs": len(pairs), "clusters": len(
+        "outcome": outcome, "note": note, "designs": len(pairs), "designs_gt": len(gtp),
+        "clusters": len(
             {p.cluster for p in pairs}), "nonzero_pairs": nonzero,
         "f1_loki": fk, "f1_hal": fh, "d": d, "d_round5": d5,
         "ci95": ci95, "ci90": ci90, "ci95_round5": ci95_5,
@@ -263,56 +267,84 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(fh))
 
 
-def drops_line(data: Path, setting: int, runs: Sequence[Run]) -> list[str]:
-    rows = read_csv_rows(data / f"dropped-hal{setting}.csv")
-    lines = [f"Dropped from both arms (HAL setting {setting}): {len(rows)}", ""]
-    per: dict[tuple[str, str], int] = defaultdict(int)
-    for r in rows:
-        key = r["key"].split("/")[0]
-        per[(key, r["status"])] += 1
-    lines += [f"- {k[0]}: {k[1]} x {v}" for k, v in sorted(per.items())]
+def stop_rule_table(data: Path) -> list[str]:
+    """Per set and floor: designs run, dropped, share (stop rule: more than 20 percent stops)."""
+    tot: dict[str, list[int]] = defaultdict(lambda: [0, 0])
+    for r in read_csv_rows(data / "run-hal8.csv"):
+        row = tot[r["key"].split("/")[0]]
+        row[0] += 1
+        row[1] += r["status"] != "ok"
+    for r in read_csv_rows(data / "big-summary-hal8.csv"):
+        row = tot["BIG-f2"]
+        row[0] += 1
+        row[1] += r["status"] != "ok"
+    lines = ["| set-floor | designs | dropped | share | stop rule (more than 20 percent) |",
+             "|---|---|---|---|---|"]
+    for k, (n, d) in sorted(tot.items()):
+        verdict = "STOP, not scored" if d / n > 0.2 else "scored"
+        lines.append(f"| {k} | {n} | {d} | {d / n:.3f} | {verdict} |")
     return [*lines, ""]
 
 
-def big_table(runs: Sequence[Run], data: Path) -> list[str]:
-    secs = {r["key"]: r["seconds"] for r in read_csv_rows(data / "run-hal8.csv")}
-    lines = ["| design | GT words | HAL groups | HAL matched | HAL F1_J | HAL s | Loki W words | "
-             "Loki matched | Loki F1_J |", "|" + "---|" * 9]
-    by = {(r.tool, r.design): r for r in runs if r.set == "BIG" and r.floor == "f2"}
-    for (tool, d), h in sorted(by.items(), key=lambda kv: (kv[1].score.n_gt, kv[0][1])):
-        if tool != "hal8":
-            continue
-        k = by.get(("lokiW", d))
-        kk = k.score if k else WordScore()
-        lines.append("| " + " | ".join([
-            d, str(h.score.n_gt), str(h.score.n_pred), str(h.score.matched),
-            _fmt(h.score.ratios()["f1_j"]), secs.get(f"BIG-f2/{d}", "-"), str(kk.n_pred),
-            str(kk.matched), _fmt(kk.ratios()["f1_j"])]) + " |")
+def dropped_list(data: Path) -> list[str]:
+    rows = read_csv_rows(data / "dropped-hal8.csv")
+    return [f"- {r['key']}: {r['status']} ({r['detail']})" for r in rows] + [""]
+
+
+def big_table(data: Path) -> list[str]:
+    """Descriptive only (Amendment 2 B4): no answer-key score is computed on BIG."""
+    lines = ["| design | status | flip-flops | DANA groups | groups of 2+ | largest | HAL s |",
+             "|---|---|---|---|---|---|---|"]
+    for r in read_csv_rows(data / "big-summary-hal8.csv"):
+        lines.append("| " + " | ".join([r["design"], r["status"], r["ffs"], r["groups"],
+                                        r["groups_ge2"], r["largest"], r["seconds"]]) + " |")
     return [*lines, ""]
+
+
+def time_line(data: Path) -> list[str]:
+    secs = [float(r["seconds"]) for r in read_csv_rows(data / "run-hal8.csv")]
+    if not secs:
+        return []
+    return [f"HAL setting 8 on MI and VT: {len(secs)} runs, {sum(secs):.1f} s in total, "
+            f"longest {max(secs):.2f} s (900 s limit).", ""]
 
 
 def checks_section(data: Path) -> list[str]:
     out: list[str] = []
-    for name, title in (("determinism.csv", "A7 determinism (DANA twice, smallest 5)"),
-                        ("permutation.csv", "A6 name/order permutation (6 designs)")):
+    for name, title in (("determinism.csv", "A7 determinism (DANA twice, smallest 5 of E_real f2)"),
+                        ("permutation.csv", "A6 name and order permutation (6 designs, seed 7)")):
         rows = read_csv_rows(data / name)
         out += [f"**{title}**", ""]
         out += [f"- {r['key']}: {r['partitions']}" for r in rows] or ["- not run"]
         out.append("")
+    rt = read_csv_rows(data / "roundtrip.csv")
+    lc = read_csv_rows(data / "lutcheck.csv")
+    ld = read_csv_rows(data / "loadcheck.csv")
+    out += ["**Load and function checks**", "",
+            f"- A8 round trip (BLIF vs iverilog, VT and BIG): "
+            f"{sum(r['status'] == 'ok' for r in rt)} ok, "
+            f"{sum(r['status'] == 'FAIL' for r in rt)} fail, "
+            f"{sum(r['status'] == 'not_convertible' for r in rt)} not convertible",
+            f"- lut6.hgl bit order in HAL: {len(lc)} designs, "
+            f"{sum(int(r['luts_blif']) for r in lc)} LUTs, "
+            f"{sum(int(r['mismatches']) for r in lc)} mismatches",
+            f"- corpus-train load checks: {sum(r['status'] == 'ok' for r in ld)} of {len(ld)} ok",
+            ""]
     return out
 
 
-def decision_section(dec: dict[str, object]) -> list[str]:
+def decision_section(dec: dict[str, object], title: str = "") -> list[str]:
     ci95, ci90, ci5 = dec["ci95"], dec["ci90"], dec["ci95_round5"]
     assert isinstance(ci95, tuple) and isinstance(ci90, tuple) and isinstance(ci5, tuple)
 
     def p(v: object) -> str:
         return "undefined" if v is None else f"{float(str(v)):.4f}"
     return [
-        "**Decision (E_real = MI + VT at f2, HAL headline = min_group_size 8)**", "",
+        title or "**Decision (E_real = MI + VT at f2, HAL headline = min_group_size 8)**", "",
         f"- outcome: **{dec['outcome']}** {dec['note']}".rstrip(),
-        f"- designs with a GT word in both arms: {dec['designs']} ({dec['clusters']} clusters), "
-        f"non-zero paired differences: {dec['nonzero_pairs']}",
+        f"- designs in both arms: {dec['designs']} ({dec['clusters']} clusters), of which with a "
+        f"GT word: {dec['designs_gt']}; non-zero paired differences (Wilcoxon): "
+        f"{dec['nonzero_pairs']}",
         f"- pooled F1_J: Loki W {_fmt(float(str(dec['f1_loki'])))}, HAL "
         f"{_fmt(float(str(dec['f1_hal'])))}; D = {_fmt(float(str(dec['d'])))}; D with Loki's "
         f"round-5 counts = {_fmt(float(str(dec['d_round5'])))}",
@@ -324,6 +356,17 @@ def decision_section(dec: dict[str, object]) -> list[str]:
         f"p(Loki greater, round-5 counts) = {p(dec['p_loki_greater_round5'])}", ""]
 
 
+READING = [
+    "How to read the tables. One scorer (`loki.hal.wordscore`) scores both tools against the L0",
+    "storage words of at least two flip-flops. DANA reads only the flip-flop graph and the clock,",
+    "enable, set and reset nets of the flip-flop pins; the f2 and f3 netlists of a design hold",
+    "the same flip-flops and the same flip-flop to flip-flop connectivity, and neither floor's",
+    "flip-flop carries an enable or reset pin in the evaluation sets, so DANA's f2 and f3 rows are",
+    "equal by construction and the f2 to f3 difference in the tables is Loki's (Amendment 2 B3).",
+    "The decision rule is the pre-registered one (Amendments A1 to A3); `inconclusive` means no",
+    "difference was shown, not that the tools are equal. BIG is not scored (stop rule).", ""]
+
+
 def build(data: Path) -> tuple[list[str], dict[str, object], dict[str, dict[str, object]]]:
     runs8 = load_scores(data / "scores-hal8.csv")
     runs2 = load_scores(data / "scores-hal2.csv") if (data / "scores-hal2.csv").is_file() else []
@@ -332,50 +375,96 @@ def build(data: Path) -> tuple[list[str], dict[str, object], dict[str, dict[str,
              "Generated by `python -m loki.hal.compare`; do not edit. Rule and amendments: "
              "`docs/plan/hal-compare-prereg.md`.", ""]
     dec = decide(make_pairs(runs8, "hal8", "f2", real))
-    lines += decision_section(dec)
+    lines += READING + decision_section(dec)
     for floor in ("f2", "f3"):
         lines += headline_table(runs8, runs2, floor, real, f"E_real (MI + VT), floor {floor}")
         for s in real:
             lines += headline_table(runs8, runs2, floor, (s,), f"{s}, floor {floor}")
-    lines += ["**BIG (f2), smallest first, no test**", ""] + big_table(runs8, data)
-    lines += drops_line(data, 8, runs8)
-    if runs2:
-        lines += drops_line(data, 2, runs2)
+    lines += ["**Stop rule per set and floor (HAL setting 8)**", ""] + stop_rule_table(data)
+    lines += ["Dropped from both arms:", ""] + dropped_list(data) + time_line(data)
+    lines += ["**BIG (f2), descriptive only, not scored (Amendment 2 B4)**", ""] + big_table(data)
     lines += checks_section(data)
     sens: dict[str, dict[str, object]] = {}
     if runs2:
         sens["setting2"] = decide(make_pairs(runs2, "hal2", "f2", real))
-        lines += ["**Sensitivity: HAL min_group_size 2 (not the headline)**", ""]
-        lines += decision_section(sens["setting2"])
+        lines += decision_section(
+            sens["setting2"], "**Sensitivity: the same rule with HAL min_group_size 2 "
+            "(not the headline)**")
     return lines, dec, sens
+
+
+TEX_TOOL = {"lokiW": "LokiW", "lokiWB": "LokiWB", "hal8": "HalEight", "hal2": "HalTwo"}
+TEX_FLOOR = {"f2": "FTwo", "f3": "FThree"}
+TEX_KEY = {"precision_exact": "PrecExact", "recall_exact": "RecExact", "precision_j": "PrecJ",
+           "recall_j": "RecJ", "f1_j": "FJ", "purity": "Purity", "completeness": "Compl",
+           "ff_coverage": "Cover"}
+
+
+def _num(v: object) -> str:
+    return "undefined" if v is None else f"{float(str(v)):.3f}"
 
 
 def tex_macros(dec: dict[str, object], sens: dict[str, dict[str, object]], runs8: list[Run],
                runs2: list[Run]) -> list[str]:
-    def num(v: object) -> str:
-        return "undefined" if v is None else f"{float(str(v)):.3f}"
     ci95, ci90 = dec["ci95"], dec["ci90"]
     assert isinstance(ci95, tuple) and isinstance(ci90, tuple)
     out = ["% Generated by loki.hal.compare; do not edit.",
            f"\\newcommand{{\\halOutcome}}{{{dec['outcome']}}}",
            f"\\newcommand{{\\halDesigns}}{{{dec['designs']}}}",
-           f"\\newcommand{{\\halFoneLoki}}{{{num(dec['f1_loki'])}}}",
-           f"\\newcommand{{\\halFoneHal}}{{{num(dec['f1_hal'])}}}",
-           f"\\newcommand{{\\halD}}{{{num(dec['d'])}}}",
-           f"\\newcommand{{\\halDfive}}{{{num(dec['d_round5'])}}}",
-           f"\\newcommand{{\\halCiLo}}{{{num(ci95[0])}}}",
-           f"\\newcommand{{\\halCiHi}}{{{num(ci95[1])}}}",
-           f"\\newcommand{{\\halPLoki}}{{{num(dec['p_loki_greater'])}}}",
-           f"\\newcommand{{\\halPHal}}{{{num(dec['p_hal_greater'])}}}"]
+           f"\\newcommand{{\\halDesignsGt}}{{{dec['designs_gt']}}}",
+           f"\\newcommand{{\\halClusters}}{{{dec['clusters']}}}",
+           f"\\newcommand{{\\halNonzero}}{{{dec['nonzero_pairs']}}}",
+           f"\\newcommand{{\\halFoneLoki}}{{{_num(dec['f1_loki'])}}}",
+           f"\\newcommand{{\\halFoneHal}}{{{_num(dec['f1_hal'])}}}",
+           f"\\newcommand{{\\halD}}{{{_num(dec['d'])}}}",
+           f"\\newcommand{{\\halDfive}}{{{_num(dec['d_round5'])}}}",
+           f"\\newcommand{{\\halCiLo}}{{{_num(ci95[0])}}}",
+           f"\\newcommand{{\\halCiHi}}{{{_num(ci95[1])}}}",
+           f"\\newcommand{{\\halCiNinetyLo}}{{{_num(ci90[0])}}}",
+           f"\\newcommand{{\\halCiNinetyHi}}{{{_num(ci90[1])}}}",
+           f"\\newcommand{{\\halPLoki}}{{{_num(dec['p_loki_greater'])}}}",
+           f"\\newcommand{{\\halPHal}}{{{_num(dec['p_hal_greater'])}}}"]
     for floor in ("f2", "f3"):
-        for tool, runs in (("lokiW", runs8), ("hal8", runs8), ("hal2", runs2)):
+        for tool, runs in (("lokiW", runs8), ("lokiWB", runs8), ("hal8", runs8), ("hal2", runs2)):
             ws = pooled_rows(runs, tool, floor, ("MI", "VT"))
+            base = f"\\hal{TEX_TOOL[tool]}{TEX_FLOOR[floor]}"
             for key, val in ws.ratios().items():
-                name = "".join(w.title() for w in key.split("_"))
-                out.append(f"\\newcommand{{\\hal{tool.title()}{floor.title()}{name}}}"
-                           f"{{{num(val)}}}")
-            out.append(f"\\newcommand{{\\hal{tool.title()}{floor.title()}Groups}}{{{ws.n_pred}}}")
-            out.append(f"\\newcommand{{\\hal{tool.title()}{floor.title()}Words}}{{{ws.n_gt}}}")
+                out.append(f"\\newcommand{{{base}{TEX_KEY[key]}}}{{{_num(val)}}}")
+            out.append(f"\\newcommand{{{base}Groups}}{{{ws.n_pred}}}")
+            out.append(f"\\newcommand{{{base}Words}}{{{ws.n_gt}}}")
+    return out
+
+
+def tex_table(runs8: list[Run], runs2: list[Run]) -> list[str]:
+    cols = ("precision_j", "recall_j", "f1_j", "purity", "completeness")
+    out = ["\\begin{table*}[t]",
+           "\\caption{Loki word-first detector (\\code{W}) against HAL's DANA on MI and VT "
+           "(E\\_real), word recovery against the L0 ground truth; one scorer for both tools. "
+           "$P_J$, $R_J$, $F_J$: Jaccard-0.5 matching; purity and completeness over flip-flops. "
+           "The round-5 scorer row counts Loki as round 5 did (Amendment A1).}",
+           "\\label{tab:hal}", "\\centering", "\\footnotesize",
+           "\\begin{tabular}{@{}l" + "rrrrr" * 2 + "@{}}", "\\toprule",
+           " & \\multicolumn{5}{c}{f2 (LUT6)} & \\multicolumn{5}{c}{f3 (cmos6)} \\\\",
+           "\\cmidrule(lr){2-6}\\cmidrule(lr){7-11}",
+           "Arm & $P_J$ & $R_J$ & $F_J$ & pur. & compl. & $P_J$ & $R_J$ & $F_J$ & pur. & compl. "
+           "\\\\", "\\midrule"]
+    arms = (("Loki W", "lokiW", runs8), ("Loki WB", "lokiWB", runs8),
+            ("DANA, size 8 (headline)", "hal8", runs8), ("DANA, size 2", "hal2", runs2))
+    r5 = []
+    for fl in ("f2", "f3"):
+        cnt, mat, gtn = r5_pooled(runs8, fl, ("MI", "VT"))
+        pj, rj = (mat / cnt if cnt else None), (mat / gtn if gtn else None)
+        fj = 2 * mat / (cnt + gtn) if cnt + gtn else None
+        r5 += [_fmt(pj), _fmt(rj), _fmt(fj), "-", "-"]
+    for label, tool, runs in arms:
+        cells = []
+        for fl in ("f2", "f3"):
+            r = pooled_rows(runs, tool, fl, ("MI", "VT")).ratios()
+            cells += [_fmt(r[k]) for k in cols]
+        out.append(label + " & " + " & ".join(cells) + " \\\\")
+        if tool == "lokiW":
+            out.append("Loki W, round-5 scorer & " + " & ".join(r5) + " \\\\")
+    out += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     return out
 
 
@@ -395,8 +484,9 @@ def main(argv: list[str]) -> int:
     if args.tex:
         runs8 = load_scores(args.data / "scores-hal8.csv")
         p2 = args.data / "scores-hal2.csv"
-        args.tex.write_text("\n".join(tex_macros(
-            dec, sens, runs8, load_scores(p2) if p2.is_file() else [])) + "\n", encoding="utf-8")
+        runs2 = load_scores(p2) if p2.is_file() else []
+        args.tex.write_text("\n".join(tex_macros(dec, sens, runs8, runs2) + tex_table(
+            runs8, runs2)) + "\n", encoding="utf-8")
     if args.json:
         args.json.write_text(json.dumps({"decision": dec, "sensitivity": sens}, indent=1,
                                         sort_keys=True) + "\n", encoding="utf-8")

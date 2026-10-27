@@ -72,6 +72,12 @@ class DecideTest(unittest.TestCase):
         dec = decide(ps)
         self.assertEqual(dec["outcome"], "comparable")
 
+    def test_designs_without_gt_count_in_d_only(self) -> None:
+        ps = [pair(i, (1, 2), (1, 2), 2) for i in range(20)] + [pair(99, (0, 4), (0, 1), 0)]
+        dec = decide(ps)
+        self.assertEqual((dec["designs"], dec["designs_gt"]), (21, 20))
+        self.assertGreater(float(str(dec["d"])), 0.0)  # HAL's 4 false positives, Loki's 1
+
     def test_round5_condition(self) -> None:
         ps = [Pair(f"c{i}", f"d{i}", (0, 3), (2 + i % 2, 3), (0, 6), 4, 4) for i in range(20)]
         dec = decide(ps)

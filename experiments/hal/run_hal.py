@@ -3,6 +3,7 @@
     run_hal.py plan
     run_hal.py loadcheck OUT [--floors f2,f3] [--sample 30]            # step 2, corpus train
     run_hal.py lutcheck OUT                                            # lut6.hgl bit_order
+    run_hal.py summary OUT --sets BIG --floors f2                      # descriptive table
     run_hal.py roundtrip OUT [--sets MI,VT,BIG] [--floors f2,f3]     # Amendment A8
     run_hal.py run OUT --setting 8|2 [--sets ..] [--floors ..] [--permute SEED]
     run_hal.py repeat OUT                                           # Amendment A7
@@ -281,6 +282,29 @@ def cmd_lutcheck(a: argparse.Namespace) -> int:
     return 0 if bad == 0 else 1
 
 
+def cmd_summary(a: argparse.Namespace) -> int:
+    """Descriptive table of a HAL run without the answer key (BIG, Amendment 2 B4): flip-flops,
+    DANA groups, groups of at least 2 flip-flops, largest group, seconds."""
+    base = Path(a.out)
+    rows = []
+    for it in order(items(_parse_list(a.sets), _parse_list(a.floors))):
+        wd = base / f"hal{a.setting}" / it.key
+        st = json.loads((wd / "status.json").read_text(encoding="utf-8")) if (
+            wd / "status.json").is_file() else {"status": "not_run", "seconds": 0, "detail": ""}
+        ffs = len([n for n in json.loads((it.floor_dir / "graph.json").read_text(
+            encoding="utf-8"))["nodes"] if n["kind"] == "ff"])
+        sizes = []
+        if st["status"] == "ok":
+            sizes = [g.size for g in parse_groups_txt(
+                (wd / "out" / "groups.txt").read_text(encoding="utf-8"))]
+        rows.append((it.design, st["status"], ffs, len(sizes), sum(s >= 2 for s in sizes),
+                     max(sizes, default=0), st["seconds"], st["detail"]))
+    _write_csv(base / f"summary-hal{a.setting}.csv", ("design", "status", "ffs", "groups",
+                                                      "groups_ge2", "largest", "seconds",
+                                                      "detail"), rows)
+    return 0
+
+
 def cmd_run(a: argparse.Namespace) -> int:
     base = Path(a.out)
     rows = []
@@ -387,8 +411,9 @@ def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(prog="run_hal.py", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("plan").set_defaults(fn=cmd_plan)
-    cmds = {"lutcheck": cmd_lutcheck, "loadcheck": cmd_loadcheck, "roundtrip": cmd_roundtrip,
-            "run": cmd_run, "score": cmd_score, "repeat": cmd_repeat, "permute": cmd_permute}
+    cmds = {"summary": cmd_summary, "lutcheck": cmd_lutcheck, "loadcheck": cmd_loadcheck,
+            "roundtrip": cmd_roundtrip, "run": cmd_run, "score": cmd_score,
+            "repeat": cmd_repeat, "permute": cmd_permute}
     for name, fn in cmds.items():
         p = sub.add_parser(name)
         p.add_argument("out")

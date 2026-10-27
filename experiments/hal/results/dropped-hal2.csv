@@ -1,0 +1,2 @@
+key,arm,status,detail
+MI-f2/micro_multiply_hard_block,hal,not_convertible,unsupported .subckt multiply on floor f2
