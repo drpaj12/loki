@@ -5,9 +5,10 @@
     run_hal.py lutcheck OUT                                            # lut6.hgl bit_order
     run_hal.py summary OUT --sets BIG --floors f2                      # descriptive table
     run_hal.py roundtrip OUT [--sets MI,VT,BIG] [--floors f2,f3]     # Amendment A8
-    run_hal.py run OUT --setting 8|2 [--sets ..] [--floors ..] [--permute SEED]
-    run_hal.py repeat OUT                                           # Amendment A7
-    run_hal.py permute OUT                                          # Amendment A6
+    run_hal.py run OUT --setting 8|2 [--sets ..] [--floors ..] [--permute SEED] [--fresh]
+    run_hal.py repeat OUT [--fresh]                                 # Amendment A7
+    run_hal.py f2f3 OUT                                            # DANA f2 vs f3, DFFSR search
+    run_hal.py permute OUT [--fresh]                                # Amendment A6
     run_hal.py score OUT [--setting 8] [--permute SEED]            # tables + decision
 
 ``OUT`` is a data directory outside the repo (a fresh ``mktemp -d``); nothing is deleted. Run with
@@ -40,6 +41,7 @@ from loki.hal.dana import parse_groups_txt
 from loki.hal.wordscore import (
     WordScore,
     dana_words,
+    group_shape,
     gt_words,
     loki_words,
     round5_register,
@@ -150,12 +152,13 @@ def permuted(b: Blif, seed: int) -> tuple[Blif, dict[str, str]]:
 
 
 def run_hal(it: Item, setting: int, base: Path, permute: int | None,
-            tag: str = "") -> dict[str, Any]:
-    """Convert and run DANA for one item; the row says ok / not convertible / error / timeout."""
+            tag: str = "", fresh: bool = False) -> dict[str, Any]:
+    """Convert and run DANA for one item; the row says ok / not convertible / error / timeout.
+    A ``status.json`` from an earlier run is reused unless ``fresh`` (``--fresh``) is set."""
     work = base / f"hal{setting}{tag}" / it.key
     row: dict[str, Any] = {"key": it.key, "setting": setting, "status": "ok", "seconds": 0.0,
                            "detail": ""}
-    if (work / "status.json").is_file():
+    if not fresh and (work / "status.json").is_file():
         return dict(json.loads((work / "status.json").read_text(encoding="utf-8")))
     try:
         b = read_blif(it.blif)
@@ -208,6 +211,10 @@ def cmd_roundtrip(a: argparse.Namespace) -> int:
             print(rows[-1], flush=True)
             continue
         wd = Path(tempfile.mkdtemp(prefix="rt-", dir=out))
+        # BIG is checked at the primary outputs only (probe "out"). This was a choice made when
+        # the BLIF simulator was still slow (before the gate-table cache of 9228d8c); no timing
+        # was recorded for the larger probe, and BIG is not scored (Amendment 2 B4), so the
+        # weaker check on BIG is a limit of the round trip, not part of a result.
         probe = "out" if it.set == "BIG" else "ffq"
         msg = compare_traces(b, it.floor, text, wd, 256, probe=probe)
         rows.append((it.key, "ok" if not msg else "FAIL", msg[:120]))
@@ -249,11 +256,33 @@ def cmd_loadcheck(a: argparse.Namespace) -> int:
     return 0
 
 
+def _read_tt(path: Path) -> dict[str, int]:
+    """``lut_tt.txt`` of one HAL run: gate name to truth table."""
+    got: dict[str, int] = {}
+    for ln in (path.read_text(encoding="utf-8").split("\n") if path.is_file() else []):
+        if ln:
+            name, _k, val = ln.split()
+            got[name] = int(val)
+    return got
+
+
+def _lut_row(key: str, b: Blif, got: dict[str, int]) -> tuple[Any, ...]:
+    """Compare HAL's LUTs with the BLIF covers: named gates by name, unnamed gates (HAL names
+    them ``_c<index>``) as a multiset of truth tables, and the LUT counts."""
+    gates = [g for g in b.cells if isinstance(g, Gate) and g.inputs]
+    named = {g.cname: g.table() for g in gates if g.cname}
+    unnamed = sorted(g.table() for g in gates if not g.cname)
+    rest = sorted(v for n, v in got.items() if n not in named)
+    bad = sum(got.get(n) != t for n, t in named.items()) + (unnamed != rest)
+    return (key, len(named), len(unnamed), len(got), bad, int(len(gates) != len(got)))
+
+
 def cmd_lutcheck(a: argparse.Namespace) -> int:
     """HAL's own truth table of every LUT gate (``lut_tt.py``) against the BLIF cover: checks the
-    ``bit_order`` of ``lut6.hgl`` in a real HAL load, for every convertible MI and VT f2 design."""
+    ``bit_order`` of ``lut6.hgl`` in a real HAL load, for every convertible MI and VT f2 design,
+    and compares the number of LUTs on both sides (a mismatch is listed in the last column)."""
     base = Path(a.out) / "lutcheck"
-    rows, bad = [], 0
+    rows = []
     for it in order(items(["MI", "VT"], ["f2"])):
         b = read_blif(it.blif)
         try:
@@ -262,24 +291,17 @@ def cmd_lutcheck(a: argparse.Namespace) -> int:
             continue
         wd = base / it.key
         _write(wd / "design.v", text)
-        env = {**hal_env(wd / "design.v", "f2", wd, 8)}
         cmd = [os.environ.get("HAL_BIN", "hal"), "--volatile-mode", "--no-log", "--python-script",
                str(HERE / "lut_tt.py")]
-        subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=300, check=False)
-        got = {}
-        tt = wd / "lut_tt.txt"
-        for ln in (tt.read_text(encoding="utf-8").split("\n") if tt.is_file() else []):
-            if ln:
-                name, _k, val = ln.split()
-                got[name] = int(val)
-        want = {g.cname: g.table() for g in b.cells if isinstance(g, Gate) and g.inputs
-                and g.cname}
-        diff = sorted(n for n in want if got.get(n) != want[n])
-        bad += len(diff)
-        rows.append((it.key, len(want), len(got), len(diff)))
-    _write_csv(Path(a.out) / "lutcheck.csv", ("key", "luts_blif", "luts_hal", "mismatches"), rows)
-    print(f"designs {len(rows)}, LUTs {sum(r[1] for r in rows)}, mismatches {bad}")
-    return 0 if bad == 0 else 1
+        subprocess.run(cmd, env=hal_env(wd / "design.v", "f2", wd, 8), capture_output=True,
+                       text=True, timeout=300, check=False)
+        rows.append(_lut_row(it.key, b, _read_tt(wd / "lut_tt.txt")))
+    _write_csv(Path(a.out) / "lutcheck.csv", ("key", "luts_blif_named", "luts_blif_unnamed",
+                                              "luts_hal", "mismatches", "count_mismatch"), rows)
+    bad, cnt = sum(r[4] for r in rows), sum(r[5] for r in rows)
+    print(f"designs {len(rows)}, LUTs {sum(r[3] for r in rows)}, table mismatches {bad}, "
+          f"designs with a LUT count mismatch {cnt}")
+    return 0 if bad == 0 and cnt == 0 else 1
 
 
 def cmd_summary(a: argparse.Namespace) -> int:
@@ -309,7 +331,8 @@ def cmd_run(a: argparse.Namespace) -> int:
     base = Path(a.out)
     rows = []
     for it in order(items(_parse_list(a.sets), _parse_list(a.floors))):
-        r = run_hal(it, a.setting, base, a.permute, "" if a.permute is None else f"-p{a.permute}")
+        r = run_hal(it, a.setting, base, a.permute, "" if a.permute is None else f"-p{a.permute}",
+                    a.fresh)
         rows.append((r["key"], r["setting"], r["status"], r["seconds"], r["detail"]))
         print(rows[-1], flush=True)
     tag = "" if a.permute is None else f"-p{a.permute}"
@@ -324,13 +347,14 @@ def partition(groups_txt: Path) -> list[tuple[str, ...]]:
 
 
 def cmd_repeat(a: argparse.Namespace) -> int:
-    """A7: smallest 5 designs of E_real at f2 (with a GT word), DANA twice, diff partitions."""
+    """A7: smallest 5 designs of E_real at f2 (with a GT word), DANA twice, diff partitions.
+    With ``--fresh`` both runs bypass the ``status.json`` cache (use an empty OUT directory)."""
     base = Path(a.out)
     its = [i for i in order(items(["MI", "VT"], ["f2"])) if _has_gt(i)][:5]
     res = []
     for it in its:
-        r1 = run_hal(it, 8, base, None)
-        r2 = run_hal(it, 8, base, None, tag="-rep")
+        r1 = run_hal(it, 8, base, None, fresh=a.fresh)
+        r2 = run_hal(it, 8, base, None, tag="-rep", fresh=a.fresh)
         same = (r1["status"] == r2["status"] == "ok" and
                 partition(base / "hal8" / it.key / "out" / "groups.txt") ==
                 partition(base / "hal8-rep" / it.key / "out" / "groups.txt"))
@@ -352,8 +376,8 @@ def cmd_permute(a: argparse.Namespace) -> int:
     chosen = pool[:5] + [pool[len(pool) // 2]]
     res = []
     for it in chosen:
-        r0 = run_hal(it, 8, base, None)
-        rp = run_hal(it, 8, base, 7, tag="-p7")
+        r0 = run_hal(it, 8, base, None, fresh=a.fresh)
+        rp = run_hal(it, 8, base, 7, tag="-p7", fresh=a.fresh)
         if r0["status"] != "ok" or rp["status"] != "ok":
             res.append((it.key, r0["status"], rp["status"], "n/a"))
             continue
@@ -372,38 +396,101 @@ def _row(tool: str, it: Item, s: WordScore, extra: tuple[int, int, int] = (0, 0,
     return [tool, it.set, it.floor, it.design] + [getattr(s, f) for f in SCORE_FIELDS] + list(extra)
 
 
+def _shape_row(tool: str, it: Item, pred: list[frozenset[str]], gt: list[Any]) -> list[Any]:
+    sizes, merging = group_shape(pred, gt)
+    return [tool, it.set, it.floor, it.design, len(sizes), merging, " ".join(map(str, sizes))]
+
+
+def _score_item(it: Item, wd: Path, rows: list[list[Any]], shapes: list[list[Any]],
+                drops: list[list[Any]], setting: int) -> None:
+    """Score one design: the HAL row, then each Loki arm; a missing Loki run is logged."""
+    gt, ffs = gt_words(it.floor_dir)
+    hal_pred = dana_words(wd / "out" / "groups.txt", ffs)
+    rows.append(_row(f"hal{setting}", it, score_words(hal_pred, gt)))
+    shapes.append(_shape_row(f"hal{setting}", it, hal_pred, gt))
+    for arm in ("W", "WB"):
+        d = it.loki_re(arm)
+        if not (d / "overlay.json").is_file():
+            drops.append([it.key, f"loki{arm}", f"no_{arm}_run",
+                          "overlay.json missing in the round-5 run directory; the design is "
+                          f"left out of the Loki {arm} rows only"])
+            continue
+        pred = loki_words(d, ffs)
+        r5 = round5_register(d, it.floor_dir)
+        rows.append(_row(f"loki{arm}", it, score_words(pred, gt),
+                         (r5["counted"], r5["matched"], r5["gt"])))
+        shapes.append(_shape_row(f"loki{arm}", it, pred, gt))
+
+
 def cmd_score(a: argparse.Namespace) -> int:
-    """Per-design counts of both tools into ``scores-*.csv`` (the statistics are in
-    ``loki.hal.compare``)."""
+    """Per-design counts of both tools into ``scores-*.csv`` and the shape of the predicted groups
+    into ``groups-*.csv`` (the statistics are in ``loki.hal.compare``). A design without a Loki W
+    run is dropped from both arms; a design without a WB run is dropped from the WB rows only and
+    logged in ``dropped-*.csv``."""
     base = Path(a.out)
     tag = "" if a.permute is None else f"-p{a.permute}"
     rows: list[list[Any]] = []
+    shapes: list[list[Any]] = []
     drops: list[list[Any]] = []
     for it in order(items(_parse_list(a.sets), _parse_list(a.floors))):
-        gt, ffs = gt_words(it.floor_dir)
         wd = base / f"hal{a.setting}{tag}" / it.key
         st = json.loads((wd / "status.json").read_text(encoding="utf-8")) if (
             wd / "status.json").is_file() else {"status": "not_run"}
         if st["status"] != "ok":
             drops.append([it.key, "hal", st["status"], st.get("detail", "")])
-            continue
-        loki = {arm: it.loki_re(arm) for arm in ("W", "WB")}
-        if not (loki["W"] / "overlay.json").is_file():
+        elif not (it.loki_re("W") / "overlay.json").is_file():
             drops.append([it.key, "loki", "no_W_run", ""])
-            continue
-        rows.append(_row(f"hal{a.setting}", it, score_words(dana_words(wd / "out" / "groups.txt",
-                                                                       ffs), gt)))
-        for arm, d in loki.items():
-            if not (d / "overlay.json").is_file():
-                continue
-            r5 = round5_register(d, it.floor_dir)
-            rows.append(_row(f"loki{arm}", it, score_words(loki_words(d, ffs), gt),
-                             (r5["counted"], r5["matched"], r5["gt"])))
+        else:
+            _score_item(it, wd, rows, shapes, drops, a.setting)
     _write_csv(base / f"scores-hal{a.setting}{tag}.csv",
                ("tool", "set", "floor", "design", *SCORE_FIELDS, "r5_counted", "r5_matched",
                 "r5_gt"), rows)
+    _write_csv(base / f"groups-hal{a.setting}{tag}.csv",
+               ("tool", "set", "floor", "design", "groups", "merging", "sizes"), shapes)
     _write_csv(base / f"dropped-hal{a.setting}{tag}.csv", ("key", "arm", "status", "detail"), drops)
     print(f"scored {len(rows)} rows, dropped {len(drops)}")
+    return 0
+
+
+def _count_dffsr(blif: Path) -> int:
+    return sum(1 for ln in blif.read_text(encoding="utf-8").splitlines()
+               if ln.startswith(".subckt") and ln.split()[1] == "DFFSR")
+
+
+def _named_partition(groups_txt: Path, floor_dir: Path) -> list[tuple[str, ...]]:
+    """DANA groups with the node ids replaced by the original flip-flop names of ``key.json``
+    (node ids differ between the floors of one design; an unnamed node keeps its id)."""
+    cells = json.loads((floor_dir / "key.json").read_text(encoding="utf-8"))["cells"]
+    return sorted(tuple(sorted(cells.get(g, {}).get("name") or g for g in grp))
+                  for grp in partition(groups_txt))
+
+
+def cmd_f2f3(a: argparse.Namespace) -> int:
+    """For every MI and VT design that HAL ran at both floors: are DANA's f2 and f3 partitions
+    equal (``f2f3.csv``)? Also the number of ``DFFSR`` cells in every f2 and f3 netlist
+    (``dffsr.csv``). DANA reads the FF graph and the control pins of the FF cells, so equal
+    partitions and no DFFSR are the evidence behind the statement that DANA's f2 and f3 rows are
+    equal by construction."""
+    base = Path(a.out)
+    f2f3, dffsr = [], []
+    by = {(it.set, it.floor, it.design): it for it in items(["MI", "VT"], ["f2", "f3"])}
+    for (s, fl, d), it in sorted(by.items()):
+        dffsr.append((it.key, _count_dffsr(it.blif)))
+        other = by.get((s, "f3", d))
+        if fl != "f2" or other is None:
+            continue
+        p2, p3 = (base / "hal8" / f"{s}-{f}" / d / "out" / "groups.txt" for f in ("f2", "f3"))
+        if not (p2.is_file() and p3.is_file()):
+            f2f3.append((f"{s}/{d}", "not_both_run"))
+            continue
+        same = _named_partition(p2, it.floor_dir) == _named_partition(p3, other.floor_dir)
+        f2f3.append((f"{s}/{d}", "equal" if same else "DIFFERENT"))
+    _write_csv(base / "f2f3.csv", ("key", "partitions"), f2f3)
+    _write_csv(base / "dffsr.csv", ("key", "dffsr_cells"), dffsr)
+    eq = sum(r[1] == "equal" for r in f2f3)
+    print(f"designs {len(f2f3)}, equal {eq}, different {sum(r[1] == 'DIFFERENT' for r in f2f3)}, "
+          f"not run at both floors {sum(r[1] == 'not_both_run' for r in f2f3)}; DFFSR cells in "
+          f"{sum(r[1] > 0 for r in dffsr)} of {len(dffsr)} netlists")
     return 0
 
 
@@ -413,7 +500,7 @@ def main(argv: list[str]) -> int:
     sub.add_parser("plan").set_defaults(fn=cmd_plan)
     cmds = {"summary": cmd_summary, "lutcheck": cmd_lutcheck, "loadcheck": cmd_loadcheck,
             "roundtrip": cmd_roundtrip, "run": cmd_run, "score": cmd_score,
-            "repeat": cmd_repeat, "permute": cmd_permute}
+            "repeat": cmd_repeat, "permute": cmd_permute, "f2f3": cmd_f2f3}
     for name, fn in cmds.items():
         p = sub.add_parser(name)
         p.add_argument("out")
@@ -422,6 +509,8 @@ def main(argv: list[str]) -> int:
         p.add_argument("--setting", type=int, default=8, choices=SETTINGS)
         p.add_argument("--permute", type=int, default=None)
         p.add_argument("--sample", type=int, default=30)
+        p.add_argument("--fresh", action="store_true",
+                       help="ignore the status.json cache of an earlier run")
         p.set_defaults(fn=fn)
     args = ap.parse_args(argv)
     return int(args.fn(args))

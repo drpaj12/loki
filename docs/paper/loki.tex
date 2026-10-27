@@ -1738,8 +1738,8 @@ Odin~III node id so that a DANA group is a set of answer-key nodes. The HAL v4.5
 \code{--dataflow} does not run (its handler sets no gate types), so DANA was driven through the
 plugin's Python API with its documented default configuration; only \code{min\_group\_size} was
 set. The library default of \code{min\_group\_size} (8) is the headline arm; 2 is a sensitivity run.
-Loki's side is the round-5 \code{W} arm, not rerun. Ground truth are the L0 storage words of at
-least two flip-flops, scored by one code path for both tools (Jaccard-0.5 one-to-one matching, exact
+Loki's side is the round-5 \code{W} arm, not rerun. Ground truth are the L0 storage words with
+\code{WIDTH} $\ge 2$ whose footprint, cut to flip-flops, holds at least two flip-flops, scored by one code path for both tools (Jaccard-0.5 one-to-one matching, exact
 match, purity, completeness).
 
 Table~\ref{tab:hal} gives the pooled result on MI and VT. On f2 the pooled $F_J$ of DANA is
@@ -1750,9 +1750,18 @@ $D = F_J(\text{Loki}) - F_J(\text{DANA})$ is \halD{}, with a 95\% cluster-bootst
 favours DANA, but the interval is wide (the micro designs come in template families), the paired
 Wilcoxon test over the designs with a ground-truth word does not reach $p<0.05$ (\halPHal{} for DANA
 greater), and the interval is not inside the equivalence band either, so neither a lead nor a tie is
-shown. With Loki's counts under the round-5 scorer, $D$ is \halDfive{}. DANA's size-2 run gives a
-pooled $F_J$ of \halHalTwoFTwoFJ{}, also not a decided outcome (it is reported as a sensitivity,
-never as the headline).
+shown. The comparison scorer (duplicate predictions counted once, Loki's cells and the
+ground-truth footprints cut to flip-flops) was committed (\code{ca4cbac}, 2026-10-26 17:37) after
+Loki's round-5 counts were known (round 5, 2026-10-25) and before any DANA grouping was scored; it
+moves Loki's pooled f2 $F_J$ from \halRFiveFTwoFJ{} to \halFoneLoki{}. The decision is therefore
+shown under both scorers (Table~\ref{tab:hal-decision}; DANA's counts are the same in both rows):
+$D$ is \halScorerCmpD{} with the comparison scorer (95\% interval [\halScorerCmpCiLo,
+\halScorerCmpCiHi]) and \halScorerFiveD{} with the round-5 scorer ([\halScorerFiveCiLo,
+\halScorerFiveCiHi]); the rule applied to each alone gives \emph{\halScorerCmpOutcome} and
+\emph{\halScorerFiveOutcome}, and neither scorer is the headline. DANA's size-2 run gives a pooled
+$F_J$ of \halHalTwoFTwoFJ{}; it is a sensitivity run, never the headline. Its pre-registered outcome
+is also not a decided one, but with the round-5 scorer alone the rule gives
+\emph{\halTwoScorerFiveOutcome} for it (comparison scorer alone: \emph{\halTwoScorerCmpOutcome}).
 
 The two tools differ in kind. DANA proposes fewer groups (\halHalEightFTwoGroups{} against
 \halLokiWFTwoGroups{} for Loki on f2); a larger share of them matches a word
@@ -1761,11 +1770,21 @@ tool (recall \halHalEightFTwoRecJ{} for DANA, \halLokiWFTwoRecJ{} for Loki). DAN
 cover most flip-flops of the ground-truth words (\halHalEightFTwoCover{} against
 \halLokiWFTwoCover{}) and are more complete (\halHalEightFTwoCompl{} against
 \halLokiWFTwoCompl{}), with a lower purity (\halHalEightFTwoPurity{} against
-\halLokiWFTwoPurity{}): its groups are larger and merge words. Loki's groups are purer but split
-words and leave flip-flops out. On f3 DANA's rows equal its f2 rows: it reads the flip-flop graph and
-control nets only, and the f2 and f3 netlists of a design have the same flip-flops and the same
-flip-flop connectivity. Loki's f3 numbers differ from f2 (Table~\ref{tab:hal}); at f3 Loki's
-precision is higher and its recall lower.
+\halLokiWFTwoPurity{}). Its groups are larger (median \halHalEightFTwoMedian{}, mean
+\halHalEightFTwoMean{} flip-flops, against \halLokiWFTwoMedian{} and \halLokiWFTwoMean{} for Loki
+on f2), and \halHalEightFTwoMergeShare{} of them (\halHalEightFTwoMerge{}) merge words, that is,
+hold flip-flops of a ground-truth word and of another one, against \halLokiWFTwoMergeShare{}
+(\halLokiWFTwoMerge{}) for Loki. Loki's groups are purer but split words and leave flip-flops out.
+On f3 DANA's rows equal its f2 rows: it reads the flip-flop graph and control nets only, and the
+f2 and f3 netlists of a design have the same flip-flops and the same flip-flop connectivity; DANA's
+partitions are equal on \halFFEqual{} of \halFFDesigns{} designs (under the original flip-flop
+names) and no netlist holds a \code{DFFSR} cell (\halDffsrCells{} in \halDffsrNetlists{}).
+Loki's f3 numbers differ from f2 (Table~\ref{tab:hal}); at f3 Loki's precision is higher and its
+recall lower. This shift comes mostly from the scorer's flip-flop cuts (Loki's cells and the
+ground-truth footprints), which raise the match count only together, and not from the detector:
+with the round-5 scorer Loki's pooled f3 $F_J$ is \halRFiveFThreeFJ{} (precision
+\halRFiveFThreePrecJ{}, recall \halRFiveFThreeRecJ{}), against \halLokiWFThreeFJ{} with the
+comparison scorer (Amendment~1 table in the pre-registration).
 
 \emph{Limits.} The \halBigTotal{} large designs were not scored: \halBigDropped{} contain a RAM hard
 block that neither gate library can express, which is above the pre-registered \halStopLimit{} drop
@@ -1775,9 +1794,12 @@ reset pins, so DANA's control-net evidence is the clock only on both floors; a n
 and reset flip-flops is the case DANA was designed for, and we did not test it. The converter was
 checked against the BLIF by simulation (micro, VerilogEval and the convertible large designs); the
 \halLutCount{} LUT truth tables as HAL parses them show \halLutMismatch{} mismatches with the
-BLIF; DANA returned the same groups on a second run (\halRepIdentical{} of \halRepDesigns{}
-designs) and with permuted instance names and shuffled instance order (\halPermIdentical{} of
-\halPermDesigns{} designs); HAL was not patched and DANA was not tuned. The ground truth is the
+BLIF, and the BLIF and HAL LUT counts differ on \halLutCountBad{} of \halLutDesigns{} designs;
+DANA returned the same groups on a second run (\halRepIdentical{} of \halRepDesigns{} designs,
+and \halFreshIdentical{} of \halFreshDesigns{} with both runs uncached) and with permuted instance
+names and shuffled instance order (\halPermIdentical{} of \halPermDesigns{} designs); these two
+checks cover only small VT designs (the 5 smallest designs with a ground-truth word, and 6), no MI
+design; HAL was not patched and DANA was not tuned. The ground truth is the
 Odin~III answer key, so a group that matches no word is wrong only in that sense. For L~Q2.4 the
 result is limited to register words on these sets: under the pre-registered rule the word-first
 rules are not shown to be ahead of, or equal to, a published dataflow method, and neither tool

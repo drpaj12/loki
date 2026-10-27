@@ -141,6 +141,23 @@ def score_words(
     )
 
 
+def group_shape(pred: Iterable[Iterable[str]], gt: Sequence[GtWord]) -> tuple[list[int], int]:
+    """(sizes of the distinct predicted words, how many of them merge words). The predicted sets
+    are those ``score_words`` scores (deduplicated, 2 FFs or more). A predicted word merges words
+    when its FFs that lie in some scored GT word are not all inside one scored GT word (a scored
+    word has WIDTH >= 2 and 2 FFs or more); FFs in no scored word and GT words that repeat or nest
+    one another do not count as a merge."""
+    groups = sorted({frozenset(g) for g in pred if len(set(g)) >= 2}, key=sorted)
+    words = [w.ffs for w in gt if w.scored and len(w.ffs) >= 2]
+    labelled = frozenset().union(*words) if words else frozenset()
+    merging = 0
+    for g in groups:
+        part = g & labelled
+        if part and not any(part <= w for w in words):
+            merging += 1
+    return [len(g) for g in groups], merging
+
+
 def loki_words(re_dir: Path, ffs: frozenset[str], kinds: Sequence[str] = LOKI_KINDS,
                score_p: float = 0.5, *, cut: bool = True) -> list[frozenset[str]]:
     """Counted candidates of the given kinds of a ``loki re`` run; ``cut=True`` intersects the

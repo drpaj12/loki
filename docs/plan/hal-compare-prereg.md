@@ -165,15 +165,25 @@ designs (`tests/test_hal_score.py::RealDataTest`, run with `LOKI_MICRO`, `LOKI_V
 dedup, no cut, reproduces `construct_scores` on every design). P = predicted words, M = matched,
 G = GT words.
 
-| run | round 5 (P / M / G) | comparison (P / M / G) | dedup only (P / M) | FF cut only (P / M) |
-|---|---|---|---|---|
-| W-MI-f2 (68) | 136 / 25 / 94 | 120 / 30 / 94 | 136 / 25 | 136 / 26 |
-| W-MI-f3 (65) | 48 / 4 / 94 | 42 / 20 / 94 | 48 / 4 | 48 / 4 |
-| W-VT-f2 (33) | 150 / 9 / 146 | 148 / 13 / 146 | 150 / 9 | 150 / 6 |
-| W-VT-f3 (33) | 19 / 6 / 146 | 19 / 14 / 146 | 19 / 6 | 19 / 0 |
+| run | round 5 (P / M / G) | comparison = both (P / M / G) | dedup only (P / M) | cells FF cut only (P / M) | GT footprint cut only (P / M / G) |
+|---|---|---|---|---|---|
+| W-MI-f2 (68) | 136 / 25 / 94 | 120 / 30 / 94 | 136 / 25 | 136 / 26 | 136 / 27 / 94 |
+| W-MI-f3 (65) | 48 / 4 / 94 | 42 / 20 / 94 | 48 / 4 | 48 / 4 | 48 / 7 / 94 |
+| W-VT-f2 (33) | 150 / 9 / 146 | 148 / 13 / 146 | 150 / 9 | 150 / 6 | 150 / 6 / 146 |
+| W-VT-f3 (33) | 19 / 6 / 146 | 19 / 14 / 146 | 19 / 6 | 19 / 0 | 19 / 0 / 146 |
 
-("dedup only" and "FF cut only" change that one thing against round 5, GT as round 5; the FF cut
-of the GT footprint is what moves f3, where footprints hold the gates of the word's logic.)
+("dedup only" changes only the deduplication; "cells FF cut only" cuts Loki's cells to FFs and
+keeps the round-5 GT; "GT footprint cut only" uses the comparison GT (footprints cut to FFs,
+WIDTH >= 2 and >= 2 FFs after the cut) with uncut Loki cells and no dedup; "comparison" has all
+of them. Column added after review (fix 2, M2): `real_deltas` in
+`tests/test_hal_score.py::RealDataTest` now also computes the GT-cut-only counts.) At f3 no
+single part moves the match count by itself: in MI f3 matched goes 4 (round 5) to 4 (dedup),
+4 (cells cut), 7 (GT cut) and 20 (both cuts together); in VT f3, 6 to 6, 0, 0 and 14. The f3
+shift comes from the two FF cuts acting together (cut cells compared with cut footprints), not
+from either alone and not from the deduplication. The original "Ground truth" and "Predictions"
+paragraphs (363187f) already said the Loki cells and the GT bit set are intersected with the FFs;
+the deduplication and the WIDTH >= 2 condition first appear in the scorer commits ca4cbac and
+1214dab.
 
 Rules for reporting: Loki's round-5-scorer numbers (`wordscore.round5_register`, CLI
 `--round5`) are printed beside the comparison numbers in every table. The "Loki ahead" outcome
@@ -201,7 +211,13 @@ reported as "no difference shown".
 
 **A4. DANA arms (finding 4).** The best-of-two choice on E_real is dropped: it selected the
 analysis setting on the test data. The headline HAL arm is the **library default**
-`min_group_size` 8 (`dataflow_analysis/api/configuration.h:77`), fixed now. Setting B
+`min_group_size` 8 (`dataflow_analysis/api/configuration.h:77`), fixed now. The value 8 is taken
+from that source line; it is not read from the built plugin at run time (the original Predictions
+text, "read from the built plugin and recorded", is superseded), and `dana_run.py` passes
+`min_group_size` explicitly (8 headline, 2 sensitivity). After the runs (fix 2, L6) one check with
+`experiments/hal/dana_default.py` (no `min_group_size` call) on 4 designs gave groups equal to
+setting 8 on all 4, and on `VT-f2/ve_Prob153_gshare`, where settings 8 and 2 differ, different from
+setting 2: consistent with a default of 8; it is not a pipeline step. Setting B
 (`min_group_size` 2) is a sensitivity run reported beside it, never the headline. What the
 parameter does (read in the HAL clone, v4.5.0): `--bad_group_size` sets `min_group_size`; in
 `evaluation.cpp` (lines 109-216) groups smaller than it are "bad": they rank below larger groups
@@ -321,3 +337,33 @@ grouping was computed (the script never imports the dataflow plugin), and no wor
 (precision, recall, F1) was computed or seen for any design. The first DANA runs on MI and VT came
 after, in ae66d9d. The load checks of B3 (60 corpus-train designs) are as stated. The pre-registered
 rules, DANA settings and decision rule are unchanged by this erratum.
+
+### Fix-2 notes (2026-10-26, after review; no pre-registered rule or number changed)
+
+- Scorer disclosure: `docs/results-hal.md` now shows the decision under the comparison scorer and
+  under the round-5 scorer side by side, with the order of events and commit times. HAL's counts
+  are the same in both rows. Under the round-5 scorer alone the headline setting is `inconclusive`
+  (95 percent interval of D just above -0.05) and the size-2 sensitivity run is `HAL ahead`; the
+  pre-registered outcome of the size-2 run (comparison scorer for "HAL ahead", A1) stays
+  `inconclusive`.
+- Round-5 D (A1): Loki's round-5 F1 (counted, matched, round-5 GT count) is set against HAL's
+  comparison-scorer F1 (HAL counts and the comparison GT count); HAL is never rescored with the
+  round-5 scorer. Documented in `loki/hal/compare.py` (`Pair`).
+- A8, BIG round trip: `probe="out"` for BIG was a choice made while the BLIF simulator was slow;
+  no timing was recorded, so there is no timing evidence for it. BIG is not scored (B4); the
+  round trip on BIG checks primary outputs only.
+- A7 determinism was rerun with both runs uncached (`run_hal.py repeat --fresh`, empty output
+  directory): `experiments/hal/results/determinism-fresh.csv`, 5 of 5 identical. The original
+  second run had reused cached outputs of the main run for the first run.
+- B2 LUT check: the HAL-side LUT count is now compared too (`lutcheck.csv`, columns
+  `luts_blif_named`, `luts_blif_unnamed`, `luts_hal`, `count_mismatch`). The earlier note "VT-f2/
+  ve_Prob007_wire: BLIF 0, HAL 1" was a counting artifact: the BLIF side counted only LUTs with a
+  `.cname`, and that design's single LUT is an unnamed buffer (HAL name `_c0`). With unnamed LUTs
+  compared as a multiset of truth tables: 100 designs, 10,545 LUTs, 0 table mismatches, 0 count
+  mismatches. The earlier count of 9,915 was the named LUTs only.
+- Dropped Loki rows: designs without a Loki `WB` run (2 at MI f3) are now listed in
+  `dropped-hal*.csv` and the WB rows are shown with a W row over the same designs.
+- B3 evidence: `run_hal.py f2f3` (`f2f3.csv`, `dffsr.csv`; test `tests/test_hal_results.py`):
+  DANA's f2 and f3 partitions are equal on 98 of 98 designs when flip-flops are matched by their
+  original names in `key.json` (node ids differ between floors); no netlist of the 199 MI and VT
+  netlists (both floors) contains a `DFFSR`.

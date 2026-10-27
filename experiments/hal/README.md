@@ -33,8 +33,13 @@ HAL v4.5.0's `--dataflow` command line does not run (no gate types set); `dana_r
 plugin through the Python API (`hal --python-script`, Amendment 2 B1).
 
 Driver (`PYTHONPATH=<repo>:<repo>/experiments/round5 HAL_BIN=<hal>`; sub-commands `plan`, `lutcheck`,
-`loadcheck`, `roundtrip`, `repeat`, `permute`, `run`, `summary`, `score`; `python -m loki.hal.compare`
-writes `docs/results-hal.md` and `docs/paper/hal-tables.tex`).
+`loadcheck`, `roundtrip`, `repeat`, `permute`, `run`, `summary`, `score`, `f2f3`; `python -m
+loki.hal.compare` writes `docs/results-hal.md` and `docs/paper/hal-tables.tex`). `run`, `repeat`
+and `permute` reuse the `status.json` of an earlier run in the same output directory; `--fresh`
+ignores it. `f2f3` compares DANA's f2 and f3 partitions per design (under the original flip-flop
+names) and counts `DFFSR` cells; `dana_default.py` runs DANA with no `min_group_size` call (check
+of the default 8). The result files in `results/` are the outputs of these commands; the tests in
+`tests/test_hal_results.py` read them.
 
 One design by hand:
 

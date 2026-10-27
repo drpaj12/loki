@@ -1,2 +1,4 @@
 key,arm,status,detail
 MI-f2/micro_multiply_hard_block,hal,not_convertible,unsupported .subckt multiply on floor f2
+MI-f3/micro_bm_match1_str_arch,lokiWB,no_WB_run,overlay.json missing in the round-5 run directory; the design is left out of the Loki WB rows only
+MI-f3/micro_bm_arithmetic_unused_bits,lokiWB,no_WB_run,overlay.json missing in the round-5 run directory; the design is left out of the Loki WB rows only

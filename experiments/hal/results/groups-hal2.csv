@@ -1,0 +1,593 @@
+tool,set,floor,design,groups,merging,sizes
+hal2,VT,f2,ve_Prob001_zero,0,0,
+lokiW,VT,f2,ve_Prob001_zero,0,0,
+lokiWB,VT,f2,ve_Prob001_zero,0,0,
+hal2,VT,f3,ve_Prob001_zero,0,0,
+lokiW,VT,f3,ve_Prob001_zero,0,0,
+lokiWB,VT,f3,ve_Prob001_zero,0,0,
+hal2,VT,f2,ve_Prob007_wire,0,0,
+lokiW,VT,f2,ve_Prob007_wire,0,0,
+lokiWB,VT,f2,ve_Prob007_wire,0,0,
+hal2,VT,f3,ve_Prob007_wire,0,0,
+lokiW,VT,f3,ve_Prob007_wire,0,0,
+lokiWB,VT,f3,ve_Prob007_wire,0,0,
+hal2,VT,f2,ve_Prob008_m2014_q4h,0,0,
+lokiW,VT,f2,ve_Prob008_m2014_q4h,0,0,
+lokiWB,VT,f2,ve_Prob008_m2014_q4h,0,0,
+hal2,VT,f3,ve_Prob008_m2014_q4h,0,0,
+lokiW,VT,f3,ve_Prob008_m2014_q4h,0,0,
+lokiWB,VT,f3,ve_Prob008_m2014_q4h,0,0,
+hal2,MI,f2,micro_bm_my_D_latch2,0,0,
+lokiW,MI,f2,micro_bm_my_D_latch2,0,0,
+lokiWB,MI,f2,micro_bm_my_D_latch2,0,0,
+hal2,MI,f3,micro_bm_my_D_latch2,0,0,
+lokiW,MI,f3,micro_bm_my_D_latch2,0,0,
+lokiWB,MI,f3,micro_bm_my_D_latch2,0,0,
+hal2,VT,f2,ve_Prob005_notgate,0,0,
+lokiW,VT,f2,ve_Prob005_notgate,0,0,
+lokiWB,VT,f2,ve_Prob005_notgate,0,0,
+hal2,VT,f3,ve_Prob005_notgate,0,0,
+lokiW,VT,f3,ve_Prob005_notgate,0,0,
+lokiWB,VT,f3,ve_Prob005_notgate,0,0,
+hal2,MI,f2,micro_bm_DL_D_flipflop,0,0,
+lokiW,MI,f2,micro_bm_DL_D_flipflop,0,0,
+lokiWB,MI,f2,micro_bm_DL_D_flipflop,0,0,
+hal2,VT,f2,ve_Prob019_m2014_q4f,0,0,
+lokiW,VT,f2,ve_Prob019_m2014_q4f,0,0,
+lokiWB,VT,f2,ve_Prob019_m2014_q4f,0,0,
+hal2,VT,f2,ve_Prob083_mt2015_q4b,0,0,
+lokiW,VT,f2,ve_Prob083_mt2015_q4b,0,0,
+lokiWB,VT,f2,ve_Prob083_mt2015_q4b,0,0,
+hal2,VT,f2,ve_Prob090_circuit1,0,0,
+lokiW,VT,f2,ve_Prob090_circuit1,0,0,
+lokiWB,VT,f2,ve_Prob090_circuit1,0,0,
+hal2,MI,f2,micro_bm_DL_2_1_mux,0,0,
+lokiW,MI,f2,micro_bm_DL_2_1_mux,0,0,
+lokiWB,MI,f2,micro_bm_DL_2_1_mux,0,0,
+hal2,MI,f2,micro_bm_DL_structural_logic,0,0,
+lokiW,MI,f2,micro_bm_DL_structural_logic,0,0,
+lokiWB,MI,f2,micro_bm_DL_structural_logic,0,0,
+hal2,MI,f2,micro_bm_my_D_latch1,0,0,
+lokiW,MI,f2,micro_bm_my_D_latch1,0,0,
+lokiWB,MI,f2,micro_bm_my_D_latch1,0,0,
+hal2,VT,f3,ve_Prob019_m2014_q4f,0,0,
+lokiW,VT,f3,ve_Prob019_m2014_q4f,0,0,
+lokiWB,VT,f3,ve_Prob019_m2014_q4f,0,0,
+hal2,MI,f2,micro_bm_DL_2_cascaded_flip_flops,1,0,2
+lokiW,MI,f2,micro_bm_DL_2_cascaded_flip_flops,0,0,
+lokiWB,MI,f2,micro_bm_DL_2_cascaded_flip_flops,0,0,
+hal2,MI,f3,micro_bm_DL_D_flipflop,0,0,
+lokiW,MI,f3,micro_bm_DL_D_flipflop,0,0,
+lokiWB,MI,f3,micro_bm_DL_D_flipflop,0,0,
+hal2,VT,f2,ve_Prob036_ringer,0,0,
+lokiW,VT,f2,ve_Prob036_ringer,0,0,
+lokiWB,VT,f2,ve_Prob036_ringer,0,0,
+hal2,VT,f3,ve_Prob090_circuit1,0,0,
+lokiW,VT,f3,ve_Prob090_circuit1,0,0,
+lokiWB,VT,f3,ve_Prob090_circuit1,0,0,
+hal2,MI,f2,micro_bm_DL_Dff_w_synch_reset,0,0,
+lokiW,MI,f2,micro_bm_DL_Dff_w_synch_reset,0,0,
+lokiWB,MI,f2,micro_bm_DL_Dff_w_synch_reset,0,0,
+hal2,MI,f3,micro_bm_my_D_latch1,0,0,
+lokiW,MI,f3,micro_bm_my_D_latch1,0,0,
+lokiWB,MI,f3,micro_bm_my_D_latch1,0,0,
+hal2,MI,f2,micro_ff,0,0,
+lokiW,MI,f2,micro_ff,0,0,
+lokiWB,MI,f2,micro_ff,0,0,
+hal2,MI,f3,micro_bm_DL_2_1_mux,0,0,
+lokiW,MI,f3,micro_bm_DL_2_1_mux,0,0,
+lokiWB,MI,f3,micro_bm_DL_2_1_mux,0,0,
+hal2,MI,f2,micro_bm_DL_4_1_mux,0,0,
+lokiW,MI,f2,micro_bm_DL_4_1_mux,0,0,
+lokiWB,MI,f2,micro_bm_DL_4_1_mux,0,0,
+hal2,MI,f2,micro_bm_DL_behavioural_full_adder,0,0,
+lokiW,MI,f2,micro_bm_DL_behavioural_full_adder,0,0,
+lokiWB,MI,f2,micro_bm_DL_behavioural_full_adder,0,0,
+hal2,MI,f3,micro_bm_DL_structural_logic,0,0,
+lokiW,MI,f3,micro_bm_DL_structural_logic,0,0,
+lokiWB,MI,f3,micro_bm_DL_structural_logic,0,0,
+hal2,VT,f3,ve_Prob036_ringer,0,0,
+lokiW,VT,f3,ve_Prob036_ringer,0,0,
+lokiWB,VT,f3,ve_Prob036_ringer,0,0,
+hal2,VT,f3,ve_Prob083_mt2015_q4b,0,0,
+lokiW,VT,f3,ve_Prob083_mt2015_q4b,0,0,
+lokiWB,VT,f3,ve_Prob083_mt2015_q4b,0,0,
+hal2,VT,f2,ve_Prob125_kmap3,0,0,
+lokiW,VT,f2,ve_Prob125_kmap3,0,0,
+lokiWB,VT,f2,ve_Prob125_kmap3,0,0,
+hal2,MI,f2,micro_bm_dag3_log,0,0,
+lokiW,MI,f2,micro_bm_dag3_log,0,0,
+lokiWB,MI,f2,micro_bm_dag3_log,0,0,
+hal2,MI,f3,micro_bm_dag3_log,0,0,
+lokiW,MI,f3,micro_bm_dag3_log,0,0,
+lokiWB,MI,f3,micro_bm_dag3_log,0,0,
+hal2,MI,f3,micro_ff,0,0,
+lokiW,MI,f3,micro_ff,0,0,
+lokiWB,MI,f3,micro_ff,0,0,
+hal2,MI,f3,micro_bm_DL_2_cascaded_flip_flops,1,0,2
+lokiW,MI,f3,micro_bm_DL_2_cascaded_flip_flops,0,0,
+lokiWB,MI,f3,micro_bm_DL_2_cascaded_flip_flops,0,0,
+hal2,MI,f3,micro_bm_DL_Dff_w_synch_reset,0,0,
+lokiW,MI,f3,micro_bm_DL_Dff_w_synch_reset,0,0,
+lokiWB,MI,f3,micro_bm_DL_Dff_w_synch_reset,0,0,
+hal2,MI,f2,micro_bm_DL_logic_w_Dff,1,0,2
+lokiW,MI,f2,micro_bm_DL_logic_w_Dff,0,0,
+lokiWB,MI,f2,micro_bm_DL_logic_w_Dff,0,0,
+hal2,MI,f2,micro_bm_DL_logic_w_Dff2,1,0,2
+lokiW,MI,f2,micro_bm_DL_logic_w_Dff2,0,0,
+lokiWB,MI,f2,micro_bm_DL_logic_w_Dff2,0,0,
+hal2,MI,f2,micro_bm_DL_structural_logic2,0,0,
+lokiW,MI,f2,micro_bm_DL_structural_logic2,0,0,
+lokiWB,MI,f2,micro_bm_DL_structural_logic2,0,0,
+hal2,MI,f2,micro_bm_dag2_log,0,0,
+lokiW,MI,f2,micro_bm_dag2_log,0,0,
+lokiWB,MI,f2,micro_bm_dag2_log,0,0,
+hal2,MI,f2,micro_bm_dag3_lpm_log,0,0,
+lokiW,MI,f2,micro_bm_dag3_lpm_log,0,0,
+lokiWB,MI,f2,micro_bm_dag3_lpm_log,0,0,
+hal2,MI,f3,micro_bm_dag3_lpm_log,0,0,
+lokiW,MI,f3,micro_bm_dag3_lpm_log,0,0,
+lokiWB,MI,f3,micro_bm_dag3_lpm_log,0,0,
+hal2,VT,f2,ve_Prob072_thermostat,0,0,
+lokiW,VT,f2,ve_Prob072_thermostat,0,0,
+lokiWB,VT,f2,ve_Prob072_thermostat,0,0,
+hal2,MI,f2,micro_bm_add_lpm,0,0,
+lokiW,MI,f2,micro_bm_add_lpm,0,0,
+lokiWB,MI,f2,micro_bm_add_lpm,0,0,
+hal2,MI,f2,micro_bm_dag1_log,0,0,
+lokiW,MI,f2,micro_bm_dag1_log,0,0,
+lokiWB,MI,f2,micro_bm_dag1_log,0,0,
+hal2,MI,f2,micro_bm_dag1_lpm,0,0,
+lokiW,MI,f2,micro_bm_dag1_lpm,0,0,
+lokiWB,MI,f2,micro_bm_dag1_lpm,0,0,
+hal2,MI,f2,micro_bm_dag3_lpm,0,0,
+lokiW,MI,f2,micro_bm_dag3_lpm,0,0,
+lokiWB,MI,f2,micro_bm_dag3_lpm,0,0,
+hal2,VT,f2,ve_Prob099_m2014_q6c,0,0,
+lokiW,VT,f2,ve_Prob099_m2014_q6c,0,0,
+lokiWB,VT,f2,ve_Prob099_m2014_q6c,0,0,
+hal2,MI,f2,micro_adder_hard_block,0,0,
+lokiW,MI,f2,micro_adder_hard_block,0,0,
+lokiWB,MI,f2,micro_adder_hard_block,0,0,
+hal2,MI,f3,micro_bm_dag2_log,0,0,
+lokiW,MI,f3,micro_bm_dag2_log,0,0,
+lokiWB,MI,f3,micro_bm_dag2_log,0,0,
+hal2,MI,f2,micro_bm_dag2_lpm,0,0,
+lokiW,MI,f2,micro_bm_dag2_lpm,0,0,
+lokiWB,MI,f2,micro_bm_dag2_lpm,0,0,
+hal2,VT,f2,ve_Prob065_7420,0,0,
+lokiW,VT,f2,ve_Prob065_7420,0,0,
+lokiWB,VT,f2,ve_Prob065_7420,0,0,
+hal2,VT,f2,ve_Prob075_counter_2bc,1,0,2
+lokiW,VT,f2,ve_Prob075_counter_2bc,1,0,2
+lokiWB,VT,f2,ve_Prob075_counter_2bc,0,0,
+hal2,MI,f2,micro_bm_DL_2_4_encoder,0,0,
+lokiW,MI,f2,micro_bm_DL_2_4_encoder,0,0,
+lokiWB,MI,f2,micro_bm_DL_2_4_encoder,0,0,
+hal2,VT,f3,ve_Prob072_thermostat,0,0,
+lokiW,VT,f3,ve_Prob072_thermostat,0,0,
+lokiWB,VT,f3,ve_Prob072_thermostat,0,0,
+hal2,VT,f2,ve_Prob120_fsm3s,1,0,4
+lokiW,VT,f2,ve_Prob120_fsm3s,2,0,2 2
+lokiWB,VT,f2,ve_Prob120_fsm3s,1,0,2
+hal2,MI,f3,micro_bm_dag1_log,0,0,
+lokiW,MI,f3,micro_bm_dag1_log,0,0,
+lokiWB,MI,f3,micro_bm_dag1_log,0,0,
+hal2,MI,f3,micro_bm_dag1_lpm,0,0,
+lokiW,MI,f3,micro_bm_dag1_lpm,0,0,
+lokiWB,MI,f3,micro_bm_dag1_lpm,0,0,
+hal2,MI,f3,micro_bm_dag3_lpm,0,0,
+lokiW,MI,f3,micro_bm_dag3_lpm,0,0,
+lokiWB,MI,f3,micro_bm_dag3_lpm,0,0,
+hal2,VT,f3,ve_Prob125_kmap3,0,0,
+lokiW,VT,f3,ve_Prob125_kmap3,0,0,
+lokiWB,VT,f3,ve_Prob125_kmap3,0,0,
+hal2,MI,f3,micro_bm_DL_logic_w_Dff,1,0,2
+lokiW,MI,f3,micro_bm_DL_logic_w_Dff,0,0,
+lokiWB,MI,f3,micro_bm_DL_logic_w_Dff,0,0,
+hal2,MI,f3,micro_bm_DL_logic_w_Dff2,1,0,2
+lokiW,MI,f3,micro_bm_DL_logic_w_Dff2,0,0,
+lokiWB,MI,f3,micro_bm_DL_logic_w_Dff2,0,0,
+hal2,MI,f3,micro_bm_dag2_lpm,0,0,
+lokiW,MI,f3,micro_bm_dag2_lpm,0,0,
+lokiWB,MI,f3,micro_bm_dag2_lpm,0,0,
+hal2,VT,f2,ve_Prob006_vectorr,0,0,
+lokiW,VT,f2,ve_Prob006_vectorr,0,0,
+lokiWB,VT,f2,ve_Prob006_vectorr,0,0,
+hal2,VT,f3,ve_Prob006_vectorr,0,0,
+lokiW,VT,f3,ve_Prob006_vectorr,0,0,
+lokiWB,VT,f3,ve_Prob006_vectorr,0,0,
+hal2,VT,f2,ve_Prob035_count1to10,1,0,3
+lokiW,VT,f2,ve_Prob035_count1to10,0,0,
+lokiWB,VT,f2,ve_Prob035_count1to10,0,0,
+hal2,VT,f2,ve_Prob038_count15,1,0,4
+lokiW,VT,f2,ve_Prob038_count15,0,0,
+lokiWB,VT,f2,ve_Prob038_count15,0,0,
+hal2,MI,f3,micro_bm_DL_2_4_encoder,0,0,
+lokiW,MI,f3,micro_bm_DL_2_4_encoder,0,0,
+lokiWB,MI,f3,micro_bm_DL_2_4_encoder,0,0,
+hal2,MI,f2,micro_bm_DL_4_bit_comparator,0,0,
+lokiW,MI,f2,micro_bm_DL_4_bit_comparator,0,0,
+lokiWB,MI,f2,micro_bm_DL_4_bit_comparator,0,0,
+hal2,MI,f3,micro_bm_DL_behavioural_full_adder,0,0,
+lokiW,MI,f3,micro_bm_DL_behavioural_full_adder,0,0,
+lokiWB,MI,f3,micro_bm_DL_behavioural_full_adder,0,0,
+hal2,VT,f3,ve_Prob099_m2014_q6c,0,0,
+lokiW,VT,f3,ve_Prob099_m2014_q6c,0,0,
+lokiWB,VT,f3,ve_Prob099_m2014_q6c,0,0,
+hal2,VT,f2,ve_Prob121_2014_q3bfsm,1,0,5
+lokiW,VT,f2,ve_Prob121_2014_q3bfsm,1,0,2
+lokiWB,VT,f2,ve_Prob121_2014_q3bfsm,1,0,2
+hal2,MI,f3,micro_bm_DL_4_1_mux,0,0,
+lokiW,MI,f3,micro_bm_DL_4_1_mux,0,0,
+lokiWB,MI,f3,micro_bm_DL_4_1_mux,0,0,
+hal2,MI,f2,micro_bm_if_reset,1,0,3
+lokiW,MI,f2,micro_bm_if_reset,1,0,3
+lokiWB,MI,f2,micro_bm_if_reset,1,0,3
+hal2,MI,f2,micro_bm_DL_4_bit_shift_register,1,0,4
+lokiW,MI,f2,micro_bm_DL_4_bit_shift_register,1,0,3
+lokiWB,MI,f2,micro_bm_DL_4_bit_shift_register,2,0,3 4
+hal2,MI,f2,micro_case_generate,0,0,
+lokiW,MI,f2,micro_case_generate,0,0,
+lokiWB,MI,f2,micro_case_generate,0,0,
+hal2,MI,f3,micro_case_generate,0,0,
+lokiW,MI,f3,micro_case_generate,0,0,
+lokiWB,MI,f3,micro_case_generate,0,0,
+hal2,MI,f2,micro_if_generate,0,0,
+lokiW,MI,f2,micro_if_generate,0,0,
+lokiWB,MI,f2,micro_if_generate,0,0,
+hal2,MI,f3,micro_if_generate,0,0,
+lokiW,MI,f3,micro_if_generate,0,0,
+lokiWB,MI,f3,micro_if_generate,0,0,
+hal2,VT,f2,ve_Prob086_lfsr5,1,0,5
+lokiW,VT,f2,ve_Prob086_lfsr5,1,0,5
+lokiWB,VT,f2,ve_Prob086_lfsr5,1,0,5
+hal2,MI,f2,micro_bm_DL_BCD_7_segment_without_x,0,0,
+lokiW,MI,f2,micro_bm_DL_BCD_7_segment_without_x,0,0,
+lokiWB,MI,f2,micro_bm_DL_BCD_7_segment_without_x,0,0,
+hal2,MI,f2,micro_bm_DL_four_bit_adder_continuous_assign,0,0,
+lokiW,MI,f2,micro_bm_DL_four_bit_adder_continuous_assign,0,0,
+lokiWB,MI,f2,micro_bm_DL_four_bit_adder_continuous_assign,0,0,
+hal2,MI,f3,micro_bm_DL_structural_logic2,0,0,
+lokiW,MI,f3,micro_bm_DL_structural_logic2,0,0,
+lokiWB,MI,f3,micro_bm_DL_structural_logic2,0,0,
+hal2,MI,f2,micro_hard_adder_cin_propagation,0,0,
+lokiW,MI,f2,micro_hard_adder_cin_propagation,0,0,
+lokiWB,MI,f2,micro_hard_adder_cin_propagation,0,0,
+hal2,MI,f2,micro_bm_tester,1,0,4
+lokiW,MI,f2,micro_bm_tester,1,0,4
+lokiWB,MI,f2,micro_bm_tester,1,0,4
+hal2,MI,f3,micro_bm_add_lpm,0,0,
+lokiW,MI,f3,micro_bm_add_lpm,0,0,
+lokiWB,MI,f3,micro_bm_add_lpm,0,0,
+hal2,VT,f3,ve_Prob065_7420,0,0,
+lokiW,VT,f3,ve_Prob065_7420,0,0,
+lokiWB,VT,f3,ve_Prob065_7420,0,0,
+hal2,MI,f3,micro_bm_tester,1,0,4
+lokiW,MI,f3,micro_bm_tester,1,0,4
+lokiWB,MI,f3,micro_bm_tester,1,0,4
+hal2,VT,f3,ve_Prob120_fsm3s,1,0,4
+lokiW,VT,f3,ve_Prob120_fsm3s,0,0,
+lokiWB,VT,f3,ve_Prob120_fsm3s,0,0,
+hal2,MI,f2,micro_bm_dag2_log_mod,3,1,2 3 2
+lokiW,MI,f2,micro_bm_dag2_log_mod,3,0,3 2 2
+lokiWB,MI,f2,micro_bm_dag2_log_mod,1,0,3
+hal2,MI,f2,micro_bm_dag2_mod,3,1,2 3 2
+lokiW,MI,f2,micro_bm_dag2_mod,3,0,3 2 2
+lokiWB,MI,f2,micro_bm_dag2_mod,1,0,3
+hal2,MI,f3,micro_bm_if_reset,1,0,3
+lokiW,MI,f3,micro_bm_if_reset,1,0,3
+lokiWB,MI,f3,micro_bm_if_reset,1,0,3
+hal2,MI,f2,micro_bm_if_collapse,4,0,2 3 2 2
+lokiW,MI,f2,micro_bm_if_collapse,4,0,2 3 2 2
+lokiWB,MI,f2,micro_bm_if_collapse,4,0,2 3 2 2
+hal2,MI,f2,micro_bm_if_common,2,1,6 3
+lokiW,MI,f2,micro_bm_if_common,5,0,2 2 3 2 2
+lokiWB,MI,f2,micro_bm_if_common,5,0,2 2 3 2 2
+hal2,VT,f2,ve_Prob140_fsm_hdlc,1,0,10
+lokiW,VT,f2,ve_Prob140_fsm_hdlc,1,0,10
+lokiWB,VT,f2,ve_Prob140_fsm_hdlc,4,0,10 3 2 2
+hal2,MI,f2,micro_bm_DL_16_1_mux,0,0,
+lokiW,MI,f2,micro_bm_DL_16_1_mux,0,0,
+lokiWB,MI,f2,micro_bm_DL_16_1_mux,0,0,
+hal2,MI,f2,micro_bm_dag1_log_mod,3,0,2 3 3
+lokiW,MI,f2,micro_bm_dag1_log_mod,3,0,2 2 2
+lokiWB,MI,f2,micro_bm_dag1_log_mod,0,0,
+hal2,VT,f2,ve_Prob137_fsm_serial,1,0,12
+lokiW,VT,f2,ve_Prob137_fsm_serial,2,0,10 2
+lokiWB,VT,f2,ve_Prob137_fsm_serial,3,0,10 9 7
+hal2,VT,f3,ve_Prob075_counter_2bc,1,0,2
+lokiW,VT,f3,ve_Prob075_counter_2bc,1,0,2
+lokiWB,VT,f3,ve_Prob075_counter_2bc,0,0,
+hal2,MI,f3,micro_bm_DL_4_bit_shift_register,1,0,4
+lokiW,MI,f3,micro_bm_DL_4_bit_shift_register,0,0,
+lokiWB,MI,f3,micro_bm_DL_4_bit_shift_register,0,0,
+hal2,VT,f3,ve_Prob086_lfsr5,1,0,5
+lokiW,VT,f3,ve_Prob086_lfsr5,2,0,2 3
+lokiWB,VT,f3,ve_Prob086_lfsr5,1,0,3
+hal2,MI,f2,micro_bm_DL_BCD_adder,0,0,
+lokiW,MI,f2,micro_bm_DL_BCD_adder,0,0,
+lokiWB,MI,f2,micro_bm_DL_BCD_adder,0,0,
+hal2,MI,f2,micro_parameter,0,0,
+lokiW,MI,f2,micro_parameter,0,0,
+lokiWB,MI,f2,micro_parameter,0,0,
+hal2,MI,f2,micro_parameter_2,0,0,
+lokiW,MI,f2,micro_parameter_2,0,0,
+lokiWB,MI,f2,micro_parameter_2,0,0,
+hal2,VT,f3,ve_Prob038_count15,1,0,4
+lokiW,VT,f3,ve_Prob038_count15,1,0,3
+lokiWB,VT,f3,ve_Prob038_count15,0,0,
+hal2,MI,f2,micro_bm_DL_74381_ALU,0,0,
+lokiW,MI,f2,micro_bm_DL_74381_ALU,0,0,
+lokiWB,MI,f2,micro_bm_DL_74381_ALU,0,0,
+hal2,VT,f3,ve_Prob121_2014_q3bfsm,1,0,5
+lokiW,VT,f3,ve_Prob121_2014_q3bfsm,0,0,
+lokiWB,VT,f3,ve_Prob121_2014_q3bfsm,0,0,
+hal2,MI,f2,micro_bm_dag3_lpm_log_mod,3,1,4 3 2
+lokiW,MI,f2,micro_bm_dag3_lpm_log_mod,4,0,2 2 2 2
+lokiWB,MI,f2,micro_bm_dag3_lpm_log_mod,2,0,2 2
+hal2,MI,f2,micro_bm_stmt_compare_padding,1,0,6
+lokiW,MI,f2,micro_bm_stmt_compare_padding,1,0,3
+lokiWB,MI,f2,micro_bm_stmt_compare_padding,1,0,4
+hal2,MI,f2,micro_bm_dag1_mod,3,1,3 6 4
+lokiW,MI,f2,micro_bm_dag1_mod,4,0,3 3 3 3
+lokiWB,MI,f2,micro_bm_dag1_mod,1,0,3
+hal2,MI,f2,micro_bm_dag4_mod,3,1,3 6 4
+lokiW,MI,f2,micro_bm_dag4_mod,4,0,3 3 3 3
+lokiWB,MI,f2,micro_bm_dag4_mod,1,0,3
+hal2,VT,f2,ve_Prob126_circuit6,0,0,
+lokiW,VT,f2,ve_Prob126_circuit6,0,0,
+lokiWB,VT,f2,ve_Prob126_circuit6,0,0,
+hal2,VT,f2,ve_Prob155_lemmings4,1,1,8
+lokiW,VT,f2,ve_Prob155_lemmings4,1,0,4
+lokiWB,VT,f2,ve_Prob155_lemmings4,2,0,3 2
+hal2,MI,f3,micro_bm_DL_4_bit_comparator,0,0,
+lokiW,MI,f3,micro_bm_DL_4_bit_comparator,0,0,
+lokiWB,MI,f3,micro_bm_DL_4_bit_comparator,0,0,
+hal2,MI,f2,micro_bm_dag3_mod,5,0,2 3 2 2 2
+lokiW,MI,f2,micro_bm_dag3_mod,4,0,2 2 2 2
+lokiWB,MI,f2,micro_bm_dag3_mod,3,0,2 2 2
+hal2,VT,f2,ve_Prob037_review2015_count1k,1,0,10
+lokiW,VT,f2,ve_Prob037_review2015_count1k,2,0,5 4
+lokiWB,VT,f2,ve_Prob037_review2015_count1k,3,0,5 4 3
+hal2,MI,f2,micro_bm_DL_4_16_encoder,0,0,
+lokiW,MI,f2,micro_bm_DL_4_16_encoder,0,0,
+lokiWB,MI,f2,micro_bm_DL_4_16_encoder,0,0,
+hal2,MI,f2,micro_bm_dag3_log_mod,3,1,5 5 2
+lokiW,MI,f2,micro_bm_dag3_log_mod,4,0,2 2 2 3
+lokiWB,MI,f2,micro_bm_dag3_log_mod,2,0,2 3
+hal2,MI,f2,micro_bm_dag3_lpm_mod,4,1,4 2 3 3
+lokiW,MI,f2,micro_bm_dag3_lpm_mod,1,0,3
+lokiWB,MI,f2,micro_bm_dag3_lpm_mod,2,0,2 3
+hal2,VT,f2,ve_Prob033_ece241_2014_q1c,0,0,
+lokiW,VT,f2,ve_Prob033_ece241_2014_q1c,0,0,
+lokiWB,VT,f2,ve_Prob033_ece241_2014_q1c,0,0,
+hal2,MI,f2,micro_param_override,0,0,
+lokiW,MI,f2,micro_param_override,0,0,
+lokiWB,MI,f2,micro_param_override,0,0,
+hal2,VT,f3,ve_Prob035_count1to10,1,0,3
+lokiW,VT,f3,ve_Prob035_count1to10,1,0,3
+lokiWB,VT,f3,ve_Prob035_count1to10,0,0,
+hal2,VT,f2,ve_Prob045_edgedetect2,2,0,8 8
+lokiW,VT,f2,ve_Prob045_edgedetect2,2,0,8 8
+lokiWB,VT,f2,ve_Prob045_edgedetect2,2,0,8 8
+hal2,VT,f2,ve_Prob054_edgedetect,2,0,8 8
+lokiW,VT,f2,ve_Prob054_edgedetect,2,0,8 8
+lokiWB,VT,f2,ve_Prob054_edgedetect,2,0,8 8
+hal2,MI,f3,micro_parameter,0,0,
+lokiW,MI,f3,micro_parameter,0,0,
+lokiWB,MI,f3,micro_parameter,0,0,
+hal2,MI,f3,micro_parameter_2,0,0,
+lokiW,MI,f3,micro_parameter_2,0,0,
+lokiWB,MI,f3,micro_parameter_2,0,0,
+hal2,MI,f3,micro_bm_dag2_log_mod,3,1,2 3 2
+lokiW,MI,f3,micro_bm_dag2_log_mod,2,1,5 2
+lokiWB,MI,f3,micro_bm_dag2_log_mod,0,0,
+hal2,MI,f3,micro_bm_dag2_mod,3,1,2 3 2
+lokiW,MI,f3,micro_bm_dag2_mod,2,1,5 2
+lokiWB,MI,f3,micro_bm_dag2_mod,0,0,
+hal2,MI,f3,micro_bm_if_common,2,1,6 3
+lokiW,MI,f3,micro_bm_if_common,2,1,4 2
+lokiWB,MI,f3,micro_bm_if_common,3,1,4 2 2
+hal2,MI,f3,micro_bm_stmt_compare_padding,1,0,6
+lokiW,MI,f3,micro_bm_stmt_compare_padding,2,0,4 2
+lokiWB,MI,f3,micro_bm_stmt_compare_padding,1,0,2
+hal2,MI,f3,micro_bm_DL_BCD_7_segment_without_x,0,0,
+lokiW,MI,f3,micro_bm_DL_BCD_7_segment_without_x,0,0,
+lokiWB,MI,f3,micro_bm_DL_BCD_7_segment_without_x,0,0,
+hal2,MI,f2,micro_bm_stmt_all_mod,1,1,7
+lokiW,MI,f2,micro_bm_stmt_all_mod,2,0,4 2
+lokiWB,MI,f2,micro_bm_stmt_all_mod,2,0,4 2
+hal2,VT,f3,ve_Prob137_fsm_serial,1,0,12
+lokiW,VT,f3,ve_Prob137_fsm_serial,1,0,9
+lokiWB,VT,f3,ve_Prob137_fsm_serial,3,0,9 8 7
+hal2,MI,f3,micro_bm_dag1_log_mod,3,0,2 3 3
+lokiW,MI,f3,micro_bm_dag1_log_mod,0,0,
+lokiWB,MI,f3,micro_bm_dag1_log_mod,0,0,
+hal2,MI,f3,micro_bm_if_collapse,4,0,2 3 2 2
+lokiW,MI,f3,micro_bm_if_collapse,3,1,4 3 2
+lokiWB,MI,f3,micro_bm_if_collapse,1,1,4
+hal2,VT,f2,ve_Prob043_vector5,0,0,
+lokiW,VT,f2,ve_Prob043_vector5,0,0,
+lokiWB,VT,f2,ve_Prob043_vector5,0,0,
+hal2,VT,f3,ve_Prob140_fsm_hdlc,1,0,10
+lokiW,VT,f3,ve_Prob140_fsm_hdlc,2,0,2 7
+lokiWB,VT,f3,ve_Prob140_fsm_hdlc,2,0,7 5
+hal2,MI,f3,micro_bm_DL_4_16_encoder,0,0,
+lokiW,MI,f3,micro_bm_DL_4_16_encoder,0,0,
+lokiWB,MI,f3,micro_bm_DL_4_16_encoder,0,0,
+hal2,MI,f3,micro_bm_DL_four_bit_adder_continuous_assign,0,0,
+lokiW,MI,f3,micro_bm_DL_four_bit_adder_continuous_assign,0,0,
+lokiWB,MI,f3,micro_bm_DL_four_bit_adder_continuous_assign,0,0,
+hal2,MI,f2,micro_generate,1,0,16
+lokiW,MI,f2,micro_generate,2,0,4 5
+lokiWB,MI,f2,micro_generate,5,0,2 4 3 5 4
+hal2,MI,f3,micro_bm_stmt_all_mod,1,1,7
+lokiW,MI,f3,micro_bm_stmt_all_mod,1,1,5
+lokiWB,MI,f3,micro_bm_stmt_all_mod,0,0,
+hal2,MI,f3,micro_bm_dag1_mod,3,1,3 6 4
+lokiW,MI,f3,micro_bm_dag1_mod,1,1,10
+lokiWB,MI,f3,micro_bm_dag1_mod,1,1,10
+hal2,MI,f3,micro_bm_dag3_lpm_log_mod,3,1,4 3 2
+lokiW,MI,f3,micro_bm_dag3_lpm_log_mod,0,0,
+lokiWB,MI,f3,micro_bm_dag3_lpm_log_mod,1,1,7
+hal2,MI,f3,micro_bm_dag4_mod,3,1,3 6 4
+lokiW,MI,f3,micro_bm_dag4_mod,1,1,10
+lokiWB,MI,f3,micro_bm_dag4_mod,1,1,10
+hal2,VT,f3,ve_Prob126_circuit6,0,0,
+lokiW,VT,f3,ve_Prob126_circuit6,0,0,
+lokiWB,VT,f3,ve_Prob126_circuit6,0,0,
+hal2,VT,f3,ve_Prob054_edgedetect,2,0,8 8
+lokiW,VT,f3,ve_Prob054_edgedetect,2,0,8 8
+lokiWB,VT,f3,ve_Prob054_edgedetect,2,0,8 8
+hal2,MI,f3,micro_bm_dag3_mod,5,0,2 3 2 2 2
+lokiW,MI,f3,micro_bm_dag3_mod,1,0,2
+lokiWB,MI,f3,micro_bm_dag3_mod,0,0,
+hal2,MI,f3,micro_param_override,0,0,
+lokiW,MI,f3,micro_param_override,0,0,
+lokiWB,MI,f3,micro_param_override,0,0,
+hal2,MI,f3,micro_bm_dag3_log_mod,3,1,5 5 2
+lokiW,MI,f3,micro_bm_dag3_log_mod,2,1,9 2
+lokiWB,MI,f3,micro_bm_dag3_log_mod,1,1,9
+hal2,MI,f3,micro_bm_DL_16_1_mux,0,0,
+lokiW,MI,f3,micro_bm_DL_16_1_mux,0,0,
+lokiWB,MI,f3,micro_bm_DL_16_1_mux,0,0,
+hal2,VT,f3,ve_Prob043_vector5,0,0,
+lokiW,VT,f3,ve_Prob043_vector5,0,0,
+lokiWB,VT,f3,ve_Prob043_vector5,0,0,
+hal2,VT,f3,ve_Prob155_lemmings4,1,1,8
+lokiW,VT,f3,ve_Prob155_lemmings4,1,0,3
+lokiWB,VT,f3,ve_Prob155_lemmings4,0,0,
+hal2,VT,f3,ve_Prob045_edgedetect2,2,0,8 8
+lokiW,VT,f3,ve_Prob045_edgedetect2,2,0,8 8
+lokiWB,VT,f3,ve_Prob045_edgedetect2,1,0,8
+hal2,MI,f3,micro_bm_DL_BCD_adder,0,0,
+lokiW,MI,f3,micro_bm_DL_BCD_adder,0,0,
+lokiWB,MI,f3,micro_bm_DL_BCD_adder,0,0,
+hal2,VT,f3,ve_Prob037_review2015_count1k,1,0,10
+lokiW,VT,f3,ve_Prob037_review2015_count1k,2,0,5 5
+lokiWB,VT,f3,ve_Prob037_review2015_count1k,2,0,5 3
+hal2,VT,f2,ve_Prob082_lfsr32,1,0,32
+lokiW,VT,f2,ve_Prob082_lfsr32,1,0,32
+lokiWB,VT,f2,ve_Prob082_lfsr32,4,0,32 31 2 27
+hal2,VT,f3,ve_Prob033_ece241_2014_q1c,0,0,
+lokiW,VT,f3,ve_Prob033_ece241_2014_q1c,0,0,
+lokiWB,VT,f3,ve_Prob033_ece241_2014_q1c,0,0,
+hal2,MI,f3,micro_bm_dag3_lpm_mod,4,1,4 2 3 3
+lokiW,MI,f3,micro_bm_dag3_lpm_mod,3,1,5 2 3
+lokiWB,MI,f3,micro_bm_dag3_lpm_mod,2,0,2 3
+hal2,MI,f2,micro_bm_and_log,0,0,
+lokiW,MI,f2,micro_bm_and_log,0,0,
+lokiWB,MI,f2,micro_bm_and_log,0,0,
+hal2,MI,f3,micro_generate,1,0,16
+lokiW,MI,f3,micro_generate,1,0,15
+lokiWB,MI,f3,micro_generate,0,0,
+hal2,MI,f3,micro_bm_DL_74381_ALU,0,0,
+lokiW,MI,f3,micro_bm_DL_74381_ALU,0,0,
+lokiWB,MI,f3,micro_bm_DL_74381_ALU,0,0,
+hal2,MI,f2,micro_bm_mod,1,0,33
+lokiW,MI,f2,micro_bm_mod,1,0,33
+lokiWB,MI,f2,micro_bm_mod,1,0,33
+hal2,VT,f3,ve_Prob082_lfsr32,1,0,32
+lokiW,VT,f3,ve_Prob082_lfsr32,1,0,32
+lokiWB,VT,f3,ve_Prob082_lfsr32,3,0,32 2 26
+hal2,VT,f2,ve_Prob052_gates100,0,0,
+lokiW,VT,f2,ve_Prob052_gates100,0,0,
+lokiWB,VT,f2,ve_Prob052_gates100,0,0,
+hal2,MI,f3,micro_bm_and_log,0,0,
+lokiW,MI,f3,micro_bm_and_log,0,0,
+lokiWB,MI,f3,micro_bm_and_log,0,0,
+hal2,MI,f3,micro_bm_mod,1,0,33
+lokiW,MI,f3,micro_bm_mod,1,0,33
+lokiWB,MI,f3,micro_bm_mod,1,0,33
+hal2,MI,f2,micro_bm_lpm_concat,0,0,
+lokiW,MI,f2,micro_bm_lpm_concat,0,0,
+lokiWB,MI,f2,micro_bm_lpm_concat,0,0,
+hal2,MI,f3,micro_bm_lpm_concat,0,0,
+lokiW,MI,f3,micro_bm_lpm_concat,0,0,
+lokiWB,MI,f3,micro_bm_lpm_concat,0,0,
+hal2,MI,f2,micro_bm_match3_str_arch,2,0,2 27
+lokiW,MI,f2,micro_bm_match3_str_arch,3,0,18 3 3
+lokiWB,MI,f2,micro_bm_match3_str_arch,4,0,18 10 3 3
+hal2,MI,f2,micro_bm_functional_test,2,0,17 2
+lokiW,MI,f2,micro_bm_functional_test,0,0,
+lokiWB,MI,f2,micro_bm_functional_test,2,0,16 18
+hal2,MI,f2,micro_bm_match6_str_arch,1,0,28
+lokiW,MI,f2,micro_bm_match6_str_arch,6,0,7 3 3 2 2 3
+lokiWB,MI,f2,micro_bm_match6_str_arch,1,0,3
+hal2,MI,f2,micro_bm_base_multiply,3,1,38 8 8
+lokiW,MI,f2,micro_bm_base_multiply,5,0,3 3 3 2 9
+lokiWB,MI,f2,micro_bm_base_multiply,7,6,9 2 2 2 2 2 2
+hal2,MI,f2,micro_bm_lpm_all,0,0,
+lokiW,MI,f2,micro_bm_lpm_all,0,0,
+lokiWB,MI,f2,micro_bm_lpm_all,0,0,
+hal2,VT,f3,ve_Prob052_gates100,0,0,
+lokiW,VT,f3,ve_Prob052_gates100,0,0,
+lokiWB,VT,f3,ve_Prob052_gates100,0,0,
+hal2,MI,f2,micro_bm_match4_str_arch,1,0,52
+lokiW,MI,f2,micro_bm_match4_str_arch,8,0,2 9 3 2 2 2 10 4
+lokiWB,MI,f2,micro_bm_match4_str_arch,1,0,2
+hal2,MI,f2,micro_bm_match2_str_arch,1,0,46
+lokiW,MI,f2,micro_bm_match2_str_arch,5,0,12 7 2 4 7
+lokiWB,MI,f2,micro_bm_match2_str_arch,0,0,
+hal2,VT,f2,ve_Prob153_gshare,3,0,7 128 127
+lokiW,VT,f2,ve_Prob153_gshare,129,0,7 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+lokiWB,VT,f2,ve_Prob153_gshare,141,0,7 2 2 2 4 2 8 2 2 2 2 2 2 2 2 2 2 2 2 2 8 2 22 2 2 2 2 2 2 2 2 2 2 2 2 2 6 2 2 2 16 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 28 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 30 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 10 2 2 2 2 2 2 2 2 2 2 2 2 6 2 2 22 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 18 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+hal2,MI,f2,micro_bm_match5_str_arch,1,0,46
+lokiW,MI,f2,micro_bm_match5_str_arch,5,0,11 7 7 2 3
+lokiWB,MI,f2,micro_bm_match5_str_arch,0,0,
+hal2,VT,f2,ve_Prob021_mux256to1v,0,0,
+lokiW,VT,f2,ve_Prob021_mux256to1v,0,0,
+lokiWB,VT,f2,ve_Prob021_mux256to1v,0,0,
+hal2,MI,f3,micro_bm_match3_str_arch,2,0,2 27
+lokiW,MI,f3,micro_bm_match3_str_arch,4,0,18 6 11 10
+lokiWB,MI,f3,micro_bm_match3_str_arch,3,0,18 6 11
+hal2,MI,f2,micro_bm_match1_str_arch,1,0,70
+lokiW,MI,f2,micro_bm_match1_str_arch,5,0,3 10 13 7 2
+lokiWB,MI,f2,micro_bm_match1_str_arch,1,0,3
+hal2,MI,f3,micro_bm_lpm_all,0,0,
+lokiW,MI,f3,micro_bm_lpm_all,0,0,
+lokiWB,MI,f3,micro_bm_lpm_all,0,0,
+hal2,MI,f2,micro_bm_expr_all_mod,1,1,334
+lokiW,MI,f2,micro_bm_expr_all_mod,21,4,66 4 2 49 11 4 13 9 7 3 2 27 3 17 7 3 4 6 6 6 4
+lokiWB,MI,f2,micro_bm_expr_all_mod,7,1,2 3 3 27 4 5 4
+hal2,MI,f3,micro_bm_functional_test,2,0,17 2
+lokiW,MI,f3,micro_bm_functional_test,1,0,20
+lokiWB,MI,f3,micro_bm_functional_test,1,0,18
+hal2,MI,f3,micro_bm_base_multiply,3,1,38 8 8
+lokiW,MI,f3,micro_bm_base_multiply,2,1,2 2
+lokiWB,MI,f3,micro_bm_base_multiply,7,6,7 2 2 2 2 2 2
+hal2,VT,f2,ve_Prob108_rule90,2,0,2 510
+lokiW,VT,f2,ve_Prob108_rule90,3,0,2 2 508
+lokiWB,VT,f2,ve_Prob108_rule90,3,0,2 2 508
+hal2,MI,f3,micro_bm_match6_str_arch,1,0,28
+lokiW,MI,f3,micro_bm_match6_str_arch,2,0,26 2
+lokiWB,MI,f3,micro_bm_match6_str_arch,1,0,10
+hal2,MI,f3,micro_bm_match4_str_arch,1,0,52
+lokiW,MI,f3,micro_bm_match4_str_arch,3,0,33 17 2
+lokiWB,MI,f3,micro_bm_match4_str_arch,1,0,2
+hal2,MI,f3,micro_bm_expr_all_mod,1,1,334
+lokiW,MI,f3,micro_bm_expr_all_mod,2,1,27 4
+lokiWB,MI,f3,micro_bm_expr_all_mod,3,1,31 27 4
+hal2,VT,f3,ve_Prob153_gshare,3,0,7 128 127
+lokiW,VT,f3,ve_Prob153_gshare,3,0,7 248 8
+lokiWB,VT,f3,ve_Prob153_gshare,4,0,7 256 248 8
+hal2,MI,f2,micro_bm_arithmetic_unused_bits,1,1,144
+lokiW,MI,f2,micro_bm_arithmetic_unused_bits,14,14,36 27 4 17 15 12 2 3 3 4 4 2 2 2
+lokiWB,MI,f2,micro_bm_arithmetic_unused_bits,2,2,2 2
+hal2,MI,f3,micro_bm_match2_str_arch,1,0,46
+lokiW,MI,f3,micro_bm_match2_str_arch,1,0,10
+lokiWB,MI,f3,micro_bm_match2_str_arch,1,0,10
+hal2,VT,f3,ve_Prob021_mux256to1v,0,0,
+lokiW,VT,f3,ve_Prob021_mux256to1v,0,0,
+lokiWB,VT,f3,ve_Prob021_mux256to1v,0,0,
+hal2,VT,f3,ve_Prob108_rule90,2,0,2 510
+lokiW,VT,f3,ve_Prob108_rule90,0,0,
+lokiWB,VT,f3,ve_Prob108_rule90,0,0,
+hal2,MI,f3,micro_bm_match5_str_arch,1,0,46
+lokiW,MI,f3,micro_bm_match5_str_arch,2,0,30 16
+lokiWB,MI,f3,micro_bm_match5_str_arch,1,0,10
+hal2,MI,f3,micro_bm_match1_str_arch,1,0,70
+lokiW,MI,f3,micro_bm_match1_str_arch,1,0,70
+hal2,MI,f3,micro_bm_arithmetic_unused_bits,1,1,144
+lokiW,MI,f3,micro_bm_arithmetic_unused_bits,0,0,

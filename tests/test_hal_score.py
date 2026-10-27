@@ -218,10 +218,13 @@ def real_deltas(arm: str, dataset: Path, floor: str) -> dict[str, int]:
         cmp_ = score_words(loki_words(re_dir, ffs), gt)
         dedup_only = score_words(loki_words(re_dir, ffs, cut=False), g5)
         cut_only = score_words(loki_words(re_dir, ffs), g5, dedup=False)
+        gt_cut_only = score_words(loki_words(re_dir, ffs, cut=False), gt, dedup=False)
         add(designs=1, r5_pred=ref["counted"], r5_matched=ref["matched"], r5_gt=ref["gt"],
             cmp_pred=cmp_.n_pred, cmp_matched=cmp_.matched, cmp_gt=cmp_.n_gt,
             dedup_pred=dedup_only.n_pred, dedup_matched=dedup_only.matched,
-            cut_pred=cut_only.n_pred, cut_matched=cut_only.matched)
+            cut_pred=cut_only.n_pred, cut_matched=cut_only.matched,
+            gtcut_pred=gt_cut_only.n_pred, gtcut_matched=gt_cut_only.matched,
+            gtcut_gt=gt_cut_only.n_gt)
     return tot
 
 

@@ -4,9 +4,9 @@ HAL v4.5.0's own ``--dataflow`` command line route does not run (its handler set
 and no control pin types, and writes no result file), so the comparison drives the dataflow
 plugin through its documented Python API, with the documented default configuration
 ``Configuration.with_flip_flops()`` (all flip-flop gate types; clock, enable, set and reset pins
-as control pins) and nothing else changed except ``min_group_size`` (pre-registration, Amendment 4
-and Amendment 2). Arguments come from the environment because HAL's embedded interpreter has no
-argv:
+as control pins) and nothing else changed except ``min_group_size`` (pre-registration,
+Amendment 1 A4 and Amendment 2 B1). Arguments come from the environment because HAL's
+embedded interpreter has no argv:
 
     HAL_V    structural Verilog netlist        HAL_L    gate library (.hgl)
     HAL_OUT  output directory (exists)         HAL_MIN  min_group_size
