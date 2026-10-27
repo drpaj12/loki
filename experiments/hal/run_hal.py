@@ -1,6 +1,8 @@
 """Driver of the Loki vs HAL/DANA comparison (pre-registration + Amendment 1).
 
     run_hal.py plan
+    run_hal.py loadcheck OUT [--floors f2,f3] [--sample 30]            # step 2, corpus train
+    run_hal.py lutcheck OUT                                            # lut6.hgl bit_order
     run_hal.py roundtrip OUT [--sets MI,VT,BIG] [--floors f2,f3]     # Amendment A8
     run_hal.py run OUT --setting 8|2 [--sets ..] [--floors ..] [--permute SEED]
     run_hal.py repeat OUT                                           # Amendment A7
@@ -9,7 +11,7 @@
 
 ``OUT`` is a data directory outside the repo (a fresh ``mktemp -d``); nothing is deleted. Run with
 ``PYTHONPATH=<repo>:<repo>/experiments/round5`` (the round-5 helpers and ``loki``). The HAL
-binary is ``$HAL_BIN`` (default ``hal`` on PATH) with ``$HAL_LIB_PATH`` for its plugins when set.
+binary is ``$HAL_BIN`` (default ``hal`` on PATH).
 Designs are always taken smallest first (node count of the floor in the L0 manifest). All paths
 come from ``r5lib`` (environment variables, workspace-relative defaults).
 """
@@ -32,7 +34,7 @@ from typing import Any
 import r5lib
 
 from loki.hal import blif2hal
-from loki.hal.blif import Blif, read_blif
+from loki.hal.blif import Blif, Gate, read_blif
 from loki.hal.dana import parse_groups_txt
 from loki.hal.wordscore import (
     WordScore,
@@ -43,11 +45,12 @@ from loki.hal.wordscore import (
     score_words,
 )
 
-REPO = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parents[1]
 
 HGL = {"f2": REPO / "experiments" / "hal" / "hgl" / "lut6.hgl",
        "f3": REPO / "experiments" / "hal" / "hgl" / "cmos6.hgl"}
-TIMEOUT = {"MI": 900, "VT": 900, "BIG": 1800}
+TIMEOUT = {"MI": 900, "VT": 900, "BIG": 1800, "CT": 900}
 SETTINGS = (8, 2)
 SCORE_FIELDS = ("n_pred", "n_gt", "exact_pred", "exact_gt", "matched", "pur_num", "pur_den",
                 "comp_num", "comp_den", "cov_num", "cov_den")
@@ -86,6 +89,11 @@ def items(sets: list[str], floors: list[str]) -> list[Item]:
         if "VT" in sets:
             for d in r5lib.ok_designs(r5lib.VEVAL, fl, "test"):
                 out.append(_item("VT", fl, r5lib.VEVAL, d, d))
+        if "CT" in sets:  # corpus train split: load checks only, never scored
+            split = r5lib.corpus_split()
+            for d in r5lib.ok_designs(r5lib.CORPUS, fl):
+                if split[d][1] == "train":
+                    out.append(_item("CT", fl, r5lib.CORPUS, d, d))
         if "BIG" in sets and fl == "f2":
             for d in sorted(p.name for p in r5lib.BIGDIR.iterdir() if (p / "dataset").is_dir()):
                 ds = r5lib.BIGDIR / d / "dataset"
@@ -110,10 +118,17 @@ def order(its: list[Item]) -> list[Item]:
     return sorted(its, key=lambda i: (i.set == "BIG", i.nodes, i.design))
 
 
-def hal_cmd(verilog: Path, floor: str, out: Path, setting: int) -> list[str]:
-    return [os.environ.get("HAL_BIN", "hal"), "-i", str(verilog), "--gate-library",
-            str(HGL[floor]), "--dataflow", "--path", str(out) + "/", "--bad_group_size",
-            str(setting)]
+def hal_cmd() -> list[str]:
+    """HAL v4.5.0 with the DANA script (its ``--dataflow`` command line route does not run, see
+    ``dana_run.py``); the netlist, library, output directory and group size travel in the
+    environment."""
+    return [os.environ.get("HAL_BIN", "hal"), "--volatile-mode", "--no-log", "--python-script",
+            str(HERE / "dana_run.py")]
+
+
+def hal_env(verilog: Path, floor: str, out: Path, setting: int) -> dict[str, str]:
+    return {**os.environ, "HAL_V": str(verilog), "HAL_L": str(HGL[floor]), "HAL_OUT": str(out),
+            "HAL_MIN": str(setting)}
 
 
 def _write(path: Path, text: str) -> None:
@@ -156,12 +171,12 @@ def run_hal(it: Item, setting: int, base: Path, permute: int | None,
     out.mkdir(parents=True, exist_ok=True)
     start = time.monotonic()
     try:
-        proc = subprocess.run(hal_cmd(work / "design.v", it.floor, out, setting),
+        proc = subprocess.run(hal_cmd(), env=hal_env(work / "design.v", it.floor, out, setting),
                               capture_output=True, text=True, timeout=TIMEOUT[it.set])
         _write(work / "stdout.txt", proc.stdout[-20000:])
         _write(work / "stderr.txt", proc.stderr[-20000:])
-        if proc.returncode != 0 or not (out / "groups.txt").is_file():
-            row.update(status="error", detail=(proc.stderr or proc.stdout)[-300:])
+        if proc.returncode != 0 or not (out / "done.txt").is_file():
+            row.update(status="error", detail=(proc.stderr + proc.stdout)[-300:])
     except subprocess.TimeoutExpired:
         row.update(status="timeout", detail=str(TIMEOUT[it.set]))
     row["seconds"] = round(time.monotonic() - start, 2)
@@ -205,6 +220,65 @@ def _write_csv(path: Path, header: tuple[str, ...], rows: list[Any]) -> None:
         w = csv.writer(fh, lineterminator="\n")
         w.writerow(header)
         w.writerows(rows)
+
+
+def cmd_loadcheck(a: argparse.Namespace) -> int:
+    """Step 2: DANA on an evenly spaced sample of corpus-train designs per floor (loading and
+    parsing checks, no scoring): HAL loads the Verilog and the library, the groups.txt parses,
+    every gate name is a flip-flop node of the design."""
+    base = Path(a.out)
+    rows = []
+    for fl in _parse_list(a.floors):
+        pool = order(items(["CT"], [fl]))
+        step = max(1, len(pool) // a.sample)
+        for it in pool[::step][:a.sample]:
+            r = run_hal(it, 8, base / "loadcheck", None)
+            note = ""
+            if r["status"] == "ok":
+                _gt, ffs = gt_words(it.floor_dir)
+                groups = parse_groups_txt(
+                    (base / "loadcheck" / "hal8" / it.key / "out" / "groups.txt").read_text(
+                        encoding="utf-8"))
+                names = {g for grp in groups for g in grp.gates}
+                note = f"groups={len(groups)} ffs={len(ffs)} all_names_ff={names <= ffs} " \
+                       f"covered={len(names & ffs)}"
+            rows.append((it.key, r["status"], r["seconds"], r["detail"] or note))
+            print(rows[-1], flush=True)
+    _write_csv(base / "loadcheck.csv", ("key", "status", "seconds", "note"), rows)
+    return 0
+
+
+def cmd_lutcheck(a: argparse.Namespace) -> int:
+    """HAL's own truth table of every LUT gate (``lut_tt.py``) against the BLIF cover: checks the
+    ``bit_order`` of ``lut6.hgl`` in a real HAL load, for every convertible MI and VT f2 design."""
+    base = Path(a.out) / "lutcheck"
+    rows, bad = [], 0
+    for it in order(items(["MI", "VT"], ["f2"])):
+        b = read_blif(it.blif)
+        try:
+            text = blif2hal.convert(b, "f2")
+        except blif2hal.ConvertError:
+            continue
+        wd = base / it.key
+        _write(wd / "design.v", text)
+        env = {**hal_env(wd / "design.v", "f2", wd, 8)}
+        cmd = [os.environ.get("HAL_BIN", "hal"), "--volatile-mode", "--no-log", "--python-script",
+               str(HERE / "lut_tt.py")]
+        subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=300, check=False)
+        got = {}
+        tt = wd / "lut_tt.txt"
+        for ln in (tt.read_text(encoding="utf-8").split("\n") if tt.is_file() else []):
+            if ln:
+                name, _k, val = ln.split()
+                got[name] = int(val)
+        want = {g.cname: g.table() for g in b.cells if isinstance(g, Gate) and g.inputs
+                and g.cname}
+        diff = sorted(n for n in want if got.get(n) != want[n])
+        bad += len(diff)
+        rows.append((it.key, len(want), len(got), len(diff)))
+    _write_csv(Path(a.out) / "lutcheck.csv", ("key", "luts_blif", "luts_hal", "mismatches"), rows)
+    print(f"designs {len(rows)}, LUTs {sum(r[1] for r in rows)}, mismatches {bad}")
+    return 0 if bad == 0 else 1
 
 
 def cmd_run(a: argparse.Namespace) -> int:
@@ -313,14 +387,16 @@ def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(prog="run_hal.py", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("plan").set_defaults(fn=cmd_plan)
-    for name, fn in (("roundtrip", cmd_roundtrip), ("run", cmd_run), ("score", cmd_score),
-                     ("repeat", cmd_repeat), ("permute", cmd_permute)):
+    cmds = {"lutcheck": cmd_lutcheck, "loadcheck": cmd_loadcheck, "roundtrip": cmd_roundtrip,
+            "run": cmd_run, "score": cmd_score, "repeat": cmd_repeat, "permute": cmd_permute}
+    for name, fn in cmds.items():
         p = sub.add_parser(name)
         p.add_argument("out")
         p.add_argument("--sets", default="MI,VT,BIG")
         p.add_argument("--floors", default="f2,f3")
         p.add_argument("--setting", type=int, default=8, choices=SETTINGS)
         p.add_argument("--permute", type=int, default=None)
+        p.add_argument("--sample", type=int, default=30)
         p.set_defaults(fn=fn)
     args = ap.parse_args(argv)
     return int(args.fn(args))

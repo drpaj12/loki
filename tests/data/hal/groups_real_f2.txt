@@ -1,0 +1,50 @@
+State:
+
+ID:0, Size:12, CLK: {42}, EN: {}, R: {}, S: {}
+  Successors:   {2}
+  Predecessors: {}
+n173, type: FF, id: 56, RS: 
+n174, type: FF, id: 57, RS: 
+n175, type: FF, id: 58, RS: 
+n176, type: FF, id: 59, RS: 
+n177, type: FF, id: 60, RS: 
+n178, type: FF, id: 61, RS: 
+n179, type: FF, id: 62, RS: 
+n180, type: FF, id: 63, RS: 
+n181, type: FF, id: 64, RS: 
+n182, type: FF, id: 65, RS: 
+n183, type: FF, id: 66, RS: 
+n184, type: FF, id: 67, RS: 
+
+ID:1, Size:12, CLK: {42}, EN: {}, R: {}, S: {}
+  Successors:   {}
+  Predecessors: {2}
+n197, type: FF, id: 80, RS: 
+n198, type: FF, id: 81, RS: 
+n199, type: FF, id: 82, RS: 
+n200, type: FF, id: 83, RS: 
+n201, type: FF, id: 84, RS: 
+n202, type: FF, id: 85, RS: 
+n203, type: FF, id: 86, RS: 
+n204, type: FF, id: 87, RS: 
+n205, type: FF, id: 88, RS: 
+n206, type: FF, id: 89, RS: 
+n207, type: FF, id: 90, RS: 
+n208, type: FF, id: 91, RS: 
+
+ID:2, Size:12, CLK: {42}, EN: {}, R: {}, S: {}
+  Successors:   {1}
+  Predecessors: {0}
+n185, type: FF, id: 68, RS: 
+n186, type: FF, id: 69, RS: 
+n187, type: FF, id: 70, RS: 
+n188, type: FF, id: 71, RS: 
+n189, type: FF, id: 72, RS: 
+n190, type: FF, id: 73, RS: 
+n191, type: FF, id: 74, RS: 
+n192, type: FF, id: 75, RS: 
+n193, type: FF, id: 76, RS: 
+n194, type: FF, id: 77, RS: 
+n195, type: FF, id: 78, RS: 
+n196, type: FF, id: 79, RS: 
+

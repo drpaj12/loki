@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from loki.hal.dana import DanaError, hal_words, parse_groups_txt
+from loki.hal.dana import DanaError, DanaGroup, hal_words, parse_groups_txt
 from loki.hal.wordscore import (
     GtWord,
     WordScore,
@@ -44,6 +44,31 @@ def floor_dir() -> Path:
     ]
     (d / "words.json").write_text(json.dumps({"words": words, "edges": []}), encoding="utf-8")
     return d
+
+
+class DanaRealFileTest(unittest.TestCase):
+    """groups.txt files written by the HAL v4.5.0 dataflow plugin (``Result.write_txt``)."""
+
+    def parse(self, name: str) -> list[DanaGroup]:
+        return parse_groups_txt((DATA / name).read_text(encoding="utf-8"))
+
+    def test_f2_pipeline(self) -> None:
+        groups = self.parse("groups_real_f2.txt")
+        self.assertEqual([g.size for g in groups][:2], [12, 12])
+        self.assertEqual(sum(g.size for g in groups), 36)
+        self.assertEqual(groups[0].gate_types, ("FF",) * 12)
+        self.assertEqual((groups[0].clk, groups[0].successors, groups[1].predecessors),
+                         ((42,), (2,), (2,)))
+
+    def test_dffsr_set_and_reset_nets(self) -> None:
+        (g,) = self.parse("groups_real_dffsr.txt")
+        self.assertEqual((g.gates, g.gate_types), (("n1", "n2"), ("DFFSR", "DFFSR")))
+        self.assertEqual((g.clk, g.set, g.reset, g.en), ((10,), (13,), (14,), ()))
+
+    def test_f3_singletons(self) -> None:
+        groups = self.parse("groups_real_f3.txt")
+        self.assertEqual({g.size for g in groups}, {1})
+        self.assertTrue(all(t == "DFF" for g in groups for t in g.gate_types))
 
 
 class DanaParseTest(unittest.TestCase):

@@ -254,3 +254,56 @@ makes `convert` raise, and the design is dropped from both arms.
 
 Changes in this amendment alter the converter and `lut6.hgl` before any HAL run on any design, so
 they are not "Rule additions" in the sense of the Stop rules.
+
+## Amendment 2 (2026-10-26, after the HAL build and the load checks, before any E_real HAL run)
+
+Written after HAL v4.5.0 (commit e7fea566b51e, fresh shallow clone of the tag) was built and run on
+hand-written fixtures and on 60 corpus-train designs (30 at f2, 30 at f3; loading and parsing
+checks only, no word scoring), and before any HAL run on an MI, VT or BIG design. The earlier text
+stays; where an item conflicts with it, this amendment rules. No pre-registered rule (metrics,
+decision, DANA settings 8 and 2, stop rules) is changed.
+
+**B1. DANA is driven through HAL's Python API, not its `--dataflow` command line.** At the tag,
+`CliExtensionDataflow::handle_cli_call` (`plugins/dataflow_analysis/src/plugin_dataflow.cpp`,
+lines 60-110) builds a `Configuration` without gate types or control pin types and never writes a
+result; running `hal -i x.v -gl lib.hgl --dataflow --path out/` on a fixture ends with
+`dataflow analysis failed: no gate types specified` (`src/api/dataflow.cpp:21`). The feasibility
+note and A4 had read the later `master` clone, whose handler sets
+`with_gate_types({GateTypeProperty::ff})` and the four control pin types. The comparison therefore
+uses the route the pre-registration already allows ("Python route"): `hal --python-script
+experiments/hal/dana_run.py` with `dataflow.Configuration(nl).with_flip_flops()
+.with_min_group_size(N)`, `dataflow.analyze`, `Result.write_txt` (`groups.txt`, the format that
+`loki.hal.dana` reads). `with_flip_flops()` is the documented default configuration (all
+flip-flop gate types; clock, enable, set, reset as control pins) and equals what the `master`
+command line sets. Stage identification and type consistency stay at their defaults (off,
+`configuration.h:107,112`). Nothing else is set; HAL is not patched. A4's source line numbers
+refer to the `master` clone; at the tag the same statements are at `configuration.h:77`
+(`min_group_size = 8`), `evaluation.cpp:47,109-216`, `pre_processing.cpp:96`,
+`plugin_dataflow.cpp:95`, and `dataflow.cpp:35` (`num_threads = hardware_concurrency()`, A7).
+
+**B2. `lut6.hgl` bit order verified in a real HAL load.** A9 left the `descending` setting
+unverified. `experiments/hal/lut_tt.py` (run inside HAL) evaluates every LUT gate's Boolean
+function as HAL parsed it and `run_hal.py lutcheck` compares it with the BLIF cover: all MI and VT
+f2 designs that convert (100 designs), 9,915 LUTs with a name, 0 mismatches. DANA does not read
+LUT functions; the check shows the library file means what the converter intends.
+
+**B3. Load checks passed; the f3 flip-flop with set and reset is not in the evaluation sets.**
+The 60 corpus-train designs load with both libraries, `groups.txt` parses with `loki.hal.dana`
+(`tests/test_hal_score.py`, real files in `tests/data/hal/`), and every gate name in a group is a
+flip-flop node of the design. No MI or VT f3 netlist contains a `DFFSR` (searched; BIG has no f3 floor), so
+the f3 control pins used are the clock only; a two-flip-flop `DFFSR` fixture loads and DANA reports
+the set and reset nets, so the library is correct where it is not exercised. This weakens the
+A5 argument that f3 gives DANA its enable/reset evidence: f3 gates carry enable and reset in
+the logic, as f2 does. The paper says so.
+
+**B4. BIG: the 20 percent stop rule applies.** The A8 round trip (BLIF versus iverilog, 256 cycles)
+passes for all 33 VT designs at both floors and for the 6 BIG designs whose f2 netlist converts.
+Seven of the 13 BIG designs contain a `.subckt single_port_ram` or `dual_port_ram` hard block, which
+neither `.hgl` library can express (a stop rule: the library cannot express a cell of the floor):
+mkPktMerge, spree, boundtop, mkSMAdapter4B, mkDelayWorker32B, raygentop, or1200. That is 54 percent
+dropped, above the 20 percent limit, so BIG f2 is **not scored**. HAL is still run on the 6
+convertible BIG designs for run time and group counts only (descriptive, no precision, recall or
+F1), and the table says so.
+
+**B5. Project metadata.** Run with `--volatile-mode --no-log`; the netlist is loaded in the script
+with `NetlistFactory.load_netlist`, so HAL creates no project directory.
