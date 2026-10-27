@@ -1,0 +1,18 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  input d,
+  output out,
+  output out_n
+);
+  // Two 2-input AND gates feeding a 2-input OR gate (AND-OR structure)
+  wire and_ab = a & b;
+  wire and_cd = c & d;
+
+  assign out   = and_ab | and_cd;
+  // out_n is the inverted version of out
+  assign out_n = ~out;
+endmodule
+[DONE]

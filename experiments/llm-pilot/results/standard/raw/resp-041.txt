@@ -1,0 +1,13 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  output sum,
+  output cout
+);
+  // Half adder: adds two 1-bit inputs
+  // cout is the carry (a AND b), sum is the XOR of the inputs
+  assign cout = a & b;
+  assign sum = a ^ b;
+endmodule
+[DONE]

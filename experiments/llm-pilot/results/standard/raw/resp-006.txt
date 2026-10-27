@@ -1,0 +1,10 @@
+[BEGIN]
+module TopModule(
+  input in,
+  output out
+);
+  // No netlist or port widths were given, so this is a minimal guess:
+  // a single-bit pass-through (buffer) from input to output.
+  assign out = in;
+endmodule
+[DONE]

@@ -1,0 +1,54 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input in,
+  input reset,
+  output done
+);
+  // Serial receiver FSM: detects a start bit (0), 8 data bits,
+  // and a stop bit (1). done is asserted for one cycle after a
+  // correctly framed byte. If the stop bit is wrong, wait for the
+  // line to return to 1 before looking for the next start bit.
+
+  localparam IDLE  = 3'd0,
+             DATA  = 3'd1,
+             STOP  = 3'd2,
+             DONE  = 3'd3,
+             ERROR = 3'd4;
+
+  reg [2:0] state, next_state;
+  reg [3:0] bit_count;
+
+  // State transition logic
+  always @(*) begin
+    case (state)
+      IDLE:  next_state = in ? IDLE : DATA;                 // start bit is 0
+      DATA:  next_state = (bit_count == 4'd7) ? STOP : DATA; // receive 8 data bits
+      STOP:  next_state = in ? DONE : ERROR;                // stop bit must be 1
+      DONE:  next_state = in ? IDLE : DATA;                 // back-to-back start bit
+      ERROR: next_state = in ? IDLE : ERROR;                // wait for line idle
+      default: next_state = IDLE;
+    endcase
+  end
+
+  // State register (synchronous reset)
+  always @(posedge clk) begin
+    if (reset)
+      state <= IDLE;
+    else
+      state <= next_state;
+  end
+
+  // Data bit counter
+  always @(posedge clk) begin
+    if (reset)
+      bit_count <= 4'd0;
+    else if (state == DATA)
+      bit_count <= (bit_count == 4'd7) ? 4'd0 : bit_count + 4'd1;
+    else
+      bit_count <= 4'd0;
+  end
+
+  assign done = (state == DONE);
+endmodule
+[DONE]

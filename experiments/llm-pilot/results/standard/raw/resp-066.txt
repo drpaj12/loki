@@ -1,0 +1,11 @@
+[BEGIN]
+module TopModule(
+  input A,
+  input B,
+  output z
+);
+  // Interface gives only the names A, B and z, with no widths or function.
+  // The most common small design with this interface is a 2-input AND gate.
+  assign z = A & B;
+endmodule
+[DONE]

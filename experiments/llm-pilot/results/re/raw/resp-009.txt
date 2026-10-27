@@ -1,0 +1,9 @@
+[BEGIN]
+module TopModule(
+  input in,
+  output out
+);
+  // Simple wire: output follows input
+  assign out = in;
+endmodule
+[DONE]

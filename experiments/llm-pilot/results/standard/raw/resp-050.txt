@@ -1,0 +1,27 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input j,
+  input k,
+  input areset,
+  output out
+);
+  // JK flip-flop with asynchronous active-high reset to 0
+  reg state;
+
+  assign out = state;
+
+  always @(posedge clk or posedge areset) begin
+    if (areset)
+      state <= 1'b0;
+    else begin
+      case ({j, k})
+        2'b00: state <= state;   // hold
+        2'b01: state <= 1'b0;    // reset
+        2'b10: state <= 1'b1;    // set
+        2'b11: state <= ~state;  // toggle
+      endcase
+    end
+  end
+endmodule
+[DONE]

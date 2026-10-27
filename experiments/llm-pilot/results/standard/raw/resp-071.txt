@@ -1,0 +1,18 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input cin,
+  output cout,
+  output sum
+);
+  // 1-bit full adder: adds a, b and the carry-in cin.
+  // sum is 1 when an odd number of inputs are 1.
+  // cout is 1 when at least two inputs are 1 (majority).
+  assign sum  = a ^ b ^ cin;
+  assign cout = (a & b) | (a & cin) | (b & cin);
+
+  // Alternative implementation using the + operator:
+  // assign {cout, sum} = a + b + cin;
+endmodule
+[DONE]

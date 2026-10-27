@@ -1,0 +1,26 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input j,
+  input k,
+  input areset,
+  output out
+);
+  // Two-state Moore FSM (OFF = 0, ON = 1) with asynchronous reset to OFF.
+  // OFF: stay OFF unless j, then go ON.
+  // ON:  stay ON unless k, then go OFF.
+  reg state;
+  wire next;
+
+  assign next = state ? ~k : j;
+
+  always @(posedge clk or posedge areset) begin
+    if (areset)
+      state <= 1'b0;
+    else
+      state <= next;
+  end
+
+  assign out = state;
+endmodule
+[DONE]

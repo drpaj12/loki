@@ -1,0 +1,26 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input a,
+  input b,
+  output out_assign,
+  output reg out_always_comb,
+  output reg out_always_ff
+);
+  // All three outputs implement the same XOR of a and b,
+  // written in three different coding styles.
+
+  // Continuous assignment
+  assign out_assign = a ^ b;
+
+  // Combinational always block
+  always @(*) begin
+    out_always_comb = a ^ b;
+  end
+
+  // Clocked always block: registered copy of the XOR result
+  always @(posedge clk) begin
+    out_always_ff <= a ^ b;
+  end
+endmodule
+[DONE]

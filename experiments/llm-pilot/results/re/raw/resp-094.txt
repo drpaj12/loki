@@ -1,0 +1,47 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input reset,
+  input in,
+  output disc,
+  output flag,
+  output err
+);
+  // HDLC-style bit-stream receiver (one-hot FSM).
+  // Seeing 0111110 -> discard (disc), 01111110 -> flag, 7+ ones -> err.
+  localparam NONE = 0, DISC = 1, D4 = 2, D2 = 3, D6 = 4,
+             D1 = 5, FLAG = 6, D5 = 7, D3 = 8, ERR = 9;
+
+  reg [9:0] state;
+  reg [9:0] next;
+
+  always @(*) begin
+    next = 10'b0;
+    if (reset) begin
+      next[NONE] = 1'b1;
+    end else if (in) begin
+      // a 1 advances the run of ones
+      next[D1]  = state[NONE] | state[DISC] | state[FLAG];
+      next[D2]  = state[D1];
+      next[D3]  = state[D2];
+      next[D4]  = state[D3];
+      next[D5]  = state[D4];
+      next[D6]  = state[D5];
+      next[ERR] = state[D6] | state[ERR];
+    end else begin
+      // a 0 ends the run
+      next[DISC] = state[D5];
+      next[FLAG] = state[D6];
+      next[NONE] = state[NONE] | state[DISC] | state[FLAG] | state[D1] |
+                   state[D2] | state[D3] | state[D4] | state[ERR];
+    end
+  end
+
+  always @(posedge clk)
+    state <= next;
+
+  assign disc = state[DISC];
+  assign flag = state[FLAG];
+  assign err  = state[ERR];
+endmodule
+[DONE]

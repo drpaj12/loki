@@ -1,0 +1,11 @@
+[BEGIN]
+module TopModule(
+  input [6:1] y,
+  input w,
+  output Y1
+);
+  // One-hot FSM: y[1]=A, y[2]=B, y[3]=C, y[4]=D, y[5]=E, y[6]=F
+  // Next state A is reached from A or D when w = 0
+  assign Y1 = (y[1] | y[4]) & ~w;
+endmodule
+[DONE]

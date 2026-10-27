@@ -1,0 +1,12 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input cin,
+  output cout,
+  output sum
+);
+  // Full adder: adds a, b and the carry-in.
+  assign {cout, sum} = a + b + cin;
+endmodule
+[DONE]

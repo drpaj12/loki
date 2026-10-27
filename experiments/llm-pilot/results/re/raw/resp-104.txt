@@ -1,0 +1,16 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input [7:0] in,
+  output reg [7:0] anyedge
+);
+  // Per-bit edge detector: anyedge[i] is set for one cycle after
+  // in[i] changed (either direction) between consecutive clock edges.
+  reg [7:0] d_last;
+
+  always @(posedge clk) begin
+    d_last <= in;
+    anyedge <= in ^ d_last;
+  end
+endmodule
+[DONE]

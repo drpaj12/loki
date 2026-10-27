@@ -1,0 +1,26 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input reset,
+  output reg [31:0] q
+);
+  // 32-bit Galois LFSR with taps at bits 32, 22, 2, 1
+  // Synchronous reset to 32'h1
+  wire [31:0] q_next;
+
+  // Shift right by one; bit 0 feeds back into bit 31
+  assign q_next = {q[0], q[31:1]};
+
+  always @(posedge clk) begin
+    if (reset)
+      q <= 32'h1;
+    else begin
+      q <= q_next;
+      // XOR the feedback bit into tap positions
+      q[21] <= q_next[21] ^ q[0];
+      q[1]  <= q_next[1]  ^ q[0];
+      q[0]  <= q_next[0]  ^ q[0];
+    end
+  end
+endmodule
+[DONE]

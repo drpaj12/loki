@@ -1,0 +1,12 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  output out
+);
+  // out = ~(~c & ~(a | b)) = a | b | c
+  // The output is high when any input is high (3-input OR)
+  assign out = a | b | c;
+endmodule
+[DONE]

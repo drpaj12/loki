@@ -1,0 +1,9 @@
+[BEGIN]
+module TopModule(
+  input in,
+  output out
+);
+  // Inverter
+  assign out = ~in;
+endmodule
+[DONE]

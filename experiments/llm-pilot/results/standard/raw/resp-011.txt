@@ -1,0 +1,11 @@
+[BEGIN]
+module TopModule(
+  input in1,
+  input in2,
+  output out
+);
+  // 2-input NOR gate: out is 1 only when both inputs are 0
+  // (equivalent to comparing the 2-bit value {in1, in2} against zero)
+  assign out = ~(in1 | in2);
+endmodule
+[DONE]

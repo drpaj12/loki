@@ -1,0 +1,21 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input areset,
+  input load,
+  input ena,
+  input [3:0] data,
+  output reg [3:0] q
+);
+  // 4-bit shift register with asynchronous reset, parallel load, and shift enable.
+  // Priority: areset, then load, then ena (shift right, zero fill).
+  always @(posedge clk or posedge areset) begin
+    if (areset)
+      q <= 4'b0000;
+    else if (load)
+      q <= data;
+    else if (ena)
+      q <= {1'b0, q[3:1]};
+  end
+endmodule
+[DONE]

@@ -1,0 +1,11 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  output out
+);
+  // 3-input OR gate
+  assign out = a | b | c;
+endmodule
+[DONE]

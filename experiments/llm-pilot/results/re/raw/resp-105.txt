@@ -1,0 +1,16 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input [7:0] in,
+  output reg [7:0] anyedge
+);
+  // Detect any edge (0->1 or 1->0) on each bit of the input.
+  // The output bit is set in the cycle after the input bit changed.
+  reg [7:0] prev;
+
+  always @(posedge clk) begin
+    prev <= in;
+    anyedge <= in ^ prev;
+  end
+endmodule
+[DONE]

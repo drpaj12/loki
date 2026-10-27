@@ -1,0 +1,19 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input reset,
+  input data,
+  output shift_ena,
+  output counting,
+  input done_counting,
+  output done,
+  input ack
+);
+  // The synthesized netlist drives all three outputs with constant 'x'
+  // (undefined) and ignores every input, so the equivalent RTL is a
+  // set of undefined constant assignments. The inputs are unused.
+  assign shift_ena = 1'bx;
+  assign counting  = 1'bx;
+  assign done      = 1'bx;
+endmodule
+[DONE]

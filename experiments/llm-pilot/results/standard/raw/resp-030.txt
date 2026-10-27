@@ -1,0 +1,18 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input d,
+  input r,
+  output reg q
+);
+  // D flip-flop with synchronous active-high reset.
+  // On each rising clock edge, q is cleared when r is asserted,
+  // otherwise q captures the value of d.
+  always @(posedge clk) begin
+    if (r)
+      q <= 1'b0;
+    else
+      q <= d;
+  end
+endmodule
+[DONE]

@@ -1,0 +1,16 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input [7:0] in,
+  output reg [7:0] anyedge
+);
+  // Registered edge detector: anyedge[i] is set on the clock after
+  // in[i] differed from its value on the previous clock.
+  reg [7:0] d_last;
+
+  always @(posedge clk) begin
+    d_last <= in;
+    anyedge <= in ^ d_last;
+  end
+endmodule
+[DONE]

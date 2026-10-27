@@ -1,0 +1,16 @@
+[BEGIN]
+module TopModule(
+  input c,
+  input d,
+  output [3:0] mux_in
+);
+  // Data inputs for a 4-to-1 multiplexer that implements a 2-variable
+  // function of c and d (K-map style implementation).
+  // Each mux input is a simple function of c and d.
+
+  assign mux_in[0] = c | d;   // OR: NOR followed by NOT
+  assign mux_in[1] = 1'b0;    // constant zero
+  assign mux_in[2] = ~d;      // inverted d
+  assign mux_in[3] = c & d;   // AND: NAND followed by NOT
+endmodule
+[DONE]

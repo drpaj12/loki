@@ -1,0 +1,12 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  output out
+);
+  // Three-input combinational logic: out is 1 when c is set,
+  // or when both a and b are set
+  assign out = (a & b) | c;
+endmodule
+[DONE]

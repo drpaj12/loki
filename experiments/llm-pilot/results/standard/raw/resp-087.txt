@@ -1,0 +1,50 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input resetn,
+  input [3:1] r,
+  output [3:1] g
+);
+  // Three-requester arbiter FSM with fixed priority r1 > r2 > r3.
+  // Synchronous active-low reset returns the FSM to the idle state.
+  // A grant is held for as long as the granted requester keeps its request high.
+
+  typedef enum logic [1:0] {
+    IDLE   = 2'd0,
+    GRANT1 = 2'd1,
+    GRANT2 = 2'd2,
+    GRANT3 = 2'd3
+  } state_t;
+
+  state_t state, next;
+
+  // Next-state logic
+  always_comb begin
+    case (state)
+      IDLE: begin
+        if (r[1])      next = GRANT1;
+        else if (r[2]) next = GRANT2;
+        else if (r[3]) next = GRANT3;
+        else           next = IDLE;
+      end
+      GRANT1:  next = r[1] ? GRANT1 : IDLE;
+      GRANT2:  next = r[2] ? GRANT2 : IDLE;
+      GRANT3:  next = r[3] ? GRANT3 : IDLE;
+      default: next = IDLE;
+    endcase
+  end
+
+  // State register with synchronous active-low reset
+  always_ff @(posedge clk) begin
+    if (!resetn)
+      state <= IDLE;
+    else
+      state <= next;
+  end
+
+  // Moore outputs: one grant per grant state
+  assign g[1] = (state == GRANT1);
+  assign g[2] = (state == GRANT2);
+  assign g[3] = (state == GRANT3);
+endmodule
+[DONE]

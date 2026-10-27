@@ -1,0 +1,19 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  input d,
+  output out_sop,
+  output out_pos
+);
+  // Both outputs share the factor c & (~b | d)
+  wire common = c & (~b | d);
+
+  // out_sop: common factor and not (a & ~d)
+  assign out_sop = common & (~a | d);
+
+  // out_pos: common factor and (a -> b)
+  assign out_pos = common & (~a | b);
+endmodule
+[DONE]

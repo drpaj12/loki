@@ -1,0 +1,21 @@
+[BEGIN]
+module TopModule(
+  input [99:0] in,
+  output [99:0] out
+);
+  // This module reverses the bit order of a 100-bit input vector.
+  // out[99] = in[0], out[98] = in[1], ..., out[0] = in[99]
+
+  // The netlist lists every bit individually in a concatenation,
+  // but in RTL a generate loop expresses the reversal clearly
+  genvar i;
+  generate
+    for (i = 0; i < 100; i = i + 1) begin : reverse_bits
+      assign out[i] = in[99 - i];
+    end
+  endgenerate
+
+  // Alternative implementation using a streaming operator (SystemVerilog)
+  // assign out = {<<{in}};
+endmodule
+[DONE]

@@ -1,0 +1,18 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input a,
+  output reg [2:0] q
+);
+  // Synchronous counter that counts 0..6 and wraps (7 also goes to 0).
+  // When a is high, the state is forced to 4 on the next clock edge.
+  always @(posedge clk) begin
+    if (a)
+      q <= 3'd4;
+    else if (q >= 3'd6)
+      q <= 3'd0;
+    else
+      q <= q + 3'd1;
+  end
+endmodule
+[DONE]

@@ -1,0 +1,24 @@
+[BEGIN]
+module TopModule(
+  input in,
+  input [3:0] state,
+  output [3:0] next_state,
+  output out
+);
+  // One-hot Moore state machine with four states A, B, C, D
+  localparam A = 0, B = 1, C = 2, D = 3;
+
+  // Next-state logic (state[i] is the one-hot bit for each state):
+  //   A: in=0 -> A, in=1 -> B
+  //   B: in=0 -> C, in=1 -> B
+  //   C: in=0 -> A, in=1 -> D
+  //   D: in=0 -> C, in=1 -> B
+  assign next_state[A] = ~in & (state[A] | state[C]);
+  assign next_state[B] =  in & (state[A] | state[B] | state[D]);
+  assign next_state[C] = ~in & (state[B] | state[D]);
+  assign next_state[D] =  in &  state[C];
+
+  // Moore output: high only in state D
+  assign out = state[D];
+endmodule
+[DONE]

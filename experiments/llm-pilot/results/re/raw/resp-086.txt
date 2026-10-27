@@ -1,0 +1,43 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input resetn,
+  input [2:0] r,
+  output [2:0] g
+);
+  // Fixed-priority arbiter (r[0] > r[1] > r[2]) with one-hot state encoding.
+  // state[0] = idle (A), state[2] = granted to r[0], state[1] = granted to r[1],
+  // state[3] = granted to r[2]. Synchronous active-low reset to idle.
+  localparam A = 0, G1 = 1, G0 = 2, G2 = 3;
+
+  reg [3:0] state;
+
+  always @(posedge clk) begin
+    if (!resetn) begin
+      state <= 4'b0001;
+    end else begin
+      state <= 4'b0000;
+      if (state[A]) begin
+        if (r[0])      state[G0] <= 1'b1;
+        else if (r[1]) state[G1] <= 1'b1;
+        else if (r[2]) state[G2] <= 1'b1;
+        else           state[A]  <= 1'b1;
+      end
+      if (state[G0]) begin
+        if (r[0]) state[G0] <= 1'b1;
+        else      state[A]  <= 1'b1;
+      end
+      if (state[G1]) begin
+        if (r[1]) state[G1] <= 1'b1;
+        else      state[A]  <= 1'b1;
+      end
+      if (state[G2]) begin
+        if (r[2]) state[G2] <= 1'b1;
+        else      state[A]  <= 1'b1;
+      end
+    end
+  end
+
+  assign g = {state[G2], state[G1], state[G0]};
+endmodule
+[DONE]

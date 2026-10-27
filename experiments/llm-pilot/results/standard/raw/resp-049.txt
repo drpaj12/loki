@@ -1,0 +1,25 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input j,
+  input k,
+  input areset,
+  output out
+);
+  // Two-state Moore FSM (OFF = 0, ON = 1) with an asynchronous active-high reset to OFF
+  // OFF: stay OFF unless j is 1, then go to ON
+  // ON:  stay ON unless k is 1, then go to OFF
+  reg state;
+
+  always @(posedge clk or posedge areset) begin
+    if (areset)
+      state <= 1'b0;
+    else if (state)
+      state <= ~k;
+    else
+      state <= j;
+  end
+
+  assign out = state;
+endmodule
+[DONE]
