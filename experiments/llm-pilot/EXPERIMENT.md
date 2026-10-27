@@ -218,3 +218,44 @@ part of this protocol unless Peter asks.
    Pins under `standard`: prefix 3030 bytes md5 e5c9110aadcb958b52750e40a8acb9b5; Prob024_hadd arm A
    user message 4154 characters, md5 3cf721c28b377e4bfe1719d424ec4c01 (old `cot` pin: 7986
    characters, md5 ebc2f2899a6e55a4d8689c1ae3fac87e).
+
+13. (Peter 2026-10-26, "yes run them") Run all 120 calls with `standard`. A classifier refusal is
+   outcome `refused`: never retried, never reworded. Pass rate is reported two ways: refused =
+   fail, and on the paired problem set where all three arms answered. Stop and report if refusals
+   exceed about 10 percent (12 calls). The probe batch (orders 1-4, 7-10) is part of the run.
+
+14. (Peter 2026-10-26: "we don't need to be exact to gate breaker ... we want the reverse
+   engineering of the gate") Variant `re`: our own system prompt, all 120 calls rerun fresh.
+   Purpose: L Q1.2 (do Loki hints help an LLM recover RTL from a flat gate netlist). Measure:
+   functional pass rate per arm (A netlist, B plus Loki hints, C interface only) and refusal rate.
+   The `re` system message is `prompts_variants/re/system.txt` (494 bytes, no trailing newline, md5
+   1c87dfd60bd2c480115fcf414d298de3, byte-equal to the text fixed in the brief). The 2-shot
+   examples (the `standard` prefix, md5 e5c9110aadcb958b52750e40a8acb9b5), the user content
+   (netlist, hints, interface) and the `[BEGIN]`/`[DONE]` answer format are unchanged, so
+   `collect.py` and `score.py` do not change; user message hashes in `run-re/calls.jsonl` equal
+   those of `run/calls.jsonl`. Select with `LLM_PILOT_VARIANT=re` (read in `common.py`, the one
+   place); outputs go to `run-re/`. Rules as decision 13; stop if refused plus error exceed 12.
+   The wording is final. Report pass rate per arm both ways and refusal rate `standard` against
+   `re` per arm. Deviation: exact Gate-Breaker fidelity is dropped for `re` (system message is
+   ours, and it asks for `[END]` while the user suffix and the extractor use `[DONE]`; the user
+   suffix governs the reply format and is unchanged).
+
+## Amendment 2026-10-26 (Dispatch 4): `standard` partial result
+
+The `standard` run stopped by the decision 13 rule at order 88 of 120: 73 ok, 15 refused (009 027
+048 055 056 057 058 072 074 076 077 080 085 086 088; 009 is from the probe batch), 32 not run
+(089-120). Archived under `run/responses/<arm>/<problem>.txt` (+ `.meta.json`, model
+claude-sonnet-5-5); `results/standard/` holds status.csv, results.csv, summary.md and the dispatch
+log. Order 073 (Prob128_fsm_ps2, arm A) is ok but used 3 tool calls (the others 2); it is scored
+as answered. Tool-call counts for orders 1-18 were not logged. Pass rates (our strict scorer; the
+Gate-Breaker-equivalent scorer gives the same counts):
+
+| arm | ok | refused | not run | pass | refused = fail | answered only | paired set (19 problems) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A | 24 | 6 | 10 | 22 | 22/30 (0.73) | 22/24 (0.92) | 18/19 (0.95) |
+| B | 25 | 4 | 11 | 23 | 23/29 (0.79) | 23/25 (0.92) | 18/19 (0.95) |
+| C | 24 | 5 | 11 | 15 | 15/29 (0.52) | 15/24 (0.62) | 13/19 (0.68) |
+
+Refused = fail denominators count calls made (ok plus refused). Partial and uneven across arms (the
+run stopped midway through the size order), so no A-versus-B claim is made from it; the `re` run is
+the full comparison. `archive_run.py` does the archiving; `summarize.py --status` adds the table.
