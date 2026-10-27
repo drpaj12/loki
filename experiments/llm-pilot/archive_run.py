@@ -5,8 +5,9 @@ Usage: ``python -I archive_run.py --src DIR --run RUN --model ID [--last-order N
 ``DIR/dispatch-log.tsv`` (order, status, tool calls, bytes, note) is copied to
 ``<run>/dispatch-log.tsv``. Orders are mapped to (arm, problem) through ``<run>/calls.jsonl``.
 Status: ``ok`` (response present), ``refused`` (listed, no response file), ``no-file`` (listed with
-``--no-file``: the reply never reached a file; counts as fail, outside the paired set), ``not_run`` (order above
-``--last-order``). Refused calls are never retried. Nothing is deleted.
+``--no-file``: the reply never reached a file; counts as fail, outside the
+paired set), ``not_run`` (order above ``--last-order``). Refused calls are never retried.
+Nothing is deleted.
 """
 
 from __future__ import annotations
@@ -28,7 +29,7 @@ def archive(src: Path, run: Path, model: str, last_order: int, refused: set[int]
         cells = ln.split("\t")
         log[int(cells[0])] = cells
     shutil.copyfile(log_path, run / "dispatch-log.tsv")
-    rows, counts = [], {"ok": 0, "refused": 0, "not_run": 0}
+    rows, counts = [], {"ok": 0, "refused": 0, "no-file": 0, "not_run": 0}
     for c in calls:
         o = c["order"]
         resp = src / f"resp-{o:03d}.txt"

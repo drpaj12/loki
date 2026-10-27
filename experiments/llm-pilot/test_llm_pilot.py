@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -379,6 +380,24 @@ class VariantRe(unittest.TestCase):
             out = "\n".join(summ.status_section(path, res))
         self.assertIn("| C | 1 | 1 | 0 | 0 | 1 | 1/2 (0.50) | 1/1 (1.00) | 1/1 (1.00) |", out)
         self.assertIn("Paired set: 1 problems", out)
+
+    def test_archive_no_file(self) -> None:
+        import tempfile
+
+        import archive_run
+        with tempfile.TemporaryDirectory(dir="/tmp/claude-1000") as d:
+            src, run = Path(d) / "src", Path(d) / "run"
+            src.mkdir()
+            run.mkdir()
+            calls = [{"order": i, "arm": "A", "problem": f"P{i}"} for i in (1, 2)]
+            (run / "calls.jsonl").write_text(
+                "\n".join(json.dumps(c) for c in calls) + "\n", encoding="utf-8")
+            (src / "dispatch-log.tsv").write_text("1\tok\t2\t9\t\n2\terror\t1\t9\tx\n",
+                                                  encoding="utf-8")
+            (src / "resp-001.txt").write_text("x", encoding="utf-8")
+            counts = archive_run.archive(src, run, "m", 120, set(), frozenset({2}))
+            self.assertEqual((counts["ok"], counts["no-file"]), (1, 1))
+            self.assertIn("002,A,P2,no-file,1,x", (run / "status.csv").read_text("utf-8"))
 
 
 if __name__ == "__main__":
