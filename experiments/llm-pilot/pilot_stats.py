@@ -63,7 +63,7 @@ def main(argv: list[str]) -> int:
         out.append(f"| all calls, no-file = fail ({tag}) | " + " | ".join(row) + " |")
     ans = [[p for p in probs if st[(x, p)] == "ok"] for x in ARMS]
     out.append("| answered only (strict) | " + " | ".join(
-        frac(sum(passed(res, x, p) for p in ps), len(ps)) for x, ps in zip(ARMS, ans)) + " |")
+        frac(sum(passed(res, x, p) for p in ps), len(ps)) for x, ps in zip(ARMS, ans, strict=True)) + " |")
     for col, tag in (("pass", "strict"), ("gb_pass", "Gate-Breaker-equivalent")):
         row = [frac(sum(passed(res, x, p, col) for p in paired), len(paired)) for x in ARMS]
         out.append(f"| paired set, {len(paired)} problems ({tag}) | " + " | ".join(row) + " |")
@@ -76,7 +76,8 @@ def main(argv: list[str]) -> int:
             frac(sum(passed(res, x, p) for p in qp), len(qp)) for x in ARMS) + " |")
         out.append(f"| {q} | paired | " + " | ".join(
             frac(sum(passed(res, x, p) for p in qpair), len(qpair)) for x in ARMS) + " |")
-    out += ["", f"### Paired tests (exact McNemar, two-sided, paired set n = {len(paired)}, strict)",
+    out += ["", f"### Paired tests (exact McNemar, two-sided, paired set n = {len(paired)}, "
+            "strict)",
             "", "| comparison | both pass | first only | second only | neither | p |",
             "| --- | --- | --- | --- | --- | --- |"]
     for x, y in (("B", "A"), ("A", "C"), ("B", "C")):
