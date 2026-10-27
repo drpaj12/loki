@@ -218,7 +218,8 @@ Environment as above (`ODIN3_ROOT`, `ODIN3_LIB`, `PYTHONPATH=<c826>/plugins/pyth
 `ODIN3_WS`). From `experiments/round6`:
 
     python run_snap.py MI|VT|CI        # one heavy-run batch per set: snapshots + maps -> <DATA>/snap/<set>/
-    python run_audit.py                # per-design audit JSON (<DATA>/audit) and l15_*.csv
+    python run_audit.py [--force]      # per-design audit JSON (<AUDIT>, default <DATA>/audit) and l15_*.csv;
+                                       # a cached JSON is reused only for the same audit-source hash
     python run_detect.py gt MI|VT|CI   # ground truth per design at S7, S8 (Odin III, heavy-run)
     python run_detect.py run MI|VT|CI  # B, W, WB with loki re at S7, S8 (heavy-run, restartable)
     python run_detect.py score         # l15_detect_design.csv (no Odin III)
@@ -363,3 +364,11 @@ statement is exploratory.
    in the data, so no count changes.
 4. Caches: `run_audit.py` keys its per-design JSON on a hash of `loki/audit/*.py`, so a change of
    the audit sources recomputes the audit.
+
+### Amendment D (fix round 1): withdrawn sentence
+
+The Stage 3 note above says "S7 recall is a lower bound". That was not shown and is withdrawn:
+gate and LUT footprints are not like for like, and no bound was derived. Rule 4 compares S7 and
+S8 recall as measured. Related report-only changes: the detector table is built on the paired
+designs (a run at both snapshots), as `decide.py` does; the S7 and S8 ground truths differ in
+size for some kinds and the table shows both counts.
