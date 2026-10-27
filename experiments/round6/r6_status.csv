@@ -1263,3 +1263,195 @@ R3,MI,branch,all,,,91,77,,partly explained (0.846)
 R3,MI,stmt,all,,,90,88,,D14 explains (0.978)
 R3,VT,branch,all,,,34,14,,mostly unexplained (0.412)
 R3,VT,stmt,all,,,61,28,,mostly unexplained (0.459)
+R4,ALL,,B,adder,S7>S8,121,0.000,0.153,not fooled
+R4,ALL,,B,adder_cin,S7>S8,121,0.008,0.072,not fooled
+R4,ALL,,B,comparator,S7>S8,829,0.019,0.001,not fooled
+R4,ALL,,B,counter,S7>S8,18,0.000,0.389,helped
+R4,ALL,,B,eq_const,S7>S8,803,0.000,0.006,not fooled
+R4,ALL,,B,ff_en,S7>S8,212,0.000,0.014,not fooled
+R4,ALL,,B,ff_srst,S7>S8,85,0.000,0.000,not fooled
+R4,ALL,,B,fsm,S7>S8,24,0.125,0.750,helped
+R4,ALL,,B,hard_add,S7>S8,121,0.000,0.000,not fooled
+R4,ALL,,B,hard_mem,S7>S8,0,,,too few
+R4,ALL,,B,hard_mul,S7>S8,30,0.000,0.000,not fooled
+R4,ALL,,B,mux,S7>S8,174,0.529,0.060,fooled by abc
+R4,ALL,,B,mux_bit,S7>S8,174,0.201,0.012,not fooled
+R4,ALL,,B,mux_tree,S7>S8,24,0.042,0.000,not fooled
+R4,ALL,,B,register,S7>S8,403,0.127,0.199,not fooled
+R4,ALL,,B,subtractor,S7>S8,63,0.000,0.083,not fooled
+R4,ALL,,W,adder,S7>S8,121,0.000,0.135,not fooled
+R4,ALL,,W,adder_cin,S7>S8,121,0.008,0.063,not fooled
+R4,ALL,,W,comparator,S7>S8,829,0.000,0.000,not fooled
+R4,ALL,,W,counter,S7>S8,18,0.000,0.000,not fooled
+R4,ALL,,W,eq_const,S7>S8,803,0.000,0.005,not fooled
+R4,ALL,,W,ff_en,S7>S8,212,0.160,0.108,not fooled
+R4,ALL,,W,ff_srst,S7>S8,85,0.529,0.494,not fooled
+R4,ALL,,W,fsm,S7>S8,24,0.042,0.042,not fooled
+R4,ALL,,W,hard_add,S7>S8,121,0.000,0.000,not fooled
+R4,ALL,,W,hard_mem,S7>S8,0,,,too few
+R4,ALL,,W,hard_mul,S7>S8,30,0.000,0.000,not fooled
+R4,ALL,,W,mux,S7>S8,174,0.356,0.042,fooled by abc
+R4,ALL,,W,mux_bit,S7>S8,174,0.000,0.000,not fooled
+R4,ALL,,W,mux_tree,S7>S8,24,0.000,0.000,not fooled
+R4,ALL,,W,register,S7>S8,403,0.218,0.226,not fooled
+R4,ALL,,W,subtractor,S7>S8,63,0.000,0.050,not fooled
+R4,ALL,,WB,adder,S7>S8,110,0.000,0.160,not fooled
+R4,ALL,,WB,adder_cin,S7>S8,110,0.027,0.070,not fooled
+R4,ALL,,WB,comparator,S7>S8,829,0.019,0.001,not fooled
+R4,ALL,,WB,counter,S7>S8,18,0.000,0.389,helped
+R4,ALL,,WB,eq_const,S7>S8,803,0.000,0.006,not fooled
+R4,ALL,,WB,ff_en,S7>S8,212,0.160,0.118,not fooled
+R4,ALL,,WB,ff_srst,S7>S8,85,0.529,0.471,not fooled
+R4,ALL,,WB,fsm,S7>S8,24,0.167,0.667,helped
+R4,ALL,,WB,hard_add,S7>S8,110,0.000,0.000,not fooled
+R4,ALL,,WB,hard_mem,S7>S8,0,,,too few
+R4,ALL,,WB,hard_mul,S7>S8,20,0.000,0.000,not fooled
+R4,ALL,,WB,mux,S7>S8,174,0.552,0.066,fooled by abc
+R4,ALL,,WB,mux_bit,S7>S8,174,0.201,0.012,not fooled
+R4,ALL,,WB,mux_tree,S7>S8,24,0.042,0.000,not fooled
+R4,ALL,,WB,register,S7>S8,397,0.222,0.237,not fooled
+R4,ALL,,WB,subtractor,S7>S8,63,0.000,0.067,not fooled
+R4,CI,,B,adder,S7>S8,49,0.000,0.143,not fooled
+R4,CI,,B,adder_cin,S7>S8,49,0.020,0.143,not fooled
+R4,CI,,B,comparator,S7>S8,167,0.066,0.000,not fooled
+R4,CI,,B,counter,S7>S8,10,0.000,0.500,helped
+R4,CI,,B,eq_const,S7>S8,161,0.000,0.025,not fooled
+R4,CI,,B,ff_en,S7>S8,78,0.000,0.000,not fooled
+R4,CI,,B,ff_srst,S7>S8,70,0.000,0.000,not fooled
+R4,CI,,B,fsm,S7>S8,20,0.150,0.800,helped
+R4,CI,,B,hard_add,S7>S8,49,0.000,0.000,not fooled
+R4,CI,,B,hard_mem,S7>S8,0,,,too few
+R4,CI,,B,hard_mul,S7>S8,0,,,too few
+R4,CI,,B,mux,S7>S8,106,0.689,0.079,fooled by abc
+R4,CI,,B,mux_bit,S7>S8,106,0.226,0.000,fooled by abc
+R4,CI,,B,mux_tree,S7>S8,19,0.000,0.000,not fooled
+R4,CI,,B,register,S7>S8,163,0.227,0.380,not fooled
+R4,CI,,B,subtractor,S7>S8,32,0.000,0.094,not fooled
+R4,CI,,W,adder,S7>S8,49,0.000,0.143,not fooled
+R4,CI,,W,adder_cin,S7>S8,49,0.020,0.143,not fooled
+R4,CI,,W,comparator,S7>S8,167,0.000,0.000,not fooled
+R4,CI,,W,counter,S7>S8,10,0.000,0.000,not fooled
+R4,CI,,W,eq_const,S7>S8,161,0.000,0.019,not fooled
+R4,CI,,W,ff_en,S7>S8,78,0.385,0.256,not fooled
+R4,CI,,W,ff_srst,S7>S8,70,0.471,0.486,not fooled
+R4,CI,,W,fsm,S7>S8,20,0.050,0.050,not fooled
+R4,CI,,W,hard_add,S7>S8,49,0.000,0.000,not fooled
+R4,CI,,W,hard_mem,S7>S8,0,,,too few
+R4,CI,,W,hard_mul,S7>S8,0,,,too few
+R4,CI,,W,mux,S7>S8,106,0.472,0.059,fooled by abc
+R4,CI,,W,mux_bit,S7>S8,106,0.000,0.000,not fooled
+R4,CI,,W,mux_tree,S7>S8,19,0.000,0.000,not fooled
+R4,CI,,W,register,S7>S8,163,0.356,0.350,not fooled
+R4,CI,,W,subtractor,S7>S8,32,0.000,0.094,not fooled
+R4,CI,,WB,adder,S7>S8,49,0.000,0.143,not fooled
+R4,CI,,WB,adder_cin,S7>S8,49,0.020,0.143,not fooled
+R4,CI,,WB,comparator,S7>S8,167,0.066,0.000,not fooled
+R4,CI,,WB,counter,S7>S8,10,0.000,0.500,helped
+R4,CI,,WB,eq_const,S7>S8,161,0.000,0.025,not fooled
+R4,CI,,WB,ff_en,S7>S8,78,0.385,0.256,not fooled
+R4,CI,,WB,ff_srst,S7>S8,70,0.471,0.457,not fooled
+R4,CI,,WB,fsm,S7>S8,20,0.200,0.750,helped
+R4,CI,,WB,hard_add,S7>S8,49,0.000,0.000,not fooled
+R4,CI,,WB,hard_mem,S7>S8,0,,,too few
+R4,CI,,WB,hard_mul,S7>S8,0,,,too few
+R4,CI,,WB,mux,S7>S8,106,0.689,0.079,fooled by abc
+R4,CI,,WB,mux_bit,S7>S8,106,0.226,0.000,fooled by abc
+R4,CI,,WB,mux_tree,S7>S8,19,0.000,0.000,not fooled
+R4,CI,,WB,register,S7>S8,163,0.380,0.429,not fooled
+R4,CI,,WB,subtractor,S7>S8,32,0.000,0.094,not fooled
+R4,MI,,B,adder,S7>S8,65,0.000,0.182,not fooled
+R4,MI,,B,adder_cin,S7>S8,65,0.000,0.018,not fooled
+R4,MI,,B,comparator,S7>S8,115,0.043,0.009,not fooled
+R4,MI,,B,counter,S7>S8,2,,,too few
+R4,MI,,B,eq_const,S7>S8,101,0.000,0.000,not fooled
+R4,MI,,B,ff_en,S7>S8,4,,,too few
+R4,MI,,B,ff_srst,S7>S8,9,,,too few
+R4,MI,,B,fsm,S7>S8,0,,,too few
+R4,MI,,B,hard_add,S7>S8,65,0.000,0.000,not fooled
+R4,MI,,B,hard_mem,S7>S8,0,,,too few
+R4,MI,,B,hard_mul,S7>S8,30,0.000,0.000,not fooled
+R4,MI,,B,mux,S7>S8,46,0.196,0.045,not fooled
+R4,MI,,B,mux_bit,S7>S8,46,0.087,0.045,not fooled
+R4,MI,,B,mux_tree,S7>S8,3,,,too few
+R4,MI,,B,register,S7>S8,94,0.074,0.117,not fooled
+R4,MI,,B,subtractor,S7>S8,29,0.000,0.077,not fooled
+R4,MI,,W,adder,S7>S8,65,0.000,0.145,not fooled
+R4,MI,,W,adder_cin,S7>S8,65,0.000,0.000,not fooled
+R4,MI,,W,comparator,S7>S8,115,0.000,0.000,not fooled
+R4,MI,,W,counter,S7>S8,2,,,too few
+R4,MI,,W,eq_const,S7>S8,101,0.000,0.000,not fooled
+R4,MI,,W,ff_en,S7>S8,4,,,too few
+R4,MI,,W,ff_srst,S7>S8,9,,,too few
+R4,MI,,W,fsm,S7>S8,0,,,too few
+R4,MI,,W,hard_add,S7>S8,65,0.000,0.000,not fooled
+R4,MI,,W,hard_mem,S7>S8,0,,,too few
+R4,MI,,W,hard_mul,S7>S8,30,0.000,0.000,not fooled
+R4,MI,,W,mux,S7>S8,46,0.196,0.023,not fooled
+R4,MI,,W,mux_bit,S7>S8,46,0.000,0.000,not fooled
+R4,MI,,W,mux_tree,S7>S8,3,,,too few
+R4,MI,,W,register,S7>S8,94,0.213,0.266,not fooled
+R4,MI,,W,subtractor,S7>S8,29,0.000,0.000,not fooled
+R4,MI,,WB,adder,S7>S8,54,0.000,0.205,helped
+R4,MI,,WB,adder_cin,S7>S8,54,0.037,0.000,not fooled
+R4,MI,,WB,comparator,S7>S8,115,0.043,0.009,not fooled
+R4,MI,,WB,counter,S7>S8,2,,,too few
+R4,MI,,WB,eq_const,S7>S8,101,0.000,0.000,not fooled
+R4,MI,,WB,ff_en,S7>S8,4,,,too few
+R4,MI,,WB,ff_srst,S7>S8,9,,,too few
+R4,MI,,WB,fsm,S7>S8,0,,,too few
+R4,MI,,WB,hard_add,S7>S8,54,0.000,0.000,not fooled
+R4,MI,,WB,hard_mem,S7>S8,0,,,too few
+R4,MI,,WB,hard_mul,S7>S8,20,0.000,0.000,not fooled
+R4,MI,,WB,mux,S7>S8,46,0.261,0.068,not fooled
+R4,MI,,WB,mux_bit,S7>S8,46,0.087,0.045,not fooled
+R4,MI,,WB,mux_tree,S7>S8,3,,,too few
+R4,MI,,WB,register,S7>S8,88,0.170,0.170,not fooled
+R4,MI,,WB,subtractor,S7>S8,29,0.000,0.038,not fooled
+R4,VT,,B,adder,S7>S8,7,,,too few
+R4,VT,,B,adder_cin,S7>S8,7,,,too few
+R4,VT,,B,comparator,S7>S8,547,0.000,0.000,not fooled
+R4,VT,,B,counter,S7>S8,6,,,too few
+R4,VT,,B,eq_const,S7>S8,541,0.000,0.002,not fooled
+R4,VT,,B,ff_en,S7>S8,130,0.000,0.008,not fooled
+R4,VT,,B,ff_srst,S7>S8,6,,,too few
+R4,VT,,B,fsm,S7>S8,4,,,too few
+R4,VT,,B,hard_add,S7>S8,7,,,too few
+R4,VT,,B,hard_mem,S7>S8,0,,,too few
+R4,VT,,B,hard_mul,S7>S8,0,,,too few
+R4,VT,,B,mux,S7>S8,22,0.455,0.000,fooled by abc
+R4,VT,,B,mux_bit,S7>S8,22,0.318,0.000,fooled by abc
+R4,VT,,B,mux_tree,S7>S8,2,,,too few
+R4,VT,,B,register,S7>S8,146,0.048,0.048,not fooled
+R4,VT,,B,subtractor,S7>S8,2,,,too few
+R4,VT,,W,adder,S7>S8,7,,,too few
+R4,VT,,W,adder_cin,S7>S8,7,,,too few
+R4,VT,,W,comparator,S7>S8,547,0.000,0.000,not fooled
+R4,VT,,W,counter,S7>S8,6,,,too few
+R4,VT,,W,eq_const,S7>S8,541,0.000,0.002,not fooled
+R4,VT,,W,ff_en,S7>S8,130,0.015,0.015,not fooled
+R4,VT,,W,ff_srst,S7>S8,6,,,too few
+R4,VT,,W,fsm,S7>S8,4,,,too few
+R4,VT,,W,hard_add,S7>S8,7,,,too few
+R4,VT,,W,hard_mem,S7>S8,0,,,too few
+R4,VT,,W,hard_mul,S7>S8,0,,,too few
+R4,VT,,W,mux,S7>S8,22,0.136,0.000,not fooled
+R4,VT,,W,mux_bit,S7>S8,22,0.000,0.000,not fooled
+R4,VT,,W,mux_tree,S7>S8,2,,,too few
+R4,VT,,W,register,S7>S8,146,0.068,0.062,not fooled
+R4,VT,,W,subtractor,S7>S8,2,,,too few
+R4,VT,,WB,adder,S7>S8,7,,,too few
+R4,VT,,WB,adder_cin,S7>S8,7,,,too few
+R4,VT,,WB,comparator,S7>S8,547,0.000,0.000,not fooled
+R4,VT,,WB,counter,S7>S8,6,,,too few
+R4,VT,,WB,eq_const,S7>S8,541,0.000,0.002,not fooled
+R4,VT,,WB,ff_en,S7>S8,130,0.015,0.015,not fooled
+R4,VT,,WB,ff_srst,S7>S8,6,,,too few
+R4,VT,,WB,fsm,S7>S8,4,,,too few
+R4,VT,,WB,hard_add,S7>S8,7,,,too few
+R4,VT,,WB,hard_mem,S7>S8,0,,,too few
+R4,VT,,WB,hard_mul,S7>S8,0,,,too few
+R4,VT,,WB,mux,S7>S8,22,0.500,0.000,fooled by abc
+R4,VT,,WB,mux_bit,S7>S8,22,0.318,0.000,fooled by abc
+R4,VT,,WB,mux_tree,S7>S8,2,,,too few
+R4,VT,,WB,register,S7>S8,146,0.075,0.062,not fooled
+R4,VT,,WB,subtractor,S7>S8,2,,,too few

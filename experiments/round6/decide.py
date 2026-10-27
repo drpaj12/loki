@@ -64,8 +64,52 @@ def _share(m: int, e: int) -> str:
     return f"{tag} ({s:.3f})"
 
 
+def detect_pooled() -> dict[tuple[str, str, str, str], list[int]]:
+    """(set, arm, kind, snapshot) to [designs, counted, matched, gt], paired designs only."""
+    path = HERE / "l15_detect_design.csv"
+    if not path.is_file():
+        return {}
+    data: defaultdict[tuple[str, str, str, str], dict[str, tuple[int, int, int]]]
+    data = defaultdict(dict)
+    for r in read_csv(path):
+        data[(r["set"], r["arm"], r["kind"], r["snapshot"])][r["design"]] = (
+            int(r["counted"]), int(r["matched"]), int(r["gt"]))
+    out: dict[tuple[str, str, str, str], list[int]] = {}
+    for (name, arm, kind, snap), per in data.items():
+        other = data.get((name, arm, kind, "S8" if snap == "S7" else "S7"), {})
+        keep = [v for d, v in per.items() if d in other]
+        out[(name, arm, kind, snap)] = [len(keep), sum(v[0] for v in keep),
+                                        sum(v[1] for v in keep), sum(v[2] for v in keep)]
+    return out
+
+
+def rule4() -> list[list[object]]:
+    """Recall at S7 and S8 per set (and ALL), arm, kind, and the outcome of rule 4."""
+    pooled = detect_pooled()
+    for key in list(pooled):
+        name, arm, kind, snap = key
+        if name == "ALL":
+            continue
+        acc = pooled.setdefault(("ALL", arm, kind, snap), [0, 0, 0, 0])
+        for i, v in enumerate(pooled[key]):
+            acc[i] += v
+    out: list[list[object]] = []
+    for (name, arm, kind, snap), v in sorted(pooled.items()):
+        if snap != "S7":
+            continue
+        w = pooled.get((name, arm, kind, "S8"))
+        if w is None or v[3] < MIN_KIND or w[3] < MIN_KIND:
+            out.append(["R4", name, "", arm, kind, "S7>S8", v[3], "", "", "too few"])
+            continue
+        r7, r8 = v[2] / v[3], w[2] / w[3]
+        d = r8 - r7
+        res = "fooled by abc" if d <= -0.2 else ("helped" if d >= 0.2 else "not fooled")
+        out.append(["R4", name, "", arm, kind, "S7>S8", v[3], f"{r7:.3f}", f"{r8:.3f}", res])
+    return out
+
+
 def main() -> int:
-    rows = rule1_2() + rule3()
+    rows = rule1_2() + rule3() + rule4()
     path = HERE / "r6_status.csv"
     write_csv(path, ["rule", "set", "level", "axis", "kind", "pass", "n", "aux", "aux2", "outcome"],
               rows)

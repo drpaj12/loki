@@ -1928,6 +1928,94 @@ temperature, and the 40-problem subset has a prompt-size cap that under-represen
 so these rates are not comparable with the published ones. The hints are uncalibrated at f3, and
 arm~C controls for memorisation of VerilogEval; it is not a measure of recovery.
 
+\subsection{Round 6: the L15 loss audit}
+\label{sec:round6}
+
+\input{round6-tables}
+
+Round 5 found that register and enable words are findable and that FSM decoders, compares and
+mux boundaries are not, and guessed that they are absorbed into LUTs at f2. Round 6 asks where
+and why (question L~Q3.1 of the purpose page: for each HDL construct, at which Odin~III step is
+it first lost as a separable unit, joined with what, and why?). The measure is a count of
+constructs lost per kind and pass, the share that the D14 provenance explains, and the recall
+of the round-5 detectors before and after a pass. It is not area, speed or power. The tools
+are Odin~III~\cite{odinII} at \code{c82609e6}, which writes the version~2 name map
+(\code{--prov-map}: records, join labels and the construct table), and ABC~\cite{abc} inside
+its \code{abc} pass; no VPR run is involved.
+
+\emph{Protocol.} The rules were committed first (commit \code{6d0e5b5},
+\code{experiments/round6/EXPERIMENT.md}) and the audit was run on no evaluation design before it.
+Development used hand-written fixtures and the corpus train split. The f2 flow of round 5 is run
+pass by pass in one Python session (proc, fsm, opt, flatten, opt \code{-full}, wreduce, lower,
+abc) and a netlist plus map is written after each pass. A \emph{unit} is the statement-level
+anchor of a record's construct leaves (V1.2.0 Section~3.3), reduced by dropping ancestors; a unit is
+\emph{separable} at a snapshot when some logic object has exactly that unit set, and \emph{lost}
+at the first later snapshot where none has. A loss is \emph{explained} when a labelled same-pass
+join record names the unit; its reason class is read from the pass and that evidence. The null
+draws, for every object, a random unit set of the same size from the units alive at the pass, so
+that growth of the chains is matched. Four dated entries follow in the protocol file. Two were written on development designs
+before any evaluation run: \code{removed} is split into \code{removed} and \code{subsumed} (a
+statement that survives only as the enclosing statement of a finer unit), and the units that
+become separable after the first snapshot are counted as losses with a flag. Two are post-data and
+exploratory: an axis that moves the instance cells to a class of their own, and the count of
+inherited blends below. The numeric rules use the original axis and change no status. The sets are the
+68 micros (MI), the 33 held-out VerilogEval designs (VT) and the 120 corpus iid designs (CI),
+each with all designs ok; the 13 big designs and the ood split were not run. The snapshot writers
+do not change the netlist (the final BLIF of all 68 micros is byte-identical to a run without
+them).
+
+\emph{Where units are lost.} Of \rsxUnitsAll{} units, 580 are lost, 474 are never lost and 382 are
+joined from the first snapshot onwards (Table~\ref{tab:r6-status}). The losses fall on four
+passes only: 320 at \code{opt}, 68 at \code{flatten}, 26 at the second \code{opt} and 166 at
+\code{abc}. None is lost at \code{fsm}, \code{wreduce} or \code{lower}: \code{lower} splits word
+cells into gates, which makes units finer, not blended. The 68 at \code{flatten} are all
+\code{INSTANCE} units (the instance cell of a dissolved module) and say nothing about logic. By
+hardware kind (Table~\ref{tab:r6-kindpass}), registers (\rsxRoneRegister) and compares
+(\rsxRoneCompare) are lost at \code{opt} (84 of 89 and 18 of 19, against random-set null shares
+of 0.34 and 0.49), muxes at \code{opt} (192 of 285, null share 0.41) and arithmetic at \code{abc}
+(31 of 55, null share 0.10). By the count rule, \code{abc} loses muxes more than chance (79
+against 36) and arithmetic at chance, whereas arithmetic at \code{opt} (17 against 51) and
+muxes at the second \code{opt} (14 against 61) are below chance. The round-5 reading is therefore only
+half right: a compare statement is already not a separable unit after the first \code{opt}, before
+any LUT is formed, and the LUT cone (\code{abc}) is where arithmetic and the remaining mux
+statements go. The \code{fsm} pass leaves no mark: there is no unit of hardware kind \code{fsm}
+at the first snapshot, and the FSM-recode reason class has no observation. The statement's
+branch level gives the same picture (548 losses against 580; \code{l15\_kind\_pass.csv}).
+
+\emph{Why.} Table~\ref{tab:r6-reason} gives the reason classes. At \code{opt}, 77 losses are
+opt merges that a labelled join record names, 12 are removals, 127 are subsumptions and 104 are
+merges with no label; at \code{abc}, 99 are LUT-cone merges that a record names, 33 subsumptions,
+10 removals, 2 instance joins and 22 unlabelled merges. Of the \rsxMergedAll{} merged losses,
+\rsxExplainedAll{} (\rsxExplainedShare) are explained by a same-pass join record, which the
+Stage-0 rule reads as partly explained (Table~\ref{tab:r6-explained}). Every one of the
+\rsxUnlabelledAll{} unlabelled merges is an \emph{inherited blend} (exploratory): the object that
+remains had already blended the unit with others before the pass, so no new join was made and none
+is labelled (V1.2.0 Section~3.3). The D14 labels therefore account for every \emph{new} blend; what
+they do not say is that a pure object was absorbed into an existing blend. ``Style collapse'' (a
+case, an if and a ternary of one function) leaves no record and is reported as not observable.
+Table~\ref{tab:r6-list} shows eight lost micro constructs with their partner;
+\code{l15\_lost\_list.csv} holds all of them.
+
+\emph{Detectors.} The word-level snapshots are not netlists a detector reads, so recall is
+compared at the two netlist snapshots, the gates after \code{lower} (S7) and the LUTs after
+\code{abc} (S8), for the default list (B), \code{wordfirst} (W) and the combined list (WB). The
+ground truth is the round-5 derivation on the word cells of S6 with the span-subset footprint rule
+of L0 applied to construct keys; at S7 many gates share a construct set, so S7 footprints are broad
+and the S7 recall is a lower bound, which is why the table is read through rule~4 only. One
+design (\code{ve\_Prob021\_mux256to1v}) was killed at S7 by the 6 GB slice cap and two micro
+\code{WB} runs at S7 timed out; they drop out of the paired comparison. Under rule~4 the only kind
+that \code{abc} fools is the mux word, in all three arms (WB: recall 0.55 to 0.07); the FSM and
+counter kinds are found more often at S8 than S7 (WB: fsm 0.17 to 0.67 on 24 instances, counter
+0.00 to 0.39 on 18), and nothing else moves by 0.20 (Table~\ref{tab:r6-detect}).
+
+\emph{What this says for L~Q3.2.} The map already names, for every LUT, the set of statements it
+blends, so a detector could split a LUT region by that set instead of guessing; the mux fooling at
+\code{abc} and the compare loss at \code{opt} say where such a split is worth the most. This is a
+suggestion, not a result: no detector was changed in this round. Not done: the big designs, the
+ood split, a VPR flow, the instance axis across several instances of one module (units are keyed
+by construct, so two instances of one module are one unit), and the word level, which the map does
+not observe.
+
 \section{Discussion}
 \label{sec:discussion}
 
@@ -1990,6 +2078,12 @@ An eighth observation comes from the comparison with HAL's DANA (Section~\ref{se
 \emph{on the evaluation sets the pre-registered rule returns \halOutcome{} between the word-first
 detector and DANA} (pooled $F_J$ \halFoneLoki{} against \halFoneHal{} at f2). DANA is a
 library-independent baseline for register words, and neither tool recovers most of them.
+
+A ninth observation comes from round 6 (Section~\ref{sec:round6}): \emph{where Odin~III loses a
+construct as a separable unit is mostly the first \code{opt} and \code{abc}, and the D14 join labels
+account for every new blend}. Of 580 lost units, 320 are lost at \code{opt} and 166 at \code{abc};
+the compare statements that round 5 expected to vanish into LUTs are already blended after
+\code{opt}, and \code{abc} fools the mux-word detector (all three arms).
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -2118,6 +2212,18 @@ at a precision of \rfvHbprecisionwb{} and nothing else reaches its margin; why i
 here, and the provenance-export audit (L15) can attribute missing constructs to a pass.
 
 \input{round5-log}
+
+\emph{Round 6 (2026-10-27): the loss audit.} Section~\ref{sec:round6}. Question L~Q3.1 (hub purpose
+page): at which Odin~III step is each construct first lost as a separable unit, joined with what,
+and why? What round 5 suggested: register and enable words are findable, decoders, compares and
+mux boundaries are absorbed into LUTs at f2. Rules committed first (\code{6d0e5b5}); four dated
+entries in \code{experiments/round6/EXPERIMENT.md} (two on development designs, two post-data and
+exploratory). RQs: L15a losses per kind and pass against a random-set null, L15b partners and
+reason classes, L15c the explained share (\rsxExplainedShare, partly explained), L15d detector
+recall at S7 and S8 (only the mux word is fooled by \code{abc}). Outcome: 580 of \rsxUnitsAll{}
+units are lost, at \code{opt} (320), \code{abc} (166), \code{flatten} (68, instance cells) and the
+second \code{opt} (26), none at \code{fsm}, \code{wreduce} or \code{lower}; every unlabelled merge
+is an inherited blend. Compare statements are lost at \code{opt}, before any LUT exists.
 
 \bibliographystyle{IEEEtran}
 \bibliography{joined}

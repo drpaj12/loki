@@ -177,9 +177,10 @@ def cmd_score() -> None:
                     preds = load_preds(json.loads(ov.read_text(encoding="utf-8")))
                     sc = construct_scores(preds, inst, 0.5)
                     for kind in sorted(SCORED_TYPES):
-                        r = sc[kind]
+                        r = sc.get(kind, {"counted": 0, "matched": 0})
+                        gt = sum(1 for g in inst if g.type in SCORED_TYPES[kind])
                         rows.append([name, dd.name, f"S{k}", arm, kind, r["counted"],
-                                     r["matched"], r["gt"]])
+                                     r["matched"], gt])
     write_csv(HERE / "l15_detect_design.csv",
               ["set", "design", "snapshot", "arm", "kind", "counted", "matched", "gt"], rows)
 

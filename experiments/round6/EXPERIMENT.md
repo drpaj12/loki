@@ -217,11 +217,20 @@ pooled is `too few` and gets no claim.
 Environment as above (`ODIN3_ROOT`, `ODIN3_LIB`, `PYTHONPATH=<c826>/plugins/python:<checkout>`,
 `ODIN3_WS`). From `experiments/round6`:
 
-    python run_snap.py MI|VT|CI        # one batch: snapshots + maps into work/loki-exp6-data/snap/
-    python run_audit.py                # per-design audit JSON and the tables (CSV)
-    python run_detect.py               # B, W, WB on S7 and S8, recall
+    python run_snap.py MI|VT|CI        # one heavy-run batch per set: snapshots + maps -> <DATA>/snap/<set>/
+    python run_audit.py                # per-design audit JSON (<DATA>/audit) and l15_*.csv
+    python run_detect.py gt MI|VT|CI   # ground truth per design at S7, S8 (Odin III, heavy-run)
+    python run_detect.py run MI|VT|CI  # B, W, WB with loki re at S7, S8 (heavy-run, restartable)
+    python run_detect.py score         # l15_detect_design.csv (no Odin III)
+    python check_identical.py MI       # final BLIF with and without the snapshot writes
     python decide.py                   # r6_status.csv by the numeric rules
     python paper_tables.py             # docs/paper/round6-tables.tex
+
+Heavy-run form: `ODIN3_HEAVY_OK=1 $ODIN3_ROOT/tools/heavy-run <venv python> run_snap.py MI`. The
+Odin III build: `git worktree add --detach work/odin3-c826 c82609e6`, then
+`git -c protocol.file.allow=always submodule update --init third_party/abc third_party/unity`,
+`cmake --preset release`, `tools/build-locked --preset release -j6`; used through
+`ODIN3_LIB=<worktree>/build/release/libodin3.so` and `PYTHONPATH=<worktree>/plugins/python`.
 
 The module and script names are fixed by the code in this branch; a rename is a dated entry
 below.
@@ -266,3 +275,12 @@ that already carried u and other units (V1.2.0 3.3: a blend inherited from one p
 new join, so no `join` flag is written). The audit adds `inherited` to a loss = every object at
 S_k that reaches u has a unit set contained in the unit set of an impure object at S_{k-1}.
 `l15_x_inherited.csv` counts it per pass. Exploratory; the explained share (rule 3) is unchanged.
+
+### 2026-10-27 (Stage 3 notes, post-data)
+
+Detector runs: 1,326 `loki re` runs (B, W, WB at S7 and S8). Two MI `WB` runs at S7
+(`micro_bm_match2_str_arch`, `micro_bm_match5_str_arch`) hit the 900 s budget plus 120 s wall
+limit; `ve_Prob021_mux256to1v` was killed (exit -9, the 6 GB heavy slice) at S7 for all three arms.
+They are left out of the paired comparison. The S7 footprints follow the L0 span-subset rule on
+construct keys and are broad on a gate netlist (many gates share a construct set), so S7 recall is
+a lower bound; rule 4 compares S7 with S8 only through that reading.
