@@ -1702,6 +1702,129 @@ over-generates (counters, LFSRs and other coupled registers pass it) and the \co
 branch has the constant-mask defect described under H16c.
 
 
+\subsection{LLM pilot: do Loki hints help a model recover RTL?}
+\label{sec:llm-pilot}
+
+% Sources: experiments/llm-pilot/EXPERIMENT.md (decisions 1-14, results for run re) and
+% experiments/llm-pilot/results/re/RESULTS.md, results/standard/summary.md,
+% results/transcript-audit.csv. Every number below is copied from those files.
+
+Every other result in this paper uses no language model. This subsection reports one small pilot
+that does, for research question L~Q1.2: does an LLM recover RTL from a flat gate netlist better
+when it is given Loki's structural hints? The measure is the functional pass rate per arm, plus
+the refusal rate.
+
+\emph{Setup.} The pilot is a replica of the Gate-Breaker netlist-to-RTL task~\cite{faruque2025gatebreaker}
+on VerilogEval~\cite{liu2023verilogeval}. It uses 40 problems, 10 per complexity quartile,
+chosen by a fixed hash rank from the quartile files, and one call per problem per arm ($K=1$).
+There are three arms. Arm~A gives the gate netlist and the interface line. Arm~B adds the claims
+that Loki makes from the flat netlist alone (no provenance names, no L0 ground truth). Arm~C gives
+the interface line only and no netlist, as a memorisation control. All arms use the same two
+worked examples and the same answer format. Each call is a fresh \code{claude-sonnet-5-5}
+subagent with no prior turns. The strict scorer compiles the reply with Icarus Verilog 12.0 against
+the reference testbench and requires exactly one line \code{Mismatches: 0 in M samples}; it also
+rejects replies that name the hidden reference module or print their own result line. A
+Gate-Breaker-equivalent count is reported beside it as a cross-check. A call with no reply file or
+an API refusal counts as a fail in the all-calls view.
+
+\emph{Results.} Table~\ref{tab:llm-pass} gives the pass rate per arm in both views, and
+Table~\ref{tab:llm-mcnemar} gives the exact two-sided McNemar tests on the paired set of 38
+problems answered in all three arms. Arm~B is nominally ahead of arm~A in the paired view
+(35/38 against 33/38) and both are ahead of arm~C (29/38), but \emph{no difference reaches
+$p<0.05$}: the smallest is B against C at $p=0.0703$. This is a pilot at $n=40$ with one draw per
+cell; it cannot support a claim about absolute rates or about the effect of the hints. In the
+all-calls view arms A and B are equal (35/40) because arm~B's two missing reply files count as
+fails, and arm~A passed both of those problems. Per-quartile cells have 8 to 10 problems each;
+in Q4 the all-calls rates are A 9/10, B 7/10, C 7/10, so the sign of the B-minus-A difference is
+not stable across quartiles.
+
+\begin{table}[t]
+\centering
+\caption{LLM pilot, run \code{re}: pass rate per arm (strict scorer unless marked). $n=40$ problems
+per arm, one draw each, \code{claude-sonnet-5-5}. Arm A: netlist; B: netlist plus Loki hints; C:
+interface only. GB-equiv.: Gate-Breaker-equivalent scorer.}
+\label{tab:llm-pass}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+View & A & B & C \\
+\midrule
+All 40, refusal/no file = fail (strict) & 35/40 (0.88) & 35/40 (0.88) & 30/40 (0.75) \\
+All 40, refusal/no file = fail (GB-equiv.) & 33/40 (0.82) & 33/40 (0.82) & 29/40 (0.72) \\
+Answered only (strict) & 35/40 (0.88) & 35/38 (0.92) & 30/40 (0.75) \\
+Paired set, 38 (strict) & 33/38 (0.87) & 35/38 (0.92) & 29/38 (0.76) \\
+Paired set, 38 (GB-equiv.) & 31/38 (0.82) & 33/38 (0.87) & 28/38 (0.74) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{LLM pilot, run \code{re}: exact two-sided McNemar tests, paired set $n=38$, strict
+scorer. ``First only'' counts problems the first arm passes and the second fails.}
+\label{tab:llm-mcnemar}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Comparison & Both & First only & Second only & Neither & $p$ \\
+\midrule
+B vs A & 33 & 2 & 0 & 3 & 0.5000 \\
+A vs C & 28 & 5 & 1 & 4 & 0.2188 \\
+B vs C & 28 & 7 & 1 & 2 & 0.0703 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{Refusals.} The first complete prompt that we ran, the Gate-Breaker \code{standard} prompt,
+was stopped by the pre-set rule at 88 of 120 calls: 8 calls came back as API safeguard refusals
+(no model reply) and 7 as no-file calls (the subagent declined or answered in chat without
+writing the reply file). Under our own prompt \code{re}, which explains the research, the same
+120 calls gave 0 API refusals and 2 no-file calls. Table~\ref{tab:llm-refuse} gives the rates per
+arm. The two prompts differ in more than the refusal behaviour, so any comparison of pass rates
+between them is exploratory only. Refusal handling is part of the cost of using a general-purpose
+model for this task and has to be reported beside the pass rate.
+
+\begin{table}[t]
+\centering
+\caption{LLM pilot: API refusals and no-file calls per arm. \code{standard} stopped at order 88 of 120
+(calls made); \code{re} ran all 120.}
+\label{tab:llm-refuse}
+\small
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Run & Arm & Calls & API refused & No file & Total \\
+\midrule
+\code{standard} & A & 30 & 2 & 4 & 6/30 (0.20) \\
+\code{standard} & B & 29 & 3 & 1 & 4/29 (0.14) \\
+\code{standard} & C & 29 & 3 & 2 & 5/29 (0.17) \\
+\code{re} & A & 40 & 0 & 0 & 0/40 (0.00) \\
+\code{re} & B & 40 & 0 & 2 & 2/40 (0.05) \\
+\code{re} & C & 40 & 0 & 0 & 0/40 (0.00) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{Threats to validity.}
+(i)~The subagents were not tool-less. They had file and web tools loaded and the workspace
+instructions and a memory index in context, and the reference and test files sit on the same
+disk (decision~11, a blinding deviation that was accepted). The transcript audit of all 208 calls
+(\code{standard} 88, \code{re} 120) shows that no call used any tool other than reading its own
+call file and writing or editing its own reply file: no shell, search or web tool. This is
+evidence from behaviour, not a technical block. Two calls used more than the usual two tool calls
+(\code{standard} 073 and \code{re} 116); both touched only their own files and both are scored.
+(ii)~Decision~12: the first batch used a step-by-step reasoning prompt (\code{cot}) that the API
+safeguard refused in 6 of 10 calls, even in arm~C; those answers were discarded and the prompt
+replaced by \code{standard}. Decision~13: a refusal is never retried or reworded, and pass rates
+are reported with refusal as a fail and on the paired set. Decision~14: the \code{re} system
+prompt is ours, not Gate-Breaker's, so exact Gate-Breaker fidelity is dropped; the worked
+examples, user content and answer format are unchanged (120 of 120 user messages byte-equal).
+The \code{re} prompt mentions Loki hints in every arm, including arms A and C that carry none; this
+cue is the same in all arms.
+(iii)~The prompts therefore differ from Gate-Breaker's. Sampling is one draw with no controlled
+temperature, and the 40-problem subset has a prompt-size cap that under-represents big designs,
+so these rates are not comparable with the published ones. The hints are uncalibrated at f3, and
+arm~C controls for memorisation of VerilogEval; it is not a measure of recovery.
+
 \section{Discussion}
 \label{sec:discussion}
 
