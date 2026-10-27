@@ -326,7 +326,8 @@ class Prompts(unittest.TestCase):
     @unittest.skipUnless(have_ve(), "VE clone not available")
     def test_regression_pin(self) -> None:
         prefix = common.prefix_file().read_text(encoding="utf-8")
-        self.assertEqual(len(prefix.encode("utf-8")), 6862)
+        self.assertEqual(len(prefix.encode("utf-8")), 3030)
+        build.check_prefix(prefix)
         build.check_pin(prefix)
 
     @unittest.skipUnless(have_ve(), "VE clone not available")

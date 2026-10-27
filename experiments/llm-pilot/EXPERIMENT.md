@@ -215,3 +215,6 @@ part of this protocol unless Peter asks.
    The `steps.csv` column loses its meaning (no step comments are asked); it is kept, expect zeros.
    The prefix md5 is verified in `build_prompts.py` (`PREFIX_MD5`) and the regression pin is
    re-pinned (see Result in the brief).
+   Pins under `standard`: prefix 3030 bytes md5 e5c9110aadcb958b52750e40a8acb9b5; Prob024_hadd arm A
+   user message 4154 characters, md5 3cf721c28b377e4bfe1719d424ec4c01 (old `cot` pin: 7986
+   characters, md5 ebc2f2899a6e55a4d8689c1ae3fac87e).

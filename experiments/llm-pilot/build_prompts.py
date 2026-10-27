@@ -22,8 +22,10 @@ common = importlib.import_module("common")
 BYTES_PER_TOKEN = 3.2
 NETLIST_HEAD = "Gate-level netlist:"
 PIN_PROBLEM = "Prob024_hadd"
-PIN_LEN = 7986
-PIN_MD5 = "ebc2f2899a6e55a4d8689c1ae3fac87e"
+PIN_LEN = 4154
+PIN_MD5 = "3cf721c28b377e4bfe1719d424ec4c01"
+PREFIX_MD5 = "e5c9110aadcb958b52750e40a8acb9b5"  # standard 2-shot prefix, 3030 bytes
+OLD_COT_PIN = ("ebc2f2899a6e55a4d8689c1ae3fac87e", 7986)  # superseded pin, variant cot
 
 
 LEAK = re.compile(r"\$n\d|\bc\d+\b|loki_|Prob\d|\bL0\b|provenance|key\.json|level0",
@@ -74,6 +76,13 @@ def write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
+def check_prefix(prefix: str) -> str:
+    md5 = hashlib.md5(prefix.encode("utf-8"), usedforsecurity=False).hexdigest()
+    if md5 != PREFIX_MD5:
+        raise SystemExit(f"prefix md5 mismatch: {md5}")
+    return md5
+
+
 def check_pin(prefix: str) -> str:
     prompt = (common.dataset_dir() / f"{PIN_PROBLEM}_prompt.txt").read_text(encoding="utf-8")
     msg = user_message(prefix, prompt, "A")
@@ -85,6 +94,7 @@ def check_pin(prefix: str) -> str:
 
 def main() -> int:
     prefix = common.prefix_file().read_text(encoding="utf-8")
+    check_prefix(prefix)
     check_pin(prefix)
     root = common.run_dir()
     calls = []

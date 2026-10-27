@@ -17,7 +17,7 @@ QUARTILES = {"Q1": "low", "Q2": "mid-low", "Q3": "mid-high", "Q4": "high"}
 PER_QUARTILE = 10
 MAX_PROMPT_BYTES = 40000  # selection filter on dataset prompts only; arm B may exceed it
 VE_NAME = "Gate-Breaker-verilog-eval"
-VARIANT = "cot"
+VARIANT = "standard"  # decision 12; the single place the variant is set
 ARMS = ("A", "B", "C")
 
 SYSTEM_MSG = (
