@@ -22,11 +22,12 @@ import re
 import sys
 from pathlib import Path
 
-SCRIPTS = Path("/home/jamiespa/odin3-ws/work/gatebreaker-exp2/scripts")
-PROBE = Path("/home/jamiespa/odin3-ws/work/odin3-cfg/tools/cfg-probe")
+WS = Path.home() / "odin3-ws"
+SCRIPTS = Path(os.environ.get("GATEBREAKER_SCRIPTS", WS / "work/gatebreaker-exp2/scripts"))
+PROBE = Path(os.environ.get("CFG_PROBE", WS / "work/odin3-cfg/tools/cfg-probe"))
 sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(PROBE))
-os.environ.setdefault("ODIN3_LIB", "/home/jamiespa/odin3-ws/odin3/build/release/libodin3.so")
+os.environ.setdefault("ODIN3_LIB", str(WS / "odin3/build/release/libodin3.so"))
 
 import metrics  # noqa: E402
 import odin3_cfg  # noqa: E402

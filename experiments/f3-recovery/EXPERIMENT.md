@@ -2,7 +2,7 @@
 
 Run 2026-10-23. Loki `exp/f3-recovery` at 660d445 (off origin/main aa83e65; cell_type schema,
 T17 hard detector, the #14 gate-Verilog final-equivalence fix, the paper). Odin III 1.1.0
-(`/home/jamiespa/odin3-ws/odin3/build/release/libodin3.so`, ABI 6). Dataset: the rebuilt
+(`~/odin3-ws/odin3/build/release/libodin3.so`, ABI 6). Dataset: the rebuilt
 cell_type-schema L0 at `work/loki-rename-exp/dataset-rebuild` (68 designs, f3 floor for 65)
 and its renamed twin `dataset-rebuild-renamed` (seed 20261022, library names preserved).
 Experiment data lives in `work/loki-f3-exp`; the scripts and the f3 calibration file are on
@@ -249,7 +249,7 @@ recovery.
 
 ## Data and commands
 
-Data under `/home/jamiespa/odin3-ws/work/loki-f3-exp`:
+Data under `~/odin3-ws/work/loki-f3-exp`:
 
 - `l0-ceiling.json`, `l0-ceiling.csv` — the per-design L0 ceiling.
 - `calib/f3.json` — the f3 calibration (copy committed at
@@ -260,13 +260,14 @@ Data under `/home/jamiespa/odin3-ws/work/loki-f3-exp`:
   the base==renamed digests; `scores/buses-*.json` — the bus match detail (all empty).
 - `astcfg-l0-l1.json`, `astcfg-nocalib.json`, `astcfg-flat.json` — the AST/CFG tables.
 - `designs-v/refs-sanitized/` — the 15 mechanically fixed reference copies.
-- Logs: `/home/jamiespa/odin3-ws/work/loki-f3-exp/logs/` (one line per run) and
+- Logs: `~/odin3-ws/work/loki-f3-exp/logs/` (one line per run) and
   `/tmp/claude-1000/f3-*.log`.
 
-    export ODIN3_ROOT=/home/jamiespa/odin3-ws/odin3
+    WS=${WS:-$HOME/odin3-ws}
+    export ODIN3_ROOT=$WS/odin3
     export ODIN3_LIB=$ODIN3_ROOT/build/release/libodin3.so
     export PYTHONPATH=$ODIN3_ROOT/plugins/python
-    E=/home/jamiespa/odin3-ws/work/loki-f3-exp
+    E=$WS/work/loki-f3-exp
     T=$E/.venv/bin
     $T/python experiments/f3-recovery/tools/l0_ceiling.py dataset-rebuild ref-sanitized ...
     $T/loki calibrate --dataset work/loki-rename-exp/dataset-rebuild --floor f3 \
