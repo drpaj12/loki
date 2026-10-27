@@ -36,14 +36,18 @@ def _unit_json(row: UnitRow, null: list[dict[UnitKey, float]]) -> dict[str, Any]
     out: dict[str, Any] = {"file": Path(key[0]).name, "kind": key[1], "span": key[2],
                            "name": key[3], "hw": row.hw, "status": row.status,
                            "first": row.first + 1 if row.pure_at else 0}
+    last = row.loss.index if row.loss is not None else len(null) - 1
+    risk = {str(k + 1): round(null[k].get(key, 0.0), 6)
+            for k in range(row.first + 1, last + 1) if row.pure_at and k - 1 in row.pure_at}
+    out["null"] = risk
     if row.loss is not None:
         loss = row.loss
         out["loss"] = {
             "at": loss.index + 1, "pass": loss.pass_name, "reason": loss.reason,
             "explained": loss.explained, "capped": loss.capped, "transient": loss.transient,
+            "inherited": loss.inherited,
             "n_partners": len(loss.partners),
             "partners": [[Path(p[0]).name, p[1], p[2]] for p in loss.partners[:PARTNER_SHOWN]],
-            "null": round(null[loss.index].get(key, 0.0), 6),
         }
     return out
 

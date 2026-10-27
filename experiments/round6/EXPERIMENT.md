@@ -250,3 +250,19 @@ separable later (for example when `lower` splits a word cell into gates). Rule u
 = never separable at any snapshot; a unit first separable at S_j, j > 1, has status `late`, and
 its first loss after S_j counts as a loss with the column `late = 1`. Tables give the totals and the
 totals without late units; the numeric rules use the totals.
+
+### 2026-10-27 (post-data, exploratory): axis `hw2`
+
+After the audit ran: all 68 first losses at `flatten` are `INSTANCE` units (the instance cell of a
+module that `flatten` dissolves), which the Stage-0 hardware kind puts under `logic`. The table
+`l15_kind_pass.csv` therefore carries a third axis `hw2` = the Stage-0 hardware kind with
+`INSTANCE` units moved to `hier`. The numeric rules use the Stage-0 axis `hw`; the `hw2` rows are
+labelled exploratory and change no status.
+
+### 2026-10-27 (post-data, exploratory): inherited blends among the unlabelled merges
+
+Many unlabelled merges at `opt` look like an object that was pure for u being absorbed into a cell
+that already carried u and other units (V1.2.0 3.3: a blend inherited from one parent is not a
+new join, so no `join` flag is written). The audit adds `inherited` to a loss = every object at
+S_k that reaches u has a unit set contained in the unit set of an impure object at S_{k-1}.
+`l15_x_inherited.csv` counts it per pass. Exploratory; the explained share (rule 3) is unchanged.

@@ -29,6 +29,7 @@ class Loss:
     explained: bool
     capped: bool
     transient: bool
+    inherited: bool = False
 
 
 @dataclass
@@ -107,8 +108,10 @@ def _loss_at(u: UnitKey, k: int, snaps: Sequence[tuple[str, Sequence[ObjView]]],
     instance = any(u in o.instance_join for o in hit)
     capped = any(o.capped for o in hit) and not explained
     sub = any(u in o.anchors for o in objs)
+    before = [p.units for p in snaps[k - 1][1] if len(p.units) > 1]
+    inherited = merged and all(any(o.units <= b for b in before) for o in hit)
     return Loss(k, name, tuple(partners), reason_of(name, merged, explained, instance, sub),
-                explained and merged, capped, transient)
+                explained and merged, capped, transient, inherited)
 
 
 def audit(snaps: Sequence[tuple[str, Sequence[ObjView]]]) -> dict[UnitKey, UnitRow]:

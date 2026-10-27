@@ -1,0 +1,1265 @@
+rule,set,level,axis,kind,pass,n,aux,aux2,outcome
+R1,ALL,branch,ast,ALWAYS,S3_opt,89,0.944/0.352,,dominant
+R2,ALL,branch,ast,ALWAYS,S2_fsm,0,53.800,,few
+R2,ALL,branch,ast,ALWAYS,S3_opt,84,92.200,,at chance
+R2,ALL,branch,ast,ALWAYS,S4_flatten,0,33.000,,few
+R2,ALL,branch,ast,ALWAYS,S5_opt_full,4,33.600,,few
+R2,ALL,branch,ast,ALWAYS,S6_wreduce,0,29.000,,few
+R2,ALL,branch,ast,ALWAYS,S7_lower,0,7.400,,few
+R2,ALL,branch,ast,ALWAYS,S8_abc,1,12.800,,few
+R1,ALL,branch,ast,BLOCKING_ASSIGN,,4,,,too few
+R2,ALL,branch,ast,BLOCKING_ASSIGN,S2_fsm,0,2.600,,few
+R2,ALL,branch,ast,BLOCKING_ASSIGN,S3_opt,0,2.400,,few
+R2,ALL,branch,ast,BLOCKING_ASSIGN,S4_flatten,0,3.000,,few
+R2,ALL,branch,ast,BLOCKING_ASSIGN,S5_opt_full,0,2.800,,few
+R2,ALL,branch,ast,BLOCKING_ASSIGN,S6_wreduce,0,2.400,,few
+R2,ALL,branch,ast,BLOCKING_ASSIGN,S7_lower,0,0.000,,few
+R2,ALL,branch,ast,BLOCKING_ASSIGN,S8_abc,4,0.000,,few
+R1,ALL,branch,ast,CASE_ITEM,S3_opt,149,0.651/0.425,,dominant
+R2,ALL,branch,ast,CASE_ITEM,S2_fsm,0,41.000,,few
+R2,ALL,branch,ast,CASE_ITEM,S3_opt,97,107.200,,at chance
+R2,ALL,branch,ast,CASE_ITEM,S4_flatten,0,30.200,,few
+R2,ALL,branch,ast,CASE_ITEM,S5_opt_full,11,29.800,,below chance
+R2,ALL,branch,ast,CASE_ITEM,S6_wreduce,0,21.600,,few
+R2,ALL,branch,ast,CASE_ITEM,S7_lower,0,4.600,,few
+R2,ALL,branch,ast,CASE_ITEM,S8_abc,41,17.600,,above chance
+R1,ALL,branch,ast,DECLARATOR,,2,,,too few
+R2,ALL,branch,ast,DECLARATOR,S2_fsm,0,0.000,,few
+R2,ALL,branch,ast,DECLARATOR,S3_opt,0,0.000,,few
+R2,ALL,branch,ast,DECLARATOR,S4_flatten,0,0.000,,few
+R2,ALL,branch,ast,DECLARATOR,S5_opt_full,0,0.000,,few
+R2,ALL,branch,ast,DECLARATOR,S6_wreduce,0,0.000,,few
+R2,ALL,branch,ast,DECLARATOR,S7_lower,0,0.000,,few
+R2,ALL,branch,ast,DECLARATOR,S8_abc,2,2.000,,few
+R1,ALL,branch,ast,GATE_DECL,S8_abc,10,1.000/0.304,,dominant
+R2,ALL,branch,ast,GATE_DECL,S2_fsm,0,5.000,,few
+R2,ALL,branch,ast,GATE_DECL,S3_opt,0,3.200,,few
+R2,ALL,branch,ast,GATE_DECL,S4_flatten,0,3.800,,few
+R2,ALL,branch,ast,GATE_DECL,S5_opt_full,0,3.800,,few
+R2,ALL,branch,ast,GATE_DECL,S6_wreduce,0,4.000,,few
+R2,ALL,branch,ast,GATE_DECL,S7_lower,0,3.600,,few
+R2,ALL,branch,ast,GATE_DECL,S8_abc,10,10.200,,at chance
+R1,ALL,branch,ast,IF,S3_opt,71,0.789/0.428,,dominant
+R2,ALL,branch,ast,IF,S2_fsm,0,27.600,,few
+R2,ALL,branch,ast,IF,S3_opt,56,52.600,,at chance
+R2,ALL,branch,ast,IF,S4_flatten,0,11.800,,few
+R2,ALL,branch,ast,IF,S5_opt_full,3,12.400,,few
+R2,ALL,branch,ast,IF,S6_wreduce,0,8.200,,few
+R2,ALL,branch,ast,IF,S7_lower,0,2.000,,few
+R2,ALL,branch,ast,IF,S8_abc,12,8.200,,at chance
+R1,ALL,branch,ast,IF_ELSE,S8_abc,48,0.583/0.070,,dominant
+R2,ALL,branch,ast,IF_ELSE,S2_fsm,0,20.000,,few
+R2,ALL,branch,ast,IF_ELSE,S3_opt,18,44.600,,below chance
+R2,ALL,branch,ast,IF_ELSE,S4_flatten,0,20.200,,few
+R2,ALL,branch,ast,IF_ELSE,S5_opt_full,2,23.000,,few
+R2,ALL,branch,ast,IF_ELSE,S6_wreduce,0,19.600,,few
+R2,ALL,branch,ast,IF_ELSE,S7_lower,0,3.800,,few
+R2,ALL,branch,ast,IF_ELSE,S8_abc,28,9.800,,above chance
+R1,ALL,branch,ast,IF_THEN,,6,,,too few
+R2,ALL,branch,ast,IF_THEN,S2_fsm,0,6.200,,few
+R2,ALL,branch,ast,IF_THEN,S3_opt,0,12.400,,few
+R2,ALL,branch,ast,IF_THEN,S4_flatten,0,8.400,,few
+R2,ALL,branch,ast,IF_THEN,S5_opt_full,0,9.800,,few
+R2,ALL,branch,ast,IF_THEN,S6_wreduce,0,8.800,,few
+R2,ALL,branch,ast,IF_THEN,S7_lower,0,0.200,,few
+R2,ALL,branch,ast,IF_THEN,S8_abc,6,7.200,,at chance
+R1,ALL,branch,ast,INSTANCE,S4_flatten,71,0.958/0.255,,dominant
+R2,ALL,branch,ast,INSTANCE,S2_fsm,0,24.200,,few
+R2,ALL,branch,ast,INSTANCE,S3_opt,1,28.200,,few
+R2,ALL,branch,ast,INSTANCE,S4_flatten,68,21.200,,above chance
+R2,ALL,branch,ast,INSTANCE,S5_opt_full,0,2.600,,few
+R2,ALL,branch,ast,INSTANCE,S6_wreduce,0,2.000,,few
+R2,ALL,branch,ast,INSTANCE,S7_lower,0,2.400,,few
+R2,ALL,branch,ast,INSTANCE,S8_abc,2,2.600,,few
+R1,ALL,branch,ast,NET_ASSIGN,S8_abc,85,0.624/0.207,,dominant
+R2,ALL,branch,ast,NET_ASSIGN,S2_fsm,0,25.600,,few
+R2,ALL,branch,ast,NET_ASSIGN,S3_opt,28,42.200,,at chance
+R2,ALL,branch,ast,NET_ASSIGN,S4_flatten,0,25.000,,few
+R2,ALL,branch,ast,NET_ASSIGN,S5_opt_full,4,21.400,,few
+R2,ALL,branch,ast,NET_ASSIGN,S6_wreduce,0,23.600,,few
+R2,ALL,branch,ast,NET_ASSIGN,S7_lower,0,2.600,,few
+R2,ALL,branch,ast,NET_ASSIGN,S8_abc,53,36.600,,at chance
+R1,ALL,branch,ast,NONBLOCKING_ASSIGN,S3_opt,13,1.000/0.284,,dominant
+R2,ALL,branch,ast,NONBLOCKING_ASSIGN,S2_fsm,0,29.600,,few
+R2,ALL,branch,ast,NONBLOCKING_ASSIGN,S3_opt,13,34.000,,below chance
+R2,ALL,branch,ast,NONBLOCKING_ASSIGN,S4_flatten,0,16.600,,few
+R2,ALL,branch,ast,NONBLOCKING_ASSIGN,S5_opt_full,0,15.800,,few
+R2,ALL,branch,ast,NONBLOCKING_ASSIGN,S6_wreduce,0,17.000,,few
+R2,ALL,branch,ast,NONBLOCKING_ASSIGN,S7_lower,0,2.600,,few
+R2,ALL,branch,ast,NONBLOCKING_ASSIGN,S8_abc,0,4.000,,few
+R1,ALL,branch,hw,arith,S8_abc,55,0.564/0.108,,dominant
+R2,ALL,branch,hw,arith,S2_fsm,0,33.200,,few
+R2,ALL,branch,hw,arith,S3_opt,17,46.400,,below chance
+R2,ALL,branch,hw,arith,S4_flatten,0,35.000,,few
+R2,ALL,branch,hw,arith,S5_opt_full,7,33.200,,below chance
+R2,ALL,branch,hw,arith,S6_wreduce,0,30.200,,few
+R2,ALL,branch,hw,arith,S7_lower,0,0.000,,few
+R2,ALL,branch,hw,arith,S8_abc,31,21.600,,at chance
+R1,ALL,branch,hw,compare,S3_opt,19,0.947/0.573,,dominant
+R2,ALL,branch,hw,compare,S2_fsm,0,3.000,,few
+R2,ALL,branch,hw,compare,S3_opt,18,13.400,,at chance
+R2,ALL,branch,hw,compare,S4_flatten,0,2.600,,few
+R2,ALL,branch,hw,compare,S5_opt_full,0,1.200,,few
+R2,ALL,branch,hw,compare,S6_wreduce,0,1.200,,few
+R2,ALL,branch,hw,compare,S7_lower,0,0.800,,few
+R2,ALL,branch,hw,compare,S8_abc,1,1.200,,few
+R1,ALL,branch,hw,logic,S4_flatten,132,0.515/0.167,,dominant
+R2,ALL,branch,hw,logic,S2_fsm,0,66.600,,few
+R2,ALL,branch,hw,logic,S3_opt,9,74.400,,below chance
+R2,ALL,branch,hw,logic,S4_flatten,68,53.200,,at chance
+R2,ALL,branch,hw,logic,S5_opt_full,1,33.200,,few
+R2,ALL,branch,hw,logic,S6_wreduce,0,34.800,,few
+R2,ALL,branch,hw,logic,S7_lower,0,11.600,,few
+R2,ALL,branch,hw,logic,S8_abc,54,44.000,,at chance
+R1,ALL,branch,hw,mux,S3_opt,253,0.668/0.422,,dominant
+R2,ALL,branch,hw,mux,S2_fsm,0,79.000,,few
+R2,ALL,branch,hw,mux,S3_opt,169,192.600,,at chance
+R2,ALL,branch,hw,mux,S4_flatten,0,49.400,,few
+R2,ALL,branch,hw,mux,S5_opt_full,12,53.800,,below chance
+R2,ALL,branch,hw,mux,S6_wreduce,0,41.000,,few
+R2,ALL,branch,hw,mux,S7_lower,0,9.400,,few
+R2,ALL,branch,hw,mux,S8_abc,72,31.400,,above chance
+R1,ALL,branch,hw,register,S3_opt,89,0.944/0.352,,dominant
+R2,ALL,branch,hw,register,S2_fsm,0,53.800,,few
+R2,ALL,branch,hw,register,S3_opt,84,92.200,,at chance
+R2,ALL,branch,hw,register,S4_flatten,0,33.000,,few
+R2,ALL,branch,hw,register,S5_opt_full,4,33.600,,few
+R2,ALL,branch,hw,register,S6_wreduce,0,29.000,,few
+R2,ALL,branch,hw,register,S7_lower,0,7.400,,few
+R2,ALL,branch,hw,register,S8_abc,1,12.800,,few
+R1,ALL,branch,hw2,arith,S8_abc,55,0.564/0.108,,dominant
+R2,ALL,branch,hw2,arith,S2_fsm,0,33.200,,few
+R2,ALL,branch,hw2,arith,S3_opt,17,46.400,,below chance
+R2,ALL,branch,hw2,arith,S4_flatten,0,35.000,,few
+R2,ALL,branch,hw2,arith,S5_opt_full,7,33.200,,below chance
+R2,ALL,branch,hw2,arith,S6_wreduce,0,30.200,,few
+R2,ALL,branch,hw2,arith,S7_lower,0,0.000,,few
+R2,ALL,branch,hw2,arith,S8_abc,31,21.600,,at chance
+R1,ALL,branch,hw2,compare,S3_opt,19,0.947/0.573,,dominant
+R2,ALL,branch,hw2,compare,S2_fsm,0,3.000,,few
+R2,ALL,branch,hw2,compare,S3_opt,18,13.400,,at chance
+R2,ALL,branch,hw2,compare,S4_flatten,0,2.600,,few
+R2,ALL,branch,hw2,compare,S5_opt_full,0,1.200,,few
+R2,ALL,branch,hw2,compare,S6_wreduce,0,1.200,,few
+R2,ALL,branch,hw2,compare,S7_lower,0,0.800,,few
+R2,ALL,branch,hw2,compare,S8_abc,1,1.200,,few
+R1,ALL,branch,hw2,hier,S4_flatten,71,0.958/0.255,,dominant
+R2,ALL,branch,hw2,hier,S2_fsm,0,24.200,,few
+R2,ALL,branch,hw2,hier,S3_opt,1,28.200,,few
+R2,ALL,branch,hw2,hier,S4_flatten,68,21.200,,above chance
+R2,ALL,branch,hw2,hier,S5_opt_full,0,2.600,,few
+R2,ALL,branch,hw2,hier,S6_wreduce,0,2.000,,few
+R2,ALL,branch,hw2,hier,S7_lower,0,2.400,,few
+R2,ALL,branch,hw2,hier,S8_abc,2,2.600,,few
+R1,ALL,branch,hw2,logic,S8_abc,61,0.852/0.176,,dominant
+R2,ALL,branch,hw2,logic,S2_fsm,0,42.400,,few
+R2,ALL,branch,hw2,logic,S3_opt,8,46.200,,below chance
+R2,ALL,branch,hw2,logic,S4_flatten,0,32.000,,few
+R2,ALL,branch,hw2,logic,S5_opt_full,1,30.600,,few
+R2,ALL,branch,hw2,logic,S6_wreduce,0,32.800,,few
+R2,ALL,branch,hw2,logic,S7_lower,0,9.200,,few
+R2,ALL,branch,hw2,logic,S8_abc,52,41.400,,at chance
+R1,ALL,branch,hw2,mux,S3_opt,253,0.668/0.422,,dominant
+R2,ALL,branch,hw2,mux,S2_fsm,0,79.000,,few
+R2,ALL,branch,hw2,mux,S3_opt,169,192.600,,at chance
+R2,ALL,branch,hw2,mux,S4_flatten,0,49.400,,few
+R2,ALL,branch,hw2,mux,S5_opt_full,12,53.800,,below chance
+R2,ALL,branch,hw2,mux,S6_wreduce,0,41.000,,few
+R2,ALL,branch,hw2,mux,S7_lower,0,9.400,,few
+R2,ALL,branch,hw2,mux,S8_abc,72,31.400,,above chance
+R1,ALL,branch,hw2,register,S3_opt,89,0.944/0.352,,dominant
+R2,ALL,branch,hw2,register,S2_fsm,0,53.800,,few
+R2,ALL,branch,hw2,register,S3_opt,84,92.200,,at chance
+R2,ALL,branch,hw2,register,S4_flatten,0,33.000,,few
+R2,ALL,branch,hw2,register,S5_opt_full,4,33.600,,few
+R2,ALL,branch,hw2,register,S6_wreduce,0,29.000,,few
+R2,ALL,branch,hw2,register,S7_lower,0,7.400,,few
+R2,ALL,branch,hw2,register,S8_abc,1,12.800,,few
+R1,ALL,stmt,ast,ALWAYS,S3_opt,89,0.944/0.343,,dominant
+R2,ALL,stmt,ast,ALWAYS,S2_fsm,0,59.200,,few
+R2,ALL,stmt,ast,ALWAYS,S3_opt,84,93.800,,at chance
+R2,ALL,stmt,ast,ALWAYS,S4_flatten,0,34.800,,few
+R2,ALL,stmt,ast,ALWAYS,S5_opt_full,4,34.800,,few
+R2,ALL,stmt,ast,ALWAYS,S6_wreduce,0,30.800,,few
+R2,ALL,stmt,ast,ALWAYS,S7_lower,0,7.400,,few
+R2,ALL,stmt,ast,ALWAYS,S8_abc,1,12.800,,few
+R1,ALL,stmt,ast,BLOCKING_ASSIGN,S3_opt,66,0.485/0.331,,spread
+R2,ALL,stmt,ast,BLOCKING_ASSIGN,S2_fsm,0,28.400,,few
+R2,ALL,stmt,ast,BLOCKING_ASSIGN,S3_opt,32,52.600,,at chance
+R2,ALL,stmt,ast,BLOCKING_ASSIGN,S4_flatten,0,25.000,,few
+R2,ALL,stmt,ast,BLOCKING_ASSIGN,S5_opt_full,11,23.800,,below chance
+R2,ALL,stmt,ast,BLOCKING_ASSIGN,S6_wreduce,0,14.600,,few
+R2,ALL,stmt,ast,BLOCKING_ASSIGN,S7_lower,0,2.600,,few
+R2,ALL,stmt,ast,BLOCKING_ASSIGN,S8_abc,23,11.800,,at chance
+R1,ALL,stmt,ast,CASE_ITEM,,5,,,too few
+R2,ALL,stmt,ast,CASE_ITEM,S2_fsm,0,0.400,,few
+R2,ALL,stmt,ast,CASE_ITEM,S3_opt,4,4.000,,few
+R2,ALL,stmt,ast,CASE_ITEM,S4_flatten,0,0.400,,few
+R2,ALL,stmt,ast,CASE_ITEM,S5_opt_full,0,0.600,,few
+R2,ALL,stmt,ast,CASE_ITEM,S6_wreduce,0,0.800,,few
+R2,ALL,stmt,ast,CASE_ITEM,S7_lower,0,0.000,,few
+R2,ALL,stmt,ast,CASE_ITEM,S8_abc,1,0.200,,few
+R1,ALL,stmt,ast,DECLARATOR,,2,,,too few
+R2,ALL,stmt,ast,DECLARATOR,S2_fsm,0,0.000,,few
+R2,ALL,stmt,ast,DECLARATOR,S3_opt,0,0.000,,few
+R2,ALL,stmt,ast,DECLARATOR,S4_flatten,0,0.000,,few
+R2,ALL,stmt,ast,DECLARATOR,S5_opt_full,0,0.000,,few
+R2,ALL,stmt,ast,DECLARATOR,S6_wreduce,0,0.000,,few
+R2,ALL,stmt,ast,DECLARATOR,S7_lower,0,0.000,,few
+R2,ALL,stmt,ast,DECLARATOR,S8_abc,2,2.000,,few
+R1,ALL,stmt,ast,GATE_DECL,S8_abc,10,1.000/0.304,,dominant
+R2,ALL,stmt,ast,GATE_DECL,S2_fsm,0,5.000,,few
+R2,ALL,stmt,ast,GATE_DECL,S3_opt,0,3.200,,few
+R2,ALL,stmt,ast,GATE_DECL,S4_flatten,0,3.800,,few
+R2,ALL,stmt,ast,GATE_DECL,S5_opt_full,0,3.800,,few
+R2,ALL,stmt,ast,GATE_DECL,S6_wreduce,0,4.000,,few
+R2,ALL,stmt,ast,GATE_DECL,S7_lower,0,3.600,,few
+R2,ALL,stmt,ast,GATE_DECL,S8_abc,10,10.200,,at chance
+R1,ALL,stmt,ast,IF,S3_opt,218,0.679/0.395,,dominant
+R2,ALL,stmt,ast,IF,S2_fsm,0,87.200,,few
+R2,ALL,stmt,ast,IF,S3_opt,148,165.800,,at chance
+R2,ALL,stmt,ast,IF,S4_flatten,0,43.600,,few
+R2,ALL,stmt,ast,IF,S5_opt_full,5,47.000,,below chance
+R2,ALL,stmt,ast,IF,S6_wreduce,0,38.000,,few
+R2,ALL,stmt,ast,IF,S7_lower,0,8.400,,few
+R2,ALL,stmt,ast,IF,S8_abc,65,29.600,,above chance
+R1,ALL,stmt,ast,INSTANCE,S4_flatten,71,0.958/0.256,,dominant
+R2,ALL,stmt,ast,INSTANCE,S2_fsm,0,24.200,,few
+R2,ALL,stmt,ast,INSTANCE,S3_opt,1,28.400,,few
+R2,ALL,stmt,ast,INSTANCE,S4_flatten,68,21.400,,above chance
+R2,ALL,stmt,ast,INSTANCE,S5_opt_full,0,2.600,,few
+R2,ALL,stmt,ast,INSTANCE,S6_wreduce,0,2.000,,few
+R2,ALL,stmt,ast,INSTANCE,S7_lower,0,2.400,,few
+R2,ALL,stmt,ast,INSTANCE,S8_abc,2,2.600,,few
+R1,ALL,stmt,ast,NET_ASSIGN,S8_abc,85,0.624/0.200,,dominant
+R2,ALL,stmt,ast,NET_ASSIGN,S2_fsm,0,29.400,,few
+R2,ALL,stmt,ast,NET_ASSIGN,S3_opt,28,42.600,,at chance
+R2,ALL,stmt,ast,NET_ASSIGN,S4_flatten,0,25.600,,few
+R2,ALL,stmt,ast,NET_ASSIGN,S5_opt_full,4,21.800,,few
+R2,ALL,stmt,ast,NET_ASSIGN,S6_wreduce,0,25.400,,few
+R2,ALL,stmt,ast,NET_ASSIGN,S7_lower,0,2.800,,few
+R2,ALL,stmt,ast,NET_ASSIGN,S8_abc,53,37.000,,at chance
+R1,ALL,stmt,ast,NONBLOCKING_ASSIGN,S3_opt,34,0.676/0.294,,dominant
+R2,ALL,stmt,ast,NONBLOCKING_ASSIGN,S2_fsm,0,47.200,,few
+R2,ALL,stmt,ast,NONBLOCKING_ASSIGN,S3_opt,23,71.200,,below chance
+R2,ALL,stmt,ast,NONBLOCKING_ASSIGN,S4_flatten,0,34.600,,few
+R2,ALL,stmt,ast,NONBLOCKING_ASSIGN,S5_opt_full,2,36.600,,few
+R2,ALL,stmt,ast,NONBLOCKING_ASSIGN,S6_wreduce,0,36.200,,few
+R2,ALL,stmt,ast,NONBLOCKING_ASSIGN,S7_lower,0,4.200,,few
+R2,ALL,stmt,ast,NONBLOCKING_ASSIGN,S8_abc,9,12.200,,at chance
+R1,ALL,stmt,hw,arith,S8_abc,55,0.564/0.101,,dominant
+R2,ALL,stmt,hw,arith,S2_fsm,0,37.000,,few
+R2,ALL,stmt,hw,arith,S3_opt,17,50.800,,below chance
+R2,ALL,stmt,hw,arith,S4_flatten,0,36.200,,few
+R2,ALL,stmt,hw,arith,S5_opt_full,7,35.600,,below chance
+R2,ALL,stmt,hw,arith,S6_wreduce,0,35.400,,few
+R2,ALL,stmt,hw,arith,S7_lower,0,0.000,,few
+R2,ALL,stmt,hw,arith,S8_abc,31,22.000,,at chance
+R1,ALL,stmt,hw,compare,S3_opt,19,0.947/0.489,,dominant
+R2,ALL,stmt,hw,compare,S2_fsm,0,5.800,,few
+R2,ALL,stmt,hw,compare,S3_opt,18,13.600,,at chance
+R2,ALL,stmt,hw,compare,S4_flatten,0,2.600,,few
+R2,ALL,stmt,hw,compare,S5_opt_full,0,1.400,,few
+R2,ALL,stmt,hw,compare,S6_wreduce,0,2.200,,few
+R2,ALL,stmt,hw,compare,S7_lower,0,1.000,,few
+R2,ALL,stmt,hw,compare,S8_abc,1,1.200,,few
+R1,ALL,stmt,hw,logic,S4_flatten,132,0.515/0.168,,dominant
+R2,ALL,stmt,hw,logic,S2_fsm,0,71.000,,few
+R2,ALL,stmt,hw,logic,S3_opt,9,80.600,,below chance
+R2,ALL,stmt,hw,logic,S4_flatten,68,58.200,,at chance
+R2,ALL,stmt,hw,logic,S5_opt_full,1,38.000,,few
+R2,ALL,stmt,hw,logic,S6_wreduce,0,38.600,,few
+R2,ALL,stmt,hw,logic,S7_lower,0,13.000,,few
+R2,ALL,stmt,hw,logic,S8_abc,54,46.200,,at chance
+R1,ALL,stmt,hw,mux,S3_opt,285,0.674/0.412,,dominant
+R2,ALL,stmt,hw,mux,S2_fsm,0,108.000,,few
+R2,ALL,stmt,hw,mux,S3_opt,192,222.800,,at chance
+R2,ALL,stmt,hw,mux,S4_flatten,0,57.400,,few
+R2,ALL,stmt,hw,mux,S5_opt_full,14,61.200,,below chance
+R2,ALL,stmt,hw,mux,S6_wreduce,0,44.800,,few
+R2,ALL,stmt,hw,mux,S7_lower,0,10.000,,few
+R2,ALL,stmt,hw,mux,S8_abc,79,36.200,,above chance
+R1,ALL,stmt,hw,register,S3_opt,89,0.944/0.343,,dominant
+R2,ALL,stmt,hw,register,S2_fsm,0,59.200,,few
+R2,ALL,stmt,hw,register,S3_opt,84,93.800,,at chance
+R2,ALL,stmt,hw,register,S4_flatten,0,34.800,,few
+R2,ALL,stmt,hw,register,S5_opt_full,4,34.800,,few
+R2,ALL,stmt,hw,register,S6_wreduce,0,30.800,,few
+R2,ALL,stmt,hw,register,S7_lower,0,7.400,,few
+R2,ALL,stmt,hw,register,S8_abc,1,12.800,,few
+R1,ALL,stmt,hw2,arith,S8_abc,55,0.564/0.101,,dominant
+R2,ALL,stmt,hw2,arith,S2_fsm,0,37.000,,few
+R2,ALL,stmt,hw2,arith,S3_opt,17,50.800,,below chance
+R2,ALL,stmt,hw2,arith,S4_flatten,0,36.200,,few
+R2,ALL,stmt,hw2,arith,S5_opt_full,7,35.600,,below chance
+R2,ALL,stmt,hw2,arith,S6_wreduce,0,35.400,,few
+R2,ALL,stmt,hw2,arith,S7_lower,0,0.000,,few
+R2,ALL,stmt,hw2,arith,S8_abc,31,22.000,,at chance
+R1,ALL,stmt,hw2,compare,S3_opt,19,0.947/0.489,,dominant
+R2,ALL,stmt,hw2,compare,S2_fsm,0,5.800,,few
+R2,ALL,stmt,hw2,compare,S3_opt,18,13.600,,at chance
+R2,ALL,stmt,hw2,compare,S4_flatten,0,2.600,,few
+R2,ALL,stmt,hw2,compare,S5_opt_full,0,1.400,,few
+R2,ALL,stmt,hw2,compare,S6_wreduce,0,2.200,,few
+R2,ALL,stmt,hw2,compare,S7_lower,0,1.000,,few
+R2,ALL,stmt,hw2,compare,S8_abc,1,1.200,,few
+R1,ALL,stmt,hw2,hier,S4_flatten,71,0.958/0.256,,dominant
+R2,ALL,stmt,hw2,hier,S2_fsm,0,24.200,,few
+R2,ALL,stmt,hw2,hier,S3_opt,1,28.400,,few
+R2,ALL,stmt,hw2,hier,S4_flatten,68,21.400,,above chance
+R2,ALL,stmt,hw2,hier,S5_opt_full,0,2.600,,few
+R2,ALL,stmt,hw2,hier,S6_wreduce,0,2.000,,few
+R2,ALL,stmt,hw2,hier,S7_lower,0,2.400,,few
+R2,ALL,stmt,hw2,hier,S8_abc,2,2.600,,few
+R1,ALL,stmt,hw2,logic,S8_abc,61,0.852/0.166,,dominant
+R2,ALL,stmt,hw2,logic,S2_fsm,0,46.800,,few
+R2,ALL,stmt,hw2,logic,S3_opt,8,52.200,,below chance
+R2,ALL,stmt,hw2,logic,S4_flatten,0,36.800,,few
+R2,ALL,stmt,hw2,logic,S5_opt_full,1,35.400,,few
+R2,ALL,stmt,hw2,logic,S6_wreduce,0,36.600,,few
+R2,ALL,stmt,hw2,logic,S7_lower,0,10.600,,few
+R2,ALL,stmt,hw2,logic,S8_abc,52,43.600,,at chance
+R1,ALL,stmt,hw2,mux,S3_opt,285,0.674/0.412,,dominant
+R2,ALL,stmt,hw2,mux,S2_fsm,0,108.000,,few
+R2,ALL,stmt,hw2,mux,S3_opt,192,222.800,,at chance
+R2,ALL,stmt,hw2,mux,S4_flatten,0,57.400,,few
+R2,ALL,stmt,hw2,mux,S5_opt_full,14,61.200,,below chance
+R2,ALL,stmt,hw2,mux,S6_wreduce,0,44.800,,few
+R2,ALL,stmt,hw2,mux,S7_lower,0,10.000,,few
+R2,ALL,stmt,hw2,mux,S8_abc,79,36.200,,above chance
+R1,ALL,stmt,hw2,register,S3_opt,89,0.944/0.343,,dominant
+R2,ALL,stmt,hw2,register,S2_fsm,0,59.200,,few
+R2,ALL,stmt,hw2,register,S3_opt,84,93.800,,at chance
+R2,ALL,stmt,hw2,register,S4_flatten,0,34.800,,few
+R2,ALL,stmt,hw2,register,S5_opt_full,4,34.800,,few
+R2,ALL,stmt,hw2,register,S6_wreduce,0,30.800,,few
+R2,ALL,stmt,hw2,register,S7_lower,0,7.400,,few
+R2,ALL,stmt,hw2,register,S8_abc,1,12.800,,few
+R1,CI,branch,ast,ALWAYS,S3_opt,67,1.000/0.419,,dominant
+R2,CI,branch,ast,ALWAYS,S2_fsm,0,29.600,,few
+R2,CI,branch,ast,ALWAYS,S3_opt,67,56.000,,at chance
+R2,CI,branch,ast,ALWAYS,S4_flatten,0,14.400,,few
+R2,CI,branch,ast,ALWAYS,S5_opt_full,0,12.200,,few
+R2,CI,branch,ast,ALWAYS,S6_wreduce,0,14.200,,few
+R2,CI,branch,ast,ALWAYS,S7_lower,0,3.600,,few
+R2,CI,branch,ast,ALWAYS,S8_abc,0,3.600,,few
+R1,CI,branch,ast,BLOCKING_ASSIGN,,0,,,too few
+R2,CI,branch,ast,BLOCKING_ASSIGN,S2_fsm,0,1.000,,few
+R2,CI,branch,ast,BLOCKING_ASSIGN,S3_opt,0,1.200,,few
+R2,CI,branch,ast,BLOCKING_ASSIGN,S4_flatten,0,1.400,,few
+R2,CI,branch,ast,BLOCKING_ASSIGN,S5_opt_full,0,1.400,,few
+R2,CI,branch,ast,BLOCKING_ASSIGN,S6_wreduce,0,1.400,,few
+R2,CI,branch,ast,BLOCKING_ASSIGN,S7_lower,0,0.000,,few
+R2,CI,branch,ast,BLOCKING_ASSIGN,S8_abc,0,0.000,,few
+R1,CI,branch,ast,CASE_ITEM,S3_opt,130,0.708/0.453,,dominant
+R2,CI,branch,ast,CASE_ITEM,S2_fsm,0,37.400,,few
+R2,CI,branch,ast,CASE_ITEM,S3_opt,92,98.400,,at chance
+R2,CI,branch,ast,CASE_ITEM,S4_flatten,0,24.000,,few
+R2,CI,branch,ast,CASE_ITEM,S5_opt_full,7,24.000,,below chance
+R2,CI,branch,ast,CASE_ITEM,S6_wreduce,0,16.600,,few
+R2,CI,branch,ast,CASE_ITEM,S7_lower,0,4.600,,few
+R2,CI,branch,ast,CASE_ITEM,S8_abc,31,12.400,,above chance
+R1,CI,branch,ast,IF,S3_opt,58,0.828/0.462,,dominant
+R2,CI,branch,ast,IF,S2_fsm,0,21.000,,few
+R2,CI,branch,ast,IF,S3_opt,48,40.000,,at chance
+R2,CI,branch,ast,IF,S4_flatten,0,5.800,,few
+R2,CI,branch,ast,IF,S5_opt_full,0,6.400,,few
+R2,CI,branch,ast,IF,S6_wreduce,0,4.800,,few
+R2,CI,branch,ast,IF,S7_lower,0,1.600,,few
+R2,CI,branch,ast,IF,S8_abc,10,7.000,,at chance
+R1,CI,branch,ast,IF_ELSE,S8_abc,37,0.568/0.042,,dominant
+R2,CI,branch,ast,IF_ELSE,S2_fsm,0,15.200,,few
+R2,CI,branch,ast,IF_ELSE,S3_opt,16,37.800,,below chance
+R2,CI,branch,ast,IF_ELSE,S4_flatten,0,15.600,,few
+R2,CI,branch,ast,IF_ELSE,S5_opt_full,0,17.400,,few
+R2,CI,branch,ast,IF_ELSE,S6_wreduce,0,16.000,,few
+R2,CI,branch,ast,IF_ELSE,S7_lower,0,1.800,,few
+R2,CI,branch,ast,IF_ELSE,S8_abc,21,4.600,,above chance
+R1,CI,branch,ast,IF_THEN,,0,,,too few
+R2,CI,branch,ast,IF_THEN,S2_fsm,0,5.600,,few
+R2,CI,branch,ast,IF_THEN,S3_opt,0,11.400,,few
+R2,CI,branch,ast,IF_THEN,S4_flatten,0,7.400,,few
+R2,CI,branch,ast,IF_THEN,S5_opt_full,0,8.400,,few
+R2,CI,branch,ast,IF_THEN,S6_wreduce,0,7.200,,few
+R2,CI,branch,ast,IF_THEN,S7_lower,0,0.000,,few
+R2,CI,branch,ast,IF_THEN,S8_abc,0,1.400,,few
+R1,CI,branch,ast,NET_ASSIGN,S3_opt,12,1.000/0.529,,dominant
+R2,CI,branch,ast,NET_ASSIGN,S2_fsm,0,3.400,,few
+R2,CI,branch,ast,NET_ASSIGN,S3_opt,12,9.200,,at chance
+R2,CI,branch,ast,NET_ASSIGN,S4_flatten,0,1.600,,few
+R2,CI,branch,ast,NET_ASSIGN,S5_opt_full,0,1.400,,few
+R2,CI,branch,ast,NET_ASSIGN,S6_wreduce,0,1.800,,few
+R2,CI,branch,ast,NET_ASSIGN,S7_lower,0,0.000,,few
+R2,CI,branch,ast,NET_ASSIGN,S8_abc,0,0.000,,few
+R1,CI,branch,ast,NONBLOCKING_ASSIGN,,0,,,too few
+R2,CI,branch,ast,NONBLOCKING_ASSIGN,S2_fsm,0,4.200,,few
+R2,CI,branch,ast,NONBLOCKING_ASSIGN,S3_opt,0,4.800,,few
+R2,CI,branch,ast,NONBLOCKING_ASSIGN,S4_flatten,0,4.000,,few
+R2,CI,branch,ast,NONBLOCKING_ASSIGN,S5_opt_full,0,4.400,,few
+R2,CI,branch,ast,NONBLOCKING_ASSIGN,S6_wreduce,0,3.400,,few
+R2,CI,branch,ast,NONBLOCKING_ASSIGN,S7_lower,0,0.000,,few
+R2,CI,branch,ast,NONBLOCKING_ASSIGN,S8_abc,0,0.000,,few
+R1,CI,branch,hw,arith,,2,,,too few
+R2,CI,branch,hw,arith,S2_fsm,0,9.400,,few
+R2,CI,branch,hw,arith,S3_opt,0,16.400,,few
+R2,CI,branch,hw,arith,S4_flatten,0,13.800,,few
+R2,CI,branch,hw,arith,S5_opt_full,0,14.200,,few
+R2,CI,branch,hw,arith,S6_wreduce,0,12.800,,few
+R2,CI,branch,hw,arith,S7_lower,0,0.000,,few
+R2,CI,branch,hw,arith,S8_abc,2,1.200,,few
+R1,CI,branch,hw,compare,S3_opt,10,1.000/0.725,,dominant
+R2,CI,branch,hw,compare,S2_fsm,0,2.200,,few
+R2,CI,branch,hw,compare,S3_opt,10,5.800,,at chance
+R2,CI,branch,hw,compare,S4_flatten,0,0.000,,few
+R2,CI,branch,hw,compare,S5_opt_full,0,0.000,,few
+R2,CI,branch,hw,compare,S6_wreduce,0,0.000,,few
+R2,CI,branch,hw,compare,S7_lower,0,0.000,,few
+R2,CI,branch,hw,compare,S8_abc,0,0.000,,few
+R1,CI,branch,hw,logic,S8_abc,10,0.800/0.100,,dominant
+R2,CI,branch,hw,logic,S2_fsm,0,5.400,,few
+R2,CI,branch,hw,logic,S3_opt,2,9.400,,few
+R2,CI,branch,hw,logic,S4_flatten,0,6.800,,few
+R2,CI,branch,hw,logic,S5_opt_full,0,6.400,,few
+R2,CI,branch,hw,logic,S6_wreduce,0,4.400,,few
+R2,CI,branch,hw,logic,S7_lower,0,0.000,,few
+R2,CI,branch,hw,logic,S8_abc,8,3.600,,above chance
+R1,CI,branch,hw,mux,S3_opt,215,0.726/0.443,,dominant
+R2,CI,branch,hw,mux,S2_fsm,0,70.800,,few
+R2,CI,branch,hw,mux,S3_opt,156,171.200,,at chance
+R2,CI,branch,hw,mux,S4_flatten,0,39.200,,few
+R2,CI,branch,hw,mux,S5_opt_full,7,42.800,,below chance
+R2,CI,branch,hw,mux,S6_wreduce,0,34.000,,few
+R2,CI,branch,hw,mux,S7_lower,0,8.000,,few
+R2,CI,branch,hw,mux,S8_abc,52,20.600,,above chance
+R1,CI,branch,hw,register,S3_opt,67,1.000/0.419,,dominant
+R2,CI,branch,hw,register,S2_fsm,0,29.600,,few
+R2,CI,branch,hw,register,S3_opt,67,56.000,,at chance
+R2,CI,branch,hw,register,S4_flatten,0,14.400,,few
+R2,CI,branch,hw,register,S5_opt_full,0,12.200,,few
+R2,CI,branch,hw,register,S6_wreduce,0,14.200,,few
+R2,CI,branch,hw,register,S7_lower,0,3.600,,few
+R2,CI,branch,hw,register,S8_abc,0,3.600,,few
+R1,CI,branch,hw2,arith,,2,,,too few
+R2,CI,branch,hw2,arith,S2_fsm,0,9.400,,few
+R2,CI,branch,hw2,arith,S3_opt,0,16.400,,few
+R2,CI,branch,hw2,arith,S4_flatten,0,13.800,,few
+R2,CI,branch,hw2,arith,S5_opt_full,0,14.200,,few
+R2,CI,branch,hw2,arith,S6_wreduce,0,12.800,,few
+R2,CI,branch,hw2,arith,S7_lower,0,0.000,,few
+R2,CI,branch,hw2,arith,S8_abc,2,1.200,,few
+R1,CI,branch,hw2,compare,S3_opt,10,1.000/0.725,,dominant
+R2,CI,branch,hw2,compare,S2_fsm,0,2.200,,few
+R2,CI,branch,hw2,compare,S3_opt,10,5.800,,at chance
+R2,CI,branch,hw2,compare,S4_flatten,0,0.000,,few
+R2,CI,branch,hw2,compare,S5_opt_full,0,0.000,,few
+R2,CI,branch,hw2,compare,S6_wreduce,0,0.000,,few
+R2,CI,branch,hw2,compare,S7_lower,0,0.000,,few
+R2,CI,branch,hw2,compare,S8_abc,0,0.000,,few
+R1,CI,branch,hw2,logic,S8_abc,10,0.800/0.100,,dominant
+R2,CI,branch,hw2,logic,S2_fsm,0,5.400,,few
+R2,CI,branch,hw2,logic,S3_opt,2,9.400,,few
+R2,CI,branch,hw2,logic,S4_flatten,0,6.800,,few
+R2,CI,branch,hw2,logic,S5_opt_full,0,6.400,,few
+R2,CI,branch,hw2,logic,S6_wreduce,0,4.400,,few
+R2,CI,branch,hw2,logic,S7_lower,0,0.000,,few
+R2,CI,branch,hw2,logic,S8_abc,8,3.600,,above chance
+R1,CI,branch,hw2,mux,S3_opt,215,0.726/0.443,,dominant
+R2,CI,branch,hw2,mux,S2_fsm,0,70.800,,few
+R2,CI,branch,hw2,mux,S3_opt,156,171.200,,at chance
+R2,CI,branch,hw2,mux,S4_flatten,0,39.200,,few
+R2,CI,branch,hw2,mux,S5_opt_full,7,42.800,,below chance
+R2,CI,branch,hw2,mux,S6_wreduce,0,34.000,,few
+R2,CI,branch,hw2,mux,S7_lower,0,8.000,,few
+R2,CI,branch,hw2,mux,S8_abc,52,20.600,,above chance
+R1,CI,branch,hw2,register,S3_opt,67,1.000/0.419,,dominant
+R2,CI,branch,hw2,register,S2_fsm,0,29.600,,few
+R2,CI,branch,hw2,register,S3_opt,67,56.000,,at chance
+R2,CI,branch,hw2,register,S4_flatten,0,14.400,,few
+R2,CI,branch,hw2,register,S5_opt_full,0,12.200,,few
+R2,CI,branch,hw2,register,S6_wreduce,0,14.200,,few
+R2,CI,branch,hw2,register,S7_lower,0,3.600,,few
+R2,CI,branch,hw2,register,S8_abc,0,3.600,,few
+R1,CI,stmt,ast,ALWAYS,S3_opt,67,1.000/0.401,,dominant
+R2,CI,stmt,ast,ALWAYS,S2_fsm,0,34.200,,few
+R2,CI,stmt,ast,ALWAYS,S3_opt,67,56.600,,at chance
+R2,CI,stmt,ast,ALWAYS,S4_flatten,0,15.200,,few
+R2,CI,stmt,ast,ALWAYS,S5_opt_full,0,12.800,,few
+R2,CI,stmt,ast,ALWAYS,S6_wreduce,0,15.000,,few
+R2,CI,stmt,ast,ALWAYS,S7_lower,0,3.800,,few
+R2,CI,stmt,ast,ALWAYS,S8_abc,0,3.600,,few
+R1,CI,stmt,ast,BLOCKING_ASSIGN,S3_opt,39,0.487/0.318,,spread
+R2,CI,stmt,ast,BLOCKING_ASSIGN,S2_fsm,0,20.000,,few
+R2,CI,stmt,ast,BLOCKING_ASSIGN,S3_opt,19,34.000,,at chance
+R2,CI,stmt,ast,BLOCKING_ASSIGN,S4_flatten,0,17.400,,few
+R2,CI,stmt,ast,BLOCKING_ASSIGN,S5_opt_full,7,17.000,,below chance
+R2,CI,stmt,ast,BLOCKING_ASSIGN,S6_wreduce,0,9.800,,few
+R2,CI,stmt,ast,BLOCKING_ASSIGN,S7_lower,0,2.200,,few
+R2,CI,stmt,ast,BLOCKING_ASSIGN,S8_abc,13,6.400,,above chance
+R1,CI,stmt,ast,IF,S3_opt,186,0.737/0.422,,dominant
+R2,CI,stmt,ast,IF,S2_fsm,0,77.400,,few
+R2,CI,stmt,ast,IF,S3_opt,137,145.200,,at chance
+R2,CI,stmt,ast,IF,S4_flatten,0,32.200,,few
+R2,CI,stmt,ast,IF,S5_opt_full,0,34.800,,few
+R2,CI,stmt,ast,IF,S6_wreduce,0,29.600,,few
+R2,CI,stmt,ast,IF,S7_lower,0,7.200,,few
+R2,CI,stmt,ast,IF,S8_abc,49,17.800,,above chance
+R1,CI,stmt,ast,NET_ASSIGN,S3_opt,12,1.000/0.479,,dominant
+R2,CI,stmt,ast,NET_ASSIGN,S2_fsm,0,5.200,,few
+R2,CI,stmt,ast,NET_ASSIGN,S3_opt,12,9.200,,at chance
+R2,CI,stmt,ast,NET_ASSIGN,S4_flatten,0,1.600,,few
+R2,CI,stmt,ast,NET_ASSIGN,S5_opt_full,0,1.400,,few
+R2,CI,stmt,ast,NET_ASSIGN,S6_wreduce,0,1.800,,few
+R2,CI,stmt,ast,NET_ASSIGN,S7_lower,0,0.000,,few
+R2,CI,stmt,ast,NET_ASSIGN,S8_abc,0,0.000,,few
+R1,CI,stmt,ast,NONBLOCKING_ASSIGN,,0,,,too few
+R2,CI,stmt,ast,NONBLOCKING_ASSIGN,S2_fsm,0,13.600,,few
+R2,CI,stmt,ast,NONBLOCKING_ASSIGN,S3_opt,0,22.400,,few
+R2,CI,stmt,ast,NONBLOCKING_ASSIGN,S4_flatten,0,14.400,,few
+R2,CI,stmt,ast,NONBLOCKING_ASSIGN,S5_opt_full,0,14.600,,few
+R2,CI,stmt,ast,NONBLOCKING_ASSIGN,S6_wreduce,0,15.200,,few
+R2,CI,stmt,ast,NONBLOCKING_ASSIGN,S7_lower,0,0.000,,few
+R2,CI,stmt,ast,NONBLOCKING_ASSIGN,S8_abc,0,1.400,,few
+R1,CI,stmt,hw,arith,,2,,,too few
+R2,CI,stmt,hw,arith,S2_fsm,0,12.200,,few
+R2,CI,stmt,hw,arith,S3_opt,0,17.600,,few
+R2,CI,stmt,hw,arith,S4_flatten,0,14.600,,few
+R2,CI,stmt,hw,arith,S5_opt_full,0,14.800,,few
+R2,CI,stmt,hw,arith,S6_wreduce,0,17.000,,few
+R2,CI,stmt,hw,arith,S7_lower,0,0.000,,few
+R2,CI,stmt,hw,arith,S8_abc,2,1.200,,few
+R1,CI,stmt,hw,compare,S3_opt,10,1.000/0.592,,dominant
+R2,CI,stmt,hw,compare,S2_fsm,0,4.000,,few
+R2,CI,stmt,hw,compare,S3_opt,10,5.800,,at chance
+R2,CI,stmt,hw,compare,S4_flatten,0,0.000,,few
+R2,CI,stmt,hw,compare,S5_opt_full,0,0.000,,few
+R2,CI,stmt,hw,compare,S6_wreduce,0,0.000,,few
+R2,CI,stmt,hw,compare,S7_lower,0,0.000,,few
+R2,CI,stmt,hw,compare,S8_abc,0,0.000,,few
+R1,CI,stmt,hw,logic,S8_abc,10,0.800/0.077,,dominant
+R2,CI,stmt,hw,logic,S2_fsm,0,6.600,,few
+R2,CI,stmt,hw,logic,S3_opt,2,12.000,,few
+R2,CI,stmt,hw,logic,S4_flatten,0,9.200,,few
+R2,CI,stmt,hw,logic,S5_opt_full,0,8.000,,few
+R2,CI,stmt,hw,logic,S6_wreduce,0,6.600,,few
+R2,CI,stmt,hw,logic,S7_lower,0,0.600,,few
+R2,CI,stmt,hw,logic,S8_abc,8,3.600,,above chance
+R1,CI,stmt,hw,mux,S3_opt,215,0.726/0.420,,dominant
+R2,CI,stmt,hw,mux,S2_fsm,0,93.400,,few
+R2,CI,stmt,hw,mux,S3_opt,156,175.400,,at chance
+R2,CI,stmt,hw,mux,S4_flatten,0,41.800,,few
+R2,CI,stmt,hw,mux,S5_opt_full,7,45.000,,below chance
+R2,CI,stmt,hw,mux,S6_wreduce,0,32.800,,few
+R2,CI,stmt,hw,mux,S7_lower,0,8.800,,few
+R2,CI,stmt,hw,mux,S8_abc,52,20.800,,above chance
+R1,CI,stmt,hw,register,S3_opt,67,1.000/0.401,,dominant
+R2,CI,stmt,hw,register,S2_fsm,0,34.200,,few
+R2,CI,stmt,hw,register,S3_opt,67,56.600,,at chance
+R2,CI,stmt,hw,register,S4_flatten,0,15.200,,few
+R2,CI,stmt,hw,register,S5_opt_full,0,12.800,,few
+R2,CI,stmt,hw,register,S6_wreduce,0,15.000,,few
+R2,CI,stmt,hw,register,S7_lower,0,3.800,,few
+R2,CI,stmt,hw,register,S8_abc,0,3.600,,few
+R1,CI,stmt,hw2,arith,,2,,,too few
+R2,CI,stmt,hw2,arith,S2_fsm,0,12.200,,few
+R2,CI,stmt,hw2,arith,S3_opt,0,17.600,,few
+R2,CI,stmt,hw2,arith,S4_flatten,0,14.600,,few
+R2,CI,stmt,hw2,arith,S5_opt_full,0,14.800,,few
+R2,CI,stmt,hw2,arith,S6_wreduce,0,17.000,,few
+R2,CI,stmt,hw2,arith,S7_lower,0,0.000,,few
+R2,CI,stmt,hw2,arith,S8_abc,2,1.200,,few
+R1,CI,stmt,hw2,compare,S3_opt,10,1.000/0.592,,dominant
+R2,CI,stmt,hw2,compare,S2_fsm,0,4.000,,few
+R2,CI,stmt,hw2,compare,S3_opt,10,5.800,,at chance
+R2,CI,stmt,hw2,compare,S4_flatten,0,0.000,,few
+R2,CI,stmt,hw2,compare,S5_opt_full,0,0.000,,few
+R2,CI,stmt,hw2,compare,S6_wreduce,0,0.000,,few
+R2,CI,stmt,hw2,compare,S7_lower,0,0.000,,few
+R2,CI,stmt,hw2,compare,S8_abc,0,0.000,,few
+R1,CI,stmt,hw2,logic,S8_abc,10,0.800/0.077,,dominant
+R2,CI,stmt,hw2,logic,S2_fsm,0,6.600,,few
+R2,CI,stmt,hw2,logic,S3_opt,2,12.000,,few
+R2,CI,stmt,hw2,logic,S4_flatten,0,9.200,,few
+R2,CI,stmt,hw2,logic,S5_opt_full,0,8.000,,few
+R2,CI,stmt,hw2,logic,S6_wreduce,0,6.600,,few
+R2,CI,stmt,hw2,logic,S7_lower,0,0.600,,few
+R2,CI,stmt,hw2,logic,S8_abc,8,3.600,,above chance
+R1,CI,stmt,hw2,mux,S3_opt,215,0.726/0.420,,dominant
+R2,CI,stmt,hw2,mux,S2_fsm,0,93.400,,few
+R2,CI,stmt,hw2,mux,S3_opt,156,175.400,,at chance
+R2,CI,stmt,hw2,mux,S4_flatten,0,41.800,,few
+R2,CI,stmt,hw2,mux,S5_opt_full,7,45.000,,below chance
+R2,CI,stmt,hw2,mux,S6_wreduce,0,32.800,,few
+R2,CI,stmt,hw2,mux,S7_lower,0,8.800,,few
+R2,CI,stmt,hw2,mux,S8_abc,52,20.800,,above chance
+R1,CI,stmt,hw2,register,S3_opt,67,1.000/0.401,,dominant
+R2,CI,stmt,hw2,register,S2_fsm,0,34.200,,few
+R2,CI,stmt,hw2,register,S3_opt,67,56.600,,at chance
+R2,CI,stmt,hw2,register,S4_flatten,0,15.200,,few
+R2,CI,stmt,hw2,register,S5_opt_full,0,12.800,,few
+R2,CI,stmt,hw2,register,S6_wreduce,0,15.000,,few
+R2,CI,stmt,hw2,register,S7_lower,0,3.800,,few
+R2,CI,stmt,hw2,register,S8_abc,0,3.600,,few
+R1,MI,branch,ast,ALWAYS,S3_opt,10,0.600/0.250,,dominant
+R2,MI,branch,ast,ALWAYS,S2_fsm,0,22.800,,few
+R2,MI,branch,ast,ALWAYS,S3_opt,6,29.200,,below chance
+R2,MI,branch,ast,ALWAYS,S4_flatten,0,18.000,,few
+R2,MI,branch,ast,ALWAYS,S5_opt_full,4,21.000,,few
+R2,MI,branch,ast,ALWAYS,S6_wreduce,0,14.400,,few
+R2,MI,branch,ast,ALWAYS,S7_lower,0,3.800,,few
+R2,MI,branch,ast,ALWAYS,S8_abc,0,7.400,,few
+R1,MI,branch,ast,BLOCKING_ASSIGN,,0,,,too few
+R2,MI,branch,ast,BLOCKING_ASSIGN,S2_fsm,0,0.000,,few
+R2,MI,branch,ast,BLOCKING_ASSIGN,S3_opt,0,0.000,,few
+R2,MI,branch,ast,BLOCKING_ASSIGN,S4_flatten,0,0.200,,few
+R2,MI,branch,ast,BLOCKING_ASSIGN,S5_opt_full,0,0.400,,few
+R2,MI,branch,ast,BLOCKING_ASSIGN,S6_wreduce,0,0.000,,few
+R2,MI,branch,ast,BLOCKING_ASSIGN,S7_lower,0,0.000,,few
+R2,MI,branch,ast,BLOCKING_ASSIGN,S8_abc,0,0.000,,few
+R1,MI,branch,ast,CASE_ITEM,S8_abc,14,0.643/0.162,,dominant
+R2,MI,branch,ast,CASE_ITEM,S2_fsm,0,3.600,,few
+R2,MI,branch,ast,CASE_ITEM,S3_opt,1,4.800,,few
+R2,MI,branch,ast,CASE_ITEM,S4_flatten,0,6.200,,few
+R2,MI,branch,ast,CASE_ITEM,S5_opt_full,4,5.600,,few
+R2,MI,branch,ast,CASE_ITEM,S6_wreduce,0,4.600,,few
+R2,MI,branch,ast,CASE_ITEM,S7_lower,0,0.000,,few
+R2,MI,branch,ast,CASE_ITEM,S8_abc,9,4.800,,at chance
+R1,MI,branch,ast,GATE_DECL,S8_abc,10,1.000/0.304,,dominant
+R2,MI,branch,ast,GATE_DECL,S2_fsm,0,5.000,,few
+R2,MI,branch,ast,GATE_DECL,S3_opt,0,3.200,,few
+R2,MI,branch,ast,GATE_DECL,S4_flatten,0,3.800,,few
+R2,MI,branch,ast,GATE_DECL,S5_opt_full,0,3.800,,few
+R2,MI,branch,ast,GATE_DECL,S6_wreduce,0,4.000,,few
+R2,MI,branch,ast,GATE_DECL,S7_lower,0,3.600,,few
+R2,MI,branch,ast,GATE_DECL,S8_abc,10,10.200,,at chance
+R1,MI,branch,ast,IF,,8,,,too few
+R2,MI,branch,ast,IF,S2_fsm,0,4.600,,few
+R2,MI,branch,ast,IF,S3_opt,3,6.400,,few
+R2,MI,branch,ast,IF,S4_flatten,0,3.600,,few
+R2,MI,branch,ast,IF,S5_opt_full,3,4.600,,few
+R2,MI,branch,ast,IF,S6_wreduce,0,2.600,,few
+R2,MI,branch,ast,IF,S7_lower,0,0.400,,few
+R2,MI,branch,ast,IF,S8_abc,2,1.200,,few
+R1,MI,branch,ast,IF_ELSE,,4,,,too few
+R2,MI,branch,ast,IF_ELSE,S2_fsm,0,2.800,,few
+R2,MI,branch,ast,IF_ELSE,S3_opt,1,4.400,,few
+R2,MI,branch,ast,IF_ELSE,S4_flatten,0,3.400,,few
+R2,MI,branch,ast,IF_ELSE,S5_opt_full,1,4.000,,few
+R2,MI,branch,ast,IF_ELSE,S6_wreduce,0,2.400,,few
+R2,MI,branch,ast,IF_ELSE,S7_lower,0,2.000,,few
+R2,MI,branch,ast,IF_ELSE,S8_abc,2,1.600,,few
+R1,MI,branch,ast,IF_THEN,,0,,,too few
+R2,MI,branch,ast,IF_THEN,S2_fsm,0,0.400,,few
+R2,MI,branch,ast,IF_THEN,S3_opt,0,0.600,,few
+R2,MI,branch,ast,IF_THEN,S4_flatten,0,0.400,,few
+R2,MI,branch,ast,IF_THEN,S5_opt_full,0,0.800,,few
+R2,MI,branch,ast,IF_THEN,S6_wreduce,0,0.400,,few
+R2,MI,branch,ast,IF_THEN,S7_lower,0,0.200,,few
+R2,MI,branch,ast,IF_THEN,S8_abc,0,0.400,,few
+R1,MI,branch,ast,INSTANCE,S4_flatten,71,0.958/0.255,,dominant
+R2,MI,branch,ast,INSTANCE,S2_fsm,0,24.200,,few
+R2,MI,branch,ast,INSTANCE,S3_opt,1,28.200,,few
+R2,MI,branch,ast,INSTANCE,S4_flatten,68,21.200,,above chance
+R2,MI,branch,ast,INSTANCE,S5_opt_full,0,2.600,,few
+R2,MI,branch,ast,INSTANCE,S6_wreduce,0,2.000,,few
+R2,MI,branch,ast,INSTANCE,S7_lower,0,2.400,,few
+R2,MI,branch,ast,INSTANCE,S8_abc,2,2.600,,few
+R1,MI,branch,ast,NET_ASSIGN,S8_abc,62,0.806/0.231,,dominant
+R2,MI,branch,ast,NET_ASSIGN,S2_fsm,0,21.000,,few
+R2,MI,branch,ast,NET_ASSIGN,S3_opt,8,24.000,,below chance
+R2,MI,branch,ast,NET_ASSIGN,S4_flatten,0,20.600,,few
+R2,MI,branch,ast,NET_ASSIGN,S5_opt_full,4,17.400,,few
+R2,MI,branch,ast,NET_ASSIGN,S6_wreduce,0,19.000,,few
+R2,MI,branch,ast,NET_ASSIGN,S7_lower,0,1.400,,few
+R2,MI,branch,ast,NET_ASSIGN,S8_abc,50,31.000,,at chance
+R1,MI,branch,ast,NONBLOCKING_ASSIGN,S3_opt,13,1.000/0.296,,dominant
+R2,MI,branch,ast,NONBLOCKING_ASSIGN,S2_fsm,0,25.000,,few
+R2,MI,branch,ast,NONBLOCKING_ASSIGN,S3_opt,13,29.000,,below chance
+R2,MI,branch,ast,NONBLOCKING_ASSIGN,S4_flatten,0,12.400,,few
+R2,MI,branch,ast,NONBLOCKING_ASSIGN,S5_opt_full,0,11.400,,few
+R2,MI,branch,ast,NONBLOCKING_ASSIGN,S6_wreduce,0,13.600,,few
+R2,MI,branch,ast,NONBLOCKING_ASSIGN,S7_lower,0,2.600,,few
+R2,MI,branch,ast,NONBLOCKING_ASSIGN,S8_abc,0,4.000,,few
+R1,MI,branch,hw,arith,S8_abc,49,0.510/0.137,,dominant
+R2,MI,branch,hw,arith,S2_fsm,0,22.800,,few
+R2,MI,branch,hw,arith,S3_opt,17,29.200,,at chance
+R2,MI,branch,hw,arith,S4_flatten,0,20.200,,few
+R2,MI,branch,hw,arith,S5_opt_full,7,18.600,,below chance
+R2,MI,branch,hw,arith,S6_wreduce,0,16.000,,few
+R2,MI,branch,hw,arith,S7_lower,0,0.000,,few
+R2,MI,branch,hw,arith,S8_abc,25,17.000,,at chance
+R1,MI,branch,hw,compare,,1,,,too few
+R2,MI,branch,hw,compare,S2_fsm,0,0.600,,few
+R2,MI,branch,hw,compare,S3_opt,1,0.800,,few
+R2,MI,branch,hw,compare,S4_flatten,0,1.400,,few
+R2,MI,branch,hw,compare,S5_opt_full,0,0.400,,few
+R2,MI,branch,hw,compare,S6_wreduce,0,0.400,,few
+R2,MI,branch,hw,compare,S7_lower,0,0.000,,few
+R2,MI,branch,hw,compare,S8_abc,0,0.000,,few
+R1,MI,branch,hw,logic,S4_flatten,115,0.591/0.167,,dominant
+R2,MI,branch,hw,logic,S2_fsm,0,57.800,,few
+R2,MI,branch,hw,logic,S3_opt,6,61.200,,below chance
+R2,MI,branch,hw,logic,S4_flatten,68,43.400,,at chance
+R2,MI,branch,hw,logic,S5_opt_full,1,23.800,,few
+R2,MI,branch,hw,logic,S6_wreduce,0,27.000,,few
+R2,MI,branch,hw,logic,S7_lower,0,11.200,,few
+R2,MI,branch,hw,logic,S8_abc,40,36.000,,at chance
+R1,MI,branch,hw,mux,S8_abc,17,0.588/0.072,,dominant
+R2,MI,branch,hw,mux,S2_fsm,0,5.400,,few
+R2,MI,branch,hw,mux,S3_opt,3,9.400,,few
+R2,MI,branch,hw,mux,S4_flatten,0,6.800,,few
+R2,MI,branch,hw,mux,S5_opt_full,4,7.800,,few
+R2,MI,branch,hw,mux,S6_wreduce,0,5.200,,few
+R2,MI,branch,hw,mux,S7_lower,0,1.400,,few
+R2,MI,branch,hw,mux,S8_abc,10,2.800,,above chance
+R1,MI,branch,hw,register,S3_opt,10,0.600/0.250,,dominant
+R2,MI,branch,hw,register,S2_fsm,0,22.800,,few
+R2,MI,branch,hw,register,S3_opt,6,29.200,,below chance
+R2,MI,branch,hw,register,S4_flatten,0,18.000,,few
+R2,MI,branch,hw,register,S5_opt_full,4,21.000,,few
+R2,MI,branch,hw,register,S6_wreduce,0,14.400,,few
+R2,MI,branch,hw,register,S7_lower,0,3.800,,few
+R2,MI,branch,hw,register,S8_abc,0,7.400,,few
+R1,MI,branch,hw2,arith,S8_abc,49,0.510/0.137,,dominant
+R2,MI,branch,hw2,arith,S2_fsm,0,22.800,,few
+R2,MI,branch,hw2,arith,S3_opt,17,29.200,,at chance
+R2,MI,branch,hw2,arith,S4_flatten,0,20.200,,few
+R2,MI,branch,hw2,arith,S5_opt_full,7,18.600,,below chance
+R2,MI,branch,hw2,arith,S6_wreduce,0,16.000,,few
+R2,MI,branch,hw2,arith,S7_lower,0,0.000,,few
+R2,MI,branch,hw2,arith,S8_abc,25,17.000,,at chance
+R1,MI,branch,hw2,compare,,1,,,too few
+R2,MI,branch,hw2,compare,S2_fsm,0,0.600,,few
+R2,MI,branch,hw2,compare,S3_opt,1,0.800,,few
+R2,MI,branch,hw2,compare,S4_flatten,0,1.400,,few
+R2,MI,branch,hw2,compare,S5_opt_full,0,0.400,,few
+R2,MI,branch,hw2,compare,S6_wreduce,0,0.400,,few
+R2,MI,branch,hw2,compare,S7_lower,0,0.000,,few
+R2,MI,branch,hw2,compare,S8_abc,0,0.000,,few
+R1,MI,branch,hw2,hier,S4_flatten,71,0.958/0.255,,dominant
+R2,MI,branch,hw2,hier,S2_fsm,0,24.200,,few
+R2,MI,branch,hw2,hier,S3_opt,1,28.200,,few
+R2,MI,branch,hw2,hier,S4_flatten,68,21.200,,above chance
+R2,MI,branch,hw2,hier,S5_opt_full,0,2.600,,few
+R2,MI,branch,hw2,hier,S6_wreduce,0,2.000,,few
+R2,MI,branch,hw2,hier,S7_lower,0,2.400,,few
+R2,MI,branch,hw2,hier,S8_abc,2,2.600,,few
+R1,MI,branch,hw2,logic,S8_abc,44,0.864/0.188,,dominant
+R2,MI,branch,hw2,logic,S2_fsm,0,33.600,,few
+R2,MI,branch,hw2,logic,S3_opt,5,33.000,,below chance
+R2,MI,branch,hw2,logic,S4_flatten,0,22.200,,few
+R2,MI,branch,hw2,logic,S5_opt_full,1,21.200,,few
+R2,MI,branch,hw2,logic,S6_wreduce,0,25.000,,few
+R2,MI,branch,hw2,logic,S7_lower,0,8.800,,few
+R2,MI,branch,hw2,logic,S8_abc,38,33.400,,at chance
+R1,MI,branch,hw2,mux,S8_abc,17,0.588/0.072,,dominant
+R2,MI,branch,hw2,mux,S2_fsm,0,5.400,,few
+R2,MI,branch,hw2,mux,S3_opt,3,9.400,,few
+R2,MI,branch,hw2,mux,S4_flatten,0,6.800,,few
+R2,MI,branch,hw2,mux,S5_opt_full,4,7.800,,few
+R2,MI,branch,hw2,mux,S6_wreduce,0,5.200,,few
+R2,MI,branch,hw2,mux,S7_lower,0,1.400,,few
+R2,MI,branch,hw2,mux,S8_abc,10,2.800,,above chance
+R1,MI,branch,hw2,register,S3_opt,10,0.600/0.250,,dominant
+R2,MI,branch,hw2,register,S2_fsm,0,22.800,,few
+R2,MI,branch,hw2,register,S3_opt,6,29.200,,below chance
+R2,MI,branch,hw2,register,S4_flatten,0,18.000,,few
+R2,MI,branch,hw2,register,S5_opt_full,4,21.000,,few
+R2,MI,branch,hw2,register,S6_wreduce,0,14.400,,few
+R2,MI,branch,hw2,register,S7_lower,0,3.800,,few
+R2,MI,branch,hw2,register,S8_abc,0,7.400,,few
+R1,MI,stmt,ast,ALWAYS,S3_opt,10,0.600/0.249,,dominant
+R2,MI,stmt,ast,ALWAYS,S2_fsm,0,22.800,,few
+R2,MI,stmt,ast,ALWAYS,S3_opt,6,29.600,,below chance
+R2,MI,stmt,ast,ALWAYS,S4_flatten,0,18.800,,few
+R2,MI,stmt,ast,ALWAYS,S5_opt_full,4,21.400,,few
+R2,MI,stmt,ast,ALWAYS,S6_wreduce,0,15.200,,few
+R2,MI,stmt,ast,ALWAYS,S7_lower,0,3.600,,few
+R2,MI,stmt,ast,ALWAYS,S8_abc,0,7.400,,few
+R1,MI,stmt,ast,BLOCKING_ASSIGN,,6,,,too few
+R2,MI,stmt,ast,BLOCKING_ASSIGN,S2_fsm,0,4.000,,few
+R2,MI,stmt,ast,BLOCKING_ASSIGN,S3_opt,0,4.000,,few
+R2,MI,stmt,ast,BLOCKING_ASSIGN,S4_flatten,0,4.400,,few
+R2,MI,stmt,ast,BLOCKING_ASSIGN,S5_opt_full,2,4.600,,few
+R2,MI,stmt,ast,BLOCKING_ASSIGN,S6_wreduce,0,2.800,,few
+R2,MI,stmt,ast,BLOCKING_ASSIGN,S7_lower,0,0.400,,few
+R2,MI,stmt,ast,BLOCKING_ASSIGN,S8_abc,4,4.000,,few
+R1,MI,stmt,ast,GATE_DECL,S8_abc,10,1.000/0.304,,dominant
+R2,MI,stmt,ast,GATE_DECL,S2_fsm,0,5.000,,few
+R2,MI,stmt,ast,GATE_DECL,S3_opt,0,3.200,,few
+R2,MI,stmt,ast,GATE_DECL,S4_flatten,0,3.800,,few
+R2,MI,stmt,ast,GATE_DECL,S5_opt_full,0,3.800,,few
+R2,MI,stmt,ast,GATE_DECL,S6_wreduce,0,4.000,,few
+R2,MI,stmt,ast,GATE_DECL,S7_lower,0,3.600,,few
+R2,MI,stmt,ast,GATE_DECL,S8_abc,10,10.200,,at chance
+R1,MI,stmt,ast,IF,S8_abc,14,0.357/0.081,,spread
+R2,MI,stmt,ast,IF,S2_fsm,0,6.600,,few
+R2,MI,stmt,ast,IF,S3_opt,5,10.200,,below chance
+R2,MI,stmt,ast,IF,S4_flatten,0,6.000,,few
+R2,MI,stmt,ast,IF,S5_opt_full,4,7.600,,few
+R2,MI,stmt,ast,IF,S6_wreduce,0,4.600,,few
+R2,MI,stmt,ast,IF,S7_lower,0,1.200,,few
+R2,MI,stmt,ast,IF,S8_abc,5,3.200,,at chance
+R1,MI,stmt,ast,INSTANCE,S4_flatten,71,0.958/0.256,,dominant
+R2,MI,stmt,ast,INSTANCE,S2_fsm,0,24.200,,few
+R2,MI,stmt,ast,INSTANCE,S3_opt,1,28.400,,few
+R2,MI,stmt,ast,INSTANCE,S4_flatten,68,21.400,,above chance
+R2,MI,stmt,ast,INSTANCE,S5_opt_full,0,2.600,,few
+R2,MI,stmt,ast,INSTANCE,S6_wreduce,0,2.000,,few
+R2,MI,stmt,ast,INSTANCE,S7_lower,0,2.400,,few
+R2,MI,stmt,ast,INSTANCE,S8_abc,2,2.600,,few
+R1,MI,stmt,ast,NET_ASSIGN,S8_abc,62,0.806/0.229,,dominant
+R2,MI,stmt,ast,NET_ASSIGN,S2_fsm,0,21.800,,few
+R2,MI,stmt,ast,NET_ASSIGN,S3_opt,8,24.200,,below chance
+R2,MI,stmt,ast,NET_ASSIGN,S4_flatten,0,21.200,,few
+R2,MI,stmt,ast,NET_ASSIGN,S5_opt_full,4,17.600,,few
+R2,MI,stmt,ast,NET_ASSIGN,S6_wreduce,0,19.800,,few
+R2,MI,stmt,ast,NET_ASSIGN,S7_lower,0,1.400,,few
+R2,MI,stmt,ast,NET_ASSIGN,S8_abc,50,31.400,,at chance
+R1,MI,stmt,ast,NONBLOCKING_ASSIGN,S3_opt,20,0.650/0.267,,dominant
+R2,MI,stmt,ast,NONBLOCKING_ASSIGN,S2_fsm,0,30.400,,few
+R2,MI,stmt,ast,NONBLOCKING_ASSIGN,S3_opt,13,37.000,,below chance
+R2,MI,stmt,ast,NONBLOCKING_ASSIGN,S4_flatten,0,19.000,,few
+R2,MI,stmt,ast,NONBLOCKING_ASSIGN,S5_opt_full,2,21.000,,few
+R2,MI,stmt,ast,NONBLOCKING_ASSIGN,S6_wreduce,0,19.600,,few
+R2,MI,stmt,ast,NONBLOCKING_ASSIGN,S7_lower,0,4.200,,few
+R2,MI,stmt,ast,NONBLOCKING_ASSIGN,S8_abc,5,7.600,,at chance
+R1,MI,stmt,hw,arith,S8_abc,49,0.510/0.134,,dominant
+R2,MI,stmt,hw,arith,S2_fsm,0,23.600,,few
+R2,MI,stmt,hw,arith,S3_opt,17,31.800,,at chance
+R2,MI,stmt,hw,arith,S4_flatten,0,20.600,,few
+R2,MI,stmt,hw,arith,S5_opt_full,7,20.200,,below chance
+R2,MI,stmt,hw,arith,S6_wreduce,0,17.400,,few
+R2,MI,stmt,hw,arith,S7_lower,0,0.000,,few
+R2,MI,stmt,hw,arith,S8_abc,25,17.600,,at chance
+R1,MI,stmt,hw,compare,,1,,,too few
+R2,MI,stmt,hw,compare,S2_fsm,0,0.600,,few
+R2,MI,stmt,hw,compare,S3_opt,1,0.800,,few
+R2,MI,stmt,hw,compare,S4_flatten,0,1.400,,few
+R2,MI,stmt,hw,compare,S5_opt_full,0,0.400,,few
+R2,MI,stmt,hw,compare,S6_wreduce,0,0.400,,few
+R2,MI,stmt,hw,compare,S7_lower,0,0.000,,few
+R2,MI,stmt,hw,compare,S8_abc,0,0.000,,few
+R1,MI,stmt,hw,logic,S4_flatten,115,0.591/0.166,,dominant
+R2,MI,stmt,hw,logic,S2_fsm,0,60.800,,few
+R2,MI,stmt,hw,logic,S3_opt,6,64.800,,below chance
+R2,MI,stmt,hw,logic,S4_flatten,68,46.000,,at chance
+R2,MI,stmt,hw,logic,S5_opt_full,1,27.000,,few
+R2,MI,stmt,hw,logic,S6_wreduce,0,28.600,,few
+R2,MI,stmt,hw,logic,S7_lower,0,12.000,,few
+R2,MI,stmt,hw,logic,S8_abc,40,38.200,,at chance
+R1,MI,stmt,hw,mux,S8_abc,18,0.611/0.071,,dominant
+R2,MI,stmt,hw,mux,S2_fsm,0,7.000,,few
+R2,MI,stmt,hw,mux,S3_opt,3,9.600,,few
+R2,MI,stmt,hw,mux,S4_flatten,0,7.800,,few
+R2,MI,stmt,hw,mux,S5_opt_full,4,9.600,,few
+R2,MI,stmt,hw,mux,S6_wreduce,0,6.400,,few
+R2,MI,stmt,hw,mux,S7_lower,0,1.200,,few
+R2,MI,stmt,hw,mux,S8_abc,11,3.200,,above chance
+R1,MI,stmt,hw,register,S3_opt,10,0.600/0.249,,dominant
+R2,MI,stmt,hw,register,S2_fsm,0,22.800,,few
+R2,MI,stmt,hw,register,S3_opt,6,29.600,,below chance
+R2,MI,stmt,hw,register,S4_flatten,0,18.800,,few
+R2,MI,stmt,hw,register,S5_opt_full,4,21.400,,few
+R2,MI,stmt,hw,register,S6_wreduce,0,15.200,,few
+R2,MI,stmt,hw,register,S7_lower,0,3.600,,few
+R2,MI,stmt,hw,register,S8_abc,0,7.400,,few
+R1,MI,stmt,hw2,arith,S8_abc,49,0.510/0.134,,dominant
+R2,MI,stmt,hw2,arith,S2_fsm,0,23.600,,few
+R2,MI,stmt,hw2,arith,S3_opt,17,31.800,,at chance
+R2,MI,stmt,hw2,arith,S4_flatten,0,20.600,,few
+R2,MI,stmt,hw2,arith,S5_opt_full,7,20.200,,below chance
+R2,MI,stmt,hw2,arith,S6_wreduce,0,17.400,,few
+R2,MI,stmt,hw2,arith,S7_lower,0,0.000,,few
+R2,MI,stmt,hw2,arith,S8_abc,25,17.600,,at chance
+R1,MI,stmt,hw2,compare,,1,,,too few
+R2,MI,stmt,hw2,compare,S2_fsm,0,0.600,,few
+R2,MI,stmt,hw2,compare,S3_opt,1,0.800,,few
+R2,MI,stmt,hw2,compare,S4_flatten,0,1.400,,few
+R2,MI,stmt,hw2,compare,S5_opt_full,0,0.400,,few
+R2,MI,stmt,hw2,compare,S6_wreduce,0,0.400,,few
+R2,MI,stmt,hw2,compare,S7_lower,0,0.000,,few
+R2,MI,stmt,hw2,compare,S8_abc,0,0.000,,few
+R1,MI,stmt,hw2,hier,S4_flatten,71,0.958/0.256,,dominant
+R2,MI,stmt,hw2,hier,S2_fsm,0,24.200,,few
+R2,MI,stmt,hw2,hier,S3_opt,1,28.400,,few
+R2,MI,stmt,hw2,hier,S4_flatten,68,21.400,,above chance
+R2,MI,stmt,hw2,hier,S5_opt_full,0,2.600,,few
+R2,MI,stmt,hw2,hier,S6_wreduce,0,2.000,,few
+R2,MI,stmt,hw2,hier,S7_lower,0,2.400,,few
+R2,MI,stmt,hw2,hier,S8_abc,2,2.600,,few
+R1,MI,stmt,hw2,logic,S8_abc,44,0.864/0.184,,dominant
+R2,MI,stmt,hw2,logic,S2_fsm,0,36.600,,few
+R2,MI,stmt,hw2,logic,S3_opt,5,36.400,,below chance
+R2,MI,stmt,hw2,logic,S4_flatten,0,24.600,,few
+R2,MI,stmt,hw2,logic,S5_opt_full,1,24.400,,few
+R2,MI,stmt,hw2,logic,S6_wreduce,0,26.600,,few
+R2,MI,stmt,hw2,logic,S7_lower,0,9.600,,few
+R2,MI,stmt,hw2,logic,S8_abc,38,35.600,,at chance
+R1,MI,stmt,hw2,mux,S8_abc,18,0.611/0.071,,dominant
+R2,MI,stmt,hw2,mux,S2_fsm,0,7.000,,few
+R2,MI,stmt,hw2,mux,S3_opt,3,9.600,,few
+R2,MI,stmt,hw2,mux,S4_flatten,0,7.800,,few
+R2,MI,stmt,hw2,mux,S5_opt_full,4,9.600,,few
+R2,MI,stmt,hw2,mux,S6_wreduce,0,6.400,,few
+R2,MI,stmt,hw2,mux,S7_lower,0,1.200,,few
+R2,MI,stmt,hw2,mux,S8_abc,11,3.200,,above chance
+R1,MI,stmt,hw2,register,S3_opt,10,0.600/0.249,,dominant
+R2,MI,stmt,hw2,register,S2_fsm,0,22.800,,few
+R2,MI,stmt,hw2,register,S3_opt,6,29.600,,below chance
+R2,MI,stmt,hw2,register,S4_flatten,0,18.800,,few
+R2,MI,stmt,hw2,register,S5_opt_full,4,21.400,,few
+R2,MI,stmt,hw2,register,S6_wreduce,0,15.200,,few
+R2,MI,stmt,hw2,register,S7_lower,0,3.600,,few
+R2,MI,stmt,hw2,register,S8_abc,0,7.400,,few
+R1,VT,branch,ast,ALWAYS,S3_opt,12,0.917/0.603,,dominant
+R2,VT,branch,ast,ALWAYS,S2_fsm,0,1.400,,few
+R2,VT,branch,ast,ALWAYS,S3_opt,11,7.000,,at chance
+R2,VT,branch,ast,ALWAYS,S4_flatten,0,0.600,,few
+R2,VT,branch,ast,ALWAYS,S5_opt_full,0,0.400,,few
+R2,VT,branch,ast,ALWAYS,S6_wreduce,0,0.400,,few
+R2,VT,branch,ast,ALWAYS,S7_lower,0,0.000,,few
+R2,VT,branch,ast,ALWAYS,S8_abc,1,1.800,,few
+R1,VT,branch,ast,BLOCKING_ASSIGN,,4,,,too few
+R2,VT,branch,ast,BLOCKING_ASSIGN,S2_fsm,0,1.600,,few
+R2,VT,branch,ast,BLOCKING_ASSIGN,S3_opt,0,1.200,,few
+R2,VT,branch,ast,BLOCKING_ASSIGN,S4_flatten,0,1.400,,few
+R2,VT,branch,ast,BLOCKING_ASSIGN,S5_opt_full,0,1.000,,few
+R2,VT,branch,ast,BLOCKING_ASSIGN,S6_wreduce,0,1.000,,few
+R2,VT,branch,ast,BLOCKING_ASSIGN,S7_lower,0,0.000,,few
+R2,VT,branch,ast,BLOCKING_ASSIGN,S8_abc,4,0.000,,few
+R1,VT,branch,ast,CASE_ITEM,,5,,,too few
+R2,VT,branch,ast,CASE_ITEM,S2_fsm,0,0.000,,few
+R2,VT,branch,ast,CASE_ITEM,S3_opt,4,4.000,,few
+R2,VT,branch,ast,CASE_ITEM,S4_flatten,0,0.000,,few
+R2,VT,branch,ast,CASE_ITEM,S5_opt_full,0,0.200,,few
+R2,VT,branch,ast,CASE_ITEM,S6_wreduce,0,0.400,,few
+R2,VT,branch,ast,CASE_ITEM,S7_lower,0,0.000,,few
+R2,VT,branch,ast,CASE_ITEM,S8_abc,1,0.400,,few
+R1,VT,branch,ast,DECLARATOR,,2,,,too few
+R2,VT,branch,ast,DECLARATOR,S2_fsm,0,0.000,,few
+R2,VT,branch,ast,DECLARATOR,S3_opt,0,0.000,,few
+R2,VT,branch,ast,DECLARATOR,S4_flatten,0,0.000,,few
+R2,VT,branch,ast,DECLARATOR,S5_opt_full,0,0.000,,few
+R2,VT,branch,ast,DECLARATOR,S6_wreduce,0,0.000,,few
+R2,VT,branch,ast,DECLARATOR,S7_lower,0,0.000,,few
+R2,VT,branch,ast,DECLARATOR,S8_abc,2,2.000,,few
+R1,VT,branch,ast,IF,,5,,,too few
+R2,VT,branch,ast,IF,S2_fsm,0,2.000,,few
+R2,VT,branch,ast,IF,S3_opt,5,6.200,,at chance
+R2,VT,branch,ast,IF,S4_flatten,0,2.400,,few
+R2,VT,branch,ast,IF,S5_opt_full,0,1.400,,few
+R2,VT,branch,ast,IF,S6_wreduce,0,0.800,,few
+R2,VT,branch,ast,IF,S7_lower,0,0.000,,few
+R2,VT,branch,ast,IF,S8_abc,0,0.000,,few
+R1,VT,branch,ast,IF_ELSE,,7,,,too few
+R2,VT,branch,ast,IF_ELSE,S2_fsm,0,2.000,,few
+R2,VT,branch,ast,IF_ELSE,S3_opt,1,2.400,,few
+R2,VT,branch,ast,IF_ELSE,S4_flatten,0,1.200,,few
+R2,VT,branch,ast,IF_ELSE,S5_opt_full,1,1.600,,few
+R2,VT,branch,ast,IF_ELSE,S6_wreduce,0,1.200,,few
+R2,VT,branch,ast,IF_ELSE,S7_lower,0,0.000,,few
+R2,VT,branch,ast,IF_ELSE,S8_abc,5,3.600,,at chance
+R1,VT,branch,ast,IF_THEN,,6,,,too few
+R2,VT,branch,ast,IF_THEN,S2_fsm,0,0.200,,few
+R2,VT,branch,ast,IF_THEN,S3_opt,0,0.400,,few
+R2,VT,branch,ast,IF_THEN,S4_flatten,0,0.600,,few
+R2,VT,branch,ast,IF_THEN,S5_opt_full,0,0.600,,few
+R2,VT,branch,ast,IF_THEN,S6_wreduce,0,1.200,,few
+R2,VT,branch,ast,IF_THEN,S7_lower,0,0.000,,few
+R2,VT,branch,ast,IF_THEN,S8_abc,6,5.400,,at chance
+R1,VT,branch,ast,NET_ASSIGN,S3_opt,11,0.727/0.357,,dominant
+R2,VT,branch,ast,NET_ASSIGN,S2_fsm,0,1.200,,few
+R2,VT,branch,ast,NET_ASSIGN,S3_opt,8,9.000,,at chance
+R2,VT,branch,ast,NET_ASSIGN,S4_flatten,0,2.800,,few
+R2,VT,branch,ast,NET_ASSIGN,S5_opt_full,0,2.600,,few
+R2,VT,branch,ast,NET_ASSIGN,S6_wreduce,0,2.800,,few
+R2,VT,branch,ast,NET_ASSIGN,S7_lower,0,1.200,,few
+R2,VT,branch,ast,NET_ASSIGN,S8_abc,3,5.600,,few
+R1,VT,branch,ast,NONBLOCKING_ASSIGN,,0,,,too few
+R2,VT,branch,ast,NONBLOCKING_ASSIGN,S2_fsm,0,0.400,,few
+R2,VT,branch,ast,NONBLOCKING_ASSIGN,S3_opt,0,0.200,,few
+R2,VT,branch,ast,NONBLOCKING_ASSIGN,S4_flatten,0,0.200,,few
+R2,VT,branch,ast,NONBLOCKING_ASSIGN,S5_opt_full,0,0.000,,few
+R2,VT,branch,ast,NONBLOCKING_ASSIGN,S6_wreduce,0,0.000,,few
+R2,VT,branch,ast,NONBLOCKING_ASSIGN,S7_lower,0,0.000,,few
+R2,VT,branch,ast,NONBLOCKING_ASSIGN,S8_abc,0,0.000,,few
+R1,VT,branch,hw,arith,,4,,,too few
+R2,VT,branch,hw,arith,S2_fsm,0,1.000,,few
+R2,VT,branch,hw,arith,S3_opt,0,0.800,,few
+R2,VT,branch,hw,arith,S4_flatten,0,1.000,,few
+R2,VT,branch,hw,arith,S5_opt_full,0,0.400,,few
+R2,VT,branch,hw,arith,S6_wreduce,0,1.400,,few
+R2,VT,branch,hw,arith,S7_lower,0,0.000,,few
+R2,VT,branch,hw,arith,S8_abc,4,3.400,,few
+R1,VT,branch,hw,compare,,8,,,too few
+R2,VT,branch,hw,compare,S2_fsm,0,0.200,,few
+R2,VT,branch,hw,compare,S3_opt,7,6.800,,at chance
+R2,VT,branch,hw,compare,S4_flatten,0,1.200,,few
+R2,VT,branch,hw,compare,S5_opt_full,0,0.800,,few
+R2,VT,branch,hw,compare,S6_wreduce,0,0.800,,few
+R2,VT,branch,hw,compare,S7_lower,0,0.800,,few
+R2,VT,branch,hw,compare,S8_abc,1,1.200,,few
+R1,VT,branch,hw,logic,,7,,,too few
+R2,VT,branch,hw,logic,S2_fsm,0,3.400,,few
+R2,VT,branch,hw,logic,S3_opt,1,3.800,,few
+R2,VT,branch,hw,logic,S4_flatten,0,3.000,,few
+R2,VT,branch,hw,logic,S5_opt_full,0,3.000,,few
+R2,VT,branch,hw,logic,S6_wreduce,0,3.400,,few
+R2,VT,branch,hw,logic,S7_lower,0,0.400,,few
+R2,VT,branch,hw,logic,S8_abc,6,4.400,,at chance
+R1,VT,branch,hw,mux,S8_abc,21,0.476/0.256,,spread
+R2,VT,branch,hw,mux,S2_fsm,0,2.800,,few
+R2,VT,branch,hw,mux,S3_opt,10,12.000,,at chance
+R2,VT,branch,hw,mux,S4_flatten,0,3.400,,few
+R2,VT,branch,hw,mux,S5_opt_full,1,3.200,,few
+R2,VT,branch,hw,mux,S6_wreduce,0,1.800,,few
+R2,VT,branch,hw,mux,S7_lower,0,0.000,,few
+R2,VT,branch,hw,mux,S8_abc,10,8.000,,at chance
+R1,VT,branch,hw,register,S3_opt,12,0.917/0.603,,dominant
+R2,VT,branch,hw,register,S2_fsm,0,1.400,,few
+R2,VT,branch,hw,register,S3_opt,11,7.000,,at chance
+R2,VT,branch,hw,register,S4_flatten,0,0.600,,few
+R2,VT,branch,hw,register,S5_opt_full,0,0.400,,few
+R2,VT,branch,hw,register,S6_wreduce,0,0.400,,few
+R2,VT,branch,hw,register,S7_lower,0,0.000,,few
+R2,VT,branch,hw,register,S8_abc,1,1.800,,few
+R1,VT,branch,hw2,arith,,4,,,too few
+R2,VT,branch,hw2,arith,S2_fsm,0,1.000,,few
+R2,VT,branch,hw2,arith,S3_opt,0,0.800,,few
+R2,VT,branch,hw2,arith,S4_flatten,0,1.000,,few
+R2,VT,branch,hw2,arith,S5_opt_full,0,0.400,,few
+R2,VT,branch,hw2,arith,S6_wreduce,0,1.400,,few
+R2,VT,branch,hw2,arith,S7_lower,0,0.000,,few
+R2,VT,branch,hw2,arith,S8_abc,4,3.400,,few
+R1,VT,branch,hw2,compare,,8,,,too few
+R2,VT,branch,hw2,compare,S2_fsm,0,0.200,,few
+R2,VT,branch,hw2,compare,S3_opt,7,6.800,,at chance
+R2,VT,branch,hw2,compare,S4_flatten,0,1.200,,few
+R2,VT,branch,hw2,compare,S5_opt_full,0,0.800,,few
+R2,VT,branch,hw2,compare,S6_wreduce,0,0.800,,few
+R2,VT,branch,hw2,compare,S7_lower,0,0.800,,few
+R2,VT,branch,hw2,compare,S8_abc,1,1.200,,few
+R1,VT,branch,hw2,logic,,7,,,too few
+R2,VT,branch,hw2,logic,S2_fsm,0,3.400,,few
+R2,VT,branch,hw2,logic,S3_opt,1,3.800,,few
+R2,VT,branch,hw2,logic,S4_flatten,0,3.000,,few
+R2,VT,branch,hw2,logic,S5_opt_full,0,3.000,,few
+R2,VT,branch,hw2,logic,S6_wreduce,0,3.400,,few
+R2,VT,branch,hw2,logic,S7_lower,0,0.400,,few
+R2,VT,branch,hw2,logic,S8_abc,6,4.400,,at chance
+R1,VT,branch,hw2,mux,S8_abc,21,0.476/0.256,,spread
+R2,VT,branch,hw2,mux,S2_fsm,0,2.800,,few
+R2,VT,branch,hw2,mux,S3_opt,10,12.000,,at chance
+R2,VT,branch,hw2,mux,S4_flatten,0,3.400,,few
+R2,VT,branch,hw2,mux,S5_opt_full,1,3.200,,few
+R2,VT,branch,hw2,mux,S6_wreduce,0,1.800,,few
+R2,VT,branch,hw2,mux,S7_lower,0,0.000,,few
+R2,VT,branch,hw2,mux,S8_abc,10,8.000,,at chance
+R1,VT,branch,hw2,register,S3_opt,12,0.917/0.603,,dominant
+R2,VT,branch,hw2,register,S2_fsm,0,1.400,,few
+R2,VT,branch,hw2,register,S3_opt,11,7.000,,at chance
+R2,VT,branch,hw2,register,S4_flatten,0,0.600,,few
+R2,VT,branch,hw2,register,S5_opt_full,0,0.400,,few
+R2,VT,branch,hw2,register,S6_wreduce,0,0.400,,few
+R2,VT,branch,hw2,register,S7_lower,0,0.000,,few
+R2,VT,branch,hw2,register,S8_abc,1,1.800,,few
+R1,VT,stmt,ast,ALWAYS,S3_opt,12,0.917/0.559,,dominant
+R2,VT,stmt,ast,ALWAYS,S2_fsm,0,2.200,,few
+R2,VT,stmt,ast,ALWAYS,S3_opt,11,7.600,,at chance
+R2,VT,stmt,ast,ALWAYS,S4_flatten,0,0.800,,few
+R2,VT,stmt,ast,ALWAYS,S5_opt_full,0,0.600,,few
+R2,VT,stmt,ast,ALWAYS,S6_wreduce,0,0.600,,few
+R2,VT,stmt,ast,ALWAYS,S7_lower,0,0.000,,few
+R2,VT,stmt,ast,ALWAYS,S8_abc,1,1.800,,few
+R1,VT,stmt,ast,BLOCKING_ASSIGN,S3_opt,21,0.619/0.525,,dominant-null
+R2,VT,stmt,ast,BLOCKING_ASSIGN,S2_fsm,0,4.400,,few
+R2,VT,stmt,ast,BLOCKING_ASSIGN,S3_opt,13,14.600,,at chance
+R2,VT,stmt,ast,BLOCKING_ASSIGN,S4_flatten,0,3.200,,few
+R2,VT,stmt,ast,BLOCKING_ASSIGN,S5_opt_full,2,2.200,,few
+R2,VT,stmt,ast,BLOCKING_ASSIGN,S6_wreduce,0,2.000,,few
+R2,VT,stmt,ast,BLOCKING_ASSIGN,S7_lower,0,0.000,,few
+R2,VT,stmt,ast,BLOCKING_ASSIGN,S8_abc,6,1.400,,above chance
+R1,VT,stmt,ast,CASE_ITEM,,5,,,too few
+R2,VT,stmt,ast,CASE_ITEM,S2_fsm,0,0.400,,few
+R2,VT,stmt,ast,CASE_ITEM,S3_opt,4,4.000,,few
+R2,VT,stmt,ast,CASE_ITEM,S4_flatten,0,0.400,,few
+R2,VT,stmt,ast,CASE_ITEM,S5_opt_full,0,0.600,,few
+R2,VT,stmt,ast,CASE_ITEM,S6_wreduce,0,0.800,,few
+R2,VT,stmt,ast,CASE_ITEM,S7_lower,0,0.000,,few
+R2,VT,stmt,ast,CASE_ITEM,S8_abc,1,0.200,,few
+R1,VT,stmt,ast,DECLARATOR,,2,,,too few
+R2,VT,stmt,ast,DECLARATOR,S2_fsm,0,0.000,,few
+R2,VT,stmt,ast,DECLARATOR,S3_opt,0,0.000,,few
+R2,VT,stmt,ast,DECLARATOR,S4_flatten,0,0.000,,few
+R2,VT,stmt,ast,DECLARATOR,S5_opt_full,0,0.000,,few
+R2,VT,stmt,ast,DECLARATOR,S6_wreduce,0,0.000,,few
+R2,VT,stmt,ast,DECLARATOR,S7_lower,0,0.000,,few
+R2,VT,stmt,ast,DECLARATOR,S8_abc,2,2.000,,few
+R1,VT,stmt,ast,IF,S8_abc,18,0.611/0.239,,dominant
+R2,VT,stmt,ast,IF,S2_fsm,0,3.200,,few
+R2,VT,stmt,ast,IF,S3_opt,6,10.400,,at chance
+R2,VT,stmt,ast,IF,S4_flatten,0,5.400,,few
+R2,VT,stmt,ast,IF,S5_opt_full,1,4.600,,few
+R2,VT,stmt,ast,IF,S6_wreduce,0,3.800,,few
+R2,VT,stmt,ast,IF,S7_lower,0,0.000,,few
+R2,VT,stmt,ast,IF,S8_abc,11,8.600,,at chance
+R1,VT,stmt,ast,NET_ASSIGN,S3_opt,11,0.727/0.329,,dominant
+R2,VT,stmt,ast,NET_ASSIGN,S2_fsm,0,2.400,,few
+R2,VT,stmt,ast,NET_ASSIGN,S3_opt,8,9.200,,at chance
+R2,VT,stmt,ast,NET_ASSIGN,S4_flatten,0,2.800,,few
+R2,VT,stmt,ast,NET_ASSIGN,S5_opt_full,0,2.800,,few
+R2,VT,stmt,ast,NET_ASSIGN,S6_wreduce,0,3.800,,few
+R2,VT,stmt,ast,NET_ASSIGN,S7_lower,0,1.400,,few
+R2,VT,stmt,ast,NET_ASSIGN,S8_abc,3,5.600,,few
+R1,VT,stmt,ast,NONBLOCKING_ASSIGN,S3_opt,14,0.714/0.541,,dominant-null
+R2,VT,stmt,ast,NONBLOCKING_ASSIGN,S2_fsm,0,3.200,,few
+R2,VT,stmt,ast,NONBLOCKING_ASSIGN,S3_opt,10,11.800,,at chance
+R2,VT,stmt,ast,NONBLOCKING_ASSIGN,S4_flatten,0,1.200,,few
+R2,VT,stmt,ast,NONBLOCKING_ASSIGN,S5_opt_full,0,1.000,,few
+R2,VT,stmt,ast,NONBLOCKING_ASSIGN,S6_wreduce,0,1.400,,few
+R2,VT,stmt,ast,NONBLOCKING_ASSIGN,S7_lower,0,0.000,,few
+R2,VT,stmt,ast,NONBLOCKING_ASSIGN,S8_abc,4,3.200,,few
+R1,VT,stmt,hw,arith,,4,,,too few
+R2,VT,stmt,hw,arith,S2_fsm,0,1.200,,few
+R2,VT,stmt,hw,arith,S3_opt,0,1.400,,few
+R2,VT,stmt,hw,arith,S4_flatten,0,1.000,,few
+R2,VT,stmt,hw,arith,S5_opt_full,0,0.600,,few
+R2,VT,stmt,hw,arith,S6_wreduce,0,1.000,,few
+R2,VT,stmt,hw,arith,S7_lower,0,0.000,,few
+R2,VT,stmt,hw,arith,S8_abc,4,3.200,,few
+R1,VT,stmt,hw,compare,,8,,,too few
+R2,VT,stmt,hw,compare,S2_fsm,0,1.200,,few
+R2,VT,stmt,hw,compare,S3_opt,7,7.000,,at chance
+R2,VT,stmt,hw,compare,S4_flatten,0,1.200,,few
+R2,VT,stmt,hw,compare,S5_opt_full,0,1.000,,few
+R2,VT,stmt,hw,compare,S6_wreduce,0,1.800,,few
+R2,VT,stmt,hw,compare,S7_lower,0,1.000,,few
+R2,VT,stmt,hw,compare,S8_abc,1,1.200,,few
+R1,VT,stmt,hw,logic,,7,,,too few
+R2,VT,stmt,hw,logic,S2_fsm,0,3.600,,few
+R2,VT,stmt,hw,logic,S3_opt,1,3.800,,few
+R2,VT,stmt,hw,logic,S4_flatten,0,3.000,,few
+R2,VT,stmt,hw,logic,S5_opt_full,0,3.000,,few
+R2,VT,stmt,hw,logic,S6_wreduce,0,3.400,,few
+R2,VT,stmt,hw,logic,S7_lower,0,0.400,,few
+R2,VT,stmt,hw,logic,S8_abc,6,4.400,,at chance
+R1,VT,stmt,hw,mux,S3_opt,52,0.635/0.487,,dominant-null
+R2,VT,stmt,hw,mux,S2_fsm,0,7.600,,few
+R2,VT,stmt,hw,mux,S3_opt,33,37.800,,at chance
+R2,VT,stmt,hw,mux,S4_flatten,0,7.800,,few
+R2,VT,stmt,hw,mux,S5_opt_full,3,6.600,,few
+R2,VT,stmt,hw,mux,S6_wreduce,0,5.600,,few
+R2,VT,stmt,hw,mux,S7_lower,0,0.000,,few
+R2,VT,stmt,hw,mux,S8_abc,16,12.200,,at chance
+R1,VT,stmt,hw,register,S3_opt,12,0.917/0.559,,dominant
+R2,VT,stmt,hw,register,S2_fsm,0,2.200,,few
+R2,VT,stmt,hw,register,S3_opt,11,7.600,,at chance
+R2,VT,stmt,hw,register,S4_flatten,0,0.800,,few
+R2,VT,stmt,hw,register,S5_opt_full,0,0.600,,few
+R2,VT,stmt,hw,register,S6_wreduce,0,0.600,,few
+R2,VT,stmt,hw,register,S7_lower,0,0.000,,few
+R2,VT,stmt,hw,register,S8_abc,1,1.800,,few
+R1,VT,stmt,hw2,arith,,4,,,too few
+R2,VT,stmt,hw2,arith,S2_fsm,0,1.200,,few
+R2,VT,stmt,hw2,arith,S3_opt,0,1.400,,few
+R2,VT,stmt,hw2,arith,S4_flatten,0,1.000,,few
+R2,VT,stmt,hw2,arith,S5_opt_full,0,0.600,,few
+R2,VT,stmt,hw2,arith,S6_wreduce,0,1.000,,few
+R2,VT,stmt,hw2,arith,S7_lower,0,0.000,,few
+R2,VT,stmt,hw2,arith,S8_abc,4,3.200,,few
+R1,VT,stmt,hw2,compare,,8,,,too few
+R2,VT,stmt,hw2,compare,S2_fsm,0,1.200,,few
+R2,VT,stmt,hw2,compare,S3_opt,7,7.000,,at chance
+R2,VT,stmt,hw2,compare,S4_flatten,0,1.200,,few
+R2,VT,stmt,hw2,compare,S5_opt_full,0,1.000,,few
+R2,VT,stmt,hw2,compare,S6_wreduce,0,1.800,,few
+R2,VT,stmt,hw2,compare,S7_lower,0,1.000,,few
+R2,VT,stmt,hw2,compare,S8_abc,1,1.200,,few
+R1,VT,stmt,hw2,logic,,7,,,too few
+R2,VT,stmt,hw2,logic,S2_fsm,0,3.600,,few
+R2,VT,stmt,hw2,logic,S3_opt,1,3.800,,few
+R2,VT,stmt,hw2,logic,S4_flatten,0,3.000,,few
+R2,VT,stmt,hw2,logic,S5_opt_full,0,3.000,,few
+R2,VT,stmt,hw2,logic,S6_wreduce,0,3.400,,few
+R2,VT,stmt,hw2,logic,S7_lower,0,0.400,,few
+R2,VT,stmt,hw2,logic,S8_abc,6,4.400,,at chance
+R1,VT,stmt,hw2,mux,S3_opt,52,0.635/0.487,,dominant-null
+R2,VT,stmt,hw2,mux,S2_fsm,0,7.600,,few
+R2,VT,stmt,hw2,mux,S3_opt,33,37.800,,at chance
+R2,VT,stmt,hw2,mux,S4_flatten,0,7.800,,few
+R2,VT,stmt,hw2,mux,S5_opt_full,3,6.600,,few
+R2,VT,stmt,hw2,mux,S6_wreduce,0,5.600,,few
+R2,VT,stmt,hw2,mux,S7_lower,0,0.000,,few
+R2,VT,stmt,hw2,mux,S8_abc,16,12.200,,at chance
+R1,VT,stmt,hw2,register,S3_opt,12,0.917/0.559,,dominant
+R2,VT,stmt,hw2,register,S2_fsm,0,2.200,,few
+R2,VT,stmt,hw2,register,S3_opt,11,7.600,,at chance
+R2,VT,stmt,hw2,register,S4_flatten,0,0.800,,few
+R2,VT,stmt,hw2,register,S5_opt_full,0,0.600,,few
+R2,VT,stmt,hw2,register,S6_wreduce,0,0.600,,few
+R2,VT,stmt,hw2,register,S7_lower,0,0.000,,few
+R2,VT,stmt,hw2,register,S8_abc,1,1.800,,few
+R3,ALL,branch,pass,,S2_fsm,0,0,,few
+R3,ALL,branch,pass,,S3_opt,165,23,,mostly unexplained (0.139)
+R3,ALL,branch,pass,,S4_flatten,0,0,,few
+R3,ALL,branch,pass,,S5_opt_full,17,5,,few
+R3,ALL,branch,pass,,S6_wreduce,0,0,,few
+R3,ALL,branch,pass,,S7_lower,0,0,,few
+R3,ALL,branch,pass,,S8_abc,117,71,,partly explained (0.607)
+R3,ALL,stmt,pass,,S2_fsm,0,0,,few
+R3,ALL,stmt,pass,,S3_opt,181,77,,mostly unexplained (0.425)
+R3,ALL,stmt,pass,,S4_flatten,0,0,,few
+R3,ALL,stmt,pass,,S5_opt_full,18,17,,few
+R3,ALL,stmt,pass,,S6_wreduce,0,0,,few
+R3,ALL,stmt,pass,,S7_lower,0,0,,few
+R3,ALL,stmt,pass,,S8_abc,123,101,,partly explained (0.821)
+R3,CI,branch,pass,,S2_fsm,0,0,,few
+R3,CI,branch,pass,,S3_opt,127,0,,mostly unexplained (0.000)
+R3,CI,branch,pass,,S4_flatten,0,0,,few
+R3,CI,branch,pass,,S5_opt_full,7,0,,few
+R3,CI,branch,pass,,S6_wreduce,0,0,,few
+R3,CI,branch,pass,,S7_lower,0,0,,few
+R3,CI,branch,pass,,S8_abc,40,8,,mostly unexplained (0.200)
+R3,CI,stmt,pass,,S2_fsm,0,0,,few
+R3,CI,stmt,pass,,S3_opt,125,53,,mostly unexplained (0.424)
+R3,CI,stmt,pass,,S4_flatten,0,0,,few
+R3,CI,stmt,pass,,S5_opt_full,6,6,,few
+R3,CI,stmt,pass,,S6_wreduce,0,0,,few
+R3,CI,stmt,pass,,S7_lower,0,0,,few
+R3,CI,stmt,pass,,S8_abc,40,20,,partly explained (0.500)
+R3,MI,branch,pass,,S2_fsm,0,0,,few
+R3,MI,branch,pass,,S3_opt,21,19,,D14 explains (0.905)
+R3,MI,branch,pass,,S4_flatten,0,0,,few
+R3,MI,branch,pass,,S5_opt_full,10,5,,few
+R3,MI,branch,pass,,S6_wreduce,0,0,,few
+R3,MI,branch,pass,,S7_lower,0,0,,few
+R3,MI,branch,pass,,S8_abc,60,53,,partly explained (0.883)
+R3,MI,stmt,pass,,S2_fsm,0,0,,few
+R3,MI,stmt,pass,,S3_opt,20,20,,D14 explains (1.000)
+R3,MI,stmt,pass,,S4_flatten,0,0,,few
+R3,MI,stmt,pass,,S5_opt_full,10,9,,few
+R3,MI,stmt,pass,,S6_wreduce,0,0,,few
+R3,MI,stmt,pass,,S7_lower,0,0,,few
+R3,MI,stmt,pass,,S8_abc,60,59,,D14 explains (0.983)
+R3,VT,branch,pass,,S2_fsm,0,0,,few
+R3,VT,branch,pass,,S3_opt,17,4,,few
+R3,VT,branch,pass,,S4_flatten,0,0,,few
+R3,VT,branch,pass,,S5_opt_full,0,0,,few
+R3,VT,branch,pass,,S6_wreduce,0,0,,few
+R3,VT,branch,pass,,S7_lower,0,0,,few
+R3,VT,branch,pass,,S8_abc,17,10,,few
+R3,VT,stmt,pass,,S2_fsm,0,0,,few
+R3,VT,stmt,pass,,S3_opt,36,4,,mostly unexplained (0.111)
+R3,VT,stmt,pass,,S4_flatten,0,0,,few
+R3,VT,stmt,pass,,S5_opt_full,2,2,,few
+R3,VT,stmt,pass,,S6_wreduce,0,0,,few
+R3,VT,stmt,pass,,S7_lower,0,0,,few
+R3,VT,stmt,pass,,S8_abc,23,22,,D14 explains (0.957)
+R3,ALL,branch,all,,,299,99,,mostly unexplained (0.331)
+R3,ALL,stmt,all,,,322,195,,partly explained (0.606)
+R3,CI,branch,all,,,174,8,,mostly unexplained (0.046)
+R3,CI,stmt,all,,,171,79,,mostly unexplained (0.462)
+R3,MI,branch,all,,,91,77,,partly explained (0.846)
+R3,MI,stmt,all,,,90,88,,D14 explains (0.978)
+R3,VT,branch,all,,,34,14,,mostly unexplained (0.412)
+R3,VT,stmt,all,,,61,28,,mostly unexplained (0.459)
