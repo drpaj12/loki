@@ -1,6 +1,7 @@
 """Aggregate scored records into tables (pass rates, paired A/B, outcomes, label agreement).
 
-Usage: ``python -I summarize.py --records DIR [--hints DIR] [--status FILE] [--out FILE]``. Reads each
+Usage: ``python -I summarize.py --records DIR [--hints DIR] [--status FILE] [--out FILE]``.
+Reads each
 ``<arm>/<problem>/result.json`` under DIR; quartiles and ground truth come from selection.csv and
 experiments/veval-l0/features.csv. Rates are shown with counts; n is small. Label agreement is
 defined on arm B only and is not a recovery measure.

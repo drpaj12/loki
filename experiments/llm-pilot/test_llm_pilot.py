@@ -3,6 +3,7 @@ experiments/llm-pilot -p 'test_*.py'`` (tests that need the VE clone skip withou
 
 from __future__ import annotations
 
+import hashlib
 import importlib
 import sys
 import unittest
@@ -347,6 +348,37 @@ class Selection(unittest.TestCase):
             want = [(r["quartile"], r["problem"]) for r in csv.DictReader(fh)]
         self.assertEqual(pick.select(), want)
         self.assertEqual(len(want), 40)
+
+
+class VariantRe(unittest.TestCase):
+    def test_re_system_prompt_pinned(self) -> None:
+        text = (HERE / "prompts_variants" / "re" / "system.txt").read_text(encoding="utf-8")
+        self.assertEqual(hashlib.md5(text.encode("utf-8"), usedforsecurity=False).hexdigest(),
+                         common.RE_SYSTEM_MD5)
+        self.assertEqual(len(text.encode("utf-8")), 494)
+        self.assertTrue(text.startswith("You are a hardware engineer"))
+        self.assertTrue(text.endswith("between [BEGIN] and [END]."))
+
+    def test_variant_default_and_dirs(self) -> None:
+        self.assertIn(common.VARIANT, common.VARIANTS)
+        expect = "run" if common.VARIANT == "standard" else "run-re"
+        self.assertEqual(common.run_dir().name, expect)
+        self.assertEqual(common.hints_root().name, "run")
+
+    def test_status_section(self) -> None:
+        import tempfile
+        rows = ["order,arm,problem,status,tool_calls,note"]
+        for arm, st in (("A", "ok"), ("B", "ok"), ("C", "refused")):
+            rows.append(f"001,{arm},P1,{st},2,")
+        for arm in "ABC":
+            rows.append(f"002,{arm},P2,ok,3,")
+        res = {(a, p): {"pass": a != "C" or p == "P2"} for a in "ABC" for p in ("P1", "P2")}
+        with tempfile.TemporaryDirectory(dir="/tmp/claude-1000") as d:
+            path = Path(d) / "s.csv"
+            path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+            out = "\n".join(summ.status_section(path, res))
+        self.assertIn("| C | 1 | 1 | 0 | 1 | 1/2 (0.50) | 1/1 (1.00) | 1/1 (1.00) |", out)
+        self.assertIn("Paired set: 1 problems", out)
 
 
 if __name__ == "__main__":
