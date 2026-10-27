@@ -20,7 +20,7 @@ are Loki's labels right. A difference under about 5 problems per arm is within s
    41/36/36/31 = 144 problems). Q1 = low, Q2 = mid-low, Q3 = mid-high, Q4 = high.
 2. K = 1 call per design per arm.
 3. Arm C (memorisation control: interface line only, no netlist) is included: 40 short calls.
-4. Prompt variant `cot` (`scripts/prompt_variants/cot/verilog-example-prefix_netlist-to-rtl_2-shot.txt`,
+4. (Superseded by decision 12.) Prompt variant `cot` (`scripts/prompt_variants/cot/verilog-example-prefix_netlist-to-rtl_2-shot.txt`,
    md5 c1200cbb04126bcf47268fc484f18e56, 6862 bytes) for all arms.
 5. Arm B keeps the two worked examples without hints.
 6. `loki re --calib none` (no f3 calibration exists; committed claims use the uncalibrated rule).
@@ -79,9 +79,9 @@ Task `netlist-to-rtl`, `--examples=2`, no `--rules`, no `--explain` of `scripts/
 - System message: the `netlist-to-rtl` system message (one sentence; `common.SYSTEM_MSG`), no
   leading or trailing newline in the file written.
 - User message, arm A: `prefix + "\nQuestion:\n" + prompt.strip() + "\n"`, then
-  `rstrip() + "\n" + suffix`, then `"\nAnswer:\n"`. `prefix` is the whole cot prefix file;
+  `rstrip() + "\n" + suffix`, then `"\nAnswer:\n"`. `prefix` is the whole prefix file of the variant in `common.VARIANT`;
   `suffix` asks for `[BEGIN]`...`[DONE]` and only code. Regression pin: for Prob024_hadd the arm A
-  user message is 7986 characters with md5 ebc2f2899a6e55a4d8689c1ae3fac87e.
+  user message was 7986 characters with md5 ebc2f2899a6e55a4d8689c1ae3fac87e under `cot` (superseded by decision 12; the `standard` pin is in the fix-2 section below).
 - Arm B: arm A with `prompt.strip() + "\n\n" + hints block + "\n"` in place of
   `prompt.strip() + "\n"`. The block is: a 5-line preface (Loki is a program,
   not a language model; the worked examples carried no hints; net names are the netlist's own;
@@ -201,3 +201,17 @@ part of this protocol unless Peter asks.
   claims named; 641 internal names, 478 resolved to a wire, 185 helper nets (163 unresolved plus 22
   reached through definitions). Arm B totals 711,151 B (est 222,235 tokens at 3.2 B/token), largest
   call Prob055_conditional arm B 62,881 B.
+
+12. (Peter 2026-10-26, "let's do it") Prompt variant `standard` for all arms, replacing `cot`.
+   Reason: in call batch 1 (orders 1-10, `cot` variant), 6 of 10 calls were refused by the API
+   safeguard `[reasoning_extraction]` (invalid_request; example request id
+   req_011CgRYUzbGaQRVj2362dV1s). The refusal was per problem across all arms, even arm C
+   (interface only): Prob003_step_one A/B/C and Prob005_notgate A/B/C. Four calls were answered
+   (Prob023_vector100r A/B/C order 4-6, Prob013 A order 10); those 4 `cot` answers are discarded.
+   `standard` is Gate-Breaker's own variant
+   (`scripts/prompt_variants/standard/verilog-example-prefix_netlist-to-rtl_2-shot.txt`, md5
+   e5c9110aadcb958b52750e40a8acb9b5, 3030 bytes): same task and examples, no numbered analysis
+   steps, no step comments, no request for visible reasoning. It is not a rewording of `cot`.
+   The `steps.csv` column loses its meaning (no step comments are asked); it is kept, expect zeros.
+   The prefix md5 is verified in `build_prompts.py` (`PREFIX_MD5`) and the regression pin is
+   re-pinned (see Result in the brief).
