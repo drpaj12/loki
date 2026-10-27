@@ -1,8 +1,0 @@
-Mismatches: 0 in 100 samples
-VCD info: dumpfile wave.vcd opened for output.
-/home/jamiespa/odin3-ws/external/Gate-Breaker-verilog-eval/dataset_netlist-to-rtl/Prob014_andgate_test.sv:38: $finish called at 1096 (1ps)
-Hint: Output 'out' has 126 mismatches. First mismatch occurred at time 20.
-Hint: Total mismatched samples is 126 out of 219 samples
-
-Simulation finished at 1096 ps
-Mismatches: 126 in 219 samples
