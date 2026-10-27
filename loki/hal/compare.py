@@ -31,6 +31,7 @@ RESAMPLES = 10000
 MARGIN = 0.05
 ALPHA = 0.05
 MIN_NONZERO = 8
+STOP_SHARE = 0.2
 INT_FIELDS = ("n_pred", "n_gt", "exact_pred", "exact_gt", "matched", "pur_num", "pur_den",
               "comp_num", "comp_den", "cov_num", "cov_den")
 
@@ -281,7 +282,7 @@ def stop_rule_table(data: Path) -> list[str]:
     lines = ["| set-floor | designs | dropped | share | stop rule (more than 20 percent) |",
              "|---|---|---|---|---|"]
     for k, (n, d) in sorted(tot.items()):
-        verdict = "STOP, not scored" if d / n > 0.2 else "scored"
+        verdict = "STOP, not scored" if d / n > STOP_SHARE else "scored"
         lines.append(f"| {k} | {n} | {d} | {d / n:.3f} | {verdict} |")
     return [*lines, ""]
 
@@ -404,6 +405,27 @@ def _num(v: object) -> str:
     return "undefined" if v is None else f"{float(str(v)):.3f}"
 
 
+def _identical(rows: Sequence[dict[str, str]]) -> int:
+    return sum(r["partitions"] == "identical" for r in rows)
+
+
+def tex_checks(data: Path) -> list[str]:
+    """Macros for the counts the prose quotes: stop-rule counts, large designs, load checks."""
+    big = read_csv_rows(data / "big-summary-hal8.csv")
+    ok = [r for r in big if r["status"] == "ok"]
+    lut = read_csv_rows(data / "lutcheck.csv")
+    perm = read_csv_rows(data / "permutation.csv")
+    rep = read_csv_rows(data / "determinism.csv")
+    vals = {
+        "BigTotal": len(big), "BigDropped": len(big) - len(ok), "BigRun": len(ok),
+        "BigMaxSeconds": f"{max((float(r['seconds']) for r in ok), default=0.0):.0f}",
+        "StopLimit": f"{int(STOP_SHARE * 100)}\\%", "LutCount": sum(
+            int(r["luts_blif"]) for r in lut), "LutMismatch": sum(
+            int(r["mismatches"]) for r in lut), "PermDesigns": len(perm),
+        "PermIdentical": _identical(perm), "RepDesigns": len(rep), "RepIdentical": _identical(rep)}
+    return [f"\\newcommand{{\\hal{k}}}{{{v}}}" for k, v in vals.items()]
+
+
 def tex_macros(dec: dict[str, object], sens: dict[str, dict[str, object]], runs8: list[Run],
                runs2: list[Run]) -> list[str]:
     ci95, ci90 = dec["ci95"], dec["ci90"]
@@ -485,8 +507,9 @@ def main(argv: list[str]) -> int:
         runs8 = load_scores(args.data / "scores-hal8.csv")
         p2 = args.data / "scores-hal2.csv"
         runs2 = load_scores(p2) if p2.is_file() else []
-        args.tex.write_text("\n".join(tex_macros(dec, sens, runs8, runs2) + tex_table(
-            runs8, runs2)) + "\n", encoding="utf-8")
+        args.tex.write_text("\n".join(
+            tex_macros(dec, sens, runs8, runs2) + tex_checks(args.data) + tex_table(
+                runs8, runs2)) + "\n", encoding="utf-8")
     if args.json:
         args.json.write_text(json.dumps({"decision": dec, "sensitivity": sens}, indent=1,
                                         sort_keys=True) + "\n", encoding="utf-8")

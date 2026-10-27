@@ -1,4 +1,4 @@
-# Loki vs HAL/DANA word recovery (prep, no HAL run yet)
+# Loki vs HAL/DANA word recovery
 
 Pre-registration: `docs/plan/hal-compare-prereg.md`. Feasibility and sources:
 `docs/plan/hal-feasibility.md`.
@@ -22,7 +22,21 @@ Files (all standard-library Python, code in the `loki.hal` package):
 | `loki/hal/dana.py` | reader of the dataflow plugin's `groups.txt` |
 | `loki/hal/wordscore.py` | one word scorer for both tools (exact, Jaccard 0.5, purity, completeness, coverage) |
 
-Use:
+Build HAL (not part of this repo; MIT licence; Peter-approved adoption, built only with its own
+CMake): shallow clone of tag v4.5.0 (commit e7fea566b51e), then
+`cmake -G Ninja -DPL_DATAFLOW=ON -DPL_GUI=OFF -DPL_GEXF_WRITER=OFF -DPL_SOLVE_FSM=OFF
+-DPL_Z3_UTILS=OFF -DPL_VHDL_PARSER=OFF -DPL_NETLIST_PREPROCESSING=OFF -DUSE_VENDORED_PYBIND11=OFF
+-Dpybind11_DIR=<pip pybind11 --cmakedir>` and `ninja -j4` (needs libboost-dev and rapidjson-dev;
+HAL's vendored pybind11 2.9 does not compile against Python 3.12, so a pip pybind11 2.13.6 is used;
+measured here: about 7 minutes in three attempts, 320 MB, no sudo beyond the two packages).
+HAL v4.5.0's `--dataflow` command line does not run (no gate types set); `dana_run.py` drives the
+plugin through the Python API (`hal --python-script`, Amendment 2 B1).
+
+Driver (`PYTHONPATH=<repo>:<repo>/experiments/round5 HAL_BIN=<hal>`; sub-commands `plan`, `lutcheck`,
+`loadcheck`, `roundtrip`, `repeat`, `permute`, `run`, `summary`, `score`; `python -m loki.hal.compare`
+writes `docs/results-hal.md` and `docs/paper/hal-tables.tex`).
+
+Single design (older form, kept for reference; use `run_hal.py`):
 
     python -m loki.hal.blif2hal --floor f2 <ds>/<design>/f2/netlist.blif design.v
     hal -i design.v --gate-library experiments/hal/hgl/lut6.hgl --dataflow --path out/ --bad_group_size 8

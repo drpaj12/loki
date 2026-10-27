@@ -26,7 +26,14 @@ Gate-Breaker metrics, with every number traced to the experiment records:
 
 `loki/hal/` converts an L0 floor `netlist.blif` to HAL structural Verilog (`blif2hal`, libraries
 `experiments/hal/hgl/{lut6,cmos6}.hgl`), reads DANA's `groups.txt` and scores words (`wordscore`);
-plan and rules: `docs/plan/hal-compare-prereg.md` (with Amendment 1). Converter notes: a `.latch`
+plan and rules: `docs/plan/hal-compare-prereg.md` (with Amendments 1 and 2); results (generated):
+`docs/results-hal.md`, per-design counts in `experiments/hal/results/`. Tool credit: HAL, the
+Hardware Analyzer (Embedded Security Group, MIT licence, https://github.com/emsec/hal, tag v4.5.0)
+and its dataflow plugin DANA (Albartus, Hoffmann, Temme, Azriel, Paar, IACR TCHES 2020(4),
+309-336, doi 10.46586/tches.v2020.i4.309-336); HAL is built separately and nothing of it is
+vendored here. Run: `experiments/hal/run_hal.py` (needs a HAL build with the dataflow plugin and
+the vendored pybind11 replaced by a newer one on Python 3.12, see `experiments/hal/README.md`),
+then `python -m loki.hal.compare`. Converter notes: a `.latch`
 with init 2 or 3 (don't care, unknown) drops the `INIT` parameter, so the flip-flop starts at 0;
 a flip-flop without `.cname` makes the conversion fail (the design leaves both arms). The tests
 that read datasets need `LOKI_MICRO` (and `LOKI_VEVAL`, `LOKI_R5_DATA` for the scorer comparison)
