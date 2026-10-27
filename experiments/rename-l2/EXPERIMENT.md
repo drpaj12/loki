@@ -4,7 +4,7 @@ Run 2026-10-23. Odin III 1.1.0 (`odin3/build/release/libodin3.so`), Loki `exp/re
 802f58f (origin/main: cell_type in graph labels #32, T17 hard detector with `unmap` #33, #14
 final_equiv fix #34), Wyrd origin/main 050f694. Python 3.12.3, numpy 2.5.4, scipy 1.18.1,
 scikit-learn 1.9.1, networkx 3.7, torch 2.14.1+cpu, torch_geometric 2.8.1, ORCA e146a8b.
-Experiment dir `/home/jamiespa/odin3-ws/work/loki-rename-exp` (not a git repo); scripts and
+Experiment dir `~/odin3-ws/work/loki-rename-exp` (not a git repo); scripts and
 calibration files live on the branch under `experiments/rename-l2/`. The first experiment's
 notes are preserved as `EXPERIMENT-1-before-cell-type.md`.
 
@@ -267,7 +267,7 @@ primary construct, so accuracy cannot reach 1.
 
 ## Data and logs
 
-All under `/home/jamiespa/odin3-ws/work/loki-rename-exp`:
+All under `~/odin3-ws/work/loki-rename-exp`:
 
 - `datasets/l0-rebuild/` Wyrd L0 project (68 designs x 2 architectures, 136 runs).
 - `dataset-rebuild/` assembled L0 dataset (68 designs, four floors).
@@ -288,12 +288,13 @@ All under `/home/jamiespa/odin3-ws/work/loki-rename-exp`:
 
 ## Commands used
 
-    export ODIN3_ROOT=/home/jamiespa/odin3-ws/odin3
+    WS=${WS:-$HOME/odin3-ws}
+    export ODIN3_ROOT=$WS/odin3
     export ODIN3_LIB=$ODIN3_ROOT/build/release/libodin3.so
     export PYTHONPATH=$ODIN3_ROOT/plugins/python
-    export VTR_ROOT=/home/jamiespa/odin3-ws/external/vtr-verilog-to-routing
-    W=/home/jamiespa/odin3-ws/work/loki-rename2
-    E=/home/jamiespa/odin3-ws/work/loki-rename-exp
+    export VTR_ROOT=$WS/external/vtr-verilog-to-routing
+    W=$WS/work/loki-rename2
+    E=$WS/work/loki-rename-exp
     python3 -m venv --system-site-packages $W/.venv
     $W/.venv/bin/pip install ruff mypy cffi
     $W/.venv/bin/pip install --no-deps --no-build-isolation -e $W

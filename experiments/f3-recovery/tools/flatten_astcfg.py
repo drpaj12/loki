@@ -11,18 +11,22 @@ Usage: flatten_astcfg.py RUNS_DIR DATASET REF_DIR SANITIZED_DIR OUT_JSON
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path("/home/jamiespa/odin3-ws/work/odin3-cfg/tools/cfg-probe")))
+WS = Path.home() / "odin3-ws"
+sys.path.insert(
+    0, str(Path(os.environ.get("CFG_PROBE", WS / "work/odin3-cfg/tools/cfg-probe")))
+)
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import astcfg  # noqa: E402
 import odin3_cfg  # noqa: E402
 
-ODIN3 = "/home/jamiespa/odin3-ws/odin3/build/release/odin3"
+ODIN3 = os.environ.get("ODIN3", str(WS / "odin3/build/release/odin3"))
 
 
 def flatten(source: Path, target: Path) -> None:
