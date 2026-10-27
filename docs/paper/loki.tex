@@ -1725,9 +1725,11 @@ branch has the constant-mask defect described under H16c.
 Question L~Q2.4 asks whether words can be found first; this subsection asks whether an established
 word finder does better on the same netlists. The comparison was pre-registered
 (\code{docs/plan/hal-compare-prereg.md}, commit \code{363187f}) before HAL was built, with two
-dated amendments written before any HAL run on an evaluation design: Amendment~1
-(commit \code{4a71877}; the scorer differences, the bootstrap interval, the equivalence rule) and
-Amendment~2 (commit \code{373049e}; the HAL route and the results of the load checks). The tool is
+dated amendments: Amendment~1 (commit \code{4a71877}, before any run; the scorer differences, the
+bootstrap interval, the equivalence rule) and Amendment~2 (commit \code{373049e}; the HAL route and
+the results of the load checks). Amendment~2 was written after a HAL load of the 100 MI and VT f2
+designs that compared only the LUT truth-table bit order of our library with the BLIF covers; that
+check computed no DANA grouping and no word-recovery score (erratum in the pre-registration). The tool is
 HAL v4.5.0 (commit \code{e7fea566b51e}) with its dataflow plugin DANA~\cite{hal,albartus2020dana},
 built without the graphical interface. Both tools read the same \code{netlist.blif} of a floor;
 a converter turns it into structural Verilog of the cells of one of two gate libraries that we

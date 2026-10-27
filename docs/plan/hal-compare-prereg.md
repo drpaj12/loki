@@ -307,3 +307,17 @@ F1), and the table says so.
 
 **B5. Project metadata.** Run with `--volatile-mode --no-log`; the netlist is loaded in the script
 with `NetlistFactory.load_netlist`, so HAL creates no project directory.
+
+### Amendment 2 erratum (2026-10-26, written after review, after the E_real HAL runs)
+
+Amendment 2 (heading and first paragraph) says it was written "before any E_real HAL run" and "before
+any HAL run on an MI, VT or BIG design". That is wrong. The B2 check, `cmd_lutcheck` in
+`experiments/hal/run_hal.py`, loaded HAL on all 100 convertible MI and VT f2 designs, and its output
+`experiments/hal/results/lutcheck.csv` is committed in the same commit as Amendment 2 (373049e).
+What that run computed: `experiments/hal/lut_tt.py` imports only `BooleanFunction` and
+`NetlistFactory`, loads the netlist and prints each LUT gate's truth table; `cmd_lutcheck` compares
+that table with the BLIF cover. It reads the LUT truth-table bit order and nothing else. No DANA
+grouping was computed (the script never imports the dataflow plugin), and no word-recovery score
+(precision, recall, F1) was computed or seen for any design. The first DANA runs on MI and VT came
+after, in ae66d9d. The load checks of B3 (60 corpus-train designs) are as stated. The pre-registered
+rules, DANA settings and decision rule are unchanged by this erratum.
