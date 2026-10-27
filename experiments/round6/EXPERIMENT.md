@@ -284,3 +284,82 @@ limit; `ve_Prob021_mux256to1v` was killed (exit -9, the 6 GB heavy slice) at S7 
 They are left out of the paired comparison. The S7 footprints follow the L0 span-subset rule on
 construct keys and are broad on a gate netlist (many gates share a construct set), so S7 recall is
 a lower bound; rule 4 compares S7 with S8 only through that reading.
+
+## Amendments of fix round 1 (2026-10-27, post-data)
+
+Everything below was written after the audit tables and the Stage-0 statuses existed. None of it
+replaces a Stage-0 rule. The Stage-0 statuses stay in `r6_status.csv` and in the paper, labelled
+"Stage-0 null (persistence-free; see amendment)", and the statuses under the nulls added here are
+reported beside them as **exploratory (post-data)**. Where the two differ, neither is confirmatory.
+
+### Amendment A: persistence null (P-null)
+
+Why. The Stage-0 null (a random unit set per real object of S_k, drawn from the pool of units)
+has no persistence: it forgets which units the objects of S_{k-1} already held together. A pass
+that changes nothing still draws fresh random sets and "loses" almost every unit. It therefore
+overstates chance losses, and the sentence "growth of the chains is matched" in the protocol and
+the paper does not hold for it (it matches the object count and the size distribution of S_k, not
+the chains). The Stage-0 null is kept, unchanged, as a reported column.
+
+Definition. For every design and every k >= 2, draw **50** times (seed = sha256 of
+`design:k:draw:persist`):
+
+1. Start from the real objects of S_{k-1}: one unit set U(o) per object, the real sets.
+2. Let N_{k-1} and N_k be the object counts of the real S_{k-1} and S_k. Apply
+   m = max(0, N_{k-1} - N_k) random merges, each the union of the unit sets of two objects chosen
+   uniformly. No merge is made when N_k >= N_{k-1}; a pass that leaves the object count unchanged
+   gives 0 null losses.
+3. Size profile. A merge of size s is accepted when the number of null objects of size >= s after
+   the merge does not exceed the number of real S_k objects of size >= s, or is no larger than the
+   number already present in S_{k-1}. Up to 30 random pairs are tried; if none is accepted the
+   pair with the smallest union is used. The mean absolute deviation between the sorted null
+   size vector and the sorted real S_k size vector is recorded per design and reported pooled.
+4. A unit separable at S_{k-1} (real) is null-lost at S_k when no null object has U = {u}.
+
+Support. The null is conditioned on the support of the real first losses: a unit counts toward
+the null cell of pass k only when it is separable at S_{k-1} and has not been lost at an earlier
+snapshot (the first-loss support). The Stage-0 table counted the same support; the JSON field
+`null_lost` did not and is made to match.
+
+Reporting. Per cell (set, level, axis, kind, pass): the mean over the 50 draws of the cell total
+and the 2.5th and 97.5th percentile of the 50 per-draw cell totals (the interval covers the draw
+variance within the fixed designs, not variance across designs). Rules 1 and 2 are applied
+unchanged (thresholds 10/5, 2x, 0.5x, 0.2, 0.5) with the P-null mean in place of the Stage-0
+null mean; whether the real count is above the 97.5th percentile is an extra column that changes
+no status.
+
+Limits, stated before the run: a pass that removes dead objects lowers N_k, and the P-null treats
+every object that disappears as a merge, so for `opt` the P-null is an upper bound of chance
+merging; a pass that splits objects (`lower`) is given no merges.
+
+### Amendment B: inherited blend by descent
+
+The post-data entry "inherited blends" tested only that every object reaching u has a unit set
+contained in some impure object of S_{k-1}. That is a subset check with no descent. Replacement
+(still exploratory): an object o at S_k has u **inherited** when a direct parent of o's pass
+derivation already held u with at least one other unit. The parents are read from the map: starting at
+the head record of o, walk through the derived records (`D`) of the snapshot's own pass run,
+and take the first records that are not such records (the frontier); an object whose head record is
+not a derived record of this pass is its own frontier. The unit set of a frontier record is the
+reduced anchor set of its leaf constructs (same rules as an object). A loss of u is `inherited`
+when every object at S_k that reaches u has a frontier record with u and |U| >= 2. The old
+subset check is kept in the JSON and the CSV as `inherited_subset`, so the paper can show both. The
+claims "the labels account for every new blend" and "every unlabelled merge is an inherited blend"
+are dropped from the paper unless the descent test supports them, and in either case the
+statement is exploratory.
+
+### Amendment C: reporting
+
+1. The headline gives first losses as merged plus removed (without `subsumed`) beside the Stage-0
+   total, with the `subsumed` share per pass. `subsumed` is a loss of the enclosing statement only
+   (the unit is the ancestor of a finer unit that survives); the Stage-0 total is unchanged.
+2. The hardware kind `fsm` is read at S1, before the `fsm` pass runs, so the loss measure cannot
+   see an FSM re-encoding: FSM units are counted under register, mux or logic. "No loss at `fsm`"
+   means no unit stopped being separable at `fsm`; it does not mean FSMs are not lost.
+3. The reason order of `reason_of` follows the first-match order of the Stage-0 table: `removed`
+   (and the dated `subsumed`) is tested before `fsm-recode`, so a unit removed at `fsm` is
+   `removed`, and `fsm-recode` applies to a merged unit at `fsm`. (The Stage-0 table text says
+   "merged or removed"; its row order and "first matching rule" decide.) No loss occurs at `fsm`
+   in the data, so no count changes.
+4. Caches: `run_audit.py` keys its per-design JSON on a hash of `loki/audit/*.py`, so a change of
+   the audit sources recomputes the audit.
