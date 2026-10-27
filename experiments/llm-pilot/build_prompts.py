@@ -2,7 +2,8 @@
 
 Usage: ``python -I build_prompts.py``. Run ``make_hints.py`` first (arm B needs ``run/hints``).
 Prompt assembly mirrors ``scripts/sv-generate`` (task netlist-to-rtl, 2-shot, no rules, no
-explain); see EXPERIMENT.md. Writes ``run/prompts/<arm>/<problem>/{system.txt,user.txt}``,
+explain); see EXPERIMENT.md. ``LLM_PILOT_VARIANT=re`` builds variant ``re`` (decision 14) into
+``run-re/``. Writes ``run/prompts/<arm>/<problem>/{system.txt,user.txt}``,
 ``run/calls.jsonl`` and ``prompt_sizes.csv``.
 """
 
@@ -97,6 +98,11 @@ def main() -> int:
     check_prefix(prefix)
     check_pin(prefix)
     root = common.run_dir()
+    system = common.system_msg()
+    if common.VARIANT == "re":
+        md5 = hashlib.md5(system.encode("utf-8"), usedforsecurity=False).hexdigest()
+        if md5 != common.RE_SYSTEM_MD5:
+            raise SystemExit(f"re system prompt md5 mismatch: {md5}")
     calls = []
     sizes = []
     for order, (r, arm) in enumerate(call_order(read_selection()), start=1):
@@ -104,19 +110,19 @@ def main() -> int:
         prompt = (common.dataset_dir() / f"{p}_prompt.txt").read_text(encoding="utf-8")
         hints = ""
         if arm == "B":
-            hints = (root / "hints" / p / "hints.md").read_text(encoding="utf-8")
+            hints = (common.hints_root() / "hints" / p / "hints.md").read_text(encoding="utf-8")
         user = user_message(prefix, prompt, arm, hints)
         bad = leak_hits(user)
         if bad:
             raise SystemExit(f"leak gate: {arm} {p}: {bad}")
         base = Path("prompts") / arm / p
-        write(root / base / "system.txt", common.SYSTEM_MSG)
+        write(root / base / "system.txt", system)
         write(root / base / "user.txt", user)
         nbytes = len(user.encode("utf-8"))
         calls.append({
             "order": order, "problem": p, "quartile": r["quartile"], "arm": arm,
             "system_file": str(base / "system.txt"), "user_file": str(base / "user.txt"),
-            "system_sha256": common.sha256_text(common.SYSTEM_MSG),
+            "system_sha256": common.sha256_text(system),
             "user_sha256": common.sha256_text(user), "user_bytes": nbytes,
             "est_tokens": round(nbytes / BYTES_PER_TOKEN)})
         sizes.append((arm, p, nbytes))

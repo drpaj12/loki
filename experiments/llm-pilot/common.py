@@ -17,7 +17,15 @@ QUARTILES = {"Q1": "low", "Q2": "mid-low", "Q3": "mid-high", "Q4": "high"}
 PER_QUARTILE = 10
 MAX_PROMPT_BYTES = 40000  # selection filter on dataset prompts only; arm B may exceed it
 VE_NAME = "Gate-Breaker-verilog-eval"
-VARIANT = "standard"  # decision 12; the single place the variant is set
+# Decision 12 (standard) and 14 (re); the single place the variant is set. The environment
+# variable LLM_PILOT_VARIANT selects `re`; the default stays `standard`.
+VARIANTS = ("standard", "re")
+VARIANT = os.environ.get("LLM_PILOT_VARIANT", "standard")
+if VARIANT not in VARIANTS:
+    raise SystemExit(f"LLM_PILOT_VARIANT must be one of {VARIANTS}, got {VARIANT!r}")
+PREFIX_VARIANT = "standard"  # the 2-shot examples come from this Gate-Breaker variant for both
+# prompts_variants/re/system.txt, decision 14, byte exact
+RE_SYSTEM_MD5 = "1c87dfd60bd2c480115fcf414d298de3"
 ARMS = ("A", "B", "C")
 
 SYSTEM_MSG = (
@@ -25,6 +33,15 @@ SYSTEM_MSG = (
     "back into clean, readable RTL code. You excel at recognizing common circuit patterns and "
     "implementing them in an idiomatic way."
 )
+
+
+def system_msg() -> str:
+    """System message of the selected variant (`re` is read from the local file, byte exact)."""
+    if VARIANT == "re":
+        return (HERE / "prompts_variants" / "re" / "system.txt").read_text(encoding="utf-8")
+    return SYSTEM_MSG
+
+
 SUFFIX = (
     "\nEnclose your code with [BEGIN] and [DONE]. Only output the code snippet\n"
     "and do NOT output anything else.\n"
@@ -79,12 +96,17 @@ def dataset_dir() -> Path:
 
 
 def prefix_file() -> Path:
-    return (ve_root() / "scripts" / "prompt_variants" / VARIANT
+    return (ve_root() / "scripts" / "prompt_variants" / PREFIX_VARIANT
             / "verilog-example-prefix_netlist-to-rtl_2-shot.txt")
 
 
 def run_dir() -> Path:
-    """Generated per-call files (prompts, responses, logs); ignored by git."""
+    """Generated per-call files (prompts, responses, logs); ignored by git. `run-re` for `re`."""
+    return HERE / ("run" if VARIANT == "standard" else f"run-{VARIANT}")
+
+
+def hints_root() -> Path:
+    """Arm B hints are built once (under `run/`) and shared by both variants."""
     return HERE / "run"
 
 

@@ -1,6 +1,6 @@
 """Aggregate scored records into tables (pass rates, paired A/B, outcomes, label agreement).
 
-Usage: ``python -I summarize.py --records DIR [--hints DIR] [--out FILE]``. Reads each
+Usage: ``python -I summarize.py --records DIR [--hints DIR] [--status FILE] [--out FILE]``. Reads each
 ``<arm>/<problem>/result.json`` under DIR; quartiles and ground truth come from selection.csv and
 experiments/veval-l0/features.csv. Rates are shown with counts; n is small. Label agreement is
 defined on arm B only and is not a recovery measure.
@@ -148,7 +148,38 @@ def label_section(res: dict[tuple[str, str], dict[str, Any]], records: Path, hin
     ]
 
 
-def summarize(records: Path, hints: Path) -> str:
+def status_section(status: Path, res: dict[tuple[str, str], dict[str, Any]]) -> list[str]:
+    """Refusal-aware pass rates from ``status.csv`` (ok / refused / not_run per call).
+
+    View 1: refused counts as a fail (denominator = ok + refused, calls actually made).
+    View 2: the paired set, problems answered (ok) in all three arms.
+    """
+    with status.open(encoding="utf-8", newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    st = {(r["arm"], r["problem"]): r for r in rows}
+    arms = [a for a in common.ARMS if any(r["arm"] == a for r in rows)]
+    probs = sorted({r["problem"] for r in rows})
+    def ok(a: str, p: str) -> bool:
+        return st[(a, p)]["status"] == "ok"
+    paired_set = [p for p in probs if all(ok(a, p) for a in arms)]
+    out = ["| arm | ok | refused | not run | pass | refused = fail | answered only | "
+           "paired set |", "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    for a in arms:
+        n = {k: sum(1 for r in rows if r["arm"] == a and r["status"] == k)
+             for k in ("ok", "refused", "not_run")}
+        passed = sum(bool(res[(a, p)]["pass"]) for p in probs if ok(a, p) and (a, p) in res)
+        pp = sum(bool(res[(a, p)]["pass"]) for p in paired_set)
+        out.append(f"| {a} | {n['ok']} | {n['refused']} | {n['not_run']} | {passed} | "
+                   f"{rate(passed, n['ok'] + n['refused'])} | {rate(passed, n['ok'])} | "
+                   f"{rate(pp, len(paired_set))} |")
+    multi = [f"{r['order']} {r['arm']} {r['problem']} ({r['tool_calls']} tool calls)"
+             for r in rows if r["status"] == "ok" and r["tool_calls"] not in ("", "2")]
+    out += ["", f"Paired set: {len(paired_set)} problems answered in all of {''.join(arms)}.",
+            "Ok calls with tool-call count other than 2: " + ("; ".join(multi) or "none") + "."]
+    return out
+
+
+def summarize(records: Path, hints: Path, status: Path | None = None) -> str:
     res = load_results(records)
     sel = read_csv(common.HERE / "selection.csv", "problem")
     quart = {p: r["quartile"] for p, r in sel.items()}
@@ -161,6 +192,8 @@ def summarize(records: Path, hints: Path) -> str:
     if "A" in arms and "B" in arms:
         out += ["", "## Paired A/B", "", *paired(res)]
     out += ["", "## Outcome codes", "", *outcome_table(res, arms)]
+    if status is not None and status.exists():
+        out += ["", "## Pass rate with refusals and paired set", "", *status_section(status, res)]
     out += ["", "## Loki-label agreement (arm B, counts)", "",
             *label_section(res, records, hints, gt, sel)]
     return "\n".join(out) + "\n"
@@ -169,10 +202,11 @@ def summarize(records: Path, hints: Path) -> str:
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--records", type=Path, required=True)
-    ap.add_argument("--hints", type=Path, default=common.run_dir() / "hints")
+    ap.add_argument("--hints", type=Path, default=common.hints_root() / "hints")
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--status", type=Path, help="status.csv from archive_run.py")
     a = ap.parse_args(argv)
-    text = summarize(a.records, a.hints)
+    text = summarize(a.records, a.hints, a.status)
     if a.out:
         a.out.write_text(text, encoding="utf-8", newline="\n")
     else:

@@ -172,7 +172,7 @@ def run_loki(netlist: Path, out: Path, odin: Path) -> None:
     cmd = [sys.executable, "-B", "-m", "loki.re.main", str(netlist), "--floor", "f3",
            "--calib", "none", "--detectors", DETECTORS, "--out", str(out)]
     done = subprocess.run(cmd, env=loki_env(odin), capture_output=True, text=True,
-                          cwd=str(common.run_dir()), check=False)
+                          cwd=str(common.hints_root()), check=False)
     if done.returncode != 0:
         raise RuntimeError(f"loki re failed ({done.returncode}): {done.stderr.strip()[-300:]}")
 
@@ -188,7 +188,7 @@ def enable_odin(odin: Path) -> None:
 
 
 def make_one(problem: str, odin: Path) -> dict[str, Any]:
-    work = common.run_dir() / "hints" / problem
+    work = common.hints_root() / "hints" / problem
     (work / "f3").mkdir(parents=True, exist_ok=True)
     text = (common.dataset_dir() / f"{problem}_netlist.v").read_text(encoding="utf-8")
     scratch = work / "f3" / "netlist.v"
@@ -240,7 +240,7 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv)
     odin = Path(os.environ.get("ODIN3_ROOT", str(common.workspace() / "odin3")))
     names = args.problems or selected()
-    common.run_dir().mkdir(parents=True, exist_ok=True)
+    common.hints_root().mkdir(parents=True, exist_ok=True)
     enable_odin(odin)
     fresh = {}
     for name in names:
