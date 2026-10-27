@@ -36,14 +36,15 @@ Driver (`PYTHONPATH=<repo>:<repo>/experiments/round5 HAL_BIN=<hal>`; sub-command
 `loadcheck`, `roundtrip`, `repeat`, `permute`, `run`, `summary`, `score`; `python -m loki.hal.compare`
 writes `docs/results-hal.md` and `docs/paper/hal-tables.tex`).
 
-Single design (older form, kept for reference; use `run_hal.py`):
+One design by hand:
 
     python -m loki.hal.blif2hal --floor f2 <ds>/<design>/f2/netlist.blif design.v
-    hal -i design.v --gate-library experiments/hal/hgl/lut6.hgl --dataflow --path out/ --bad_group_size 8
+    HAL_V=design.v HAL_L=experiments/hal/hgl/lut6.hgl HAL_OUT=out HAL_MIN=8 \
+      hal --volatile-mode --no-log --python-script experiments/hal/dana_run.py
     python -m loki.hal.wordscore --floor-dir <ds>/<design>/f2 --dana out/groups.txt
     python -m loki.hal.wordscore --floor-dir <ds>/<design>/f2 --loki-re <run>/re
 
-(`--bad_group_size` sets DANA's `min_group_size`; the library default is 8.) Netlists with
+(`HAL_MIN` is DANA's `min_group_size`; the library default is 8.) Netlists with
 `.subckt` hard blocks other than `DFFSR` (for example `micro_multiply_hard_block` at f2), latch
 types other than `re`, and f3 covers other than BUF, INV, NAND2, NOR2 are rejected by the
 converter. Tests: `tests/test_hal_convert.py` (round trip needs iverilog; the micro round trip
