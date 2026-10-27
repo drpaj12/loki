@@ -1,0 +1,11 @@
+[BEGIN]
+module TopModule(
+  input [2:0] y,
+  input w,
+  output Y1
+);
+  // Y1 is 0 whenever y[1] is set.
+  // Otherwise Y1 = y[0] | (w & ~y[2]).
+  assign Y1 = ~y[1] & (y[0] | (w & ~y[2]));
+endmodule
+[DONE]

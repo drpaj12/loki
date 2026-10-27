@@ -1,0 +1,13 @@
+[BEGIN]
+module TopModule(
+  input [99:0] in,
+  output [99:0] out
+);
+  // Reverses the bit order of the 100-bit input: out[i] = in[99-i]
+  integer i;
+  always @(*) begin
+    for (i = 0; i < 100; i = i + 1)
+      out[i] = in[99 - i];
+  end
+endmodule
+[DONE]

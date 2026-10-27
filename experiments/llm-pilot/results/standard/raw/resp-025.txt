@@ -1,0 +1,19 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input reset,
+  input data,
+  output shift_ena,
+  output counting,
+  input done_counting,
+  output done,
+  input ack
+);
+  // The netlist drives shift_ena, counting and done with constant 'x'.
+  // The inputs clk, reset, data, done_counting and ack are not used.
+  // The netlist contains no state and no FSM logic, so none is inferred.
+  assign shift_ena = 1'hx;
+  assign counting = 1'hx;
+  assign done = 1'hx;
+endmodule
+[DONE]

@@ -1,0 +1,14 @@
+[BEGIN]
+module TopModule(
+  input [2:0] y,
+  input w,
+  output Y1
+);
+  // y1 set with y0 or y2 also set: Y1 forced low
+  wire y1_with_other = y[1] & (y[0] | y[2]);
+  // w asserted while y1 or y2 is set
+  wire w_active = w & (y[1] | y[2]);
+
+  assign Y1 = ~y1_with_other & (y[0] | w_active);
+endmodule
+[DONE]

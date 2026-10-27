@@ -1,0 +1,21 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input load,
+  input [9:0] data,
+  output tc
+);
+  // 10-bit down counter with synchronous load.
+  // tc is high when the count has reached zero; the counter then holds at 0.
+  reg [9:0] count_value;
+
+  assign tc = (count_value == 10'd0);
+
+  always @(posedge clk) begin
+    if (load)
+      count_value <= data;
+    else if (!tc)
+      count_value <= count_value - 10'd1;
+  end
+endmodule
+[DONE]

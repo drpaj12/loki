@@ -1,0 +1,22 @@
+[BEGIN]
+module TopModule(
+  input in,
+  input [3:0] state,
+  output [3:0] next_state,
+  output out
+);
+  // One-hot state machine: state[0]=A, state[1]=B, state[2]=C, state[3]=D
+  // Transitions (in=0 / in=1):
+  //   A: A / B
+  //   B: C / B
+  //   C: A / D
+  //   D: C / B
+  assign next_state[0] = ~in & (state[0] | state[2]);
+  assign next_state[1] =  in & (state[0] | state[1] | state[3]);
+  assign next_state[2] = ~in & (state[1] | state[3]);
+  assign next_state[3] =  in & state[2];
+
+  // Moore output: high only in state D
+  assign out = state[3];
+endmodule
+[DONE]

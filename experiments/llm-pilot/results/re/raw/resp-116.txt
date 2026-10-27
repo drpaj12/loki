@@ -1,0 +1,51 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input reset,
+  input ena,
+  output reg pm,
+  output reg [7:0] hh,
+  output reg [7:0] mm,
+  output reg [7:0] ss
+);
+  // 12-hour BCD clock: hh 01..12, mm/ss 00..59, pm toggles when 11:59:59 rolls to 12:00:00.
+  // Synchronous reset to 12:00:00 AM.
+
+  wire ss_wrap = (ss == 8'h59);
+  wire mm_wrap = (mm == 8'h59);
+
+  // Increment a BCD value by one (no wrap handling)
+  function [7:0] bcd_inc(input [7:0] v);
+    if (v[3:0] == 4'd9)
+      bcd_inc = {v[7:4] + 4'd1, 4'd0};
+    else
+      bcd_inc = {v[7:4], v[3:0] + 4'd1};
+  endfunction
+
+  always @(posedge clk) begin
+    if (reset) begin
+      pm <= 1'b0;
+      hh <= 8'h12;
+      mm <= 8'h00;
+      ss <= 8'h00;
+    end else if (ena) begin
+      // seconds
+      ss <= ss_wrap ? 8'h00 : bcd_inc(ss);
+
+      // minutes
+      if (ss_wrap)
+        mm <= mm_wrap ? 8'h00 : bcd_inc(mm);
+
+      // hours
+      if (ss_wrap && mm_wrap) begin
+        if (hh == 8'h12)
+          hh <= 8'h01;
+        else
+          hh <= bcd_inc(hh);
+        if (hh == 8'h11)
+          pm <= ~pm;
+      end
+    end
+  end
+endmodule
+[DONE]

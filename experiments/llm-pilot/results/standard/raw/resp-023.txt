@@ -1,0 +1,18 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  output w,
+  output x,
+  output y,
+  output z
+);
+  // Simple wiring: no logic is needed.
+  // w follows a, x and y both follow b, z follows c.
+  assign w = a;
+  assign x = b;
+  assign y = b;
+  assign z = c;
+endmodule
+[DONE]

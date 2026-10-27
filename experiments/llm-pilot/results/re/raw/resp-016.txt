@@ -1,0 +1,10 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  output q
+);
+  // q is 1 only when both a and b are 1 (2-input AND gate)
+  assign q = a & b;
+endmodule
+[DONE]

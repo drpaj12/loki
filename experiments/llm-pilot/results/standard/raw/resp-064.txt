@@ -1,0 +1,13 @@
+[BEGIN]
+module TopModule(
+  input [1:0] A,
+  input [1:0] B,
+  output z
+);
+  // 2-bit equality comparator.
+  // Each bit pair is "equal" when both are 0 (NOR) or both are 1 (AND),
+  // so the per-bit mismatch signal is A[i] ^ B[i]. z is high only when
+  // no bit differs, i.e. A == B.
+  assign z = (A == B);
+endmodule
+[DONE]

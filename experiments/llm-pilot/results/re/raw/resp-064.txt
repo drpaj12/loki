@@ -1,0 +1,10 @@
+[BEGIN]
+module TopModule(
+  input [1:0] A,
+  input [1:0] B,
+  output z
+);
+  // z is high when the two 2-bit inputs are equal
+  assign z = (A == B);
+endmodule
+[DONE]

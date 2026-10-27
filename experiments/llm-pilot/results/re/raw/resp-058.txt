@@ -1,0 +1,19 @@
+[BEGIN]
+module TopModule(
+  input in,
+  input [1:0] state,
+  output [1:0] next_state,
+  output out
+);
+  // Moore-style state machine: output is high only in state 2'b11
+  assign out = state[0] & state[1];
+
+  // next_state[0] simply follows the input
+  assign next_state[0] = in;
+
+  // next_state[1] is set when:
+  //  - state is 2'b10 and in = 1, or
+  //  - state[0] is 1 and in = 0
+  assign next_state[1] = (in & ~state[0] & state[1]) | (state[0] & ~in);
+endmodule
+[DONE]

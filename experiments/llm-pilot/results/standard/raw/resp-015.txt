@@ -1,0 +1,11 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  output out
+);
+  // No netlist was provided, so this is a best guess from the port names.
+  // A two-input, one-output module is most commonly a basic logic gate.
+  assign out = a & b;
+endmodule
+[DONE]

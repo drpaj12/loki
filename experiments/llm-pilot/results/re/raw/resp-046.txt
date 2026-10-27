@@ -1,0 +1,21 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input a,
+  input b,
+  output out_assign,
+  output out_always_comb,
+  output reg out_always_ff
+);
+  // out_assign = a XOR b (NOR of XNOR terms)
+  assign out_assign = a ^ b;
+
+  // Same function via combinational always block
+  assign out_always_comb = out_assign;
+
+  // Registered version of the XOR
+  always @(posedge clk) begin
+    out_always_ff <= a ^ b;
+  end
+endmodule
+[DONE]

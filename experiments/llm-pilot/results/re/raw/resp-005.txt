@@ -1,0 +1,15 @@
+[BEGIN]
+module TopModule(
+  input [99:0] in,
+  output [99:0] out
+);
+  // Reverses the bit order of the 100-bit input:
+  // out[99] = in[0], out[98] = in[1], ..., out[0] = in[99]
+  genvar i;
+  generate
+    for (i = 0; i < 100; i = i + 1) begin : reverse
+      assign out[i] = in[99 - i];
+    end
+  endgenerate
+endmodule
+[DONE]

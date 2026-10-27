@@ -1,0 +1,13 @@
+[BEGIN]
+module TopModule(
+  input c,
+  input d,
+  output [3:0] mux_in
+);
+  // Data inputs of a 4-to-1 mux (selected by a, b) implementing a 4-input K-map
+  assign mux_in[0] = c | d;
+  assign mux_in[1] = 1'b0;
+  assign mux_in[2] = ~d;
+  assign mux_in[3] = c & d;
+endmodule
+[DONE]

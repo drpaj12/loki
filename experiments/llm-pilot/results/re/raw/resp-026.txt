@@ -1,0 +1,18 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input reset,
+  input data,
+  output shift_ena,
+  output counting,
+  input done_counting,
+  output done,
+  input ack
+);
+  // The netlist drives every output with an undefined constant (1'hx).
+  // The inputs (clk, reset, data, done_counting, ack) are unused.
+  assign shift_ena = 1'bx;
+  assign counting  = 1'bx;
+  assign done      = 1'bx;
+endmodule
+[DONE]

@@ -1,0 +1,56 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input reset,
+  input data,
+  output shift_ena,
+  output counting,
+  input done_counting,
+  output done,
+  input ack
+);
+  // Control FSM: wait for the start pattern 1101, shift in 4 bits,
+  // count until done_counting, then signal done until ack.
+  typedef enum logic [3:0] {
+    S,      // idle, no bits of pattern seen
+    S1,     // seen 1
+    S11,    // seen 11
+    S110,   // seen 110
+    B0,     // shift bit 0
+    B1,     // shift bit 1
+    B2,     // shift bit 2
+    B3,     // shift bit 3
+    COUNT,  // counting
+    WAIT    // done, waiting for ack
+  } state_t;
+
+  state_t state, next;
+
+  always @(*) begin
+    case (state)
+      S:     next = data ? S1 : S;
+      S1:    next = data ? S11 : S;
+      S11:   next = data ? S11 : S110;
+      S110:  next = data ? B0 : S;
+      B0:    next = B1;
+      B1:    next = B2;
+      B2:    next = B3;
+      B3:    next = COUNT;
+      COUNT: next = done_counting ? WAIT : COUNT;
+      WAIT:  next = ack ? S : WAIT;
+      default: next = S;
+    endcase
+  end
+
+  always @(posedge clk) begin
+    if (reset)
+      state <= S;
+    else
+      state <= next;
+  end
+
+  assign shift_ena = (state == B0) || (state == B1) || (state == B2) || (state == B3);
+  assign counting  = (state == COUNT);
+  assign done      = (state == WAIT);
+endmodule
+[DONE]

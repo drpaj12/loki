@@ -1,0 +1,55 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input reset,
+  input in,
+  output disc,
+  output flag,
+  output err
+);
+  // HDLC framing detector (Moore FSM).
+  // Counts consecutive 1s:
+  //   0111110 -> disc (bit-stuffed zero to discard)
+  //   01111110 -> flag (frame delimiter)
+  //   7 or more 1s -> err (until a 0 arrives)
+  localparam [3:0] ONES0 = 4'd0,
+                   ONES1 = 4'd1,
+                   ONES2 = 4'd2,
+                   ONES3 = 4'd3,
+                   ONES4 = 4'd4,
+                   ONES5 = 4'd5,
+                   ONES6 = 4'd6,
+                   ERR   = 4'd7,
+                   DISC  = 4'd8,
+                   FLAG  = 4'd9;
+
+  reg [3:0] state, next;
+
+  always @(*) begin
+    case (state)
+      ONES0: next = in ? ONES1 : ONES0;
+      ONES1: next = in ? ONES2 : ONES0;
+      ONES2: next = in ? ONES3 : ONES0;
+      ONES3: next = in ? ONES4 : ONES0;
+      ONES4: next = in ? ONES5 : ONES0;
+      ONES5: next = in ? ONES6 : DISC;
+      ONES6: next = in ? ERR   : FLAG;
+      ERR:   next = in ? ERR   : ONES0;
+      DISC:  next = in ? ONES1 : ONES0;
+      FLAG:  next = in ? ONES1 : ONES0;
+      default: next = ONES0;
+    endcase
+  end
+
+  always @(posedge clk) begin
+    if (reset)
+      state <= ONES0;
+    else
+      state <= next;
+  end
+
+  assign disc = (state == DISC);
+  assign flag = (state == FLAG);
+  assign err  = (state == ERR);
+endmodule
+[DONE]

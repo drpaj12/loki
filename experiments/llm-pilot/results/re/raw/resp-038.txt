@@ -1,0 +1,15 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  input d,
+  output out,
+  output out_n
+);
+  // out is the OR of two 2-input AND terms
+  // (NAND of two NANDs); out_n is its inverse
+  assign out = (a & b) | (c & d);
+  assign out_n = ~out;
+endmodule
+[DONE]

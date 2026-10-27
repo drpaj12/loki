@@ -1,0 +1,8 @@
+[BEGIN]
+module TopModule(
+  output one
+);
+  // Constant logic-1 driver
+  assign one = 1'b1;
+endmodule
+[DONE]

@@ -1,0 +1,12 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  output sum,
+  output cout
+);
+  // Half adder
+  assign sum = a ^ b;
+  assign cout = a & b;
+endmodule
+[DONE]

@@ -1,0 +1,13 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input in,
+  output reg out
+);
+  // Toggle flip-flop: the next state is out XOR in.
+  // D = ~((~in & ~out) | (in & out)) = in ^ out
+  always @(posedge clk) begin
+    out <= out ^ in;
+  end
+endmodule
+[DONE]

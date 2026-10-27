@@ -1,0 +1,10 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  output q
+);
+  // Two-input AND gate
+  assign q = a & b;
+endmodule
+[DONE]

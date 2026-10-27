@@ -1,0 +1,12 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input a,
+  output reg q
+);
+  // Registered inverter: q samples the complement of a on each rising clock edge
+  always @(posedge clk) begin
+    q <= ~a;
+  end
+endmodule
+[DONE]

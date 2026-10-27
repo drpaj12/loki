@@ -1,0 +1,14 @@
+[BEGIN]
+module TopModule(
+  input c,
+  input d,
+  output [3:0] mux_in
+);
+  // Data inputs for a 4-to-1 multiplexer selected by (a, b),
+  // expressed as functions of c and d (K-map form).
+  assign mux_in[0] = c | d;
+  assign mux_in[1] = 1'b0;
+  assign mux_in[2] = ~d;
+  assign mux_in[3] = c & d;
+endmodule
+[DONE]

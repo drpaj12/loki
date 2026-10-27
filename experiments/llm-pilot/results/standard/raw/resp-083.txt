@@ -1,0 +1,17 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input [7:0] in,
+  output reg [7:0] pedge
+);
+  // Per-bit rising edge detector.
+  // pedge[i] is set for one cycle (registered) when in[i] was 0 on the
+  // previous clock edge and is 1 now.
+  reg [7:0] d_last;
+
+  always @(posedge clk) begin
+    d_last <= in;
+    pedge  <= in & ~d_last;
+  end
+endmodule
+[DONE]

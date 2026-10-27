@@ -1,0 +1,13 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input in,
+  output reg out
+);
+  // Toggle flip-flop: out flips on each clock edge when in is 1,
+  // holds its value when in is 0 (next state = in ^ out).
+  always @(posedge clk) begin
+    out <= in ^ out;
+  end
+endmodule
+[DONE]

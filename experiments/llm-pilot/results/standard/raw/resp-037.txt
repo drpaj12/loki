@@ -1,0 +1,19 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  input d,
+  output out,
+  output out_n
+);
+  // Two 2-input AND terms combined with OR (AND-OR structure).
+  // The netlist builds this as NAND-NAND: out = ~(~(a&b) & ~(c&d)) = (a&b) | (c&d)
+  wire ab = a & b;
+  wire cd = c & d;
+
+  assign out   = ab | cd;
+  // out_n is the inverted output
+  assign out_n = ~out;
+endmodule
+[DONE]

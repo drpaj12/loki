@@ -1,0 +1,12 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  output out
+);
+  // No netlist was provided, so the function is a guess.
+  // Chosen: a 3-input OR, the most common HDLBits problem with ports a, b, c, out.
+  assign out = a | b | c;
+endmodule
+[DONE]

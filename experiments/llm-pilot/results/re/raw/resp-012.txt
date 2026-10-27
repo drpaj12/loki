@@ -1,0 +1,10 @@
+[BEGIN]
+module TopModule(
+  input in1,
+  input in2,
+  output out
+);
+  // AND gate with the second input inverted (bubble on in2)
+  assign out = in1 & ~in2;
+endmodule
+[DONE]

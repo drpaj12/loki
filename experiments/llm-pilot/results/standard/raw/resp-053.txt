@@ -1,0 +1,40 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input areset,
+  input bump_left,
+  input bump_right,
+  output walk_left,
+  output walk_right
+);
+  // Two-state Moore FSM (Lemmings walking left or right)
+  // state = 0: walking left, state = 1: walking right
+  // Asynchronous reset puts the walker in the walking-left state.
+  localparam LEFT  = 1'b0;
+  localparam RIGHT = 1'b1;
+
+  reg state;
+  reg next;
+
+  // Next-state logic
+  always @(*) begin
+    case (state)
+      LEFT:    next = bump_left  ? RIGHT : LEFT;
+      RIGHT:   next = bump_right ? LEFT  : RIGHT;
+      default: next = LEFT;
+    endcase
+  end
+
+  // State register with asynchronous active-high reset
+  always @(posedge clk or posedge areset) begin
+    if (areset)
+      state <= LEFT;
+    else
+      state <= next;
+  end
+
+  // Moore outputs
+  assign walk_left  = (state == LEFT);
+  assign walk_right = (state == RIGHT);
+endmodule
+[DONE]

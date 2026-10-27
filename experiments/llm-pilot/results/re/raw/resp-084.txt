@@ -1,0 +1,16 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input [7:0] in,
+  output reg [7:0] pedge
+);
+  // Rising edge detector for each bit: pedge[i] is 1 in the cycle after
+  // in[i] changed from 0 to 1.
+  reg [7:0] prev;
+
+  always @(posedge clk) begin
+    prev  <= in;
+    pedge <= in & ~prev;
+  end
+endmodule
+[DONE]

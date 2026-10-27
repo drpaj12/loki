@@ -1,0 +1,14 @@
+[BEGIN]
+module TopModule(
+  input [7:0] a,
+  input [7:0] b,
+  output [7:0] s,
+  output overflow
+);
+  // 8-bit signed (two's complement) adder with overflow detection
+  assign s = a + b;
+
+  // Overflow when both operands have the same sign and the result sign differs
+  assign overflow = (a[7] == b[7]) && (s[7] != a[7]);
+endmodule
+[DONE]

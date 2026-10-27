@@ -1,0 +1,12 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  output out
+);
+  // out is 1 when any input is 1 (3-input OR / "not all zero" check)
+  // Netlist: out = ~(~c & ~(a | b)) = a | b | c
+  assign out = a | b | c;
+endmodule
+[DONE]

@@ -1,0 +1,18 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input d,
+  input r,
+  output reg q
+);
+  // D flip-flop with a synchronous reset.
+  // The netlist computes NOR(~d, r) = d & ~r and registers it on the rising clock edge.
+  // When r is high, q is cleared to 0 on the next clock edge; otherwise q takes d.
+  always @(posedge clk) begin
+    if (r)
+      q <= 1'b0;
+    else
+      q <= d;
+  end
+endmodule
+[DONE]

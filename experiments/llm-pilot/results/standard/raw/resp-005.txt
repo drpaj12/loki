@@ -1,0 +1,18 @@
+[BEGIN]
+module TopModule(
+  input [99:0] in,
+  output [99:0] out
+);
+  // Bit-reversal: out[99] = in[0], out[98] = in[1], ..., out[0] = in[99].
+  // Pure wiring, no logic gates.
+  genvar i;
+  generate
+    for (i = 0; i < 100; i = i + 1) begin : reverse_bits
+      assign out[i] = in[99 - i];
+    end
+  endgenerate
+
+  // Equivalent alternative using the streaming operator (SystemVerilog):
+  // assign out = {<<{in}};
+endmodule
+[DONE]

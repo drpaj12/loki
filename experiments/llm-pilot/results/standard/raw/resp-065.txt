@@ -1,0 +1,10 @@
+[BEGIN]
+module TopModule(
+  input [1:0] A,
+  input [1:0] B,
+  output z
+);
+  // 2-bit equality comparator: z is 1 when A equals B
+  assign z = (A == B);
+endmodule
+[DONE]

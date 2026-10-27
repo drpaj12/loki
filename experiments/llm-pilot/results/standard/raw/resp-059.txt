@@ -1,0 +1,20 @@
+[BEGIN]
+module TopModule(
+  input in,
+  input [1:0] state,
+  output [1:0] next_state,
+  output out
+);
+  // Combinational next-state logic and output of a 4-state Moore FSM.
+  // The output is high only in state 3.
+  assign out = (state == 2'd3);
+
+  // next_state[0] simply follows the input.
+  assign next_state[0] = in;
+
+  // next_state[1] is set when:
+  //   - state 1 and in == 0, or
+  //   - state 2 and in == 1
+  assign next_state[1] = (in & ~state[0] & state[1]) | (~in & state[0]);
+endmodule
+[DONE]

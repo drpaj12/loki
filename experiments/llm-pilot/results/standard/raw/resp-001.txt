@@ -1,0 +1,8 @@
+[BEGIN]
+module TopModule(
+  output one
+);
+  // Constant logic-1 output: no inputs, always driven high
+  assign one = 1'b1;
+endmodule
+[DONE]

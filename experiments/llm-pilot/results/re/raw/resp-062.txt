@@ -1,0 +1,19 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  input d,
+  output out_sop,
+  output out_pos
+);
+  // Common factor: c must be 1 and (b implies d)
+  wire c_and_b_implies_d = c & (~b | d);
+
+  // out_sop: additionally (a implies d)
+  assign out_sop = c_and_b_implies_d & (~a | d);
+
+  // out_pos: additionally (a or not b), i.e. (b implies a)
+  assign out_pos = c_and_b_implies_d & (b | ~a);
+endmodule
+[DONE]

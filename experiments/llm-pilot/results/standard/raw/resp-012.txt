@@ -1,0 +1,10 @@
+[BEGIN]
+module TopModule(
+  input in1,
+  input in2,
+  output out
+);
+  // Two-input logic gate: out is high only when both inputs are high
+  assign out = in1 & in2;
+endmodule
+[DONE]

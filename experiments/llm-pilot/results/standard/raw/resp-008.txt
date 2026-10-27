@@ -1,0 +1,9 @@
+[BEGIN]
+module TopModule(
+  input in,
+  output out
+);
+  // Single-bit inverter: the output is the logical complement of the input
+  assign out = ~in;
+endmodule
+[DONE]

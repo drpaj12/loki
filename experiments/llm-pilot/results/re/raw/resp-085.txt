@@ -1,0 +1,41 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input resetn,
+  input [2:0] r,
+  output [2:0] g
+);
+  // Three-requester arbiter FSM with fixed priority r[0] > r[1] > r[2].
+  // One-hot states: A = idle, B = grant 0, C = grant 1, D = grant 2.
+  // Synchronous active-low reset to A.
+  localparam A = 0, C = 1, B = 2, D = 3;  // bit index of each state in the one-hot vector
+
+  reg [3:0] state, next;
+
+  always @(*) begin
+    next = 4'b0000;
+    // A: idle, taken from A when no request, or when current grant is released
+    next[A] = (state[A] & ~r[0] & ~r[1] & ~r[2]) |
+              (state[B] & ~r[0]) |
+              (state[C] & ~r[1]) |
+              (state[D] & ~r[2]);
+    // B: granted to requester 0
+    next[B] = (state[A] | state[B]) & r[0];
+    // C: granted to requester 1
+    next[C] = ((state[A] & ~r[0]) | state[C]) & r[1];
+    // D: granted to requester 2
+    next[D] = ((state[A] & ~r[0] & ~r[1]) | state[D]) & r[2];
+  end
+
+  always @(posedge clk) begin
+    if (!resetn)
+      state <= 4'b0001 << A;
+    else
+      state <= next;
+  end
+
+  assign g[0] = state[B];
+  assign g[1] = state[C];
+  assign g[2] = state[D];
+endmodule
+[DONE]

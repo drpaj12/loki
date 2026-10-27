@@ -1,0 +1,21 @@
+[BEGIN]
+module TopModule(
+  input [2:0] a,
+  output reg [15:0] q
+);
+  // 3-input, 16-output lookup table
+  always @(*) begin
+    case (a)
+      3'd0: q = 16'h1232;
+      3'd1: q = 16'hAEE0;
+      3'd2: q = 16'h27F4;
+      3'd3: q = 16'h5A0E;
+      3'd4: q = 16'h2266;
+      3'd5: q = 16'h66CE;
+      3'd6: q = 16'hC726;
+      3'd7: q = 16'h2F19;
+      default: q = 16'h0000;
+    endcase
+  end
+endmodule
+[DONE]

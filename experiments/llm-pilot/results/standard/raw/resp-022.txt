@@ -1,0 +1,17 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  input c,
+  output w,
+  output x,
+  output y,
+  output z
+);
+  // Pure wiring, no logic: each output is a direct copy of an input
+  assign w = a;
+  assign x = b;
+  assign y = b; // b fans out to both x and y
+  assign z = c;
+endmodule
+[DONE]

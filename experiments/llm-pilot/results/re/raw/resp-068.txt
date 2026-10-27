@@ -1,0 +1,23 @@
+[BEGIN]
+module TopModule(
+  input in,
+  input [3:0] state,
+  output [3:0] next_state,
+  output out
+);
+  // One-hot Moore FSM with states A=state[0], B=state[1], C=state[2], D=state[3]
+  localparam A = 0, B = 1, C = 2, D = 3;
+
+  // A: reached from A or C when in = 0
+  assign next_state[A] = ~in & (state[A] | state[C]);
+  // B: reached from A, B or D when in = 1
+  assign next_state[B] = in & (state[A] | state[B] | state[D]);
+  // C: reached from B or D when in = 0
+  assign next_state[C] = ~in & (state[B] | state[D]);
+  // D: reached from C when in = 1
+  assign next_state[D] = in & state[C];
+
+  // Output is high only in state D
+  assign out = state[D];
+endmodule
+[DONE]

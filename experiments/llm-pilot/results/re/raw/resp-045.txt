@@ -1,0 +1,12 @@
+[BEGIN]
+module TopModule(
+  input clk,
+  input in,
+  output reg out
+);
+  // Simple D flip-flop: out captures in on each rising clock edge
+  always @(posedge clk) begin
+    out <= in;
+  end
+endmodule
+[DONE]

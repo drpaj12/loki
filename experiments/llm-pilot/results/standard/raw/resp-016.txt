@@ -1,0 +1,11 @@
+[BEGIN]
+module TopModule(
+  input a,
+  input b,
+  output q
+);
+  // NAND followed by an inverter is a 2-input AND.
+  // Equivalent to checking that the 2-bit value {a, b} equals 3.
+  assign q = a & b;
+endmodule
+[DONE]
