@@ -228,8 +228,8 @@ part of this protocol unless Peter asks.
    engineering of the gate") Variant `re`: our own system prompt, all 120 calls rerun fresh.
    Purpose: L Q1.2 (do Loki hints help an LLM recover RTL from a flat gate netlist). Measure:
    functional pass rate per arm (A netlist, B plus Loki hints, C interface only) and refusal rate.
-   The `re` system message is `prompts_variants/re/system.txt` (494 bytes, no trailing newline, md5
-   1c87dfd60bd2c480115fcf414d298de3, byte-equal to the text fixed in the brief). The 2-shot
+   The `re` system message is `prompts_variants/re/system.txt` (495 bytes, no trailing newline, md5
+   c95998c379b2d7e520c508b25a5a4c92, byte-equal to the text fixed in the brief). The 2-shot
    examples (the `standard` prefix, md5 e5c9110aadcb958b52750e40a8acb9b5), the user content
    (netlist, hints, interface) and the `[BEGIN]`/`[DONE]` answer format are unchanged, so
    `collect.py` and `score.py` do not change; user message hashes in `run-re/calls.jsonl` equal
@@ -237,8 +237,8 @@ part of this protocol unless Peter asks.
    place); outputs go to `run-re/`. Rules as decision 13; stop if refused plus error exceed 12.
    The wording is final. Report pass rate per arm both ways and refusal rate `standard` against
    `re` per arm. Deviation: exact Gate-Breaker fidelity is dropped for `re` (system message is
-   ours, and it asks for `[END]` while the user suffix and the extractor use `[DONE]`; the user
-   suffix governs the reply format and is unchanged).
+   ours). Correction before any `re` call: the brief text said `[END]`; it was changed to `[DONE]`
+   to match the user suffix and the extractor (one token, format only, no call had run).
 
 ## Amendment 2026-10-26 (Dispatch 4): `standard` partial result
 

@@ -355,9 +355,9 @@ class VariantRe(unittest.TestCase):
         text = (HERE / "prompts_variants" / "re" / "system.txt").read_text(encoding="utf-8")
         self.assertEqual(hashlib.md5(text.encode("utf-8"), usedforsecurity=False).hexdigest(),
                          common.RE_SYSTEM_MD5)
-        self.assertEqual(len(text.encode("utf-8")), 494)
+        self.assertEqual(len(text.encode("utf-8")), 495)
         self.assertTrue(text.startswith("You are a hardware engineer"))
-        self.assertTrue(text.endswith("between [BEGIN] and [END]."))
+        self.assertTrue(text.endswith("between [BEGIN] and [DONE]."))
 
     def test_variant_default_and_dirs(self) -> None:
         self.assertIn(common.VARIANT, common.VARIANTS)

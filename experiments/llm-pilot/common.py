@@ -25,7 +25,7 @@ if VARIANT not in VARIANTS:
     raise SystemExit(f"LLM_PILOT_VARIANT must be one of {VARIANTS}, got {VARIANT!r}")
 PREFIX_VARIANT = "standard"  # the 2-shot examples come from this Gate-Breaker variant for both
 # prompts_variants/re/system.txt, decision 14, byte exact
-RE_SYSTEM_MD5 = "1c87dfd60bd2c480115fcf414d298de3"
+RE_SYSTEM_MD5 = "c95998c379b2d7e520c508b25a5a4c92"
 ARMS = ("A", "B", "C")
 
 SYSTEM_MSG = (
