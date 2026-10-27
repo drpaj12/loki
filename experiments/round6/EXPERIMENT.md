@@ -229,3 +229,24 @@ below.
 ## Rule additions
 
 (none yet)
+
+### 2026-10-27 (before any evaluation run): `removed` split into `removed` and `subsumed`
+
+Found on development designs (corpus train `r4_fsm_000`): the reduced set drops a unit that is
+an ancestor of another member, so a register whose leaves are `{ALWAYS, IF}` becomes `{IF}` and the
+`ALWAYS` block reads as "reached by no object" although a chain to it remains. The Stage-0 rule
+is kept as written (a unit no reduced set contains is lost; the class `removed` of the table
+above counts it). The audit now also writes `subsumed` = no reduced set contains u, but some
+object has u among its unreduced anchors (u is only the enclosing statement of a finer unit). The
+tables report `removed` (no chain at all) and `subsumed` as two columns, and "Stage-0 removed" =
+their sum. `subsumed` is not a merge, so it is outside the explained-share denominator under
+the new rule; under the Stage-0 rule it is outside too (removed losses are not merged).
+
+### 2026-10-27 (before any evaluation run): units first separable after S1
+
+The Definitions section says "lost at S_k = separable at S_{k-1} and not at S_k" and also "a unit
+not separable at S1 is `born-joined`". They conflict for a unit that is joined at S1 and becomes
+separable later (for example when `lower` splits a word cell into gates). Rule used: `born-joined`
+= never separable at any snapshot; a unit first separable at S_j, j > 1, has status `late`, and
+its first loss after S_j counts as a loss with the column `late = 1`. Tables give the totals and the
+totals without late units; the numeric rules use the totals.
