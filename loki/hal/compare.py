@@ -650,9 +650,10 @@ def tex_scorers(dec: dict[str, object]) -> list[str]:
                   "greater. The last column applies the rule to that row alone; the "
                   "decision needs Loki ahead under both.}",
                   "\\label{tab:hal-decision}", "\\centering", "\\footnotesize",
+                  "\\resizebox{\\columnwidth}{!}{%",
                   "\\begin{tabular}{@{}lrrrrrl@{}}", "\\toprule",
                   "Scorer & $D$ & 95\\% CI & 90\\% CI & $p_L$ & $p_H$ & rule alone \\\\",
-                  "\\midrule", *rows, "\\bottomrule", "\\end{tabular}", "\\end{table}"]
+                  "\\midrule", *rows, "\\bottomrule", "\\end{tabular}}", "\\end{table}"]
 
 
 def tex_macros(dec: dict[str, object], sens: dict[str, dict[str, object]], runs8: list[Run],

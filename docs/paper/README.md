@@ -22,7 +22,7 @@ Every number traces to the experiment records:
 - `experiments/quartiles/` — per-quartile (Q1-Q4) tables for the LLM pilot (arms A, B, C, exact
   McNemar per quartile and stratified) and for the Loki-only results. `quartile-tables.tex` is
   generated: run `python3 experiments/quartiles/quartiles.py` (byte-identical on rerun).
-- The Gate-Breaker VerilogEval replication table (`tab:veval`) fills in as that run lands.
+- The Gate-Breaker VerilogEval replication table (`tab:veval`) is in Experiments (rows GB1, GB2 of the register).
 
 Tables marked `[TODO: ...]` are numbers not yet measured.
 - The suite tree (`IMAGE/fig_yggdrasil.tex`, with `IMAGE/odin3-tikz-styles.tex`) is a byte-identical copy of
@@ -47,3 +47,5 @@ DISMISSED). Support files, all in `docs/paper/`:
   (P. A. Jamieson, PhD thesis, University of Toronto, 2007) for the Glossary. The PDFs live only in
   `work/mimir-papers/` and are never committed.
 - Build: `tectonic -X compile build/loki-local.tex -Z search-path=docs/paper` (the wrapper selects the OT1 font encoding).
+- Tests for `make_register.py`, `make_glossary.py` and `split_tables.py`: `tests/test_paper_tools.py` (determinism plus a small fixture each).
+- `gen/quartile-*`, `gen/tab-q-*`, `gen/tab-veval-*` (untracked) are leftovers of an earlier `split_tables.py` that also split `quartile-tables.tex` and `veval-tables.tex`; the paper inputs those two files directly and does not use them.

@@ -176,6 +176,7 @@
 \label{tab:hal-decision}
 \centering
 \footnotesize
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lrrrrrl@{}}
 \toprule
 Scorer & $D$ & 95\% CI & 90\% CI & $p_L$ & $p_H$ & rule alone \\
@@ -183,7 +184,7 @@ Scorer & $D$ & 95\% CI & 90\% CI & $p_L$ & $p_H$ & rule alone \\
 Comparison scorer & -0.092 & [-0.317, 0.043] & [-0.266, 0.009] & 0.828 & 0.172 & inconclusive \\
 Round-5 scorer & -0.132 & [-0.382, -0.044] & [-0.337, -0.052] & 0.999 & 0.001 & inconclusive \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 \begin{table*}[t]
 \caption{Loki word-first detector (\code{W}) against HAL's DANA on MI and VT (E\_real), word recovery against the L0 ground truth; one scorer for both tools. $P_J$, $R_J$, $F_J$: Jaccard-0.5 matching; purity and completeness over flip-flops. The round-5 scorer row counts Loki as round 5 did (the scorer used for Loki in round 5). Loki WB has a run on fewer designs than the other arms (f3: 96 of 98 designs; listed in docs/results-hal.md), so its rows pool a different design set.}

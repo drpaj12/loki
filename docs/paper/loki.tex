@@ -253,7 +253,7 @@ second part of \code{floor\_script}. Node kinds are those of \code{graph.json}
 \label{tab:floors}
 \centering
 \footnotesize
-\begin{tabular}{@{}lp{4.2cm}p{4.9cm}p{6.5cm}@{}}
+\begin{tabular}{@{}lp{4.2cm}p{4.7cm}p{6.5cm}@{}}
 \toprule
 Floor & Reads & Mapping script & Netlist contents \\
 \midrule
@@ -1823,6 +1823,7 @@ per arm, one draw each, \code{claude-sonnet-5-5}. Arm A: netlist; B: netlist plu
 interface only. GB-equiv.: Gate-Breaker-equivalent scorer.}
 \label{tab:llm-pass}
 \small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lccc@{}}
 \toprule
 View & A & B & C \\
@@ -1833,7 +1834,7 @@ Answered only (strict) & 35/40 (0.88) & 35/38 (0.92) & 30/40 (0.75) \\
 Paired set, 38 (strict) & 33/38 (0.87) & 35/38 (0.92) & 29/38 (0.76) \\
 Paired set, 38 (GB-equiv.) & 31/38 (0.82) & 33/38 (0.87) & 28/38 (0.74) \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \begin{table}[t]
@@ -1842,6 +1843,7 @@ Paired set, 38 (GB-equiv.) & 31/38 (0.82) & 33/38 (0.87) & 28/38 (0.74) \\
 scorer. ``First only'' counts problems the first arm passes and the second fails.}
 \label{tab:llm-mcnemar}
 \small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lccccc@{}}
 \toprule
 Comparison & Both & First only & Second only & Neither & $p$ \\
@@ -1850,7 +1852,7 @@ B vs A & 33 & 2 & 0 & 3 & 0.5000 \\
 A vs C & 28 & 5 & 1 & 4 & 0.2188 \\
 B vs C & 28 & 7 & 1 & 2 & 0.0703 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \emph{Refusals.} The first complete prompt that we ran, the Gate-Breaker \code{standard} prompt,

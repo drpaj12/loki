@@ -4,6 +4,7 @@ Run from the repo root:
 Each script writes next to itself, so the tests copy it into a temporary directory with a small
 fixture, run it twice, and check the output and that the second run is byte-identical."""
 
+import importlib
 import shutil
 import subprocess
 import sys
@@ -14,7 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "docs" / "paper"
 sys.path.insert(0, str(PAPER))
-import make_register as mr  # noqa: E402
+mr = importlib.import_module("make_register")
 
 HEAD = (
     "| H-ID | round / section | a | b | c | d | e | f | g | verdict | h |\n"
