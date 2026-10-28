@@ -1,0 +1,11 @@
+quartile,view,n,pass_A,pass_B,pass_C
+Q1,all_calls,10,10,10,8
+Q1,paired,10,10,10,8
+Q2,all_calls,10,8,9,8
+Q2,paired,10,8,9,8
+Q3,all_calls,10,8,9,7
+Q3,paired,10,8,9,7
+Q4,all_calls,10,9,7,7
+Q4,paired,8,7,7,6
+All,all_calls,40,35,35,30
+All,paired,38,33,35,29

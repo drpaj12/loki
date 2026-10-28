@@ -1,0 +1,7 @@
+problem,gb_quartile,reason
+Prob031_dff,Q3,equivalence gate
+Prob046_dff8p,Q3,equivalence gate
+Prob078_dualedge,Q4,equivalence gate
+Prob145_circuit8,Q3,equivalence gate
+Prob151_review2015_fsm,Q4,odin3 reader
+Prob156_review2015_fancytimer,Q4,odin3 reader

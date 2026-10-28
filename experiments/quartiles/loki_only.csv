@@ -1,0 +1,169 @@
+source,metric,quartile,n,value
+veval-l0 f3 ceiling,label_cov mean,Q1,41,1.000
+veval-l0 f3 ceiling,label_cov median,Q1,41,1.000
+veval-l0 f3 ceiling,cell_type_cov mean,Q1,41,1.000
+veval-l0 f3 ceiling,cell_type_cov median,Q1,41,1.000
+veval-l0 f3 ceiling,hdl_cov mean,Q1,41,1.000
+veval-l0 f3 ceiling,hdl_cov median,Q1,41,1.000
+veval-l0 f3 ceiling,module_cov mean,Q1,41,1.000
+veval-l0 f3 ceiling,module_cov median,Q1,41,1.000
+veval-l0 f3 ceiling,signal_cov mean,Q1,41,1.000
+veval-l0 f3 ceiling,signal_cov median,Q1,41,1.000
+veval-l0 f3 ceiling,label_cov mean,Q2,36,1.000
+veval-l0 f3 ceiling,label_cov median,Q2,36,1.000
+veval-l0 f3 ceiling,cell_type_cov mean,Q2,36,1.000
+veval-l0 f3 ceiling,cell_type_cov median,Q2,36,1.000
+veval-l0 f3 ceiling,hdl_cov mean,Q2,36,1.000
+veval-l0 f3 ceiling,hdl_cov median,Q2,36,1.000
+veval-l0 f3 ceiling,module_cov mean,Q2,36,1.000
+veval-l0 f3 ceiling,module_cov median,Q2,36,1.000
+veval-l0 f3 ceiling,signal_cov mean,Q2,36,0.986
+veval-l0 f3 ceiling,signal_cov median,Q2,36,1.000
+veval-l0 f3 ceiling,label_cov mean,Q3,33,1.000
+veval-l0 f3 ceiling,label_cov median,Q3,33,1.000
+veval-l0 f3 ceiling,cell_type_cov mean,Q3,33,1.000
+veval-l0 f3 ceiling,cell_type_cov median,Q3,33,1.000
+veval-l0 f3 ceiling,hdl_cov mean,Q3,33,1.000
+veval-l0 f3 ceiling,hdl_cov median,Q3,33,1.000
+veval-l0 f3 ceiling,module_cov mean,Q3,33,1.000
+veval-l0 f3 ceiling,module_cov median,Q3,33,1.000
+veval-l0 f3 ceiling,signal_cov mean,Q3,33,1.008
+veval-l0 f3 ceiling,signal_cov median,Q3,33,1.000
+veval-l0 f3 ceiling,label_cov mean,Q4,28,1.000
+veval-l0 f3 ceiling,label_cov median,Q4,28,1.000
+veval-l0 f3 ceiling,cell_type_cov mean,Q4,28,1.000
+veval-l0 f3 ceiling,cell_type_cov median,Q4,28,1.000
+veval-l0 f3 ceiling,hdl_cov mean,Q4,28,1.000
+veval-l0 f3 ceiling,hdl_cov median,Q4,28,1.000
+veval-l0 f3 ceiling,module_cov mean,Q4,28,1.000
+veval-l0 f3 ceiling,module_cov median,Q4,28,1.000
+veval-l0 f3 ceiling,signal_cov mean,Q4,28,0.896
+veval-l0 f3 ceiling,signal_cov median,Q4,28,0.866
+veval-l0 sizes,built_f1-k6,Q1,41,41
+veval-l0 sizes,built_f1-k6,Q2,36,36
+veval-l0 sizes,built_f1-k6,Q3,33,33
+veval-l0 sizes,built_f1-k6,Q4,28,28
+veval-l0 sizes,built_f2,Q1,41,41
+veval-l0 sizes,built_f2,Q2,36,36
+veval-l0 sizes,built_f2,Q3,33,33
+veval-l0 sizes,built_f2,Q4,28,28
+veval-l0 sizes,built_f3,Q1,41,41
+veval-l0 sizes,built_f3,Q2,36,36
+veval-l0 sizes,built_f3,Q3,33,33
+veval-l0 sizes,built_f3,Q4,28,28
+round2 per design,all f3-l0 ast_mean,Q1,41,0.691
+round2 per design,all f3-l0 cfg_mean,Q1,41,0.740
+round2 per design,all f3-calib ast_mean,Q1,41,0.691
+round2 per design,all f3-calib cfg_mean,Q1,41,0.740
+round2 per design,all f3-none ast_mean,Q1,41,0.633
+round2 per design,all f3-none cfg_mean,Q1,41,0.598
+round2 per design,all f2-l0 ast_mean,Q1,41,0.734
+round2 per design,all f2-l0 cfg_mean,Q1,40,0.828
+round2 per design,all f2-calib ast_mean,Q1,41,0.713
+round2 per design,all f2-calib cfg_mean,Q1,40,0.774
+round2 per design,all f2-none ast_mean,Q1,41,0.652
+round2 per design,all f2-none cfg_mean,Q1,40,0.649
+round2 per design,common llm ast_mean,Q1,40,0.907
+round2 per design,common llm cfg_mean,Q1,40,0.913
+round2 per design,common f3-l0 ast_mean,Q1,40,0.699
+round2 per design,common f3-l0 cfg_mean,Q1,40,0.741
+round2 per design,common f3-calib ast_mean,Q1,40,0.699
+round2 per design,common f3-calib cfg_mean,Q1,40,0.741
+round2 per design,common f3-none ast_mean,Q1,40,0.640
+round2 per design,common f3-none cfg_mean,Q1,40,0.595
+round2 per design,common f2-l0 ast_mean,Q1,40,0.743
+round2 per design,common f2-l0 cfg_mean,Q1,39,0.830
+round2 per design,common f2-calib ast_mean,Q1,40,0.722
+round2 per design,common f2-calib cfg_mean,Q1,39,0.775
+round2 per design,common f2-none ast_mean,Q1,40,0.660
+round2 per design,common f2-none cfg_mean,Q1,39,0.647
+round2 per design,all f3-l0 ast_mean,Q2,34,0.508
+round2 per design,all f3-l0 cfg_mean,Q2,36,0.750
+round2 per design,all f3-calib ast_mean,Q2,34,0.508
+round2 per design,all f3-calib cfg_mean,Q2,36,0.750
+round2 per design,all f3-none ast_mean,Q2,34,0.463
+round2 per design,all f3-none cfg_mean,Q2,36,0.645
+round2 per design,all f2-l0 ast_mean,Q2,34,0.527
+round2 per design,all f2-l0 cfg_mean,Q2,35,0.840
+round2 per design,all f2-calib ast_mean,Q2,34,0.525
+round2 per design,all f2-calib cfg_mean,Q2,35,0.829
+round2 per design,all f2-none ast_mean,Q2,34,0.497
+round2 per design,all f2-none cfg_mean,Q2,35,0.787
+round2 per design,common llm ast_mean,Q2,31,0.733
+round2 per design,common llm cfg_mean,Q2,31,0.917
+round2 per design,common f3-l0 ast_mean,Q2,30,0.512
+round2 per design,common f3-l0 cfg_mean,Q2,31,0.754
+round2 per design,common f3-calib ast_mean,Q2,30,0.512
+round2 per design,common f3-calib cfg_mean,Q2,31,0.754
+round2 per design,common f3-none ast_mean,Q2,30,0.465
+round2 per design,common f3-none cfg_mean,Q2,31,0.651
+round2 per design,common f2-l0 ast_mean,Q2,30,0.533
+round2 per design,common f2-l0 cfg_mean,Q2,31,0.847
+round2 per design,common f2-calib ast_mean,Q2,30,0.530
+round2 per design,common f2-calib cfg_mean,Q2,31,0.835
+round2 per design,common f2-none ast_mean,Q2,30,0.499
+round2 per design,common f2-none cfg_mean,Q2,31,0.787
+round2 per design,all f3-l0 ast_mean,Q3,30,0.612
+round2 per design,all f3-l0 cfg_mean,Q3,33,0.765
+round2 per design,all f3-calib ast_mean,Q3,30,0.602
+round2 per design,all f3-calib cfg_mean,Q3,33,0.763
+round2 per design,all f3-none ast_mean,Q3,30,0.589
+round2 per design,all f3-none cfg_mean,Q3,33,0.739
+round2 per design,all f2-l0 ast_mean,Q3,30,0.609
+round2 per design,all f2-l0 cfg_mean,Q3,32,0.837
+round2 per design,all f2-calib ast_mean,Q3,30,0.600
+round2 per design,all f2-calib cfg_mean,Q3,32,0.823
+round2 per design,all f2-none ast_mean,Q3,30,0.591
+round2 per design,all f2-none cfg_mean,Q3,33,0.797
+round2 per design,common llm ast_mean,Q3,1,0.727
+round2 per design,common llm cfg_mean,Q3,1,0.990
+round2 per design,common f3-l0 ast_mean,Q3,1,0.360
+round2 per design,common f3-l0 cfg_mean,Q3,1,0.744
+round2 per design,common f3-calib ast_mean,Q3,1,0.360
+round2 per design,common f3-calib cfg_mean,Q3,1,0.744
+round2 per design,common f3-none ast_mean,Q3,1,0.346
+round2 per design,common f3-none cfg_mean,Q3,1,0.705
+round2 per design,common f2-l0 ast_mean,Q3,1,0.361
+round2 per design,common f2-l0 cfg_mean,Q3,1,0.915
+round2 per design,common f2-calib ast_mean,Q3,1,0.361
+round2 per design,common f2-calib cfg_mean,Q3,1,0.915
+round2 per design,common f2-none ast_mean,Q3,1,0.334
+round2 per design,common f2-none cfg_mean,Q3,1,0.897
+round2 per design,all f3-l0 ast_mean,Q4,15,0.533
+round2 per design,all f3-l0 cfg_mean,Q4,28,0.757
+round2 per design,all f3-calib ast_mean,Q4,15,0.533
+round2 per design,all f3-calib cfg_mean,Q4,28,0.757
+round2 per design,all f3-none ast_mean,Q4,15,0.511
+round2 per design,all f3-none cfg_mean,Q4,28,0.749
+round2 per design,all f2-l0 ast_mean,Q4,15,0.541
+round2 per design,all f2-l0 cfg_mean,Q4,27,0.856
+round2 per design,all f2-calib ast_mean,Q4,15,0.541
+round2 per design,all f2-calib cfg_mean,Q4,27,0.856
+round2 per design,all f2-none ast_mean,Q4,15,0.510
+round2 per design,all f2-none cfg_mean,Q4,27,0.811
+round2 per design,common llm ast_mean,Q4,1,0.606
+round2 per design,common llm cfg_mean,Q4,1,0.901
+round2 per design,common f3-l0 ast_mean,Q4,1,0.350
+round2 per design,common f3-l0 cfg_mean,Q4,1,0.763
+round2 per design,common f3-calib ast_mean,Q4,1,0.350
+round2 per design,common f3-calib cfg_mean,Q4,1,0.763
+round2 per design,common f3-none ast_mean,Q4,1,0.350
+round2 per design,common f3-none cfg_mean,Q4,1,0.768
+round2 per design,common f2-l0 ast_mean,Q4,1,0.366
+round2 per design,common f2-l0 cfg_mean,Q4,1,0.878
+round2 per design,common f2-calib ast_mean,Q4,1,0.366
+round2 per design,common f2-calib cfg_mean,Q4,1,0.878
+round2 per design,common f2-none ast_mean,Q4,1,0.365
+round2 per design,common f2-none cfg_mean,Q4,1,0.875
+hal VT f2,lokiW matched/n_pred/n_gt,Q1,10,0/0/0
+hal VT f2,lokiW matched/n_pred/n_gt,Q2,7,0/0/0
+hal VT f2,lokiW matched/n_pred/n_gt,Q3,5,5/6/7
+hal VT f2,lokiW matched/n_pred/n_gt,Q4,6,5/7/6
+hal VT f2,lokiWB matched/n_pred/n_gt,Q1,10,0/0/0
+hal VT f2,lokiWB matched/n_pred/n_gt,Q2,7,0/0/0
+hal VT f2,lokiWB matched/n_pred/n_gt,Q3,5,5/7/7
+hal VT f2,lokiWB matched/n_pred/n_gt,Q4,6,4/11/6
+hal VT f2,hal8 matched/n_pred/n_gt,Q1,10,0/0/0
+hal VT f2,hal8 matched/n_pred/n_gt,Q2,7,0/0/0
+hal VT f2,hal8 matched/n_pred/n_gt,Q3,5,6/6/7
+hal VT f2,hal8 matched/n_pred/n_gt,Q4,6,4/5/6
