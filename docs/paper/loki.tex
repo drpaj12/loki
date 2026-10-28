@@ -50,30 +50,23 @@ jamiespa@miamioh.edu}}
 \maketitle
 
 \begin{abstract}
-A synthesis tool turns a circuit description into a netlist and throws information away on
-the way. Gate-Breaker showed that a language model can rewrite a gate netlist into working
-RTL. Loki~III asks the complementary question: how much of the design can be recovered
-\emph{without} a language model, from provenance (the link a synthesis front end keeps from
-every netlist object back to the source text), a Bayesian hypothesis flow and graph analysis?
-We state every claim as a hypothesis, run one experiment for it, and give it one verdict.
-Ten hypotheses are USEFUL (the experiment confirms them): the provenance answer key covers all
-54,306 gate nodes of 150 VerilogEval designs and the pipeline is naming-neutral across
-105,646 renamed identifiers; the structures that synthesis already reverse engineered are
-recovered (hard adders 67 of 67, hard multipliers 30 of 30) and calibration cuts the
-expected calibration error from 0.650 to 0.217; community clustering finds the designer's
-hierarchy (Louvain modularity 0.4220, where k-means is negative); the LUT-mapping pass
-fools a detector on one construct, the mux word (recall 0.55 to 0.07 on 174 instances); and
-the synthesis flow destroys style (style-recovery ceiling 0.50 on the gate floor). Five more
-are POSSIBLY GOOD and stated with their fragility: a graph neural network that beats a 1-WL baseline
-(macro-F1 0.4241 against 0.2717, one split), an operator-recovery F1, the finding that wrong
-candidates are fragments of real constructs, the finding that large designs repeat more than
-small ones, and the placement of statement losses at the first optimisation pass. The structures that synthesis erased recover
-weakly (macro-F1 0.354 on the first floor, 0.108 on the second), a word-first detector is not
-shown to beat the published DANA method (difference $-0.092$, 95\% interval $[-0.317, 0.043]$),
-and a 40-problem pilot finds the language model's pass rate 35/40 with and without Loki's
-hints; these are INCONCLUSIVE. Eleven hypotheses were DISMISSED and sixteen are INCONCLUSIVE; all
-are in the research log. Loki's measures are recovery measures; area, speed and power are not
-measured.
+A synthesis tool turns a circuit description into a netlist and throws information away on the
+way. Loki~III asks how much of the design can be recovered \emph{without} a language model,
+from provenance (the link from each netlist object back to the source text), a Bayesian
+hypothesis flow and graph analysis.
+
+Every claim is a hypothesis with one experiment and one verdict. Eight are USEFUL: the
+provenance answer key covers all 54,306 gate nodes of 150 designs and the pipeline is
+naming-neutral over 105,646 renamed identifiers; structures that synthesis already reverse
+engineered are recovered (hard adders 67 of 67) and calibration cuts the calibration error from
+0.650 to 0.217; synthesis destroys style (ceiling 0.50 on the gate floor); big designs are
+mostly repeated structure.
+
+Six are POSSIBLY GOOD and stated with their fragility: a graph network ahead of a 1-WL
+baseline (one split), an operator-recovery F1, and a loss audit. Structures that synthesis
+erased recover weakly, clustering does not find the designer's hierarchy, a word-first
+detector is not shown to beat DANA, and a language-model pilot shows no effect of Loki's hints.
+Twelve hypotheses were DISMISSED and sixteen are INCONCLUSIVE. No area, speed or power is measured.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -114,8 +107,8 @@ the main paper; dismissed ideas are one line each in the research log (Appendix~
 
 Loki has three layers: L0, labelled and anonymised netlist datasets with the answer key; L1, % def:layers
 a Bayesian flow that proposes structure hypotheses and settles them with probabilities and
-equivalence checks; and L2, graph analysis. The innovations, in plain English, and the hypotheses that
-confirmed them, are these.
+equivalence checks; and L2, graph analysis. The innovations that the experiments confirm are
+these three, in plain English, each with the hypotheses that confirmed it.
 \begin{enumerate}
 \item \emph{A benchmark in which the answer is known and the names carry nothing.} We build
 the netlists with a front end that remembers which source text made each gate, give every
@@ -127,23 +120,33 @@ object a neutral name, and show that scrambling all names changes no answer
 learned from training designs, and uses an equivalence check to settle the claims it can.
 Structures that synthesis already reverse engineered are recovered almost perfectly, and the
 tool's stated probabilities are far closer to the observed rates after fitting. Confirmed: L1h, L1c.
-\item \emph{Graph analysis of the netlist.} Treat the netlist as a graph, find clusters
-that match the designer's modules, and train a graph network to label each gate's role.
-Confirmed: L2a (clusters); L2b (the network) is POSSIBLY GOOD.
-\item \emph{A score that sees recovery.} Comparing recovered Verilog text with the reference
-cannot tell whether the right adders were found; counting the operator types recovered can.
-POSSIBLY GOOD: L7.
-\item \emph{A loss audit.} When synthesis merges the logic of two source statements, the
-construct can no longer be pulled apart from its neighbours. Using the provenance the front end already keeps, we
-record which pass merged what. Confirmed: L15d; POSSIBLY GOOD: L15a.
-\item \emph{A limit on what any recovery can do, and a synthetic test bed.} A set of twin
-designs measures how much coding style synthesis destroys (H14a), and a generated
-set of idiom designs builds at every mapping level of the flow (H12a); both USEFUL.
+\item \emph{A limit on what any recovery can do, a synthetic test bed, and a count of repeated
+structure.} A set of twin designs measures how much coding style synthesis destroys (H14a); a
+generated set of idiom designs builds at every mapping level of the flow (H12a); and the large
+designs of the VTR suite are mostly structure that repeats (H13a), with identical neighbourhoods
+inside the repeats (H13c). Confirmed: H14a, H12a, H13a, H13c.
 \end{enumerate}
-The honest answers to the paper's question where the numbers do not decide are in the
-Experiments: the structures that synthesis erased recover weakly, a pattern finder that looks
-for multi-bit signals first is not shown to beat a published method, and a small language-model pilot does not show that
-Loki's hints help.
+
+\emph{Candidate innovations.} Three more ideas have only POSSIBLY GOOD support: each experiment
+leans the right way but is narrow or fragile, so none is a contribution of this paper.
+(i) \emph{Graph analysis with a network.} Treat the netlist as a graph and train a graph network to label each
+gate's role (L2b: a score of 0.4241 against 0.2717 for a baseline that sees only the neighbourhood
+of each gate, one run on one split of 13 designs). What would confirm it: several random splits of the designs with an interval over designs, and
+a second benchmark suite.
+(ii) \emph{A score that sees recovery.} Comparing recovered Verilog text with the reference
+cannot tell whether the right adders were found; counting the operator types recovered can
+(R2-L7: small margins on few pairs, and the flow with fitted probabilities recovers no operator). What would confirm it:
+a set with many more tie pairs and a flow that recovers operators.
+(iii) \emph{A loss audit.} When synthesis merges the logic of two source statements, the
+construct can no longer be pulled apart from its neighbours. Using the provenance the front end already
+keeps, we record which pass merged what (L15a, L15d: a mux is found at the gate snapshot and lost after
+the final mapping pass, but the two ground truths differ in size and the footprints are not like for like).
+What would confirm it: the same audit with equal-sized ground truths at the two snapshots and on the big designs.
+
+The other answers to the paper's question are negative or undecided. Clustering does not find
+the designer's hierarchy (L2a, DISMISSED); the structures that synthesis erased recover weakly; a
+pattern finder that looks for multi-bit signals first is not shown to beat a published method;
+and a small language-model pilot does not show that Loki's hints help.
 
 Loki's measures are recovery measures (how much of the answer key is found) and not circuit
 measures. Area, speed and power are not measured by any experiment in this paper, and we do not
@@ -223,8 +226,9 @@ and the scorer.
 \label{sec:innov}
 
 The Introduction describes each innovation in plain English. This section describes them
-technically: the floors and the L0 datasets (including the renamed-instance protocol), the L1
-hypothesis flow, L2 graph analysis, the operator-recovery score and the loss audit. The
+technically: the floors and the L0 datasets (including the renamed-instance protocol) and the L1
+hypothesis flow, which are confirmed innovations, and L2 graph analysis, the operator-recovery
+score and the loss audit, which are candidate innovations (POSSIBLY GOOD, not contributions). The
 experiment that confirms or fails to confirm each one is in Section~\ref{sec:experiments}.
 
 \subsection{Floors: the abstraction level of the netlist}
@@ -705,57 +709,6 @@ bootstrap intervals (clustered over designs where the designs come in families);
 called a difference only when the interval or the exact test shows one; otherwise it is
 INCONCLUSIVE.
 
-\subsection{The language-model baseline: the Gate-Breaker metrics}
-\label{sec:gb-results}
-
-Gate-Breaker's metrics compare a recovered RTL against a reference: Success Rate,
-Success@$k$, AST similarity and CFG similarity. Loki recovers structure, not a new RTL text,
-so the direct comparison is the replication: the Gate-Breaker harness itself, run on the
-simple benchmarks with the only language model available on the host, gave success rate
-0.933 on Q1 and 0.829 on Q2, Success@10 1.000 in both quartiles, AST similarity 0.576 and
-0.444, CFG similarity 1.000 and 0.736, with 169 of 174 extracted candidates functionally
-correct -- a first replication on the fallback micro set, not the paper's VerilogEval set.
-The VerilogEval replication, on the quartiles the paper used, is reported in
-Table~\ref{tab:veval} with the AST and CFG kernels recomputed with common-width feature
-vectors (the first run padded per graph and truncated in the zip, which the v1.1.0 CFG probe
-found; those columns are not comparable to it).
-
-\begin{table}[t]
-\caption{Gate-Breaker metrics on the VerilogEval quartiles (one run, K=10, 4 workers, 180\,s
-per call, 7,440\,s wall clock, 740 calls; deltas vs the paper's O3-Mini in the text).}
-\label{tab:veval}
-\centering
-\footnotesize
-\begin{tabular}{@{}lrrrrrr@{}}
-\toprule
-Quartile ($n$) & SR & S@1 & S@5 & S@10 & AST & CFG \\
-\midrule
-Q1 (36) & 0.903 & 0.944 & 1.000 & 1.000 & 0.894 & 0.942 \\
-Q2 (37) & 0.778 & 0.811 & 1.000 & 1.000 & 0.761 & 0.890 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-This replication ran Q1 and Q2 only; the Loki-only results for Q3 and Q4 on the same designs are in
-Section~\ref{sec:quartiles}. Seventy-four of the 78 Q1+Q2 designs are usable (three excluded because their synthesized
-netlists fail the official testbench self-check, one because its 241\,KB prompt exceeds the
-OS argument limit); every scored design is solved by attempt 5. The deltas against the
-paper's O3-Mini: Q1 success rate -0.092, AST -0.030, CFG -0.011; Q2 success rate -0.039,
-Success@5 +0.125, Success@10 +0.111, AST -0.164, CFG +0.083. The Q1 gap is harness
-no-output, not wrong RTL; the Q2 AST gap is truth-table and case references against the
-model's boolean expressions. Two caveats: the host's only model path routes through a
-gateway that aliases a DeepSeek backend as Claude Opus (so the model column is not
-verifiably the paper's comparison class), and the CLI exposes none of the paper's sampling
-flags ($T{=}0.85$, $p{=}0.95$). The CFG column uses the common-width node kernel (the
-odin3 CFG probe); the AST column uses the paper's pyverilog Algorithm~2 of Gate-Breaker.
-
-What the two lines of work measure is complementary. The language model recovers functional
-behaviour from the gates and names nothing reliably; Loki recovers the structures the flow
-preserved (hard blocks, the hierarchy, the signal roles its features see) and proves what it
-claims. The Gate-Breaker future work -- bus naming, datapath/control classification,
-partitioning -- is exactly L2's table, and its numbers are the baseline a model-assisted
-Loki would have to beat.
-
 \subsection{The VerilogEval benchmark and its structure}
 \label{sec:bench}
 
@@ -1055,9 +1008,21 @@ ground-truth buses. The answer key itself is complete at this floor: all 50,047 
 row, a cmos6 cell type and an HDL span. F3 is \verdict{DISMISSED}; it is the reason for the next
 experiment.
 
+\emph{The similarity probe on f3.} Gate-Breaker's AST and CFG similarity (Section~\ref{sec:background})
+are the measures on which a recovered text is compared with the reference RTL. With the f3 calibration
+L1-stop is byte-identical to L0-stop, so both measures have a delta of exactly 0.0000 in every quartile.
+Uncalibrated, L1 commits 1,535 hypotheses in 11 of the 15 designs and moves the means by +0.0111 (AST) and
+$-0.0075$ (CFG) with mixed signs per quartile; the commits are mostly wrong \code{eq\_const} and bus pieces,
+so this is not evidence about recovery quality. A flatten control (Odin~III \code{proc; flatten}, which also
+lowers the committed processes) inlines the committed hierarchy and raises both measures over the gate
+netlist: AST by +0.0533 over all 15 designs (0.4576 against 0.4044) and CFG by +0.0559 over the 12 designs the
+probe can score (0.6941 against 0.6382). Algorithms~2 and~3 of Gate-Breaker read one module, so a recovery
+that produces hierarchy is penalised until it is flattened: a limit of the measure and not a property of the
+recovery. The per-kind table and the per-quartile table are in Appendix~\ref{app:f3}.
+
 \input{gen/tab-r2-l1}
 
-\emph{Hypothesis L1 of round 2: the f3 failure is the detectors' vocabulary and not missing information.} The L1 detectors read LUT covers,
+\emph{Hypothesis R2-L1 (round 2): the f3 failure is the detectors' vocabulary and not missing information.} The L1 detectors read LUT covers,
 and the f3 netlist is a cmos6 gate netlist. The hypothesis predicts that re-mapping the same gates into LUT6 recovers
 close to the f2 rate. We read each f3 \code{netlist.blif} into Odin~III, run
 \code{abc --lut 6}, and give the result to \code{loki re} as an f2 netlist. Odin~III drops
@@ -1083,24 +1048,28 @@ level it would recover to is itself low.
 \hev{Verdicts.} L1h \verdict{USEFUL}: hard adders 67 of 67 (precision 0.985) and hard multipliers 30 of 30,
 because the synthesis flow itself reverse engineered them. L1c \verdict{USEFUL}: ECE 0.217 calibrated against
 0.650 uncalibrated. L1s \verdict{INCONCLUSIVE}: the recovery is weak (macro-F1 0.354 on f1, 0.108 on f2) but no
-threshold or baseline was set, so we do not call it a failure. The LUT6 re-map (round-2 hypothesis L1) is
+threshold or baseline was set, so we do not call it a failure. The LUT6 re-map (round-2 hypothesis R2-L1) is
 \verdict{INCONCLUSIVE}: it reaches the f2 level in-sample but the held-out split has too few matches to decide.
 
-\subsection{L2: clusters that carry the hierarchy, and a GNN that beats 1-WL (L2a, L2b)}
+\subsection{L2: clusters that miss the hierarchy, and a GNN that beats 1-WL (L2a, L2m, L2b)}
 \label{sec:l2-results}
 
 \hev{Hypotheses.} L2a: community methods find the designer's hierarchy and centroid methods do
-not. L2b: a GNN with node, graphlet, WL and NPN features beats the 1-WL baseline.
+not. L2b: a GNN with node, graphlet, WL and NPN features beats the 1-WL baseline. L2m is a
+measurement, not a hypothesis: the modularity of the four clusterings.
 
 \hev{Experiment.} Four clusterings of the 68 micro designs are scored against the known module
 hierarchy; the GNN is trained on the labelled training designs and scored on 13 test designs
 (3,932 test nodes), once.
 
 \hev{Result.} 
-Table~\ref{tab:l2} scores the four clusterings against the known module hierarchy. Louvain
-leads (modularity 0.4220, NMI 0.1360); k-means and affinity propagation do not find the
-hierarchy (negative modularity), which is itself a result: graph structure alone, without
-the labels, favours the community methods. 271 of 272 partition records are identical
+Table~\ref{tab:l2} scores the four clusterings against the known module hierarchy. The measure
+of the hierarchy is NMI against the module path of each cell, and it ranks the methods in the
+order opposite to the hypothesis: k-means 0.3220, affinity propagation 0.2708, spectral 0.1378,
+Louvain 0.1360. Modularity (L2m) is another matter: Louvain 0.4220 and spectral 0.3620 are
+well above zero and k-means ($-0.2912$) and affinity propagation ($-0.2264$) are negative, but modularity
+scores how dense the clusters are in the graph, not how well they match the designer's modules,
+so it is not a hierarchy measure and does not rescue L2a. 271 of 272 partition records are identical
 between base and renamed floors; the one difference exposed a determinism defect in the
 spectral path (repeated runs on the same base design give modularities -0.0079, -0.0410 and
 0.0252), reported as an open issue rather than hidden.
@@ -1114,7 +1083,7 @@ recovery, not the message passing alone.
 
 \begin{table}[t]
 \caption{L2 clustering against the known module hierarchy (68 designs, mean over the
-renamed floors, identical to base). Modularity and NMI(module\_path) per method.}
+renamed floors, identical to base). Modularity (L2m) and NMI(module\_path), the hierarchy measure (L2a), per method.}
 \label{tab:l2}
 \centering
 \footnotesize
@@ -1130,26 +1099,28 @@ k-means & -0.2912 & 0.3220 \\
 \end{tabular}
 \end{table}
 
-\hev{Verdicts.} L2a \verdict{USEFUL}: Louvain modularity 0.4220 and NMI 0.1360, while k-means and affinity
-propagation have negative modularity (a clear gap, with no test). L2b \verdict{POSSIBLY GOOD}: macro-F1 0.4241
+\hev{Verdicts.} L2a \verdict{DISMISSED}: the only hierarchy measure, NMI against the module path, ranks the
+centroid methods above the community methods (k-means 0.3220 against Louvain 0.1360), the reverse of the
+hypothesis. L2m \verdict{MEASUREMENT}: Louvain has the highest modularity (0.4220), a statement about graph
+density and not about the hierarchy. L2b \verdict{POSSIBLY GOOD}: macro-F1 0.4241
 against 0.2717 for 1-WL, but it is one run on one split of 13 designs with no interval, and the node-only GNN
 loses to 1-WL (0.2413 against 0.2711); the claim is that the features carry the recovery, not that the
 GNN generalises.
 
-\subsection{An instrument that sees recovery, and where the language model stands (L7, RQ-L2)}
+\subsection{An instrument that sees recovery, and where the language model stands (R2-L7, R2-L2)}
 \label{sec:round2}
 
-\hev{Hypotheses.} L7: a word-level operator F1 separates runs that AST and CFG similarity tie on.
-RQ-L2: Loki's AST and CFG similarity is below the language model's on Q1 and Q2, does not stay flat
+\hev{Hypotheses.} R2-L7: a word-level operator F1 separates runs that AST and CFG similarity tie on.
+R2-L2: Loki's AST and CFG similarity is below the language model's on Q1 and Q2, does not stay flat
 from Q1 to Q4, and Loki's output is formally equal to its input.
 
 \hev{Experiment.} Round 2 is compute-only: no language-model call was made, and the
 language-model figures are the round-1 Gate-Breaker replication, read again. Every number in this
-subsection is a macro generated from the summary tables of \code{experiments/round2}. L7 rescored every run set with the operator type-F1
-(Section~\ref{sec:newinstruments}); RQ-L2 ran \code{loki re} on all 150 VerilogEval netlists and
+subsection is a macro generated from the summary tables of \code{experiments/round2}. R2-L7 rescored every run set with the operator type-F1
+(Section~\ref{sec:newinstruments}); R2-L2 ran \code{loki re} on all 150 VerilogEval netlists and
 scored the output Verilog against the reference.
 
-\hev{Result.} \emph{L7: are AST and CFG blind to what Loki recovers?} Table~\ref{tab:r2-l7} rescores every run set. The floors separate cleanly, which neither
+\hev{Result.} \emph{R2-L7: are AST and CFG blind to what Loki recovers?} Table~\ref{tab:r2-l7} rescores every run set. The floors separate cleanly, which neither
 AST nor CFG can show because both exist only on f3: type-F1 \rtLsevenTypeFonek{} on f1 (the
 hard detector), \rtLsevenTypeFtwo{} on f2 and \rtLsevenTypeFthree{} on the f3 gates. On the
 f3 test designs (Table~\ref{tab:r2-ties}) the calibrated and uncalibrated L1 runs tie on both
@@ -1168,7 +1139,7 @@ they see only form.
 \input{gen/tab-r2-l7}
 \input{gen/tab-r2-ties}
 
-\emph{RQ-L2: Loki against the language model on the same designs.} Round 1 scored the
+\emph{R2-L2: Loki against the language model on the same designs.} Round 1 scored the
 language model on Q1 and Q2 of VerilogEval, and Loki's AST and CFG only on micro designs. We
 ran \code{loki re} on all \rtLtwoDesigns{} VerilogEval netlists at f2 and f3, calibrated (a calibration
 fitted on the \rtLtwoTrainDesigns{} train designs of VerilogEval itself) and not, and scored the output Verilog
@@ -1201,7 +1172,7 @@ the output matches the reference RTL: that netlist itself passes the official te
 \rtLtwoSelfOk{} of the \rtLtwoDesigns{} designs (the round-1 self-check; inferred latches and asynchronous
 resets are the failures), so Loki's output is exactly as correct as its input, no more. The
 model is checked against the testbench directly, but only its correct samples enter the
-similarity columns. On operator recovery (RQ-L7) the model is far ahead: on the common Q1 and
+similarity columns. On operator recovery the model is far ahead: on the common Q1 and
 Q2 designs its operator type-F1 is \rtLtwoOpsLlm{} (functionally correct samples elaborated with
 the same Odin~III front as the key) against \rtLtwoOpsLokiCal{} for Loki's calibrated f2 run and
 \rtLtwoOpsLokiNone{} uncalibrated (the calibrated f3 run recovers no operator, 0.0, so the
@@ -1216,10 +1187,10 @@ not run.
 \input{gen/tab-r2-l2}
 \input{gen/tab-r2-l2q}
 
-\hev{Verdicts.} L7 \verdict{POSSIBLY GOOD}: the rule supports it, but the margins are small on few pairs (tie
+\hev{Verdicts.} R2-L7 \verdict{POSSIBLY GOOD}: the rule supports it, but the margins are small on few pairs (tie
 pair $\Delta$F1 0.0173; the flatten control moves AST by 0.0422 and leaves the operator F1 unchanged), and the
 calibrated flow recovers no operator at all, so we use the operator F1 only as an added instrument beside AST and CFG
-and not as proof of an innovation. RQ-L2 \verdict{INCONCLUSIVE}: Loki is below the model on Q1 and Q2 (AST
+and not as proof of an innovation. R2-L2 \verdict{INCONCLUSIVE}: Loki is below the model on Q1 and Q2 (AST
 0.763 and 0.460 against 0.894 and 0.761) and its output is equal to its input in 150 of 150 runs, but the AST falls
 from Q1 to Q4, which may partly reflect which references parse, so the data position the two tools (the model readable
 and unverified, Loki verified and partial) without deciding between them.
@@ -1642,12 +1613,17 @@ compared at the two netlist snapshots, the gates after \code{lower} (S7) and the
 ground truth is the round-5 derivation on the word cells of S6 with the span-subset footprint rule
 of L0 applied to construct keys. The gate footprints (many gates share a construct set) and the
 LUT footprints are not like for like, and the S7 and S8 ground truths differ in size for some kinds
-(Table~\ref{tab:r6-detect}); recall at the two snapshots is compared through rule~4 only. The table
+(Table~\ref{tab:r6-detect}). For the mux word the ground truth is 174 instances at S7 and 166 at S8, because
+the footprints are rebuilt from each snapshot's name map, so the two recalls are not fractions of the same set
+of instances; recall at the two snapshots is compared through rule~4 only. The table
 uses the paired designs (a run at both snapshots; three designs drop out: one mux design
 (\code{ve\_Prob021\_mux256to1v}, killed at S7 by the 6 GB slice cap) in all arms and two micro
 \code{WB} runs at S7 that timed out). Under rule~4 the mux word is the only kind that is found at S7
-and lost at S8 (\code{fooled by abc} in all three arms; WB: recall 0.55 to 0.07 on 174 instances).
-That is a statement about this one kind: comparator, \code{eq\_const}, counter, adder, subtractor
+and lost at S8 (\code{fooled by abc} in all three arms; WB: recall 0.55 to 0.07 on 174 instances at S7 and 166 at S8).
+The related kind \code{mux\_bit} falls from 0.201 to 0.012 (35 of 174 to 2 of 166) in arms B and WB, and rule~4
+marks it \code{not fooled}: the rule calls a detector fooled only when recall falls by 0.20 or more, and the fall
+is 0.189, just under that line (arm W finds none at either snapshot). The label \code{not fooled} here is
+therefore a statement about the cut-off, not about robustness. The mux word statement stands for the mux word only: comparator, \code{eq\_const}, counter, adder, subtractor
 and \code{mux\_tree} are at 0.00 to 0.04 at S7, a floor at which a pass cannot fool a detector, so
 ``not fooled'' there means ``nothing to lose'', not ``robust''. FSM (WB: 0.17 to 0.67 on 24
 instances) and counter (0.00 to 0.39 on 18) are found more often at S8 than S7, and nothing else
@@ -1661,39 +1637,145 @@ ood split, a VPR flow, the instance axis across several instances of one module 
 by construct, so two instances of one module are one unit), and the word level, which the map does
 not observe.
 
-\hev{Verdicts.} L15d \verdict{USEFUL}, for one kind: the mux word is found at the gate snapshot and lost after \code{abc} in
-all three arms (WB: recall 0.55 to 0.07 on 174 instances); for the other kinds the recall is already at a floor, and FSM (24
-instances) and counter (18) are too few to say more. L15a \verdict{POSSIBLY GOOD}: under the random-set null the register,
+\hev{Verdicts.} L15d \verdict{POSSIBLY GOOD}, for one kind: the mux word is found at the gate snapshot and lost after \code{abc} in
+all three arms (WB: recall 0.55 to 0.07), but the ground truth has 174 instances at S7 and 166 at S8 and the gate and LUT
+footprints are not like for like, so the comparison is not like for like; \code{mux\_bit} falls by 0.189 and is read as not
+fooled by a margin of 0.011; for the other kinds the recall is already at a floor, and FSM (24 instances) and counter (18)
+are too few to say more. L15a \verdict{POSSIBLY GOOD}: under the random-set null the register,
 compare, mux and arithmetic kinds are each lost at one dominant pass (\code{opt} 320 of 580 losses, \code{abc} 166), but under the
 persistence null that placement is what a chance merging of the same objects also gives; the paper keeps only the descriptive
 statement (a compare is no longer a separable unit after the first \code{opt}, 18 of 19). L15c \verdict{INCONCLUSIVE}: the D14
 labels explain \rsxExplainedShare{} of the merged losses, the middle class of the rule.
 
-\subsection{What is recoverable in principle, and a synthetic test bed (H14a, H12a)}
+\subsection{What is recoverable in principle (H14a)}
 \label{sec:round4}
 
-\hev{Hypotheses.} H14a: the synthesis flow destroys style information, so that the pooled style-recovery ceiling at f3 is
-at most 0.60 (at least 40\% of style variants are indistinguishable). H12a: a seeded corpus of synthetic idiom designs builds on every floor.
+\hev{Hypothesis.} H14a: the synthesis flow destroys style information, so that the pooled style-recovery ceiling at f3 is
+at most 0.60 (at least 40\% of style variants are indistinguishable).
 
-\hev{Experiment.} The ceiling is measured on a twin set (the same design in every coding style) at f1-k6, f2 and f3. For each twin base design, with $S$ styles and $C$ distinct netlist classes at the floor, the style-recovery ceiling is $C/S$, the accuracy of the best possible guesser of the coding style from the netlist under a uniform prior (a Weisfeiler-Lehman class, confirmed by exact isomorphism where the netlist is small).
-The corpus generator has twelve idiom families, each parameterised by width, depth, encoding, reset and enable style and coding
-style, giving \rfsCorpusTotal{} designs split by parameter region: train values only (840), the same region with unseen text
-(120, iid), and at least one test-only value, such as an unseen width or coding style (240, ood). Odin~III builds each on f1-k6,
-f2 and f3 and the three equivalence checks are run. % experiments/round4/EXPERIMENT.md
+\hev{Experiment.} The ceiling is measured on a twin set (the same design in every coding style) at f1-k6, f2 and f3. For each
+twin base design, with $S$ styles and $C$ distinct netlist classes at the floor, the style-recovery ceiling is $C/S$, the accuracy
+of the best possible guesser of the coding style from the netlist under a uniform prior (a Weisfeiler-Lehman class, confirmed by
+exact isomorphism where the netlist is small). % experiments/round4/EXPERIMENT.md
 
 \hev{Result.} The style-recovery ceiling is \rfsCeilOne{} at f1-k6, \rfsCeilTwo{} at f2 and \rfsCeilThree{} at f3
-(Table~\ref{tab:r4-ident}). \rfsCorpusOk{} of \rfsCorpusTotal{} corpus designs pass every equivalence check on all three floors
-(Table~\ref{tab:r4-corpus}). The corpus is a test bed and not a source of a lookup table: a signature dictionary mined from it
-wins on none of the seven eligible kinds on real designs (\rfsTwelveBVzeroNumbers), and a GNN trained on more corpus designs does
-not improve on real ones (slope \rfsGnnSlope{} per doubling, 95\% interval [\rfsGnnCiLo, \rfsGnnCiHi]); both are DISMISSED
-(H12b, H12c).
+(Table~\ref{tab:r4-ident}).
 
-\input{gen/tab-r4-corpus}
 \input{gen/tab-r4-ident}
 
-\hev{Verdicts.} H14a \verdict{USEFUL}: the ceiling is 0.5000 at f3, so what any recovery can do is limited by what the
-flow destroyed, whatever the detector. H12a \verdict{USEFUL}: the corpus builds (1200 of 1200); this is a validity check of the
-test bed and says nothing about transfer.
+\hev{Verdict.} H14a \verdict{USEFUL}: the ceiling is 0.5000 at f3, so what any recovery can do is limited by what the
+flow destroyed, whatever the detector.
+
+\subsection{A synthetic test bed: the idiom corpus (H12a)}
+\label{sec:corpus}
+
+\hev{Hypothesis.} H12a: a seeded corpus of synthetic idiom designs builds on every floor (at least 0.95 of the
+designs pass every equivalence check on every floor).
+
+\hev{Experiment.} The corpus generator has twelve idiom families, each parameterised by width, depth, encoding, reset and enable
+style and coding style, giving \rfsCorpusTotal{} designs split by parameter region: train values only (840), the same region with
+unseen text (120, iid), and at least one test-only value, such as an unseen width or coding style (240, ood). Odin~III builds each
+on f1-k6, f2 and f3 and the three equivalence checks are run. % experiments/round4/EXPERIMENT.md
+
+\hev{Result.} \rfsCorpusOk{} of \rfsCorpusTotal{} corpus designs pass every equivalence check on all three floors
+(Table~\ref{tab:r4-corpus}); the smallest family has 100 designs. The corpus is a test bed and not a source of a lookup table: a
+signature dictionary mined from it wins on none of the seven eligible kinds on real designs (\rfsTwelveBVzeroNumbers), and a GNN
+trained on more corpus designs does not improve on real ones (slope \rfsGnnSlope{} per doubling, 95\% interval
+[\rfsGnnCiLo, \rfsGnnCiHi]); both are DISMISSED (H12b, H12c).
+
+\input{gen/tab-r4-corpus}
+
+\hev{Verdict.} H12a \verdict{USEFUL}: the corpus builds (1200 of 1200). This is a validity check of the test bed and says
+nothing about transfer.
+
+\subsection{Repetition in big designs (H13a, H13b, H13c)}
+\label{sec:repeat}
+
+\hev{Hypotheses.} H13a: big designs are mostly repeated structure (at least 0.50 of their words lie in a repeat group). H13b:
+big designs repeat more than small ones (by at least 0.15). H13c: the repeated instances share the dictionary signature (at
+least 0.70 of the repeat groups).
+
+\hev{Experiment.} A word is a group of cells that act as one multi-bit signal; a repeat group is a set of at least two words
+of the same type and width whose cells induce the same subgraph (a Weisfeiler-Lehman hash of radius 2 over the cell types).
+The share of repeated structure is the share of the words with at least two cells and width at least two that lie in a repeat
+group. It is measured on the large designs of the VTR suite that Odin~III builds at f3 (six designs: \code{blob\_merge},
+\code{sha} and \code{stereovision0} to \code{stereovision3}; Table~\ref{tab:r4-big}) and, for H13b, on the small designs
+(the micro designs, the VerilogEval references and the training part of the corpus). For H13c the repeat groups of the big
+designs are checked at f2, where cells absorb their neighbours and the signatures can differ: the share of groups whose members
+have identical multisets of dictionary signatures. % experiments/round4/EXPERIMENT.md, l13_big.csv, x13_h13c.csv
+
+\hev{Result.} H13a: 6{,}653 of 7{,}167 words of the big designs lie in repeat groups, a share of 0.9283 (Table~\ref{tab:r4-big}
+gives each design: from 0.744 for \code{blob\_merge} to 0.982 for \code{stereovision2}). H13c: of 911 repeat groups,
+0.8606 have identical signature multisets. H13b: the big share is 0.2404 above the small share (0.9283 against 0.6879), above
+the 0.15 margin, but the result does not survive a change of the small baseline: against the micro designs and the
+VerilogEval references the difference is $+0.053$ (inconclusive by the rule), and against the VerilogEval references alone it is
+$+0.009$ (not supported).
+
+\input{gen/tab-r4-big}
+
+\hev{Verdicts.} H13a \verdict{USEFUL}: 0.9283 against the threshold 0.50, in all six designs (the smallest share is 0.744).
+H13c \verdict{USEFUL}: 0.8606 against the threshold 0.70. H13b \verdict{POSSIBLY GOOD}: it holds against the pooled small
+baseline that the rule fixed and flips with the choice of baseline, so it is stated only with that fragility and is not used as
+evidence on its own.
+
+\subsection{The language-model baseline: the Gate-Breaker replication (GB1, GB2)}
+\label{sec:gb-results}
+
+\hev{Measurement.} GB1 and GB2 are measurements, not hypotheses: they give the baseline that the
+language-model rows of this section (R2-L2, LLM1, LLM2) compare against. Gate-Breaker's metrics compare a
+recovered RTL against a reference: Success Rate, Success@$k$, AST similarity and CFG similarity
+(Section~\ref{sec:background}). Loki recovers structure, not a new RTL text, so the direct comparison is
+the replication: the Gate-Breaker harness itself, run with the only language model available on the host.
+
+\hev{Experiment.} GB1 runs the harness on the simple benchmarks of the fallback micro set. GB2 runs it on
+the VerilogEval quartiles the original paper used (Table~\ref{tab:veval}): one run, $K=10$, four workers,
+180\,s per call, 740 calls. The AST and CFG kernels are recomputed with common-width feature vectors (the
+first run padded per graph and truncated in the zip, which the v1.1.0 CFG probe found; those columns are not
+comparable to it).
+
+\hev{Result.} GB1: success rate 0.933 on Q1 and 0.829 on Q2, Success@10 1.000 in both quartiles, AST
+similarity 0.576 and 0.444, CFG similarity 1.000 and 0.736, with 169 of 174 extracted candidates functionally
+correct; this is a first replication on the fallback micro set, not the original paper's VerilogEval set.
+GB2 is in Table~\ref{tab:veval}.
+
+\begin{table}[t]
+\caption{Gate-Breaker metrics on the VerilogEval quartiles (one run, K=10, 4 workers, 180\,s
+per call, 7,440\,s wall clock, 740 calls; deltas vs the paper's O3-Mini in the text).}
+\label{tab:veval}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Quartile ($n$) & SR & S@1 & S@5 & S@10 & AST & CFG \\
+\midrule
+Q1 (36) & 0.903 & 0.944 & 1.000 & 1.000 & 0.894 & 0.942 \\
+Q2 (37) & 0.778 & 0.811 & 1.000 & 1.000 & 0.761 & 0.890 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+This replication ran Q1 and Q2 only; the Loki-only results for Q3 and Q4 on the same designs are in
+Section~\ref{sec:quartiles}. Seventy-four of the 78 Q1+Q2 designs are usable (three excluded because their synthesized
+netlists fail the official testbench self-check, one because its 241\,KB prompt exceeds the
+OS argument limit); every scored design is solved by attempt 5. The deltas against the
+paper's O3-Mini: Q1 success rate -0.092, AST -0.030, CFG -0.011; Q2 success rate -0.039,
+Success@5 +0.125, Success@10 +0.111, AST -0.164, CFG +0.083. The Q1 gap is harness
+no-output, not wrong RTL; the Q2 AST gap is truth-table and case references against the
+model's boolean expressions. Two caveats: the host's only model path routes through a
+gateway that aliases a DeepSeek backend as Claude Opus (so the model column is not
+verifiably the paper's comparison class), and the CLI exposes none of the paper's sampling
+flags ($T{=}0.85$, $p{=}0.95$). The CFG column uses the common-width node kernel (the
+odin3 CFG probe); the AST column uses the paper's pyverilog Algorithm~2 of Gate-Breaker.
+
+\hev{Verdict.} GB1 and GB2 \verdict{MEASUREMENT}: they carry no verdict and are not counted.
+
+What the two lines of work measure is complementary. The language model recovers functional
+behaviour from the gates and names nothing reliably; Loki recovers the structures the flow
+preserved (hard blocks and the signal roles its features see) and proves what it
+claims. The Gate-Breaker future work -- bus naming, datapath/control classification,
+partitioning -- is exactly L2's table, and its numbers are the baseline a model-assisted
+Loki would have to beat.
 
 \subsection{Language model plus Loki's hints: a pilot (LLM1, LLM2)}
 \label{sec:llm-pilot}
@@ -1920,17 +2002,18 @@ columns are not compared on a common metric.
 \section{Discussion and limits}
 \label{sec:discussion}
 
-Four observations follow from the verdicts.
+Four observations follow from the verdicts, and then the candidate innovations.
 
 First, \emph{the answer depends on what the flow erased}. The structures that survived synthesis
 recover almost perfectly without any intelligence beyond reading the pass's own facts (L1h); the
 structures synthesis erased recover weakly (L1s) and, on the gate netlist, not at all (F3). Nothing in
 the experiments shows that the Bayesian machinery, as built, changes that: the evidence families add
-nothing over the per-detector priors (L4), and a LUT6 re-map reaches the second floor's level only
+nothing over the per-detector priors (R2-L4), and a LUT6 re-map reaches the second floor's level only
 in-sample.
 
-Second, \emph{the graph stage carries the clustering result, and the network result is possibly good}.
-Community methods find the designer's hierarchy and centroid methods do not (L2a, USEFUL). The GNN beats
+Second, \emph{the graph stage does not find the hierarchy, and the network result is possibly good}.
+No clustering of the netlist graph finds the designer's modules well: NMI against the module path is
+at most 0.3220 (k-means), and the community methods score lowest (L2a, DISMISSED). The GNN beats
 1-WL only when node, graphlet, WL and NPN features combine (L2b), and that is one run on one split.
 
 Third, \emph{the provenance answer key is the part that works}. It covers every gate node (L0b), the
@@ -1945,11 +2028,17 @@ similarity to the reference is high and whose operators it names, but nothing pr
 netlist; Loki's output is formally equal to its input in all runs and recovers few operators. The pilot
 (LLM1, LLM2) cannot say whether Loki's hints help.
 
+\emph{Candidate innovations.} Three ideas have only POSSIBLY GOOD support and stay out of the contributions.
+The graph network (L2b) needs several random splits with an interval over designs and a second benchmark
+suite. The operator-recovery F1 (R2-L7) needs a set with many more tie pairs and a flow that recovers
+operators, since the calibrated flow recovers none. The loss audit (L15a, L15d) needs equal-sized
+ground truths at the two netlist snapshots, so that the recalls are on the same instances, and a run on the
+big designs.
+
 \emph{Limits.} (i) The recovery stages use no language model; the pilot is a separate experiment with
 one draw per cell. (ii) Recovery is structural, not functional: the output is exactly as correct as its input
 netlist, which itself passes the official testbench in only some designs (inferred latches and asynchronous
-resets are the failures). (iii) Two of the supported rows are fragile or narrow and are POSSIBLY GOOD, not
-USEFUL (H9a, H13b, L15a, L2b, L7); round-1 claims (L0a to L2b) have a clear gap but no interval. (iv)
+resets are the failures). (iii) Six rows are POSSIBLY GOOD and not USEFUL because they are narrow or fragile (L2b, R2-L7, H9a, H13b, L15a, L15d); round-1 claims (L0a to L2b) have a clear gap but no interval. (iv)
 The word-first detector, the signature dictionary and the synthetic-corpus GNN did not transfer from
 synthetic to real designs. (v) Area, speed and power are not measured, and the benchmarks are small
 designs: equivalence and recovery were not run on the big VTR designs.
@@ -1975,15 +2064,17 @@ first step.
 \label{sec:conclusion}
 
 Loki~III asks how far netlist-to-RTL reverse engineering gets without a language model. We
-stated each claim as a hypothesis and gave it one experiment and one verdict. Ten hypotheses are USEFUL,
-five are POSSIBLY GOOD with their fragility stated, eleven are DISMISSED and sixteen are INCONCLUSIVE.
-The structures that synthesis already reverse engineered are recovered perfectly (hard adders 67 of 67,
-hard multipliers 30 of 30), the stated probabilities are calibrated (ECE 0.217), the clusters carry the
-designer's hierarchy, and the pipeline is naming-neutral over 105,646 renamed identifiers. The structures
-that synthesis erased recover weakly, and a word-first detector is not shown to beat a published method.
+stated each claim as a hypothesis and gave it one experiment and one verdict. Eight hypotheses are USEFUL,
+six are POSSIBLY GOOD with their fragility stated, twelve are DISMISSED and sixteen are INCONCLUSIVE.
+The structures that synthesis already reverse engineered are recovered (hard adders 67 of 67, with precision 0.985;
+hard multipliers 30 of 30), the stated probabilities are better calibrated though still far from exact
+(ECE 0.217 on the second floor, against 0.650 uncalibrated), and the pipeline is naming-neutral over 105,646 renamed
+identifiers. The structures that synthesis erased recover weakly, clustering does not find the designer's
+hierarchy, and a word-first detector is not shown to beat a published method.
 The part we would export to any future comparison, with or without a model, is the method: provenance-tracked,
-anonymised datasets with an answer key, plus the renamed-instance protocol. The pilot cannot say whether Loki's hints help a model; the
-loss audit says where in the flow some constructs are lost, not yet how to recover them.
+anonymised datasets with an answer key, plus the renamed-instance protocol. The graph network, the operator-recovery
+F1 and the loss audit are candidate innovations that await the experiments named in the Discussion. The pilot cannot say whether
+Loki's hints help a model; the loss audit says where in the flow some constructs are lost, not yet how to recover them.
 
 \appendices
 
@@ -1991,9 +2082,18 @@ loss audit says where in the flow some constructs are lost, not yet how to recov
 \label{app:log}
 
 This appendix lists every hypothesis, one row each, including the DISMISSED and INCONCLUSIVE ones
-(Tables~\ref{tab:register-1} to~\ref{tab:register-4}); the rows are generated from
+(Tables~\ref{tab:register-1} to~\ref{tab:register-5}); the rows are generated from
 \code{docs/paper/hypotheses.md}. A MEASUREMENT row has no hypothesis and no verdict. UNTESTED rows are
 the Future work.
+
+\emph{Sources.} Every row's numbers are in a committed file, named by the Round column: R1 in
+\code{experiments/rename-l2/EXPERIMENT.md}, \code{experiments/f3-recovery/EXPERIMENT.md} and
+\code{experiments/veval-l0/EXPERIMENT.md}; R2 to R6 in \code{experiments/round2} to \code{experiments/round6}
+(each has an \code{EXPERIMENT.md} and the CSV files); HAL in \code{experiments/hal} and \code{docs/results-hal.md};
+LLM in \code{experiments/llm-pilot/EXPERIMENT.md}; Q in \code{experiments/quartiles}. The exceptions are
+the success-rate and Success@$k$ columns of the Gate-Breaker replication (rows GB1 and GB2), which come from
+run directories of the controller machine that are not committed; the AST and CFG columns of GB2 are in
+\code{experiments/round2/l2\_headtohead.csv}.
 
 \emph{Order of the work.} Round 0 (2026-10-21 to 22) built L0 (provenance-labelled, anonymised datasets and
 the renamed-instance check), L1 (Bayesian hypotheses with calibration and proofs) and L2 (graph analysis).
@@ -2014,6 +2114,80 @@ built the word-first detector; round 5b (2026-10-26) compared it with DANA; the 
 tables (2026-10-27 to 28) put a model beside Loki; round 6 (2026-10-27) is the loss audit.
 
 \input{register}
+
+\section{The f3 experiment in detail}
+\label{app:f3}
+
+Hypothesis F3 (Section~\ref{sec:l1-results}): L1 recovers structure from Gate-Breaker's own gate input.
+Table~\ref{tab:f3-l1} gives the recovery per kind on the 15 f3 test designs, and Table~\ref{tab:f3-sim} gives
+the AST and CFG similarity per quartile of f3 node count.
+% experiments/f3-recovery/EXPERIMENT.md (the per-kind table and the diagnostic and flatten-control tables).
+
+\begin{table}[t]
+\caption{f3 L1 per kind on the 15 test designs. The calibrated columns are the protocol's
+setting; the \code{--calib none} columns are a diagnostic of what the detectors propose
+before calibration prunes it. A kind with no counted prediction has no F1 and is left out of
+the macro average.}
+\label{tab:f3-l1}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+ & & \multicolumn{3}{c}{calibrated} & \multicolumn{4}{c}{\code{--calib none}} \\
+Kind & GT & counted & matched & F1 & counted & matched & precision & F1 \\
+\midrule
+adder & 17 & 0 & 0 & -- & 1 & 1 & 1.000 & 0.111 \\
+adder\_cin & 17 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+comparator & 20 & 0 & 0 & -- & 14 & 0 & 0.000 & 0.000 \\
+eq\_const & 16 & 0 & 0 & -- & 1,141 & 0 & 0.000 & 0.000 \\
+ff\_srst & 2 & 0 & 0 & -- & 7 & 0 & 0.000 & 0.000 \\
+hard\_add & 17 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+hard\_mul & 11 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+mux & 7 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+mux\_bit & 7 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+register & 22 & 0 & 0 & -- & 3 & 1 & 0.333 & 0.080 \\
+subtractor & 8 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+\midrule
+macro-F1 & 144 & 0 & 0 & 0.000 & 1,166 & 2 & & 0.038 \\
+\midrule
+buses & 120 & 2,569 & 0 & 0.000 & 2,835 & 0 & 0.000 & 0.000 \\
+datapath role & 20,541 & 20,541 & 20,541 & 1.000 & 20,541 & 20,541 & 1.000 & 1.000 \\
+control role & 0 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[t]
+\caption{f3 AST (Gate-Breaker Algorithm~2, depth 3, pyverilog) and CFG (Algorithm~3, odin3 probe)
+similarity against the micro reference RTL, L0-stop (gate netlist) against L1-stop
+(\code{design.v}); quartiles by f3 node count. With the f3 calibration L1-stop equals
+L0-stop, so every delta is 0.0000; the table therefore shows the L0 values and the diagnostic
+(\code{--calib none}) deltas.}
+\label{tab:f3-sim}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Quartile & AST L0 & AST L1 & $\Delta$AST & CFG L0 & CFG L1 & $\Delta$CFG \\
+\midrule
+0 (4 designs) & 0.4428 & 0.4428 & 0.0000 & 0.7909 & 0.7909 & 0.0000 \\
+1 (4) & 0.3765 & 0.3765 & 0.0000 & 0.4224 & 0.4224 & 0.0000 \\
+2 (4) & 0.3969 & 0.3969 & 0.0000 & 0.7013 & 0.7013 & 0.0000 \\
+3 (3 AST / 1 CFG) & 0.4003 & 0.4003 & 0.0000 & 0.7507 & 0.7507 & 0.0000 \\
+\midrule
+mean (15 / 13) & 0.4044 & 0.4044 & 0.0000 & 0.6468 & 0.6468 & 0.0000 \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{diagnostic \code{--calib none} (L1 commits hierarchy)}} \\
+0 (4) & 0.4428 & 0.4277 & $-0.0151$ & 0.7909 & 0.7776 & $-0.0133$ \\
+1 (4) & 0.3765 & 0.3756 & $-0.0009$ & 0.4224 & 0.4099 & $-0.0124$ \\
+2 (4) & 0.3969 & 0.4542 & $+0.0573$ & 0.7013 & 0.7014 & $+0.0001$ \\
+3 (3 AST / 1 CFG) & 0.4003 & 0.4007 & $+0.0004$ & 0.7507 & 0.7561 & $+0.0055$ \\
+mean & 0.4044 & 0.4155 & $+0.0111$ & 0.6468 & 0.6394 & $-0.0075$ \\
+\bottomrule
+\end{tabular}}
+\end{table}
 
 \bibliographystyle{IEEEtran}
 \bibliography{joined}
