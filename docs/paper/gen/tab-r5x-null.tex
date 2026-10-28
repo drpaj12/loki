@@ -1,0 +1,19 @@
+\begin{table}[t]
+\caption{Round 5, additional analysis: tiling on VT and its random null by candidate subset. Candidates of at least ten cells and the largest candidate drive the null; the same \code{ff\_en} candidates give a null of a few percent for R2N and 0.19 for WB.}
+\label{tab:r5x-null}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+Arm & Subset & Candidates & $\ge$10 cells & Max cells & q & q null \\
+\midrule
+R2N & all & 1453 & 20 & 64 & 0.022 & 0.203 \\
+R2N & ff\_en & 732 & 0 & 5 & 0.003 & 0.004 \\
+R2N & other & 721 & 20 & 64 & 0.022 & 0.018 \\
+WB & all & 1845 & 34 & 1016 & 0.023 & 0.203 \\
+WB & ff\_en & 867 & 1 & 11 & 0.003 & 0.192 \\
+WB & other & 978 & 33 & 1016 & 0.023 & 0.203 \\
+\bottomrule
+\end{tabular}}
+\end{table}

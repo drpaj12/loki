@@ -22,7 +22,7 @@ Every number traces to the experiment records:
 - `experiments/quartiles/` — per-quartile (Q1-Q4) tables for the LLM pilot (arms A, B, C, exact
   McNemar per quartile and stratified) and for the Loki-only results. `quartile-tables.tex` is
   generated: run `python3 experiments/quartiles/quartiles.py` (byte-identical on rerun).
-- The Gate-Breaker VerilogEval replication table (`tab:veval`) fills in as that run lands.
+- The Gate-Breaker VerilogEval replication table (`tab:veval`) is in Experiments (rows GB1, GB2 of the register).
 
 Tables marked `[TODO: ...]` are numbers not yet measured.
 - The suite tree (`IMAGE/fig_yggdrasil.tex`, with `IMAGE/odin3-tikz-styles.tex`) is a byte-identical copy of
@@ -30,3 +30,22 @@ Tables marked `[TODO: ...]` are numbers not yet measured.
   (run in `docs/paper`) writes `IMAGE/blind/fig_yggdrasil.tex`, the same figure with the suite and tool
   names, the three wells and the self-cited baseline replaced by placeholders, as the Odin III paper's
   `make_blind.py` does. No build uses it yet (there is no blind build of this paper).
+
+## Step 2 structure (2026-10-28)
+
+`loki.tex` is written as hypothesis, experiment, result, verdict (USEFUL, POSSIBLY GOOD, INCONCLUSIVE,
+DISMISSED). Support files, all in `docs/paper/`:
+
+- `hypotheses.md` (the register, one row per hypothesis), `innovations.md`, `outline.md`, `terms.md`.
+- `make_register.py` writes `register.tex` (the appendix research log) from `hypotheses.md`.
+- `make_glossary.py` writes `glossary.tex` and `terms.md` from one term list; `check_terms.py --tex loki.tex`
+  must report 0 use-before-definition findings.
+- `split_tables.py` splits the generated `round*-tables.tex` and `hal-tables.tex` into `gen/*-macros.tex`
+  (the number macros) and one `gen/tab-*.tex` per table, so the paper prints only the tables of the kept
+  hypotheses. Rerun it after the generated files change.
+- Bibliography: `luuthesis` (J. Luu, PhD thesis, University of Toronto, 2014) joins `jamiesonthesis`
+  (P. A. Jamieson, PhD thesis, University of Toronto, 2007) for the Glossary. The PDFs live only in
+  `work/mimir-papers/` and are never committed.
+- Build: `tectonic -X compile build/loki-local.tex -Z search-path=docs/paper` (the wrapper selects the OT1 font encoding).
+- Tests for `make_register.py`, `make_glossary.py` and `split_tables.py`: `tests/test_paper_tools.py` (determinism plus a small fixture each).
+- `gen/quartile-*`, `gen/tab-q-*`, `gen/tab-veval-*` (untracked) are leftovers of an earlier `split_tables.py` that also split `quartile-tables.tex` and `veval-tables.tex`; the paper inputs those two files directly and does not use them.

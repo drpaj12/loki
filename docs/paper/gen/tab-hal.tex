@@ -1,0 +1,19 @@
+\begin{table*}[t]
+\caption{Loki word-first detector (\code{W}) against HAL's DANA on MI and VT (E\_real), word recovery against the L0 ground truth; one scorer for both tools. $P_J$, $R_J$, $F_J$: Jaccard-0.5 matching; purity and completeness over flip-flops. The round-5 scorer row counts Loki as round 5 did (the scorer used for Loki in round 5). Loki WB has a run on fewer designs than the other arms (f3: 96 of 98 designs; listed in docs/results-hal.md), so its rows pool a different design set.}
+\label{tab:hal}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrrrrrrrrr@{}}
+\toprule
+ & \multicolumn{5}{c}{f2 (LUT6)} & \multicolumn{5}{c}{f3 (cmos6)} \\
+\cmidrule(lr){2-6}\cmidrule(lr){7-11}
+Arm & $P_J$ & $R_J$ & $F_J$ & pur. & compl. & $P_J$ & $R_J$ & $F_J$ & pur. & compl. \\
+\midrule
+Loki W & 0.160 & 0.179 & 0.169 & 0.907 & 0.063 & 0.557 & 0.142 & 0.226 & 0.952 & 0.850 \\
+Loki W, round-5 scorer & 0.119 & 0.142 & 0.129 & - & - & 0.149 & 0.042 & 0.065 & - & - \\
+Loki WB & 0.141 & 0.133 & 0.137 & 0.983 & 0.129 & 0.320 & 0.071 & 0.116 & 0.956 & 0.874 \\
+DANA, size 8 (headline) & 0.745 & 0.158 & 0.261 & 0.853 & 0.550 & 0.745 & 0.158 & 0.261 & 0.853 & 0.550 \\
+DANA, size 2 & 0.613 & 0.204 & 0.306 & 0.865 & 0.549 & 0.613 & 0.204 & 0.306 & 0.865 & 0.549 \\
+\bottomrule
+\end{tabular}
+\end{table*}

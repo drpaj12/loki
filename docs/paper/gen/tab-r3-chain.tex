@@ -1,0 +1,18 @@
+\begin{table}[t]
+\caption{RQ-L11, ground truth: feedback registers, constant-compare decoders on them, sinks (mux selects and enables) and chains, and the muxes with a select (enabled words) whose select (enable) is a chain sink.}
+\label{tab:r3-chain}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llrrrrrrrrrr@{}}
+\toprule
+dataset & floor & designs & with fb. & with chain & fb. reg. & fsm flag & decoders & sinks & chains & mux S chain/all & enable chain/all \\
+\midrule
+micro & f2 & 68 & 3 & 1 & 3 & 0 & 11 & 3 & 12 & 3/41 & 0/3 \\
+micro & f3 & 65 & 3 & 1 & 3 & 0 & 11 & 3 & 12 & 3/41 & 0/3 \\
+micro & f1-k6 & 68 & 3 & 1 & 3 & 0 & 11 & 3 & 12 & 3/41 & 0/3 \\
+veval & f2 & 150 & 55 & 12 & 197 & 16 & 41 & 30 & 89 & 15/43 & 15/152 \\
+veval & f3 & 150 & 55 & 12 & 197 & 16 & 41 & 30 & 89 & 15/43 & 15/152 \\
+\bottomrule
+\end{tabular}}
+\end{table}

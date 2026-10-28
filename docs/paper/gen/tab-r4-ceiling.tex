@@ -1,0 +1,24 @@
+\begin{table}[t]
+\caption{Ceiling statement (report only): per kind, the Bayes ceiling of a signature classifier (share of the kind's cells in signatures where the kind has share at least 0.5; in-sample, 6 leaves; radius 0 and 3), the style-recovery ceiling of the family that makes the kind, and the minimum of radius 3 and style.}
+\label{tab:r4-ceiling}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llcccccccc@{}}
+\toprule
+kind & family & B0 f2 & B3 f2 & style f2 & min f2 & B0 f3 & B3 f3 & style f3 & min f3 \\
+\midrule
+adder & adder & 0.72 & 0.94 & 0.67 & 0.67 & 0.35 & 0.95 & 0.67 & 0.67 \\
+comparator & comparator & 0.81 & 1.00 & 0.33 & 0.33 & 0.52 & 1.00 & 0.33 & 0.33 \\
+counter & counter & 0.58 & 1.00 & 0.33 & 0.33 & 0.08 & 0.99 & 0.33 & 0.33 \\
+eq\_const & comparator & 0.81 & 1.00 & 0.33 & 0.33 & 0.53 & 1.00 & 0.33 & 0.33 \\
+ff\_en & register & 0.87 & 1.00 & 0.33 & 0.33 & 0.43 & 1.00 & 0.33 & 0.33 \\
+ff\_srst & register & 0.83 & 1.00 & 0.33 & 0.33 & 0.30 & 0.99 & 0.33 & 0.33 \\
+fsm & fsm & 0.72 & 1.00 & 0.50 & 0.50 & 0.11 & 1.00 & 0.50 & 0.50 \\
+mux & mux & 0.83 & 1.00 & 0.56 & 0.56 & 0.47 & 1.00 & 0.67 & 0.67 \\
+mux\_tree & mux & 0.63 & 1.00 & 0.56 & 0.56 & 0.11 & 0.98 & 0.67 & 0.67 \\
+register & register & 0.90 & 1.00 & 0.33 & 0.33 & 0.55 & 1.00 & 0.33 & 0.33 \\
+subtractor & subtractor & 0.56 & 0.95 & 0.67 & 0.67 & 0.30 & 0.99 & 0.67 & 0.67 \\
+\bottomrule
+\end{tabular}}
+\end{table}

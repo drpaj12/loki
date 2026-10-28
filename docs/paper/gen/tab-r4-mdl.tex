@@ -1,0 +1,21 @@
+\begin{table}[t]
+\caption{MDL readability: description length of a candidate relative to the VerilogEval reference (median ratio) and the share of designs where the reference is strictly shorter.}
+\label{tab:r4-mdl}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+variant & designs & median ratio & ref shorter \\
+\midrule
+ref & 156 & 1.00 & 0.000 \\
+llm & 73 & 1.00 & 0.260 \\
+l0-f2 & 150 & 3.63 & 0.860 \\
+l0-f3 & 150 & 3.31 & 0.913 \\
+f2-none & 150 & 7.89 & 0.940 \\
+f3-none & 150 & 15.40 & 0.940 \\
+f2-calib & 150 & 4.24 & 0.867 \\
+f3-calib & 150 & 3.31 & 0.913 \\
+\bottomrule
+\end{tabular}}
+\end{table}

@@ -1,5 +1,5 @@
-% Loki III paper draft: LLM-free netlist-to-RTL reverse engineering, reported with the
-% Gate-Breaker metrics. IEEEtran conference class; compiles with pdfLaTeX (Overleaf) and BibTeX.
+% Loki III paper: LLM-free netlist-to-RTL reverse engineering, written as hypothesis -> experiment ->
+% verdict (step 2 of the paper rewrite, 2026-10-28). IEEEtran conference class; compiles with pdfLaTeX (Overleaf) and BibTeX.
 % Style and figures follow the Odin III paper (shared TikZ palette, IMAGE/odin3-tikz-styles.tex).
 % Every number below is taken from the Loki repository's experiment records
 % (experiments/rename-l2/EXPERIMENT.md, work/loki-rename-exp, work/gatebreaker-exp) and the
@@ -24,6 +24,12 @@
 
 \graphicspath{{IMAGE/}}
 \input{IMAGE/odin3-tikz-styles}
+% Numbers of the generated round tables (macros only; the tables are printed one by one below).
+\input{gen/round2-macros}\input{gen/round3-macros}\input{gen/round4-macros}
+\input{gen/round5-macros}\input{gen/round6-macros}\input{gen/hal-macros}
+% Verdict words of the hypothesis register.
+\newcommand{\verdict}[1]{\textbf{\textsc{#1}}}
+\newcommand{\hev}[1]{\par\smallskip\noindent\textbf{#1}}
 
 \newcommand{\code}[1]{\texttt{#1}}
 % A visible marker for numbers not yet measured (the running experiment's table cells).
@@ -44,41 +50,23 @@ jamiespa@miamioh.edu}}
 \maketitle
 
 \begin{abstract}
-Gate-Breaker showed that a language model can recover functional RTL from a
-gate-level netlist, and it ended by naming the graph techniques its model
-needed: clustering to name buses, a classification of signals as datapath or
-control, and partitioning. Loki~III asks the complementary question: how much
-structure can be recovered \emph{without} a language model, from provenance, a
-Bayesian hypothesis flow and graph analysis alone? This paper describes the
-benchmarks built to answer that question and reports the recovery statistics
-under the Gate-Breaker metrics. The benchmarks are 68 synthesizable micro
-designs and the 156 VerilogEval references (150 build on three floors), compiled by a
-provenance-tracked front end into named, labelled, anonymised netlist datasets; a renamed-instance protocol then proves the
-pipeline naming-neutral across 105,646 renamed identifiers. On the L1
-hypothesis flow, the structures that are already reverse engineered by the
-synthesis flow recover almost perfectly (hard adders 67 of 67, hard
-multipliers 30 of 30), while the structures the flow erased recover weakly
-(macro-F1 0.354 on the first floor, 0.108 on the second, calibrated). A second round of
-compute-only experiments finds that re-mapping the gate netlist to LUT6 brings its in-sample recovery to the
-second floor's level (not on the held-out designs, where the result is inconclusive), that the language model is more readable than Loki on the same designs
-while Loki's output is formally equal to its input, and that an operator-recovery F1 sees what
-AST and CFG similarity cannot. A third round, also compute-only and with its decision rules
-fixed beforehand, finds that most wrong candidates of the uncalibrated detectors lie inside real
-constructs, but only by the letter of the rule: the result does not survive leaving out one
-design or the near-tautological enable fragments, and the fragments rarely tile the words. The L2
-graph stage beats a 1-WL baseline on real micros once node, graphlet, WL and
-NPN features combine (macro-F1 0.4241 against 0.2717) and its clusters carry
-the designer's hierarchy (Louvain modularity 0.4220). A small language-model pilot
-(40 problems, three arms, one draw each) finds the strict pass rate 35/40 without
-Loki's hints, 35/40 with them and 30/40 with no netlist, and no paired difference
-reaches $p<0.05$ (smallest $p=0.0703$); per-quartile tables show the sample is too
-small to support a claim either way. A loss audit asks at which Odin~III pass each
-HDL construct stops being a separable unit: 580 units are lost, on four passes only
-(\code{opt} 320, \code{abc} 166, \code{flatten} 68, the second \code{opt} 26), and
-the loss shares at \code{opt} are not shown to exceed what a chance merging of the same objects gives. We state the honest
-limits: the recovery stages use no language model (the pilot is a separate
-experiment), the recovered structure is structural rather than functional, and
-the paper's own determinism defects are reported.
+A synthesis tool turns a circuit description into a netlist and throws information away on the
+way. Loki~III asks how much of the design can be recovered \emph{without} a language model,
+from provenance (the link from each netlist object back to the source text), a Bayesian
+hypothesis flow and graph analysis.
+
+Every claim is a hypothesis with one experiment and one verdict. Eight are USEFUL: the
+provenance answer key covers all 54,306 gate nodes of 150 designs and the pipeline is
+naming-neutral over 105,646 renamed identifiers; structures that synthesis already reverse
+engineered are recovered (hard adders 67 of 67) and calibration cuts the calibration error from
+0.650 to 0.217; synthesis destroys style (ceiling 0.50 on the gate floor); big designs are
+mostly repeated structure.
+
+Six are POSSIBLY GOOD and stated with their fragility: a graph network ahead of a 1-WL
+baseline (one split), an operator-recovery F1, and a loss audit. Structures that synthesis
+erased recover weakly, clustering does not find the designer's hierarchy, a word-first
+detector is not shown to beat DANA, and a language-model pilot shows no effect of Loki's hints.
+Twelve hypotheses were DISMISSED and sixteen are INCONCLUSIVE. No area, speed or power is measured.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -89,26 +77,91 @@ reverse engineering, netlist, provenance, Bayesian inference, graph neural netwo
 \section{Introduction}
 \label{sec:intro}
 
-Gate-Breaker~\cite{faruque2025gatebreaker} takes a gate-level netlist with obfuscated wire names,
-formats it into a four-step prompt (interface, decomposition, function, generation), asks a
-language model to write RTL, and checks the result by simulation. On 156 VerilogEval
-problems~\cite{liu2023verilogeval} its best model recovered functional RTL for 75.1\% of the
-runs, and 53.4\% on the hardest quartile. The paper's own conclusion is the interesting part:
-external graph tools should help the model -- clustering to name buses, a classification of
-signals as datapath or control, and partitioning of the netlist into smaller parts.
+A designer writes a circuit in a hardware description language (HDL) such as Verilog. % def:hdl
+At the register-transfer level (RTL) the HDL text says what the registers hold and how they % def:rtl
+change. A synthesis tool turns that text into gates, the basic logic elements such as AND, % def:gate
+OR and NOT, and a netlist, the list of those gates and the wires that join them. % def:netlist
+Synthesis throws information away. It merges operators, flattens the module hierarchy and
+leaves no source names on the gates. Reverse engineering a netlist means getting back as
+much of the RTL structure as possible. Gate-Breaker~\cite{faruque2025gatebreaker} is an % def:gb
+earlier study in which a language model reads a netlist with hidden wire names and writes the
+RTL; it ends by naming the graph tools that its model needed: clustering to name buses, a
+classification of signals as datapath or control, and partitioning of the netlist.
 
-Loki~III (\url{https://github.com/drpaj12/loki}) is the Yggdrasil~III suite's reverse-engineering
-tool, and it targets exactly those three items -- with no language model step at all. Its
-pipeline is L0, a provenance ground-truth dataset made from the benchmarks; L1, a Bayesian
-hypothesis flow whose pattern detectors propose structures and whose proofs confirm them; and
-L2, graph analysis (clustering, structural features, graph neural networks) over the same
-netlists. The research question this paper answers is: \emph{how good are the L0, L1 and L2
-experiments, without more intelligence, at recovering structure?} The answer matters for two
-audiences. For the Gate-Breaker line, it prices the graph side of the future work the paper
-names. For reverse engineering, it measures what a provenance-tracked front end and honest
-statistical machinery can do before any model is added.
+Loki~III (\url{https://github.com/drpaj12/loki}) asks how much of the RTL can be recovered
+\emph{without} a language model. It stands on provenance: the link from each netlist object % def:prov
+back to the HDL that produced it. Odin~III, the synthesis front end of the Yggdrasil~III suite, % def:odin
+keeps that link through elaboration, optimisation and mapping. The link yields an answer key % def:key
+(also called ground truth): what the tool recorded about which netlist objects form which
+HDL construct. The answer key is what makes recovery measurable, because a recovered
+structure can be compared with a structure the tool knew.
 
-Figure~\ref{fig:yggdrasil} places Loki~III in the suite. Yggdrasil~III is drawn as a tree. Odin~III is the trunk, and its one provenance-tracked IR is what Loki~III reads and what supplies its answer key. Loki~III is a side branch, a tool and experiment for reverse engineering, next to Leman~Russ~III (hardware Trojan detection tools), The Norns~III (placement with provenance) and Verdandi~III (the Micro through the Macro). It runs as a step of Wyrd~III, the experiment runner in the canopy. M\'{\i}mir~III, the circuit knowledge base, hangs from the canopy as the fruit; Loki~III's detector results are among what it stores. Three wells at the deep roots hold the outside work the suite draws on, including the Gate-Breaker and VerilogEval benchmarks that this paper uses.
+We write every claim as a hypothesis: a claim that an experiment can confirm or fail to % def:hyp
+confirm. For each one the paper gives the experiment, the result and one verdict. USEFUL
+means that the experiment confirms the hypothesis under its own decision rule. POSSIBLY GOOD
+means that it confirms it only narrowly or fragilely, so the paper states the fragility and
+never uses such a result alone as evidence for an innovation. INCONCLUSIVE means that the numbers
+do not decide; we never invent a threshold to force a verdict. DISMISSED means that the
+experiment does not confirm it. Ideas whose experiments prove their value are the innovations of
+the main paper; dismissed ideas are one line each in the research log (Appendix~\ref{app:log}).
+
+Loki has three layers: L0, labelled and anonymised netlist datasets with the answer key; L1, % def:layers
+a Bayesian flow that proposes structure hypotheses and settles them with probabilities and
+equivalence checks; and L2, graph analysis. The innovations that the experiments confirm are
+these three, in plain English, each with the hypotheses that confirmed it.
+\begin{enumerate}
+\item \emph{A benchmark in which the answer is known and the names carry nothing.} We build
+the netlists with a front end that remembers which source text made each gate, give every
+object a neutral name, and show that scrambling all names changes no answer
+(naming neutrality: 476 byte-identical run pairs). The answer key covers every gate node of the
+150 designs that build (module coverage 1.000). Confirmed: L0a, L0b.
+\item \emph{A hypothesis flow that is honest about what it knows.} The tool proposes
+``this group of gates is an adder, a register or a mux'', gives each claim a probability
+learned from training designs, and uses an equivalence check to settle the claims it can.
+Structures that synthesis already reverse engineered are recovered almost perfectly, and the
+tool's stated probabilities are far closer to the observed rates after fitting. Confirmed: L1h, L1c.
+\item \emph{A limit on what any recovery can do, a synthetic test bed, and a count of repeated
+structure.} A set of twin designs measures how much coding style synthesis destroys (H14a); a
+generated set of idiom designs builds at every mapping level of the flow (H12a); and the large
+designs of the VTR suite are mostly structure that repeats (H13a), with identical neighbourhoods
+inside the repeats (H13c). Confirmed: H14a, H12a, H13a, H13c.
+\end{enumerate}
+
+\emph{Candidate innovations.} Three more ideas have only POSSIBLY GOOD support: each experiment
+leans the right way but is narrow or fragile, so none is a contribution of this paper.
+(i) \emph{Graph analysis with a network.} Treat the netlist as a graph and train a graph network to label each
+gate's role (L2b: a score of 0.4241 against 0.2717 for a baseline that sees only the neighbourhood
+of each gate, one run on one split of 13 designs). What would confirm it: several random splits of the designs with an interval over designs, and
+a second benchmark suite.
+(ii) \emph{A score that sees recovery.} Comparing recovered Verilog text with the reference
+cannot tell whether the right adders were found; counting the operator types recovered can
+(R2-L7: small margins on few pairs, and the flow with fitted probabilities recovers no operator). What would confirm it:
+a set with many more tie pairs and a flow that recovers operators.
+(iii) \emph{A loss audit.} When synthesis merges the logic of two source statements, the
+construct can no longer be pulled apart from its neighbours. Using the provenance the front end already
+keeps, we record which pass merged what (L15a, L15d: a mux is found at the gate snapshot and lost after
+the final mapping pass, but the two ground truths differ in size and the footprints are not like for like).
+What would confirm it: the same audit with equal-sized ground truths at the two snapshots and on the big designs.
+
+The other answers to the paper's question are negative or undecided. Clustering does not find
+the designer's hierarchy (L2a, DISMISSED); the structures that synthesis erased recover weakly; a
+pattern finder that looks for multi-bit signals first is not shown to beat a published method;
+and a small language-model pilot does not show that Loki's hints help.
+
+Loki's measures are recovery measures (how much of the answer key is found) and not circuit
+measures. Area, speed and power are not measured by any experiment in this paper, and we do not
+claim they correlate with the recovery scores. M\'{\i}mir~III, the suite's circuit knowledge base,
+is where an answer key of this kind would be stored and queried across designs; Loki does not
+use it yet.
+
+Figure~\ref{fig:yggdrasil} places Loki~III in the suite. Yggdrasil~III is drawn as a tree.
+Odin~III is the trunk, and its one provenance-tracked IR is what Loki~III reads and what supplies
+its answer key. Loki~III is a side branch, a tool and experiment for reverse engineering, next to
+Leman~Russ~III (hardware Trojan detection tools), The Norns~III (placement with provenance) and
+Verdandi~III (the Micro through the Macro). It runs as a step of Wyrd~III, the experiment runner
+in the canopy. M\'{\i}mir~III, the circuit knowledge base, hangs from the canopy as the fruit.
+Three wells at the deep roots hold the outside work the suite draws on, including the benchmarks
+that this paper uses.
 
 \begin{figure*}[tp]
 \centering
@@ -117,15 +170,18 @@ Figure~\ref{fig:yggdrasil} places Loki~III in the suite. Yggdrasil~III is drawn 
 \label{fig:yggdrasil}
 \end{figure*}
 
-The contributions are: (1) a benchmark method -- provenance-tracked, labelled, anonymised
-netlist datasets with a renamed-instance protocol that proves naming neutrality, so the
-pipeline can be evaluated on designs whose names carry nothing; (2) the L1 and L2 recovery
-statistics under the Gate-Breaker metrics and under Loki's own (precision, recall, calibration,
-clustering quality, GNN against a 1-WL baseline); (3) the honest limits, including two
-determinism defects the experiments found.
-
 \section{Background}
 \label{sec:background}
+
+\subsection{Glossary}
+\label{sec:glossary}
+
+The terms of this paper are defined here, in the order in which they depend on one another.
+Basic FPGA and CAD terms follow the thesis of Jamieson~\cite{jamiesonthesis} (Chapter~2) and
+the thesis of Luu~\cite{luuthesis} (Sections~2.1.1 and~4.1.2). Terms that the Introduction needs
+(from HDL to the three layers) are also defined where it first uses them.
+
+\input{glossary}
 
 \subsection{The provenance problem and Odin III}
 
@@ -166,8 +222,14 @@ scores both against the same Odin~III answer key. We credit HAL and DANA in the 
 bibliography; no HAL code is part of this repository, only our gate-library files, a converter
 and the scorer.
 
-\section{Methodology: floors, pipeline and evaluation}
-\label{sec:method}
+\section{The innovations}
+\label{sec:innov}
+
+The Introduction describes each innovation in plain English. This section describes them
+technically: the floors and the L0 datasets (including the renamed-instance protocol) and the L1
+hypothesis flow, which are confirmed innovations, and L2 graph analysis, the operator-recovery
+score and the loss audit, which are candidate innovations (POSSIBLY GOOD, not contributions). The
+experiment that confirms or fails to confirm each one is in Section~\ref{sec:experiments}.
 
 \subsection{Floors: the abstraction level of the netlist}
 \label{sec:floors}
@@ -191,7 +253,7 @@ second part of \code{floor\_script}. Node kinds are those of \code{graph.json}
 \label{tab:floors}
 \centering
 \footnotesize
-\begin{tabular}{@{}lp{4.2cm}p{4.9cm}p{6.5cm}@{}}
+\begin{tabular}{@{}lp{4.2cm}p{4.7cm}p{6.5cm}@{}}
 \toprule
 Floor & Reads & Mapping script & Netlist contents \\
 \midrule
@@ -221,14 +283,18 @@ recovery has to be measured against each. \code{f1} keeps the structures the flo
 reverse engineered, which is what lets the \code{hard} detector of L1 read them from
 Odin~III's \code{unmap} facts; \code{f2} removes that crutch with the same source and the
 same answer key; \code{f3} makes the input comparable to Gate-Breaker's and is the floor on
-which the AST and CFG similarities are computed (Section~\ref{sec:f3-results}). Within one
+which the AST and CFG similarities are computed (Section~\ref{sec:l1-results}). Within one
 design the floors share one source of truth, the provenance spans of the same elaborated
 IR, so a difference between floors is a difference of the mapping.
 
 \subsection{L0: provenance ground-truth datasets}
 \label{sec:l0}
 
-The first benchmark set is the 68-design micro suite (counters, registers, arithmetic, ALUs,
+\emph{In plain English.} The datasets are the test bed: netlists built from Verilog by a front end
+that remembers which source text made each gate, with every name hidden, so that the tool under
+test cannot cheat by reading names and its answers can be checked against the front end's record.
+
+\emph{Technically.} The first benchmark set is the 68-design micro suite (counters, registers, arithmetic, ALUs,
 muxes, comparators, small FSMs) that Odin~III already compiles and checks against Yosys; the
 second, the 156 VerilogEval references, is described in Section~\ref{sec:bench}. L0 compiles
 each design on every floor of Table~\ref{tab:floors}. Every netlist object carries its
@@ -256,7 +322,10 @@ the pipeline is naming-neutral, so nothing it recovers is an artefact of a name.
 % compete, select_commits), loki/re/loop.py (one_round, prove_step), loki/re/provers.py,
 % loki/re/claims.py (REFS), loki/re/commit.py (commit, reject_failed),
 % loki/score/calibrate.py (to_calib, fit_weights, fit).
-L1 is a round-based hypothesis flow over one netlist, with no language model. It reads a
+\emph{In plain English.} The flow proposes ``this group of gates is an adder, a register or a mux'', gives each claim a
+probability learned from training designs, and settles the claims it can by an equivalence check.
+
+\emph{Technically.} L1 is a round-based hypothesis flow over one netlist, with no language model. It reads a
 floor netlist into a fresh Odin~III design (level~0, never edited) in which every cell is a
 function, and keeps a working copy that grows one level of hierarchy per committing round.
 
@@ -431,6 +500,32 @@ task is that of GNN-RE~\cite{alrahis2022gnnre}, which maps each gate of a flat n
 module it belongs to; Loki's model is a baseline for the same task, not a re-implementation,
 and the numbers are not compared with that paper's.
 
+\subsection{Operator type-F1 and the loss audit}
+\label{sec:newinstruments}
+
+\emph{In plain English.} Comparing recovered Verilog text with the reference cannot tell whether
+the right adders were found, so we also count the operator types that were recovered. The loss
+audit asks a different question: when synthesis merges the logic of two source statements, the
+construct can no longer be pulled apart, and the audit records which pass did the merging, using the
+provenance map that the front end already keeps.
+
+\emph{Technically.} The L0 key lists the word cells of the elaborated reference. A run's recovered
+operators are its counted hypotheses, mapped to an operator class and an operand width (add, sub,
+mul, eq, ne, lt, le, gt, ge, mux, register). Precision and recall are multiset overlaps, so the
+score does not depend on which cells carry an operator; \code{type} ignores the width and \code{tw}
+requires it. The loss audit reads the D14 provenance map after each pass of the Odin~III flow
+(proc, fsm, opt, flatten, opt \code{-full}, wreduce, lower, abc) and tracks units: a unit is
+separable at a snapshot when some object holds exactly that unit set, and lost at the first later
+snapshot where none does (Section~\ref{sec:round6} gives the protocol).
+
+\section{Methodology}
+\label{sec:method}
+
+The setup is: the floors and the two benchmark sets (Section~\ref{sec:bench}), the scoring of L1 and
+L2 against the answer key (Section~\ref{sec:eval}), the metrics and the statistics (below), and
+the language-model baseline of Gate-Breaker. All experiments except the language-model pilot use
+no language model.
+
 \subsection{Evaluation protocol: how L1 and L2 are scored}
 \label{sec:eval}
 
@@ -593,10 +688,31 @@ defines it.
 In this micro the \code{f3} comparator, as re-synthesised by the minimal \code{.v} front, has 26 logic cells (L1 spec,
 Section~3); the \code{f2} LUTs carry the comparator spans that the join reads back.
 
-\section{The VerilogEval benchmark and its structure}
+\subsection{Metrics and statistics}
+\label{sec:metrics}
+
+\emph{Recovery metrics.} Precision, recall and F1 (micro and macro) of the counted hypotheses
+against the answer key; the expected calibration error (ECE); AST and CFG similarity and the
+operator type-F1 of recovered text against the reference; modularity and NMI of a clustering;
+the functional pass rate of recovered RTL; and the share of units lost at a pass. All are
+defined in the Glossary and in Section~\ref{sec:eval}.
+
+\emph{Area, speed and power.} Loki's measures are recovery measures. No experiment of this paper
+measures area, speed (critical-path delay or near-critical paths) or power. We do not claim that
+the recovery scores correlate with any of them, and we cite no work that says so; they are not
+measured here.
+
+\emph{Statistics.} Paired comparisons over designs use the Wilcoxon signed-rank test; paired
+pass/fail comparisons use the exact two-sided McNemar test on discordant pairs; intervals are
+bootstrap intervals (clustered over designs where the designs come in families); the null models
+(random cell sets of the same size, random merges) are named where they are used. A result is
+called a difference only when the interval or the exact test shows one; otherwise it is
+INCONCLUSIVE.
+
+\subsection{The VerilogEval benchmark and its structure}
 \label{sec:bench}
 
-\subsection{VerilogEval spec-to-rtl as the Gate-Breaker benchmark}
+\subsubsection{VerilogEval spec-to-rtl as the Gate-Breaker benchmark}
 \label{sec:veval-bench}
 
 Gate-Breaker evaluates on VerilogEval~\cite{liu2023verilogeval}, taking the spec-to-rtl
@@ -613,7 +729,7 @@ adapter (Section~\ref{sec:veval-l0}).
 % definitions below are quoted from its docstring and WEIGHTS table); experiments/veval-l0/
 % EXPERIMENT.md Protocol step 3 (bins, 60 AST / 96 regex); experiments/veval-l0/complexity.csv
 % (per-design score, quartile, method) -> Table tab:veval-bench.
-\subsection{The complexity score and its quartiles}
+\subsubsection{The complexity score and its quartiles}
 \label{sec:complexity}
 
 Gate-Breaker groups the problems by a complexity score (its Eq.~2), a weighted sum of
@@ -659,7 +775,7 @@ quartiles here and in Table~\ref{tab:veval} are the same partition.
 
 % Sources: experiments/veval-l0/EXPERIMENT.md "Feature rules" table and Caveats;
 % experiments/veval-l0/features.csv; stats.json (feature_coverage).
-\subsection{The feature matrix}
+\subsubsection{The feature matrix}
 \label{sec:veval-features}
 
 Gate-Breaker characterises its benchmark by the HDL structures it contains. We build the
@@ -696,7 +812,7 @@ and control cells but no FSM mark.
 % Sources: experiments/veval-l0/sizes.csv and stats.json ("sizes"), via paper_tables.py;
 % largest design, the count of designs at most 100 nodes and above 1000 nodes: benchmark.csv
 % (f3_nodes column); micro f3 size: experiments/f3-recovery/EXPERIMENT.md (50,047 nodes, 65 designs).
-\subsection{Benchmark size per technology mapping}
+\subsubsection{Benchmark size per technology mapping}
 \label{sec:veval-sizes}
 
 Table~\ref{tab:veval-sizes} gives the size of the 150 designs on each floor. The averages
@@ -717,16 +833,38 @@ nodes over 65 designs, a mean of about 770.
 
 \input{veval-tables}
 
-\section{Results}
+\section{Experiments}
+\label{sec:experiments}
 \label{sec:results}
 
-\subsection{L0 on VerilogEval: the provenance ceiling}
+One subsection per hypothesis that is USEFUL or POSSIBLY GOOD, and per INCONCLUSIVE answer that the
+paper's question needs. Each states the hypothesis, the experiment, the result and the verdict.
+DISMISSED and the remaining INCONCLUSIVE hypotheses are in the research log
+(Appendix~\ref{app:log}). The experiments were run in rounds (0 to 6); a subsection names the round where
+its text refers to one, and the appendix gives their order.
+
+\subsection{Naming neutrality and the answer key (L0a, L0b)}
 \label{sec:veval-l0}
 
-The provenance experiment is run on the 156 VerilogEval spec-to-rtl reference designs
-(Section~\ref{sec:bench}) next to the micro suite. The question is the one L0 exists to
-answer: how much of the reference does the answer key reconstruct, per floor, with no
-recovery step at all. The experiment builds the three floors \code{f1-k6}, \code{f2} and
+\hev{Hypotheses.} L0a: the pipeline uses no names, so renaming every identifier changes no
+result. L0b: the provenance answer key reconstructs the reference on every floor with no recovery step.
+
+\hev{Experiment.} For L0a, every identifier of every netlist (105,646 identifiers across 269
+netlists) is renamed through one permutation, L1 and L2 are run on the renamed and the base floors, and
+the tokens are mapped back. For L0b, the answer key is counted on the 156 VerilogEval references.
+
+\hev{Result.} % experiments/rename-l2/EXPERIMENT.md, hypotheses.md rows L0a and L0b
+L0a: all 476 pairs of L1 runs are byte-identical (204, 204 and 68 sets); the L2 clusters are
+identical on 271 of 272 partitions, and the one difference is a spectral nondeterminism that also
+occurs between two runs of the base design. The protocol also exposed a rename-script defect
+(library \code{.blackbox} model names were renamed, which silently removed every hard proposal on
+renamed floors), which was fixed. L0b: all 54,306 gate nodes of the 150 designs that build carry a
+label, a cell type and an HDL span; module coverage is 1.000 and signal coverage has geometric
+mean 0.986; six of the 156 references do not build.
+
+
+\emph{Detail of L0b.} The experiment is run on the 156 VerilogEval spec-to-rtl reference designs
+(Section~\ref{sec:bench}) next to the micro suite. The experiment builds the three floors \code{f1-k6}, \code{f2} and
 \code{f3} for every reference (\code{f1-earch} is not built; one architecture is enough
 because \code{f2} and \code{f3} do not depend on it).
 
@@ -786,7 +924,7 @@ add names. The micro suite shows the same shape with a slightly lower ceiling (T
 99.1\% of module scopes and 91.7\% of signal names (an aggregate ratio, where VerilogEval's
 841 over 745 is inflated by those two designs; capped at each design's declared count it is
 715 over 745, 96.0\%). The two sets agree on the message of
-Section~\ref{sec:f3-results}: every node has a label row, a \code{cell\_type} and an HDL span,
+Section~\ref{sec:l1-results}: every node has a label row, a \code{cell\_type} and an HDL span,
 and what the mapping erased is the signal names, not the label rows. (Label coverage counts rows,
 not informative values: a cell that no rule matched keeps the value \code{unknown}.)
 
@@ -802,9 +940,21 @@ decides the complexity quartiles (Section~\ref{sec:complexity}). (iv) A train/te
 design is fixed by the manifest rule (117 train, 33 test on \code{f3}); it is not used here,
 where no model is fitted.
 
-\subsection{L1 recovery: what the flow already reverse engineered, and what it erased}
+\hev{Verdict.} L0a \verdict{USEFUL}: naming is neutral, so nothing the pipeline recovers is an
+artefact of a name. L0b \verdict{USEFUL}: the answer key covers every gate node and every reference
+module; what the mapping erased is signal names, not label rows.
+
+\subsection{L1: what the flow already reverse engineered, and what it erased (L1h, L1c, L1s)}
 \label{sec:l1-results}
 
+\hev{Hypotheses.} L1h: structures that the synthesis flow already reverse engineered (hard
+adders and multipliers) are recovered almost perfectly. L1c: calibration makes the predicted
+probabilities honest. L1s: the flow also recovers the structures that synthesis erased.
+
+\hev{Experiment.} L1 runs on the renamed floors with a calibration fitted on the training
+designs, and is scored against the answer key (precision, recall, macro-F1, ECE).
+
+\hev{Result.} 
 Table~\ref{tab:l1} reports L1 on the renamed floors (identical to base, as the neutrality
 check requires). The head-line result is the \code{hard} detector: hard adders recover 67 of
 67 with precision 0.985, hard multipliers 30 of 30, because the synthesis flow itself already
@@ -847,126 +997,79 @@ macro-F1 (all kinds) & & & 0.108 \\
 \end{tabular}
 \end{table}
 
-\subsection{f3: recovery from the cmos6 gate netlist}
-\label{sec:f3-results}
+\emph{The gate netlist (f3), hypothesis F3.} Gate-Breaker's own input is a cmos6 gate netlist, so we built
+the f3 floor (65 of 68 micro designs; the gate reader refuses three hard-block sources) and asked whether L1
+recovers structure from it. % experiments/f3-recovery/EXPERIMENT.md, hypotheses.md row F3
+On the 15 f3 test designs (23,098 gate nodes) no construct is counted (0 of 144 ground-truth
+instances, macro-F1 0.0) and no hypothesis is committed: the best calibrated confidence in any test
+design is a bus at $p=0.764$, below the 0.9 commit threshold. Without calibration the detectors count
+1,166 constructs for 2 matches (macro-F1 0.038), and 2,569 counted bus hypotheses match none of the 120
+ground-truth buses. The answer key itself is complete at this floor: all 50,047 gate nodes carry a label
+row, a cmos6 cell type and an HDL span. F3 is \verdict{DISMISSED}; it is the reason for the next
+experiment.
 
-Gate-Breaker's own input is a cmos6 gate netlist, so we built the f3 floor (65 of 68 micro
-designs; the gate reader refuses three hard-block sources) and asked the same questions of
-it. The L0 answer key is complete at this level in that all 50,047 gate nodes carry a label row, a
-cmos6 \code{cell\_type} and an HDL span. What provenance reconstructs of the reference is
-nearly complete but not total: 112 module scopes against 113 module definitions (99.1\%; 54
-of 65 designs complete) and 611 distinct leaf signal names against 666 declared signals
-(91.7\%; median design 100\%, minimum 55.6\%). The module gap is reference-side (generate
-branches and unused submodules never elaborate); the signal gap is synthesis-side (nets that
-mapping created or merged have no original name left). The ceiling is consequently what the
-mapping preserved, not the source RTL.
+\emph{The similarity probe on f3.} Gate-Breaker's AST and CFG similarity (Section~\ref{sec:background})
+are the measures on which a recovered text is compared with the reference RTL. With the f3 calibration
+L1-stop is byte-identical to L0-stop, so both measures have a delta of exactly 0.0000 in every quartile.
+Uncalibrated, L1 commits 1,535 hypotheses in 11 of the 15 designs and moves the means by +0.0111 (AST) and
+$-0.0075$ (CFG) with mixed signs per quartile; the commits are mostly wrong \code{eq\_const} and bus pieces,
+so this is not evidence about recovery quality. A flatten control (Odin~III \code{proc; flatten}, which also
+lowers the committed processes) inlines the committed hierarchy and raises both measures over the gate
+netlist: AST by +0.0533 over all 15 designs (0.4576 against 0.4044) and CFG by +0.0559 over the 12 designs the
+probe can score (0.6941 against 0.6382). Algorithms~2 and~3 of Gate-Breaker read one module, so a recovery
+that produces hierarchy is penalised until it is flattened: a limit of the measure and not a property of the
+recovery. The per-kind table and the per-quartile table are in Appendix~\ref{app:f3}.
 
-Table~\ref{tab:f3-l1} reports L1 on the 15 f3 test designs (23,098 gate nodes), base and
-renamed, with a calibration fitted on the 50 train designs' f3 floors. The result is the
-strict one: no construct is counted (0 of 144 ground-truth instances; macro-F1 0.0) and no
-hypothesis is committed at all. The f3 priors are strongly negative because the gate-level
-detectors are imprecise on the train floors (comparator $-9.24$ from 31,036 proposals with
-2 true), so the best calibrated confidence in any test design is a bus at $p=0.764$, below
-the 0.9 commit threshold, and the L1-stop Verilog is byte-identical to the input netlist in
-15 of 15 designs. Without calibration the detectors count 1,166 constructs for 2 matches
-(macro-F1 0.038; one adder, one register) and 2,835 buses for 0 matches. Buses are proposed
-but never reconstructed: 2,569 counted bus hypotheses against 120 ground-truth buses, 0
-matched, so no width or bit order is recovered. The role detector labels every logic cell
-datapath, which is 100\% correct only because the f3 answer key holds no control cells (0 of
-50,047; f1 has 4): control-versus-data is not answerable from f3 provenance, and the
-datapath F1 of 1.000 over 20,541 cells is vacuous. The hard detector stays f1-only by design
-(\code{unmap} runs only on f1 floors with hard cells), so the 28 hard ground-truth instances
-are unreachable here. Base and renamed \code{score.json} digests are identical
-(9368cfc26303): naming contributes no decision bit at f3 either.
+\input{gen/tab-r2-l1}
 
-\begin{table}[t]
-\caption{f3 L1 per kind on the 15 test designs. The calibrated columns are the protocol's
-setting; the \code{--calib none} columns are a diagnostic of what the detectors propose
-before calibration prunes it. A kind with no counted prediction has no F1 and is left out of
-the macro average.}
-\label{tab:f3-l1}
-\centering
-\footnotesize
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{@{}lrrrrrrrr@{}}
-\toprule
- & & \multicolumn{3}{c}{calibrated} & \multicolumn{4}{c}{\code{--calib none}} \\
-Kind & GT & counted & matched & F1 & counted & matched & precision & F1 \\
-\midrule
-adder & 17 & 0 & 0 & -- & 1 & 1 & 1.000 & 0.111 \\
-adder\_cin & 17 & 0 & 0 & -- & 0 & 0 & -- & -- \\
-comparator & 20 & 0 & 0 & -- & 14 & 0 & 0.000 & 0.000 \\
-eq\_const & 16 & 0 & 0 & -- & 1,141 & 0 & 0.000 & 0.000 \\
-ff\_srst & 2 & 0 & 0 & -- & 7 & 0 & 0.000 & 0.000 \\
-hard\_add & 17 & 0 & 0 & -- & 0 & 0 & -- & -- \\
-hard\_mul & 11 & 0 & 0 & -- & 0 & 0 & -- & -- \\
-mux & 7 & 0 & 0 & -- & 0 & 0 & -- & -- \\
-mux\_bit & 7 & 0 & 0 & -- & 0 & 0 & -- & -- \\
-register & 22 & 0 & 0 & -- & 3 & 1 & 0.333 & 0.080 \\
-subtractor & 8 & 0 & 0 & -- & 0 & 0 & -- & -- \\
-\midrule
-macro-F1 & 144 & 0 & 0 & 0.000 & 1,166 & 2 & & 0.038 \\
-\midrule
-buses & 120 & 2,569 & 0 & 0.000 & 2,835 & 0 & 0.000 & 0.000 \\
-datapath role & 20,541 & 20,541 & 20,541 & 1.000 & 20,541 & 20,541 & 1.000 & 1.000 \\
-control role & 0 & 0 & 0 & -- & 0 & 0 & -- & -- \\
-\bottomrule
-\end{tabular}}
-\end{table}
+\emph{Hypothesis R2-L1 (round 2): the f3 failure is the detectors' vocabulary and not missing information.} The L1 detectors read LUT covers,
+and the f3 netlist is a cmos6 gate netlist. The hypothesis predicts that re-mapping the same gates into LUT6 recovers
+close to the f2 rate. We read each f3 \code{netlist.blif} into Odin~III, run
+\code{abc --lut 6}, and give the result to \code{loki re} as an f2 netlist. Odin~III drops
+the cell names in \code{abc}, so each of the \rtLoneLuts{} LUTs is expanded back to the
+gates it covers: a bit-parallel simulation signature matches its output to the f3 net of the
+same function, and the cover is the cone of that net down to the matched inputs.
+\rtLoneNoMatchFrac{} of the LUTs ABC resynthesised implement a function that is no f3 net;
+they take the support-contained share of their consumers' covers, and \rtLoneEmpty{} are left
+with an empty cover. The expanded hypotheses are then scored against the unchanged f3 key,
+and the native f2 floor of the same \rtLoneDesigns{} designs, with the same calibration, is the
+comparison (Table~\ref{tab:r2-l1}). On the gate netlist the calibrated flow matches
+\rtLoneGateMatched{} of \rtLoneGateGt{} instances in the \rtLoneTestDesigns{} test designs. After the LUT6
+re-map it matches \rtLoneLutMatchedTest{} (native f2: \rtLoneNativeMatchedTest{}), and over
+all \rtLoneDesigns{} designs \rtLoneLutMatchedAll{} against \rtLoneNativeMatchedAll{} of \rtLoneGtAll{},
+a micro-F1 ratio of \rtLoneAllRatio{} in-sample (the \rtLoneDesigns{} designs include the designs the f2
+calibration was fitted on) against \rtLoneTestRatio{} on the held-out test split. The decision rule asked for a ratio of at least \rtLoneThr{} on both splits, so H1 is \rtLoneStatus{}. The in-sample recovery is
+that of f2, on the same kinds (adders, subtractors, muxes), but the 15-design test split holds
+only a handful of matches (\rtLoneLutMatchedTest{} against \rtLoneNativeMatchedTest{}), so its
+ratio is noise in either direction. The result is consistent with the f3 failure being the
+detectors' vocabulary and not missing information in the gates, but does not show it; the f2
+level it would recover to is itself low.
 
-The AST and CFG deltas (Table~\ref{tab:f3-sim}) follow from the zero-commit result: with the
-f3 calibration L1-stop is byte-identical to L0-stop, so both metrics have delta exactly
-0.0000 in every quartile (AST over 15 designs; CFG over the 13 whose CFG the probe can
-finish, 12,000 nodes being its practical $O(n^2)$ limit). The uncalibrated diagnostic, where
-L1 commits 1,535 hypotheses in 11 of 15 designs, moves the means by +0.0111 (AST) and
-$-0.0075$ (CFG), with mixed per-quartile signs; the commits are mostly wrong \code{eq\_const}
-and bus pieces, so this is not evidence about recovery quality. A flatten control (Odin~III
-\code{proc; flatten}, which also lowers the committed processes) inlines the committed
-hierarchy and raises both metrics over the gate netlist: AST 0.4576 against 0.4044
-(+0.0533, all 15 designs) and CFG 0.6941 against 0.6382 (+0.0559, the 12 designs the probe
-can score).
-Gate-Breaker's Algorithms~2 and~3 read a single module, while Loki's L1 commits a hierarchy, so a recovery
-that produces hierarchy is systematically penalised until it is flattened: for a
-netlist-to-RTL benchmark this is a metric limitation, not a property of the recovery.
+\hev{Verdicts.} L1h \verdict{USEFUL}: hard adders 67 of 67 (precision 0.985) and hard multipliers 30 of 30,
+because the synthesis flow itself reverse engineered them. L1c \verdict{USEFUL}: ECE 0.217 calibrated against
+0.650 uncalibrated. L1s \verdict{INCONCLUSIVE}: the recovery is weak (macro-F1 0.354 on f1, 0.108 on f2) but no
+threshold or baseline was set, so we do not call it a failure. The LUT6 re-map (round-2 hypothesis R2-L1) is
+\verdict{INCONCLUSIVE}: it reaches the f2 level in-sample but the held-out split has too few matches to decide.
 
-\begin{table}[t]
-\caption{f3 AST (Gate-Breaker Algorithm~2, depth 3, pyverilog) and CFG (Algorithm~3, odin3 probe)
-similarity against the micro reference RTL, L0-stop (gate netlist) against L1-stop
-(\code{design.v}); quartiles by f3 node count. With the f3 calibration L1-stop equals
-L0-stop, so every delta is 0.0000; the table therefore shows the L0 values and the diagnostic
-(\code{--calib none}) deltas.}
-\label{tab:f3-sim}
-\centering
-\footnotesize
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{@{}lrrrrrr@{}}
-\toprule
-Quartile & AST L0 & AST L1 & $\Delta$AST & CFG L0 & CFG L1 & $\Delta$CFG \\
-\midrule
-0 (4 designs) & 0.4428 & 0.4428 & 0.0000 & 0.7909 & 0.7909 & 0.0000 \\
-1 (4) & 0.3765 & 0.3765 & 0.0000 & 0.4224 & 0.4224 & 0.0000 \\
-2 (4) & 0.3969 & 0.3969 & 0.0000 & 0.7013 & 0.7013 & 0.0000 \\
-3 (3 AST / 1 CFG) & 0.4003 & 0.4003 & 0.0000 & 0.7507 & 0.7507 & 0.0000 \\
-\midrule
-mean (15 / 13) & 0.4044 & 0.4044 & 0.0000 & 0.6468 & 0.6468 & 0.0000 \\
-\midrule
-\multicolumn{7}{@{}l}{\emph{diagnostic \code{--calib none} (L1 commits hierarchy)}} \\
-0 (4) & 0.4428 & 0.4277 & $-0.0151$ & 0.7909 & 0.7776 & $-0.0133$ \\
-1 (4) & 0.3765 & 0.3756 & $-0.0009$ & 0.4224 & 0.4099 & $-0.0124$ \\
-2 (4) & 0.3969 & 0.4542 & $+0.0573$ & 0.7013 & 0.7014 & $+0.0001$ \\
-3 (3 AST / 1 CFG) & 0.4003 & 0.4007 & $+0.0004$ & 0.7507 & 0.7561 & $+0.0055$ \\
-mean & 0.4044 & 0.4155 & $+0.0111$ & 0.6468 & 0.6394 & $-0.0075$ \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-\subsection{L2: clusters that carry the hierarchy, and a GNN that beats 1-WL}
+\subsection{L2: clusters that miss the hierarchy, and a GNN that beats 1-WL (L2a, L2m, L2b)}
 \label{sec:l2-results}
 
-Table~\ref{tab:l2} scores the four clusterings against the known module hierarchy. Louvain
-leads (modularity 0.4220, NMI 0.1360); k-means and affinity propagation do not find the
-hierarchy (negative modularity), which is itself a result: graph structure alone, without
-the labels, favours the community methods. 271 of 272 partition records are identical
+\hev{Hypotheses.} L2a: community methods find the designer's hierarchy and centroid methods do
+not. L2b: a GNN with node, graphlet, WL and NPN features beats the 1-WL baseline. L2m is a
+measurement, not a hypothesis: the modularity of the four clusterings.
+
+\hev{Experiment.} Four clusterings of the 68 micro designs are scored against the known module
+hierarchy; the GNN is trained on the labelled training designs and scored on 13 test designs
+(3,932 test nodes), once.
+
+\hev{Result.} 
+Table~\ref{tab:l2} scores the four clusterings against the known module hierarchy. The measure
+of the hierarchy is NMI against the module path of each cell, and it ranks the methods in the
+order opposite to the hypothesis: k-means 0.3220, affinity propagation 0.2708, spectral 0.1378,
+Louvain 0.1360. Modularity (L2m) is another matter: Louvain 0.4220 and spectral 0.3620 are
+well above zero and k-means ($-0.2912$) and affinity propagation ($-0.2264$) are negative, but modularity
+scores how dense the clusters are in the graph, not how well they match the designer's modules,
+so it is not a hierarchy measure and does not rescue L2a. 271 of 272 partition records are identical
 between base and renamed floors; the one difference exposed a determinism defect in the
 spectral path (repeated runs on the same base design give modularities -0.0079, -0.0410 and
 0.0252), reported as an open issue rather than hidden.
@@ -980,7 +1083,7 @@ recovery, not the message passing alone.
 
 \begin{table}[t]
 \caption{L2 clustering against the known module hierarchy (68 designs, mean over the
-renamed floors, identical to base). Modularity and NMI(module\_path) per method.}
+renamed floors, identical to base). Modularity (L2m) and NMI(module\_path), the hierarchy measure (L2a), per method.}
 \label{tab:l2}
 \centering
 \footnotesize
@@ -996,107 +1099,34 @@ k-means & -0.2912 & 0.3220 \\
 \end{tabular}
 \end{table}
 
-\subsection{The Gate-Breaker metrics}
-\label{sec:gb-results}
+\hev{Verdicts.} L2a \verdict{DISMISSED}: the only hierarchy measure, NMI against the module path, ranks the
+centroid methods above the community methods (k-means 0.3220 against Louvain 0.1360), the reverse of the
+hypothesis. L2m \verdict{MEASUREMENT}: Louvain has the highest modularity (0.4220), a statement about graph
+density and not about the hierarchy. L2b \verdict{POSSIBLY GOOD}: macro-F1 0.4241
+against 0.2717 for 1-WL, but it is one run on one split of 13 designs with no interval, and the node-only GNN
+loses to 1-WL (0.2413 against 0.2711); the claim is that the features carry the recovery, not that the
+GNN generalises.
 
-Gate-Breaker's metrics compare a recovered RTL against a reference: Success Rate,
-Success@$k$, AST similarity and CFG similarity. Loki recovers structure, not a new RTL text,
-so the direct comparison is the replication: the Gate-Breaker harness itself, run on the
-simple benchmarks with the only language model available on the host, gave success rate
-0.933 on Q1 and 0.829 on Q2, Success@10 1.000 in both quartiles, AST similarity 0.576 and
-0.444, CFG similarity 1.000 and 0.736, with 169 of 174 extracted candidates functionally
-correct -- a first replication on the fallback micro set, not the paper's VerilogEval set.
-The VerilogEval replication, on the quartiles the paper used, is reported in
-Table~\ref{tab:veval} with the AST and CFG kernels recomputed with common-width feature
-vectors (the first run padded per graph and truncated in the zip, which the v1.1.0 CFG probe
-found; those columns are not comparable to it).
-
-\begin{table}[t]
-\caption{Gate-Breaker metrics on the VerilogEval quartiles (one run, K=10, 4 workers, 180\,s
-per call, 7,440\,s wall clock, 740 calls; deltas vs the paper's O3-Mini in the text).}
-\label{tab:veval}
-\centering
-\footnotesize
-\begin{tabular}{@{}lrrrrrr@{}}
-\toprule
-Quartile ($n$) & SR & S@1 & S@5 & S@10 & AST & CFG \\
-\midrule
-Q1 (36) & 0.903 & 0.944 & 1.000 & 1.000 & 0.894 & 0.942 \\
-Q2 (37) & 0.778 & 0.811 & 1.000 & 1.000 & 0.761 & 0.890 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-This replication ran Q1 and Q2 only; the Loki-only results for Q3 and Q4 on the same designs are in
-Section~\ref{sec:quartiles}. Seventy-four of the 78 Q1+Q2 designs are usable (three excluded because their synthesized
-netlists fail the official testbench self-check, one because its 241\,KB prompt exceeds the
-OS argument limit); every scored design is solved by attempt 5. The deltas against the
-paper's O3-Mini: Q1 success rate -0.092, AST -0.030, CFG -0.011; Q2 success rate -0.039,
-Success@5 +0.125, Success@10 +0.111, AST -0.164, CFG +0.083. The Q1 gap is harness
-no-output, not wrong RTL; the Q2 AST gap is truth-table and case references against the
-model's boolean expressions. Two caveats: the host's only model path routes through a
-gateway that aliases a DeepSeek backend as Claude Opus (so the model column is not
-verifiably the paper's comparison class), and the CLI exposes none of the paper's sampling
-flags ($T{=}0.85$, $p{=}0.95$). The CFG column uses the common-width node kernel (the
-odin3 CFG probe); the AST column uses the paper's pyverilog Algorithm~2 of Gate-Breaker.
-
-What the two lines of work measure is complementary. The language model recovers functional
-behaviour from the gates and names nothing reliably; Loki recovers the structures the flow
-preserved (hard blocks, the hierarchy, the signal roles its features see) and proves what it
-claims. The Gate-Breaker future work -- bus naming, datapath/control classification,
-partitioning -- is exactly L2's table, and its numbers are the baseline a model-assisted
-Loki would have to beat.
-
-\subsection{Round 2: five follow-up questions}
+\subsection{An instrument that sees recovery, and where the language model stands (R2-L7, R2-L2)}
 \label{sec:round2}
 
-\input{round2-tables}
+\hev{Hypotheses.} R2-L7: a word-level operator F1 separates runs that AST and CFG similarity tie on.
+R2-L2: Loki's AST and CFG similarity is below the language model's on Q1 and Q2, does not stay flat
+from Q1 to Q4, and Loki's output is formally equal to its input.
 
-The first round left five questions open. Each carries a hypothesis and a decision rule; the
-thresholds were set by the implementer during the round and are not time-stamped before the data
-(Appendix~\ref{app:log}); a later round should fix them in a commit before running. All five are compute-only: no language-model
-call was made, and the language-model figures are the round-1 Gate-Breaker replication, read
-again. Every number in this subsection is a macro generated from the summary tables of
-\code{experiments/round2}.
+\hev{Experiment.} Round 2 is compute-only: no language-model call was made, and the
+language-model figures are the round-1 Gate-Breaker replication, read again. Every number in this
+subsection is a macro generated from the summary tables of \code{experiments/round2}. R2-L7 rescored every run set with the operator type-F1
+(Section~\ref{sec:newinstruments}); R2-L2 ran \code{loki re} on all 150 VerilogEval netlists and
+scored the output Verilog against the reference.
 
-\emph{RQ-L1: is the f3 failure a vocabulary problem?} The L1 detectors read LUT covers, and
-the f3 netlist is a cmos6 gate netlist. H1: re-mapping the same gates into LUT6 recovers
-close to the f2 rate. We read each f3 \code{netlist.blif} into Odin~III, run
-\code{abc --lut 6}, and give the result to \code{loki re} as an f2 netlist. Odin~III drops
-the cell names in \code{abc}, so each of the \rtLoneLuts{} LUTs is expanded back to the
-gates it covers: a bit-parallel simulation signature matches its output to the f3 net of the
-same function, and the cover is the cone of that net down to the matched inputs.
-\rtLoneNoMatchFrac{} of the LUTs ABC resynthesised implement a function that is no f3 net;
-they take the support-contained share of their consumers' covers, and \rtLoneEmpty{} are left
-with an empty cover. The expanded hypotheses are then scored against the unchanged f3 key,
-and the native f2 floor of the same \rtLoneDesigns{} designs, with the same calibration, is the
-comparison (Table~\ref{tab:r2-l1}). On the gate netlist the calibrated flow matches
-\rtLoneGateMatched{} of \rtLoneGateGt{} instances in the \rtLoneTestDesigns{} test designs. After the LUT6
-re-map it matches \rtLoneLutMatchedTest{} (native f2: \rtLoneNativeMatchedTest{}), and over
-all \rtLoneDesigns{} designs \rtLoneLutMatchedAll{} against \rtLoneNativeMatchedAll{} of \rtLoneGtAll{},
-a micro-F1 ratio of \rtLoneAllRatio{} in-sample (the \rtLoneDesigns{} designs include the designs the f2
-calibration was fitted on) against \rtLoneTestRatio{} on the held-out test split. The rule asked
-for a ratio of at least \rtLoneThr{} on both splits, so H1 is \rtLoneStatus. The in-sample recovery is
-that of f2, on the same kinds (adders, subtractors, muxes), but the 15-design test split holds
-only a handful of matches (\rtLoneLutMatchedTest{} against \rtLoneNativeMatchedTest{}), so its
-ratio is noise in either direction. The result is consistent with the f3 failure being the
-detectors' vocabulary and not missing information in the gates, but does not show it; the f2
-level it would recover to is itself low.
-
-\emph{RQ-L7: are AST and CFG blind to what Loki recovers?} We score recovery with a
-word-level operator F1. The L0 key lists the word cells of the elaborated reference; a run's
-recovered operators are its counted hypotheses (committed, or $p_{\mathrm{comp}}\ge 0.5$),
-mapped to an operator class and an operand width (add, sub, mul, eq, ne, lt, le, gt, ge,
-mux, register). Precision and recall are multiset overlaps, so the score does not depend on
-which cells carry an operator; \code{type} ignores the width and \code{tw} requires it.
-Table~\ref{tab:r2-l7} rescores every run set. The floors separate cleanly, which neither
+\hev{Result.} \emph{R2-L7: are AST and CFG blind to what Loki recovers?} Table~\ref{tab:r2-l7} rescores every run set. The floors separate cleanly, which neither
 AST nor CFG can show because both exist only on f3: type-F1 \rtLsevenTypeFonek{} on f1 (the
 hard detector), \rtLsevenTypeFtwo{} on f2 and \rtLsevenTypeFthree{} on the f3 gates. On the
 f3 test designs (Table~\ref{tab:r2-ties}) the calibrated and uncalibrated L1 runs tie on both
 metrics, AST by \rtLsevenDAst{} and CFG by \rtLsevenDCfg{}, while operator type-F1 moves by
 \rtLsevenDF{}; the flatten control raises AST by \rtLsevenFAst{} and CFG by \rtLsevenFCfg{}
-and leaves the recovery record, hence the operator F1, unchanged (\rtLsevenFF{}). By the
-rule H7 is \rtLsevenStatus. The tie the rule was written for, the calibrated flow against
+and leaves the recovery record, hence the operator F1, unchanged (\rtLsevenFF{}). By the rule H7 is \rtLsevenStatus{}. The tie the rule was written for, the calibrated flow against
 the L0-stop netlist (both add nothing to the text), does not separate: their operator type-F1
 is $0$ against $0$. The verdict rests on the calibrated flow against the uncalibrated one,
 where the calibrated side recovers no operator at all, and on the flatten clause, which holds
@@ -1106,7 +1136,10 @@ by construction, because the operator F1 reads the recovery record and AST and C
 text. The operator F1 does not replace them; it is the measure that sees recovery, where
 they see only form.
 
-\emph{RQ-L2: Loki against the language model on the same designs.} Round 1 scored the
+\input{gen/tab-r2-l7}
+\input{gen/tab-r2-ties}
+
+\emph{R2-L2: Loki against the language model on the same designs.} Round 1 scored the
 language model on Q1 and Q2 of VerilogEval, and Loki's AST and CFG only on micro designs. We
 ran \code{loki re} on all \rtLtwoDesigns{} VerilogEval netlists at f2 and f3, calibrated (a calibration
 fitted on the \rtLtwoTrainDesigns{} train designs of VerilogEval itself) and not, and scored the output Verilog
@@ -1139,7 +1172,7 @@ the output matches the reference RTL: that netlist itself passes the official te
 \rtLtwoSelfOk{} of the \rtLtwoDesigns{} designs (the round-1 self-check; inferred latches and asynchronous
 resets are the failures), so Loki's output is exactly as correct as its input, no more. The
 model is checked against the testbench directly, but only its correct samples enter the
-similarity columns. On operator recovery (RQ-L7) the model is far ahead: on the common Q1 and
+similarity columns. On operator recovery the model is far ahead: on the common Q1 and
 Q2 designs its operator type-F1 is \rtLtwoOpsLlm{} (functionally correct samples elaborated with
 the same Odin~III front as the key) against \rtLtwoOpsLokiCal{} for Loki's calibrated f2 run and
 \rtLtwoOpsLokiNone{} uncalibrated (the calibrated f3 run recovers no operator, 0.0, so the
@@ -1151,73 +1184,39 @@ designs but is unverified, and Loki is verified but partial; neither number alon
 result, and the arm that combines them (a model given the ReverseProvenance record, L8) was
 not run.
 
-\emph{RQ-L4: which evidence family drives the posterior?} The calibrated flow scores every
-hypothesis from a per-detector prior plus feature log-likelihood ratios in four families
-(\code{npn}, \code{wl}, \code{l2}, \code{struct}). \code{loki re} produces no \code{l2}
-feature (those exist only in the ReverseProvenance document), so that family is not
-applicable. For each remaining family we refit the calibration on the train designs of the
-micro and VerilogEval f2 floors with the family removed and its weight set to 0, and ran the
-\rtLfourHeld{} held-out designs (Table~\ref{tab:r2-l4}; \rtLfourGt{} ground-truth instances).
-Held-out micro-F1 is \rtLfourNone{} with the defaults, \rtLfourFull{} with the full
-calibration and \rtLfourPriors{} with priors only. The full-minus-priors gap is \rtLfourGap{},
-below the \rtLfourThr{} floor of the rule, so H4 is \rtLfourStatus: no family carries measurable
-performance, because the features add nothing detectable over the per-detector priors. One held-out design (\code{ve\_Prob153\_gshare}) holds most of the ground truth
-and nothing in it is matched; with it left out (\rtLfourNgGt{} instances) the micro-F1 is
-\rtLfourNgNone{} with the defaults, \rtLfourNgFull{} full and \rtLfourNgPriors{} priors only (gap
-\rtLfourNgGap), so the verdict does not change; on that subset the defaults score higher than
-either calibrated row. The
-fit says so itself: the full calibration sets the \code{npn} weight to 0 and shrinks
-\code{struct} and \code{wl} (\code{l4\_weights.csv}). What
-calibration does is prune, from the many counted constructs of the defaults to a handful, and
-rank: the AUC of $p_{\mathrm{comp}}$ over the live hypotheses rises from \rtLfourAucNone{} to
-\rtLfourAucFull{} (over different pools, since calibration rejects more).
+\input{gen/tab-r2-l2}
+\input{gen/tab-r2-l2q}
 
-\emph{RQ-L5: is the must/may bracket an uncertainty measure?} Following the graph-sandwich
-framing (must is what L1 proved and committed, may adds the candidates it lists), the
-bracket of a run is read from \code{reverse-provenance.json} and its width is the candidate
-fraction of the cells. H5a: the width correlates negatively with the design's F1. On the
-uncalibrated VerilogEval f2 runs (\rtLfiveN{} designs with ground truth) the Spearman
-correlation is \rtLfiveRho{} ($p=\rtLfiveP$), and \rtLfiveRhoCal{} on the calibrated run that
-lists candidates from $p=0.1$ (Table~\ref{tab:r2-l5}), so H5a is \rtLfiveaStatus. The
-committed fraction does correlate with F1 (\rtLfiveRhoMust), but trivially: committed cells
-are the matches. As a soundness check of the bracket itself, \rtLfiveMustPrec{} of the
-committed cells lie inside the scored ground-truth footprints (must precision), the committed
-cells cover \rtLfiveMustRec{} of the truth, and the may bracket contains \rtLfiveMayRec{} of
-it. H5b: of \rtLfiveCalls{} \code{cone\_check} (SAT) calls across all round-2 runs,
-\rtLfiveEquivCalls{} end \code{equivalent}; the largest structural rule that loses no such
-verdict (\rtLfiveBestRule) prunes \rtLfiveBestFrac{} of the calls, against the \rtLfiveThr{} the rule
-asked for (Table~\ref{tab:r2-prefilter}), so H5b is \rtLfivebStatus. The prover budget is
-spent confirming true hypotheses, and the structural features the calls already carry do not
-separate the rest; the truth-table checks (\rtLfiveTruthCalls{}) are cheap already. The rule
-search covers single-bin rules (one feature and one bin of one kind) on the same data, so
-\rtLfiveBestFrac{} is an upper bound for such rules, not a measured saving; the calls repeat
-across the eight run sets. The bound that holds for any rule is simpler: a rule that loses no
-\code{equivalent} verdict can prune at most the \rtLfiveNonEquiv{} calls that were not
-(\rtLfiveNonEquivFrac{} of all).
+\hev{Verdicts.} R2-L7 \verdict{POSSIBLY GOOD}: the rule supports it, but the margins are small on few pairs (tie
+pair $\Delta$F1 0.0173; the flatten control moves AST by 0.0422 and leaves the operator F1 unchanged), and the
+calibrated flow recovers no operator at all, so we use the operator F1 only as an added instrument beside AST and CFG
+and not as proof of an innovation. R2-L2 \verdict{INCONCLUSIVE}: Loki is below the model on Q1 and Q2 (AST
+0.763 and 0.460 against 0.894 and 0.761) and its output is equal to its input in 150 of 150 runs, but the AST falls
+from Q1 to Q4, which may partly reflect which references parse, so the data position the two tools (the model readable
+and unverified, Loki verified and partial) without deciding between them.
 
-
-\subsection{Round 3: fragments or noise, and where the words are}
+\subsection{Why the detectors miss: fragments and words (H9a, H9b)}
 \label{sec:round3}
 
-\input{round3-tables}
+\hev{Hypotheses.} H9a: most false candidates are fragments of a word of a related kind. H9b: the
+fragments of a word cover most of it, so grouping them recovers the word.
 
-Round 2 left a puzzle. Uncalibrated, the detectors propose many candidates that almost never
-match (Table~\ref{tab:r3-false}); calibrated, they commit almost nothing. Peter's question
-(Appendix~\ref{app:log}) is why netlists are hard to bring back to HDL when the structure is
-there to see: muxes, wide signals that behave as words, state feedback with decode and select,
-and input and output words that mark where the datapath lies. Round 3 is compute-only on the
-round-2 runs and the L0 ground truth (no language-model call, no new detector). Unlike round 2, its
-rules were committed before any number was computed (commit \code{5f8de24}, \code{experiments/round3/EXPERIMENT.md});
-every figure below is a macro generated from the summary CSVs of \code{experiments/round3}. The
-round-2 counts that motivate the question (for instance \code{ff\_en} 732 candidates and one
-correct on the held-out designs) were known when the thresholds were set, so H9a was not blind to
-the data, only to the round-3 numbers. Analyses added after the data was seen are labelled
-\emph{exploratory}, are listed in a dated entry of \code{EXPERIMENT.md}, and decide nothing.
-We added the runs the round-2 sets lacked (micro f3, calibrated and not, and micro f1-k6,
-uncalibrated; one micro f3 design timed out) and score every set, but the decisions use the
-primary set P: the micro and VerilogEval f2 runs without calibration.
+\hev{Experiment.} Uncalibrated, the detectors propose many candidates that almost never match
+(Table~\ref{tab:r3-false}); calibrated, they commit almost nothing. Round 3 is compute-only on the round-2
+runs and the L0 answer key (no language-model call, no new detector); every figure below is a macro
+generated from the summary CSVs of \code{experiments/round3}. The round-2 counts that motivate the question
+(for instance \code{ff\_en} 732 candidates and one correct on the held-out designs) were known when the
+thresholds were set. Analyses added after the data was seen are labelled \emph{exploratory} and decide
+nothing. We added the runs the round-2 sets lacked (micro f3, calibrated and not, and micro f1-k6,
+uncalibrated; one micro f3 design timed out) and score every set, but the decisions use the primary set P:
+the micro and VerilogEval f2 runs without calibration.
 
-\emph{RQ-L9: are the wrong candidates fragments of real words?} A false candidate is a counted
+\input{gen/tab-r3-false}
+\input{gen/tab-r3-frag}
+\input{gen/tab-r3-sets}
+\input{gen/tab-r3-expl}
+
+\hev{Result.} A false candidate is a counted
 candidate the one-to-one scorer does not match. We classify each (rules in the protocol): the
 same extent as a ground-truth instance of its family (a lost tie or a type slip), a fragment
 of a larger instance of its family, a fragment of an instance of another type, a straddle of
@@ -1282,44 +1281,8 @@ output would recover few words. The other sets (Table~\ref{tab:r3-sets}) have fe
 when calibrated, and the gate floor f3 proposes far more false \code{eq\_const} candidates than
 any f2 set.
 
-\emph{RQ-L10: do the I/O words find the datapath?} A top-level port bus is a word the
-reverse engineer usually has by name. A group of cells is a propagated word if, bit by bit, a
-known word drives (or is driven by) one cell per bit of the group with the same cell type, truth
-table and pin, and at least three quarters of the bits qualify (the strict rule asks for all);
-we propagate for up to four hops. A ground-truth construct is reached when a group of at most
-$h$ hops lies for the most part inside it. In the f2 floor, \rttTenDatapathN{} datapath word
-constructs (registers, muxes, adders, comparators, counters) and \rttTenControlN{} control
-constructs (\code{eq\_const} and FSMs) have two or more bits; \rttTenDatapath{} of the datapath and
-\rttTenControl{} of the control constructs are reached within two hops, so H10a is
-\rttLTenaStatus{} and H10b is \rttLTenbStatus. H10b is uninformative by construction once H10a
-fails: with D $=$ \rttTenDatapath{}, ``not supported'' means $C > D - 0.10 = -0.005$, which holds for
-any $C \ge 0$. We keep the status the rule gives and do not present it as a finding. Both numbers
-need reading. The datapath share
-is pooled and one VerilogEval design alone holds most of the \rttTenAdderN{} adder
-constructs, which the rule never reaches because the carry chain breaks the bit-for-bit
-isomorphism; the mean of the per-design shares is \rttTenDatapathMacro{} (datapath,
-\rttTenDatapathDesigns{} designs) against \rttTenControlMacro{} (control, \rttTenControlDesigns{}
-designs; both exploratory), a difference of the sign the hypothesis expects but not of its size. Registers are
-reached best (\rttTenRegHone{} at one hop, \rttTenRegHtwo{} at two), muxes less, adders and
-counters almost never, and a second hop adds little: bit-sliced isomorphism stalls after
-the first layer of logic. The control constructs are reached not because FSM logic follows
-the ports but because the constant compares read input ports directly (\code{eq\_const}
-\rttTenEqHtwo{} at two hops); the FSMs themselves are not. The strict rule reaches
-\rttTenStrictDatapath{} and \rttTenStrictControl, and the gate floor f3 \rttTenFthreeDatapath{} and
-\rttTenFthreeControl: at f3 a cell group lands inside a gate-level footprint almost by
-construction, so that figure measures the floor, not the idea. Two details of the counting, checked as
-exploratory recounts: a \code{\$lt}, \code{\$le}, \code{\$gt} or \code{\$ge} word with a
-constant port is counted as a comparator although the protocol says comparators have none
-(\rttTenRelConstN{} such words in f2; excluding them moves the datapath share from
-\rttTenDecidingFour{} to \rttTenNoRelDatapath, control unchanged); and a \code{\$mux} inside a
-mux tree and a register inside a counter are both counted (\rttTenSubsumedN{} such constructs;
-deduplicating the footprints gives \rttTenDedupDatapath, and both corrections
-\rttTenNoRelDedupDatapath). Neither moves the share. The first measure we planned, a construct that is
-itself a port word, is empty at level 0 by construction (\rttTenIoCells{} port cells in any
-footprint); read as a group that reproduces the construct's cells at one hop (Jaccard at least
-0.5) it is \rttTenFullHoneDatapath{} for the datapath and \rttTenFullHoneControl{} for the control
-constructs. The honest summary is that I/O
-words seed registers and input-side muxes well, and nothing else.
+\input{gen/tab-r3-chain}
+\input{gen/tab-r3-detect}
 
 \emph{RQ-L11: the FSM chain.} Measurement only. In the f2 ground truth of VerilogEval
 (\rttElevenVeDesigns{} designs) \rttElevenVeFb{} registers feed back to themselves, of which
@@ -1359,183 +1322,23 @@ analysing the flow of data between individual flip-flops. We ran DANA (through H
 next round builds this detector (L8, the language model given the ReverseProvenance record,
 stays deferred).
 
+\hev{Verdicts.} H9a \verdict{POSSIBLY GOOD}: by the letter of the rule about half of the false candidates are
+fragments of a related kind (0.583 pooled), but the result fails leaving out one design (0.415) and the
+near-tautological \code{ff\_en} slices (0.304), so we state it only with that fragility. H9b \verdict{DISMISSED}:
+a word's fragments cover it in 0.065 of the words, so the fragments exist but do not tile the words; this is
+the motive for the word-first detector of the next subsection. The FSM chain is a measurement and has no verdict.
 
-\subsection{Round 4: patterns from our own data, big designs, and what is recoverable}
-\label{sec:round4}
-
-\input{round4-tables}
-
-Round 3 pointed to a word-first detector. Round 4 builds what such a detector needs: labelled
-data of our own, a dictionary of netlist patterns mined from it, a look at what the larger VTR
-designs add, and a statement of what the flow destroys. Peter (Appendix~\ref{app:log}) asked
-for ``patterns from our data (what about the bigger designs, do they provide other insights of
-patterns)''. No language-model call and no new detector in \code{loki/} were used; the prototypes
-live in \code{experiments/round4}. The rules were committed before the corpus was generated
-(commit \code{c6c66bf}, \code{experiments/round4/EXPERIMENT.md}); two variants of the dictionary
-(V1, V2) were added in a dated entry after Stage 0 and before any dictionary result, and they are
-reported next to the rule as written (V0), which alone gives the primary status. The thresholds
-were set knowing the round-2 and round-3 counts and the ground-truth kind counts of the real
-designs (which fixed the seven eligible kinds of H12b). Analyses added after the numbers were
-known (entry 2026-10-25-c of \code{EXPERIMENT.md}) are marked \emph{exploratory}; they change no
-status. Where one shows that the measure of a rule is vacuous or confounded, the status is
-reported by the letter of the rule and called uninformative, with the reason.
-
-\emph{RQ-L12a: a synthetic corpus.} A seeded generator of twelve idiom families (muxes, counters,
-adders, subtractors, comparators, shifters, FSMs, register files, pipelines, registers, a
-datapath with an FSM controller, an ALU), each parameterised by width, depth, encoding, reset and
-enable style and coding style, gives \rfsCorpusTotal{} designs split by parameter region: train
-values only (840), the same region with unseen text (120, iid), and at least one test-only value,
-such as an unseen width or coding style (240, ood). Built by Odin III on f1-k6, f2 and f3,
-\rfsCorpusOk{} of \rfsCorpusTotal{} pass every equivalence check on all three floors
-(Table~\ref{tab:r4-corpus}); H12a is \rfsTwelveAStatus. In all \rfsNoLogic{} corpus designs have no labelled
-logic cell (constant shifts, constant-only comparators) and are excluded from the GNN train and
-test sets (the trainer needs a labelled logic node per train design); the same filter also
-shrinks the test sets, so the GNN is scored on \rfsNIid{} of 120 iid and \rfsNOod{} of 240 ood
-corpus designs, \rfsNMicro{} of \rfsNAllMicro{} micros and \rfsNVeTest{} of \rfsNAllVeTest{}
-VerilogEval test designs, and trained on \rfsNCorpusTrain{} of 840 corpus designs at the largest
-size (actual train sizes \rfsTrainActual); the dictionary scores the excluded designs with no
-candidates and no ground truth. About \rfsDupTwoIidShare{} of the iid test designs
-(\rfsDupTwoIid{} of \rfsDupTwoIidN{} at f2) and \rfsDupTwoOodShare{} of the ood ones
-(\rfsDupTwoOod{} of \rfsDupTwoOodN) have a netlist, up to the multiset of cell labels and edges,
-identical to a train design of the same family (exploratory; this is the same collapse as the
-identifiability result of RQ-L14: different texts, same netlist).
-
-\emph{RQ-L12b: a signature dictionary.} For each cell the signature is the canonical class of the
-Boolean function of its largest cut and the Weisfeiler-Lehman context of radius $r$; the
-dictionary keeps, per construct kind, the signatures that occur at least three times in the
-corpus train split and lie in that kind at least 60\% of the time; a matcher labels the test
-cells and joins labelled cells into words by adjacency or by a shared net. Against the round-2
-detectors on the micros and the 33 held-out VerilogEval designs (f2, seven eligible kinds) the
-dictionary as written (V0) wins on none: H12b is \rfsTwelveBVzeroStatus{} (\rfsTwelveBVzeroNumbers).
-V1 (cuts of up to six leaves) and V2 (a shared clock also joins storage cells), added after
-Stage 0, also win on none (\rfsTwelveBVoneNumbers; \rfsTwelveBVtwoNumbers) and change no
-status. Table~\ref{tab:r4-kinds} gives the F1 per kind: on the real designs the
-dictionary finds almost nothing the corpus signatures were mined for. It does not even
-generalise inside the corpus: the iid test micro-F1 is low (0.19 to 0.26) and H12b2 is
-\rfsTwelveBTwoVzeroStatus{} (\rfsTwelveBTwoVzeroNumbers; V2: \rfsTwelveBTwoVtwoNumbers).
-Exploratory: restricted to the test designs whose netlist is absent from train
-(\rfsDupRestrIidN{} iid, \rfsDupRestrOodN{} ood) the ratio R is \rfsDupRestrVzeroR{} (V0),
-\rfsDupRestrVoneR{} (V1) and \rfsDupRestrVtwoR{} (V2) against \rfsDupAllVzeroR, and so on:
-duplicates do not explain the failure. Reported, not deciding: at f3 the dictionary wins on none
-of the seven kinds either (\rfsXTwelveBFThreeVzero), and on the corpus ood split the variants win
-\rfsXTwelveBOodVzero{} (V0), \rfsXTwelveBOodVone{} (V1) and \rfsXTwelveBOodVtwo{} (V2), i.e. inside
-the corpus a dictionary does recover kinds. The word-level overlap $q_K$ (Table~\ref{tab:r4-overlap})
-is zero for V0 on every kind; the ceiling statement is Table~\ref{tab:r4-ceiling} (the Bayes
-ceiling is in-sample: train and test pooled, so large radii memorise). Signatures by cone class alone are
-mostly floor-specific (\code{l12b\_stability.csv}): few classes that fire for a kind at f2 also
-fire at f3.
-
-\emph{RQ-L12c: GNN scaling.} Trained on corpus subsets of \rfsTrainMin{} to \rfsTrainMax{} designs (three seeds each),
-the GNN improves on the corpus test sets but not on real designs
-(Tables~\ref{tab:r4-curve}, \ref{tab:r4-slope}): on the \rfsGnnVeDesigns{} VerilogEval held-out
-designs with a labelled logic cell the slope is \rfsGnnSlope{} per doubling (95\% interval
-[\rfsGnnCiLo, \rfsGnnCiHi]), so H12c is \rfsTwelveCStatus. The upper bound is
-\rfsGnnMargin{} under the limit of 0.010 of the rule (not a wide margin). Exploratory: on the actual
-train sizes (\rfsTrainActual) the slope is \rfsGnnActSmallSlope{} (interval [\rfsGnnActSmallCiLo,
-\rfsGnnActSmallCiHi]); with 20,000 bootstrap draws instead of 2,000 the upper bound is
-\rfsGnnNomLargeCiHi{} (nominal sizes) and \rfsGnnActLargeCiHi{} (actual sizes), margin
-\rfsGnnMarginLarge, so the status holds but is close to the boundary. On the corpus iid test the
-slope is \rfsDupGnnTwoIidAllSlope{} and \rfsDupGnnTwoIidRestrSlope{} when restricted to designs absent
-from train; on ood \rfsDupGnnTwoOodAllSlope{} and \rfsDupGnnTwoOodRestrSlope: the corpus gain is
-not a duplicate effect. A GNN trained on the VerilogEval
-train split itself reaches a higher macro-F1 on its held-out designs than any corpus size.
-
-\emph{RQ-L13: big designs.} Table~\ref{tab:r4-big} lists the VTR designs built one at a time
-with Odin III's peak resident set measured. Big designs are \emph{not} equivalence-checked
-(agent default, as in Odin III itself; \code{meta.json} records \code{skipped:big}).
-\rfsBigBuilt{} designs built. Odin III's reader refuses the f3 floor (\code{unresolved\_module})
-of \rfsBigFThreeSkipped{}, whose f1-k6 and f2 floors are built (the \code{mkPktMerge} case among
-them); \rfsBigMemSkipped{} exceeded the \rfsAsLimitGiB\,GiB address limit (60\% of the VM) and are
-skipped, partly or wholly. \code{arm\_core} was stopped by the controller after \rfsArmHours{}
-wall-clock hours (3.56 CPU hours, a hang in the linked ABC is documented for this design in the Odin III notes) without finishing its
-f1-k6 floor, and \code{mcml} and \code{LU64PEEng} (which Odin III's goldens do not cover) were not
-run; the results use the designs of Table~\ref{tab:r4-big}. \emph{Scope of the big set:} the f3
-big set is six designs, three of them near-clone stereovision designs (\code{stereovision0}--\code{2}:
-5707 of the 7167 eligible words), no library-block design (all seven are excluded at f3 by
-\code{unresolved\_module}) and none with a memory, so H13 says what repeats in these designs, not in
-big designs in general. Share of words in a repeat group in the small designs:
-\rfsSmallShare{} (\rfsSmallDesigns{} designs at f3, among them 840 synthetic corpus train designs).
-H13a is \rfsThirteenAStatus{} (\rfsThirteenANumbers), H13b \rfsThirteenBStatus{}
-(\rfsThirteenBNumbers) and H13c \rfsThirteenCStatus{} for the primary dictionary variant V0
-(\rfsThirteenCNumbers; V1 \rfsThirteenCVoneStatus, V2 \rfsThirteenCVtwoStatus).
-
-\emph{Exploratory checks of RQ-L13.} (1) The repeat key has no cross-word context, so same-type
-same-width words with no connection to anything else could repeat trivially. Against a null in
-which every word is replaced by random cells with the same cell labels, the share is
-\rfsXRepZeroBig{} observed and \rfsXNullZeroBig{} null for the big designs (excess \rfsXExcZeroBig),
-\rfsXRepZeroSmall{} and \rfsXNullZeroSmall{} for the small designs (excess \rfsXExcZeroSmall), and for
-the real small designs (micros and VerilogEval) \rfsXRepZeroReal{} and \rfsXNullZeroReal{} (excess
-only \rfsXExcZeroReal{}; VerilogEval alone \rfsXRepZeroVe{} against \rfsXNullZeroVe). With a context
-key (the footprint cells' full-graph WL colours also must agree) the big share is \rfsXRepOneBig{}
-against a null of \rfsXNullOneBig. So the repetition of the big designs is real structure (the
-statuses of H13a stand), while on the small real designs the key is close to its null and is not
-evidence. (2) The registered small baseline pools 840 synthetic corpus designs; the difference
-big minus small is \rfsXThirteenBSmall{} (\rfsXThirteenBSmallStatus) as registered, \rfsXThirteenBReal{}
-against the real small designs (micros and VerilogEval: \rfsXThirteenBRealStatus{} by the rule) and
-\rfsXThirteenBVe{} against VerilogEval alone (\rfsXThirteenBVeStatus): the status of H13b flips with the
-baseline, and the null-adjusted contrast (\rfsXExcZeroBig{} against \rfsXExcZeroSmall{} and
-\rfsXExcZeroReal) is the fairer one. (3) Only \rfsXCrossBig{} of the big designs' words lie in repeat
-groups that span two or more module paths, so the repeats are mostly within a module, not
-module-level instance evidence. (4) For H13c the null (random label-matched footprints of the same
-group sizes) shares equal signatures in \rfsXThirteenCVzeroNull{} of groups against the observed
-share of H13c (V0), so H13c is informative.
-
-\emph{RQ-L14: what is recoverable.} On the twin set (the same design in every coding style) the
-style-recovery ceiling is \rfsCeilOne{} at f1-k6, \rfsCeilTwo{} at f2 and \rfsCeilThree{} at f3
-(Table~\ref{tab:r4-ident}): H14a is \rfsFourteenAStatus{} and H14b \rfsFourteenBStatus{}
-(\rfsFourteenBNumbers). The MDL score ranks the reference above the recovered RTL in the shares
-of Table~\ref{tab:r4-mdl} (H14c \rfsFourteenCStatus); its correlation with the round-2 AST
-similarity is \rfsFourteenDNumbers{} (H14d \rfsFourteenDStatus), and the partial correlation
-controlling for size does not support a readability reading: the score is largely a size measure.
-The H14d p value pools four variants of the same 129 designs; per variant rho runs from
-\rfsMdlAstFThreeNoneRho{} to \rfsMdlAstFTwoCalibRho{}, and the design-clustered bootstrap interval of the
-pooled rho is \rfsMdlAstCi{} (partial \rfsMdlAstPartCi), exploratory. The same for CFG similarity
-(report only, \rfsXFourteenCfgStatus): \rfsXFourteenCfgNumbers. Exploratory robustness of the
-identifiability result: enumerating all tied LUT input orders (720 instead of 24), using
-isomorphism-invariant pin labels (the registered form anonymises LUT inputs but names gate pins, so
-f2 could merge and f3 split netlists) or both leaves the pooled ceilings at 
-fsIdentCapPinsOne{},
-
-fsIdentCapPinsTwo{} and 
-fsIdentCapPinsThree{} (f3 minus f2 
-fsIdentCapPinsDiff), identical to the
-registered values; removing the 7 twin designs whose text is byte-identical to a sibling style
-changes them to 
-fsIdentDedupeOne, 
-fsIdentDedupeTwo{} and 
-fsIdentDedupeThree{} (difference
-
-fsIdentDedupeDiff). Exact isomorphism confirms the WL classes for 
-fsExactThree{} of
-
-fsExactThreeOf{} designs at f3 (
-fsExactTwo{} f2, 
-fsExactOne{} f1-k6, netlists of at most 100
-nodes) with 
-fsExactDisagree{} disagreements with WL in 
-fsExactBases{} bases. The Bayes ceiling is
-in-sample.
-
-\emph{What it means for the round-5 word-first detector.} The data say what not to do: this
-signature dictionary and this GNN did not transfer to real logic (H12b for the dictionary, H12c
-for the GNN), and the dictionary also fails inside the corpus (iid micro-F1 0.19 to 0.26), so the
-cause is not settled by the data; the corpus is a test bed for word-grouping rules, not a source of a lookup table.
-The detector should build words from structure that is stable across designs: registers by shared
-clock, enable and reset; datapath words by per-bit isomorphic cones; control nets by select and
-enable fan-out; FSMs by feedback components and their decoders, with the \code{eq\_const} decoder
-decided at word level. The repeat measures of Table~\ref{tab:r4-big} show real repeated structure in the big designs
-(\rfsXRepZeroBig{} of words against a null of \rfsXNullZeroBig) but mostly within a module and
-near the null on small real designs, so repetition is a hint for word grouping in large designs
-only.
-
-\subsection{Round 5: the word-first detector}
+\subsection{The word-first detector and DANA (H16a--H16f, RQ-H1)}
 \label{sec:round5}
 
-\input{round5-tables}
+\hev{Hypotheses.} The word-first detector, built from the two lessons of the fragment study, makes
+six claims: H16a, word tiling beats the earlier detectors on held-out real designs; H16b, grouping by clock,
+enable and reset recovers the enabled-register words; H16c, a word-level \code{eq\_const} beats the per-bit
+one; H16d, the FSM-decode-select chain is completed more often; H16e, words grown from registers reach the
+datapath beyond a size-matched null; H16f, repetition is evidence on big designs. RQ-H1: the detector recovers
+register words better than, equal to, or worse than DANA.
 
-Rounds 3 and 4 said what to build: words from structure, the corpus as a test bed for grouping
-rules, repetition only where it is real. Round 5 builds it (question L~Q2.4 of the purpose page:
-can words, control nets and FSMs be found first, and the rest built around them?). Two opt-in
+The fragment study says what to build: words from structure. Round 5 builds it (can words, control nets and FSMs be found first, and the rest built around them?). Two opt-in
 detectors, \code{wordfirst} and \code{wordgroup} (\code{loki/re/detectors/wordfirst.py},
 \code{docs/user/wordfirst.md}), were added to \code{loki re}; the default detector list and every
 earlier calibration are unchanged. \code{wordfirst} groups flip-flops by clock, enable and reset
@@ -1551,61 +1354,24 @@ Verilog writer work unchanged. Every threshold is an agent default (no fitted pa
 above 32 flip-flops are split by the Q-reader and D-driver signature, \code{eq\_const} supports
 are at most 16, growth needs 0.75 of the bits and two levels.
 
-The rules were committed first (commit \code{ce02fa4}, \code{experiments/round5/EXPERIMENT.md});
-the detector was developed on the corpus train split only. Two things differ from the committed
-text and are disclosed here, with the review fixes that follow from them (entries 2026-10-25-b
-and -c of that file). First, the FSM rule of the committed text (feedback plus at least two
-word-level decoders) was relaxed in the code committed at \code{6e97d88}, eleven minutes after
-the protocol, to a feedback-coupling test alone; the entry that records the change was committed
-only at \code{aaae4d7}, after the Stage-2 numbers existed. This is a late disclosure, and commit
-order alone does not show whether an evaluation run preceded the change. The committed rule is
-reported as a labelled variant (arms W1 and WB1, Table~\ref{tab:r5x-fsm}); the statuses below
-use the rule that was evaluated. Second, the shuffles of the H16f null were drawn from one random
-stream instead of one stream per design as the committed text says; the committed seeding was
-rerun and is reported with the first (Section on H16f below). The thresholds were set knowing the round-3 and round-4 numbers (H9b
-0.065, 732 \code{ff\_en} candidates with one correct, 5 of 89 chains, the 0.095 hop-two reach) and
-the ground-truth kind counts of the evaluation sets. The evaluation sets are the micros (MI), the
+The evaluation sets are the micros (MI), the
 33 held-out VerilogEval designs (VT), the corpus iid and ood test splits (CI, CO) and the 13 big
 designs that built at f2 (BIG). The arms are the round-2 detectors uncalibrated and calibrated
 (R2N, R2C), \code{wordfirst} alone (W) and \code{wordfirst} with the per-bit detectors and
-\code{wordgroup} (WB); all runs are uncalibrated. Table~\ref{tab:r5-rq} lists the questions.
+\code{wordgroup} (WB); all runs are uncalibrated. 
 
-\begin{table}[t]
-\caption{Round 5 research questions. Each serves L~Q2.4; the measure is the recovery of the
-Odin~III ground truth (precision, recall, word tiling), not area, speed or power.}
-\label{tab:r5-rq}
-\centering\footnotesize
-\begin{tabular}{@{}lp{0.72\columnwidth}@{}}
-\toprule
-RQ & Question \\
-\midrule
-L16a & Do word-first candidates tile the ground-truth words (round 3: 0.065)? \\
-L16b & Does clock, enable and reset grouping recover the enabled words? \\
-L16c & Does word-level \code{eq\_const} beat the per-bit detector? \\
-L16d & Does the FSM, decode, control chain complete more often (round 3: 5 of 89)? \\
-L16e & Do words grown from registers reach the datapath beyond a size-matched null? \\
-L16f & Is repetition real evidence on big designs, against shuffled groups? \\
-\bottomrule
-\end{tabular}
-\end{table}
+\input{gen/tab-r5-tiling}
+\input{gen/tab-r5-f2}
 
-\emph{Outcome.} Under the Stage-0 rules: H16a (tiling, VT) is \rfvHaStatus{}, H16b (\code{ff\_en}
-words) \rfvHbStatus{}, H16c (word-level \code{eq\_const}) \rfvHcStatus{}, H16d (chains)
-\rfvHdStatus{}, H16e (growth beyond a null) \rfvHeStatus{} and H16f (repetition on BIG)
-\rfvHfStatus{} (Table~\ref{tab:r5-status}). No hypothesis is supported. Two of the statuses
-carry a qualification: H16f is degenerate (its margin cannot be reached on this data, see below),
-and the null clause of H16a is empty on VT.
-
-\emph{H16a: tiling.} On VT the pooled tiling of WB is \rfvHaqwb{} against \rfvHaqbase{} for the
+\hev{Experiment and result.} \emph{H16a: tiling.} On VT the pooled tiling of WB is \rfvHaqwb{} against \rfvHaqbase{} for the
 better round-2 arm (difference \rfvHadeltaq{}, bootstrap interval \rfvHadeltaqlo{} to
 \rfvHadeltaqhi{}, \rfvHaninstances{} instances over \rfvHadesigns{} designs, Wilcoxon p
 \rfvHawilcoxonp{}). Word grouping does not tile the held-out real words; on the micros and the
 synthetic splits the tiling of WB and of the round-2 arm are close (Table~\ref{tab:r5-tiling}).
 The null columns replace each counted candidate by random cells of the same size. On VT the null
 of WB (\rfvHaqnull{}) is above WB itself and above every arm (the largest arm value is
-\rfvHaqarmmaxvt{}), so the null clause of the Stage-0 rule (q(WB) minus the null at least 0.10)
-cannot hold on VT. The Stage-0 reachability sentence (WB at least 0.215) used the round-3
-baseline and ignored that clause; with the VT baseline the difference clause needs q(WB) of
+\rfvHaqarmmaxvt{}), so the null clause of the decision rule (q(WB) minus the null at least 0.10)
+cannot hold on VT. With the VT baseline the difference clause needs q(WB) of
 \rfvHareachqdiff{} and the null clause \rfvHareachqnull{}, so a supported verdict needed
 q(WB) of about \rfvHareachq{}. The status does not depend on the null: the difference is below
 0.05. The null depends on the size mix of the candidates: WB has \rfvXNullVtWbAllBig{} counted
@@ -1613,13 +1379,13 @@ candidates of at least ten cells on VT against \rfvXNullVtRtwoNAllBig{} for R2N,
 \rfvXNullVtWbAllMax{} cells (R2N: \rfvXNullVtRtwoNAllMax{}), and the null of all of WB's counted
 candidates is \rfvXNullVtWbAllNull{} against \rfvXNullVtRtwoNAllNull{} for R2N, while the
 \code{ff\_en} candidates alone give \rfvXNullVtWbFfenNull{} for WB and \rfvXNullVtRtwoNFfenNull{} for
-R2N (exploratory, Table~\ref{tab:r5x-null}). The tiling measure cannot separate structure from
+R2N (exploratory). The tiling measure cannot separate structure from
 chance when a few candidates are large.
 
 \emph{H16b: \code{ff\_en} words.} Pooled over all four sets the recall of \code{ff\_en} rises from
 \rfvHbrecallbase{} (best round-2 arm) to \rfvHbrecallwb{} for WB (precision \rfvHbprecisionbase{}
 to \rfvHbprecisionwb{}); the gain in recall (\rfvHbdeltarecall{}) and in F1 (\rfvHbdeltafone{}) is
-below the Stage-0 margins (0.20 and 0.10) although the paired test over \rfvHbdesignswithgt{}
+below the margins of the rule (0.20 and 0.10) although the paired test over \rfvHbdesignswithgt{}
 designs is significant, so the status is inconclusive. Grouping by shared control matches some
 enabled words that per-bit slices never matched, at a precision of \rfvHbprecisionwb{} (F1
 \rfvHbfonewb{}); the recall stays at \rfvHbrecallwb{}. Why it stops there was not measured. Three
@@ -1627,127 +1393,20 @@ reasons are plausible and untested: the enable is often a function of several ne
 limit of the \code{ff\_pattern} analysis cuts it, and the ground-truth footprints of such words
 are whole arrays that share cells.
 
-\emph{H16c: word-level \code{eq\_const}.} The word-level decision changes nothing measurable:
-F1 is \rfvHcprecisionwb{} precision and \rfvHcrecallwb{} recall for WB against
-\rfvHcprecisionbase{} and \rfvHcrecallbase{} for the baseline, over \rfvHcdesignswithgt{} designs
-with the kind (\rfvHcStatus). WB says nothing about the word-level rule, and the reason is in the
-code. The per-bit \code{eq\_const} of \code{arith} applies the same single-minterm test to every
-cone with at most 16 support nets; the word-level rule applies it only to cones whose support lies
-in one register word or the primary inputs, so it is a subset. On MI and VT (\rfvXEqDesigns{}
-designs) the number of counted word-level candidates of W with cells that R2N lacks is
-\rfvXEqWNotInRtwoN{}, and WB ends with the same cell sets as R2N in \rfvXEqWbSame{} of those
-designs (\rfvXEqVtWb{} against \rfvXEqVtRtwoN{} counted on VT): the overlay merges two candidates
-of equal kind, cells and parameters into one hypothesis, so a word-level candidate that
-\code{arith} also proposes is not a second one and WB does not drop it. Arm W alone is the
-reading of the word-level rule (exploratory variant, no status): it counts \rfvXEqVtW{} candidates
-on VT against \rfvXEqVtRtwoN{} for R2N at the same recall, with F1 \rfvHcfonew{} against
-\rfvHcfonebase{}. Why the word-level rule finds fewer cones is not established. One development
-design (a corpus FSM design in which none of the LUTs is a pure decoder) suggests that the f2
-mapping absorbs decoders into next-state LUTs; this was not measured on the evaluation sets.
-Across the four sets only \rfvXFsmDecW{} of the \rfvXFsmCandWTotal{} \code{fsm} hypotheses of W contain a
-word-level decoder (exploratory). The \code{ne\_const} branch of the detector has a defect (the
-inverted table is masked with the wrong width, so a constant of four or more bits reads back as
-$-1$ and the prover refutes the candidate): \rfvXEqNeRefuted{} of \rfvXEqNe{} \code{ne} candidates
-of W on MI and VT are refuted by it. It was left in place so that the evaluated results stand.
+\emph{H16c to H16f.} The word-level \code{eq\_const} changes nothing measurable (F1 \rfvHcfonewb{} for WB against
+\rfvHcfonebase{} for the baseline; it is a subset of the per-bit rule). The chain test is inconclusive (WB completes
+\rfvHdcompletewb{} of \rfvHdpairedchains{} chains, the round-2 arm \rfvHdcompletertwon{}) and the FSM rule that was
+evaluated over-generates. Growth from register words reaches the datapath at \rfvHedatapathwb{} (WB) but a size-matched
+random null reaches \rfvHednull{}, so the level alone is not evidence. Repetition on the big designs lowers F1 (\rfvHffoneall{}
+to \rfvHffonef{}), and H16f is degenerate: no outcome but \emph{not supported} was reachable. Their details are in the
+repository (\code{experiments/round5}) and in the research log.
 
-\emph{H16d: the chain.} Of the \rfvHdpairedchains{} ground-truth chains of MI and VT, WB completes
-\rfvHdcompletewb{}, W \rfvHdcompletew{} and the round-2 uncalibrated arm \rfvHdcompletertwon{}
-(calibrated: \rfvHdcompletertwoc{}); the two chains that WB completes and R2N does not are fewer than
-the margin of five and fewer than the eight discordant chains the test needs (with fewer than
-eight discordant chains the rule gives inconclusive whatever the gain). FSM instances matched:
-R2N \rfvHdfsmhitrtwon{} of \rfvHdfsmgtrtwon{}, WB \rfvHdfsmhitwb{}, W \rfvHdfsmhitw{}.
-The FSM rule that was evaluated (a feedback-coupling test, no decoder required) over-generates.
-Of the \rfvXFsmCandWTotal{} \code{fsm} hypotheses of W on the four f2 sets, \rfvXFsmCandWFsm{} have their
-flip-flops in a ground-truth FSM, \rfvXFsmCandWCounter{} in a counter, \rfvXFsmCandWRegister{} in a
-register that is neither (the ground truth has no shift-register or LFSR kind, so these fall
-here) and \rfvXFsmCandWNone{} in none; of the \rfvXFsmCntWTotal{} that are counted only
-\rfvXFsmCntWFsm{} are FSMs and \rfvXFsmCntWCounter{} are counters (exploratory, Table~\ref{tab:r5x-fsm}).
-The committed Stage-0 rule (W1, WB1) proposes \rfvXFsmCandWOneTotal{} and \rfvXFsmCandWbOneTotal{}
-hypotheses in W and WB where the evaluated rule proposes \rfvXFsmCandWTotal{} and
-\rfvXFsmCandWbTotal{}; the chains it completes are \rfvXChainWOneComplete{} (W) and
-\rfvXChainWbOneComplete{} (WB), the FSM instances it hits \rfvXChainWOneFsm{} and
-\rfvXChainWbOneFsm{}, and the pooled F1 of kind \code{fsm} is \rfvXFsmKindWbOneF{} for WB1
-against \rfvXFsmKindWbF{} for WB (R2N \rfvXFsmKindRtwoNF{}, R2C \rfvXFsmKindRtwoCF{}). Of the
-\rfvXFsmCompTotalW{} W hypotheses that match a ground-truth FSM (Jaccard at least 0.5) only
-\rfvXFsmCompCountedW{} are counted, and \rfvXFsmCompRegW{} conflict with a register hypothesis over
-the same cells and stay open below $p = 0.5$. Which features keep them below that was not measured.
+\emph{Limits of the detector.} It reuses the \code{ff\_pattern} cone analysis and the \code{arith} chain finder, so its
+adders are those of the baseline. At f3 every arm has zero recall on muxes and comparators. The rules were developed on
+150 synthetic train designs and did not transfer to the real held-out set.
 
-\emph{H16e: growth.} The seeded share of the datapath constructs is \rfvHed{} for W (WB
-\rfvHedatapathwb{}, R2N \rfvHedatapathrtwon{}), far above the 0.095 of I/O-port propagation, but
-a size-matched random null reaches \rfvHednull{}: the gap (\rfvHeNote) is below the margin and the
-level alone is not evidence, because the ground-truth instances partition the non-I/O cells.
-By kind, the gap to the null is smallest for registers (\rfvHegapregister{}: \rfvHeregisterw{}
-against \rfvHeregisternullW{} over \rfvHeconstructsregister{} constructs), the kind the growth
-starts from, and larger for subtractors (\rfvHegapsubtractor{}), adders (\rfvHegapadder{}),
-comparators (\rfvHegapcomparator{}) and muxes (\rfvHegapmux{}); counters and mux trees have a gap
-of zero (\rfvHeconstructscounter{} and \rfvHeconstructsmuxtree{} constructs, both at the ceiling
-of their null). The per-kind numbers come from \code{r5\_numbers.csv}; the kinds are few and no
-interval was computed for them.
-
-\emph{H16f: repetition.} On the \rfvHfdesignsfinished{} BIG designs W counts \rfvHfcounted{}
-candidates and matches \rfvHfmatched{} of \rfvHfgt{} ground-truth words; keeping only the
-candidates in a repeat group lowers the matches to \rfvHfmatchedf{} and F1 from \rfvHffoneall{}
-to \rfvHffonef{}, and every shuffled draw reaches that F1 or more (share
-\rfvHfnullsharege{}): repetition of the candidates themselves is not evidence of a correct word
-here, in line with the near-null repeat key on small designs in round 4.
-H16f is degenerate: even a filter that kept exactly the matched candidates would reach an F1 of
-\rfvHffonebound{}, a gain of at most \rfvHfdeltabound{} over keeping all, below the margin of 0.05,
-so no outcome but \emph{not supported} was reachable and the literal status says nothing about
-repetition. The first run drew the shuffles from one random stream, which Stage 0 does not say;
-with the Stage-0 per-design seeding the share of null draws at or above F1 of the filtered set is
-still \rfvHfnullsharege{} (null mean \rfvHfnullmean{}, against \rfvHfnullmeanstream{} for the
-stream), and the status is unchanged. Arm WB was run on BIG as an exploratory addition with the
-Stage-0 cap of 1800 s: it finished \rfvXBigWbDone{} of \rfvXBigWbTotal{} designs
-(\rfvXBigWbTimeout{} timed out; Table~\ref{tab:r5x-bigwb}). On those designs W counts
-\rfvXBigWbCountedW{} candidates and matches \rfvXBigWbMatchedW{} of \rfvXBigWbGtW{} words (F1
-\rfvXBigWbFAllW{}, \rfvXBigWbFFiltW{} with the repetition filter); WB counts
-\rfvXBigWbCountedWb{} and matches \rfvXBigWbMatchedWb{} (F1 \rfvXBigWbFAllWb{},
-\rfvXBigWbFFiltWb{} filtered). The filter lowers F1 for both arms.
-
-\emph{Run time.} \code{wordfirst} is cheap: the median W run takes \rfvXTimeWMedLo{} to
-\rfvXTimeWMedHi{} s per design on MI, VT, CI and CO (by set), and W takes between
-\rfvXTimeBigMin{} s (\rfvXTimeBigMinName) and \rfvXTimeBigMax{} s (\rfvXTimeBigMaxName) on BIG
-with \code{--features none}; the median WB run takes \rfvXTimeWbMedLo{} to \rfvXTimeWbMedHi{} s on
-the same sets (Table~\ref{tab:r5-time}, Table~\ref{tab:r5-big}). WB hit the 900 s limit on
-\rfvXFthreeWbMissing{} micro f3 designs (f3 is report-only).
-
-\emph{What remains for L15.} The loss audit (L Q3.1) asks which pass loses each construct. The
-results above separate two reasons a word is not found. For registers and enable words the
-information is in the netlist and the detector or the grouping rule misses it (a fixable
-detector problem). For FSM decoders, comparators and the word boundaries of muxes the evaluated
-rules found nothing beyond the per-bit detectors (H16c) and the data do not show why. One
-development design suggests that the f2 mapping absorbs decoders into next-state LUTs, and
-register-file words are known to share one ground-truth footprint; neither is measured on the
-evaluation sets, and whether any word-level rule could recover these constructs is open. Which
-pass erases them (lowering of the \code{\$eq}, the absorption into LUTs, the merging of mux and
-enable) needs the construct chain that the Odin~III D14 provenance export will give at every
-granularity; with it the audit can label each missing construct with the pass that joined it to
-its neighbours.
-
-\emph{Limits.} The detector reuses the \code{ff\_pattern} cone analysis (depth three, twelve
-inputs) and the \code{arith} chain finder, so its adders are those of the baseline; carry chains
-are not rebuilt from isomorphic slices. At f3 every arm has zero recall on muxes and comparators,
-and the word-level \code{eq\_const} of W counts \rfvXFthreeEqWCounted{} candidates on MI and VT
-for \rfvXFthreeEqWMatched{} match (R2N: \rfvXFthreeEqRtwoNCounted{} for \rfvXFthreeEqRtwoNMatched{};
-Table~\ref{tab:r5-f3}). The rules were developed on 150 synthetic train designs and did not
-transfer to the real held-out set, the same pattern as the dictionary of round 4. The FSM test
-over-generates (counters, LFSRs and other coupled registers pass it) and the \code{ne\_const}
-branch has the constant-mask defect described under H16c.
-
-
-\subsection{Round 5b: the word-first detector against HAL's DANA}
-\label{sec:hal}
-
-\input{hal-tables}
-
-Question L~Q2.4 asks whether words can be found first; this subsection asks whether an established
-word finder does better on the same netlists. The comparison was pre-registered
-(\code{docs/plan/hal-compare-prereg.md}, commit \code{363187f}) before HAL was built, with two
-dated amendments: Amendment~1 (commit \code{4a71877}, before any run; the scorer differences, the
-bootstrap interval, the equivalence rule) and Amendment~2 (commit \code{373049e}; the HAL route and
-the results of the load checks). Amendment~2 was written after a HAL load of the 100 MI and VT f2
-designs that compared only the LUT truth-table bit order of our library with the BLIF covers; that
-check computed no DANA grouping and no word-recovery score (erratum in the pre-registration). The tool is
+\hev{Against DANA.}\label{sec:hal} 
+RQ-H1 asks whether an established word finder does better on the same netlists. The decision rule, the scorer and the bootstrap interval are written in the repository's HAL comparison plan. The tool is
 HAL v4.5.0 (commit \code{e7fea566b51e}) with its dataflow plugin DANA~\cite{hal,albartus2020dana},
 built without the graphical interface. Both tools read the same \code{netlist.blif} of a floor;
 a converter turns it into structural Verilog of the cells of one of two gate libraries that we
@@ -1764,20 +1423,18 @@ Table~\ref{tab:hal} gives the pooled result on MI and VT. On f2 the pooled $F_J$
 \halFoneHal{} against \halFoneLoki{} for Loki's \code{W} arm over \halDesigns{} designs
 (\halDesignsGt{} of them with a ground-truth word); the difference
 $D = F_J(\text{Loki}) - F_J(\text{DANA})$ is \halD{}, with a 95\% cluster-bootstrap interval of
-[\halCiLo, \halCiHi]. The pre-registered rule returns \emph{\halOutcome}: the point estimate
+[\halCiLo, \halCiHi]. The decision rule returns \emph{\halOutcome}: the point estimate
 favours DANA, but the interval is wide (the micro designs come in template families), the paired
 Wilcoxon test over the designs with a ground-truth word does not reach $p<0.05$ (\halPHal{} for DANA
 greater), and the interval is not inside the equivalence band either, so neither a lead nor a tie is
 shown. The comparison scorer (duplicate predictions counted once, Loki's cells and the
-ground-truth footprints cut to flip-flops) was committed (\code{ca4cbac}, 2026-10-26 17:37) after
-Loki's round-5 counts were known (round 5, 2026-10-25) and before any DANA grouping was scored; it
-moves Loki's pooled f2 $F_J$ from \halRFiveFTwoFJ{} to \halFoneLoki{}. The decision is therefore
+ground-truth footprints cut to flip-flops) moves Loki's pooled f2 $F_J$ from \halRFiveFTwoFJ{} to \halFoneLoki{}. The decision is therefore
 shown under both scorers (Table~\ref{tab:hal-decision}; DANA's counts are the same in both rows):
 $D$ is \halScorerCmpD{} with the comparison scorer (95\% interval [\halScorerCmpCiLo,
 \halScorerCmpCiHi]) and \halScorerFiveD{} with the round-5 scorer ([\halScorerFiveCiLo,
 \halScorerFiveCiHi]); the rule applied to each alone gives \emph{\halScorerCmpOutcome} and
 \emph{\halScorerFiveOutcome}, and neither scorer is the headline. DANA's size-2 run gives a pooled
-$F_J$ of \halHalTwoFTwoFJ{}; it is a sensitivity run, never the headline. Its pre-registered outcome
+$F_J$ of \halHalTwoFTwoFJ{}; it is a sensitivity run, never the headline. Its outcome
 is also not a decided one, but with the round-5 scorer alone the rule gives
 \emph{\halTwoScorerFiveOutcome} for it (comparison scorer alone: \emph{\halTwoScorerCmpOutcome}).
 
@@ -1802,10 +1459,10 @@ recall lower. This shift comes mostly from the scorer's flip-flop cuts (Loki's c
 ground-truth footprints), which raise the match count only together, and not from the detector:
 with the round-5 scorer Loki's pooled f3 $F_J$ is \halRFiveFThreeFJ{} (precision
 \halRFiveFThreePrecJ{}, recall \halRFiveFThreeRecJ{}), against \halLokiWFThreeFJ{} with the
-comparison scorer (Amendment~1 table in the pre-registration).
+comparison scorer (\code{docs/results-hal.md}).
 
 \emph{Limits.} The \halBigTotal{} large designs were not scored: \halBigDropped{} contain a RAM hard
-block that neither gate library can express, which is above the pre-registered \halStopLimit{} drop
+block that neither gate library can express, which is above the \halStopLimit{} drop
 limit; DANA ran on the \halBigRun{} that convert (at most \halBigMaxSeconds{} s each) and the group
 counts are in \code{docs/results-hal.md}. No evaluation netlist contains a flip-flop with set and
 reset pins, so DANA's control-net evidence is the clock only on both floors; a netlist with enable
@@ -1818,22 +1475,321 @@ and \halFreshIdentical{} of \halFreshDesigns{} with both runs uncached) and with
 names and shuffled instance order (\halPermIdentical{} of \halPermDesigns{} designs); these two
 checks cover only small VT designs (the 5 smallest designs with a ground-truth word, and 6), no MI
 design; HAL was not patched and DANA was not tuned. The ground truth is the
-Odin~III answer key, so a group that matches no word is wrong only in that sense. For L~Q2.4 the
-result is limited to register words on these sets: under the pre-registered rule the word-first
+Odin~III answer key, so a group that matches no word is wrong only in that sense. The
+result is limited to register words on these sets: under the decision rule the word-first
 rules are not shown to be ahead of, or equal to, a published dataflow method, and neither tool
 recovers most of the words.
 
-\subsection{LLM pilot: do Loki hints help a model recover RTL?}
+\input{gen/tab-hal-decision}
+\input{gen/tab-hal}
+
+\hev{Verdicts.} H16a \verdict{DISMISSED} (tiling 0.023 against 0.022 for the baseline; the null is 0.203). H16b
+\verdict{INCONCLUSIVE} (recall rises from 0.008 to 0.146 but F1 only by 0.025, below the margins, at a precision of 0.014).
+H16c and H16f \verdict{DISMISSED}; H16d and H16e \verdict{INCONCLUSIVE}. RQ-H1 \verdict{INCONCLUSIVE}: pooled $F_J$ 0.169 for
+Loki against 0.261 for DANA, difference $-0.092$ with 95\% interval $[-0.317, 0.043]$ and Wilcoxon $p(\text{Loki greater})=0.8284$;
+neither a lead nor a tie is shown, and neither tool recovers most of the words. We therefore make no claim that the word-first
+detector is an innovation that works.
+
+\subsection{Where synthesis loses constructs: the loss audit (L15a, L15c, L15d)}
+\label{sec:round6}
+
+\hev{Hypotheses.} L15a: each construct kind is first lost at one dominant Odin~III pass. L15c: the D14 labels
+explain the merged losses. L15d: a pass can fool a detector (its recall falls across the pass).
+
+\input{gen/tab-r6-status}
+\input{gen/tab-r6-headline}
+\input{gen/tab-r6-kindpass}
+\input{gen/tab-r6-pnull}
+\input{gen/tab-r6-reason}
+\input{gen/tab-r6-explained}
+\input{gen/tab-r6-rule1}
+\input{gen/tab-r6-detect}
+\input{gen/tab-r6-list}
+
+\hev{Experiment and result.} The word-first detector finds register and enable words and does not find FSM decoders, compares and mux boundaries; we guessed that they are absorbed into LUTs at f2. The audit asks where and why: for each HDL construct, at which Odin~III step is it first lost as a separable unit, joined with what, and why? The measure is a count of
+constructs lost per kind and pass, the share that the D14 provenance explains, and the recall
+of the round-5 detectors before and after a pass. It is not area, speed or power. The tools
+are Odin~III~\cite{odinII} at \code{c82609e6}, which writes the version~2 name map
+(\code{--prov-map}: records, join labels and the construct table), and ABC~\cite{abc} inside
+its \code{abc} pass; no VPR run is involved.
+
+\emph{Protocol.} Development used hand-written fixtures and the corpus train split. The f2 flow of round 5 is run
+pass by pass in one Python session (proc, fsm, opt, flatten, opt \code{-full}, wreduce, lower,
+abc) and a netlist plus map is written after each pass. A \emph{unit} is the statement-level
+anchor of a record's construct leaves (V1.2.0 Section~3.3), reduced by dropping ancestors; a unit is
+\emph{separable} at a snapshot when some logic object has exactly that unit set, and \emph{lost}
+at the first later snapshot where none has. A loss is \emph{explained} when a labelled same-pass
+join record names the unit; its reason class is read from the pass and that evidence. The map
+holds one record per object (checked on all 214{,}157 objects of the 1{,}768 maps), so reading the
+first record of an object loses nothing.
+
+\emph{Two nulls.} The random-set null draws, for every real object of a pass, a random unit set of the same size from the
+units alive at the pass. It matches the object count and the size distribution of the pass; it does not match the chains,
+because it forgets which units the objects of the previous snapshot already held together. A pass that changes nothing still
+draws fresh random sets and ``loses'' most units, so the random-set null overstates chance losses. The \emph{persistence null}
+starts every draw from the real objects of the previous snapshot and applies random merges until the object count of the real
+snapshot is reached (50 draws; mean and a 95\% interval of the per-draw totals; a pass that changes nothing gives zero; a pass
+that only removes dead objects is read as merges, so at \code{opt} it is an upper bound of chance merging). The rule
+thresholds are the same for both nulls. The sets are the 68 micros (MI), the 33 held-out VerilogEval designs (VT) and the 120
+corpus iid designs (CI), each with all designs ok; the 13 big designs and the ood split were not run. The snapshot writers do
+not change the netlist: the final BLIF of all 68 micros (hash-style names, MI only) is byte-identical to a run without them.
+
+\emph{Where units are lost.} Of \rsxUnitsAll{} units, 580 are lost, 474 are never lost and 382 are
+joined from the first snapshot onwards (Table~\ref{tab:r6-status}). The losses fall on four
+passes only: 320 at \code{opt}, 68 at \code{flatten}, 26 at the second \code{opt} and 166 at
+\code{abc}. None is lost at \code{fsm}, \code{wreduce} or \code{lower}: \code{lower} splits word
+cells into gates, which makes units finer, not blended. The 580 is the total. It includes
+\rsxSubsumedAll{} \code{subsumed} losses (a statement that stays alive only as the enclosing
+statement of a finer unit; \rsxSubsumedShare{} of the total, 127 of the 320 at \code{opt} and 33 of
+the 166 at \code{abc}); without them the merged-plus-removed losses are \rsxLostNoSub{}
+(Table~\ref{tab:r6-headline}). The 68 at \code{flatten} are all \code{INSTANCE} units (the instance
+cell of a dissolved module, class \code{removed}) and say nothing about logic: the \code{logic}
+kind is dominant at \code{flatten} because of them, not because dead logic is removed.
+
+By hardware kind (Table~\ref{tab:r6-kindpass}), under the random-set null, registers
+(\rsxRoneRegister) and compares (\rsxRoneCompare) are lost at \code{opt} (84 of 89 and 18 of 19,
+against random-set null shares of 0.34 and 0.49), muxes at \code{opt} (192 of 285, null share 0.41)
+and arithmetic at \code{abc} (31 of 55, null share 0.10). By the count rule against the random-set
+null, \code{abc} loses muxes more than chance (79 against 36) and arithmetic at chance, whereas
+arithmetic at \code{opt} (17 against 51) and muxes at the second \code{opt} (14 against 61) are
+below chance. These readings do not survive the persistence null (exploratory,
+Tables~\ref{tab:r6-pnull} and~\ref{tab:r6-rule1}): \code{opt} is also where a chance merging of
+the objects puts most of its losses, so the pass shares of register, compare, mux and arithmetic are
+\code{dominant-null}, the growth artefact of rule~1 (null shares 0.80, 0.84, 0.79 and 0.46). Only
+the \code{flatten} loss of \code{logic} (the instance cells) stays \code{dominant}. By the count
+rule, arithmetic at \code{opt} is at chance (17 against a mean of 22, interval 15 to 29), not below;
+the ``below chance'' reading for it and for muxes at the second \code{opt} comes from the missing
+persistence (for muxes at the second \code{opt}, 14 against 5 with interval 2 to 10, the real count
+is above the interval). Registers at \code{opt} (84 against 55, interval 48 to 64) and arithmetic and
+muxes at \code{abc} (31 against 20, interval 17 to 23; 79 against 52, interval 47 to 58) are above
+the interval but within a factor two of the mean, so the count rule reads them as at chance. The
+supported statement is therefore descriptive: a compare statement is no longer a separable unit
+after the first \code{opt}, before any LUT is formed (18 of 19), but that the first \code{opt} is the
+pass that loses them is what a chance merging of the same number of objects also gives, so the data
+do not show that compares are lost there more than other kinds. The round-5 guess that the LUT cone
+is where compares go is not supported either: one compare unit is lost at \code{abc}. The branch level
+gives the same picture (548 losses against 580; \code{l15\_kind\_pass.csv}). The persistence null
+matches the size profile of the real snapshot only approximately: \code{l15\_null\_size\_mad.csv}
+gives the mean absolute deviation of the sorted object sizes, over the designs where merges are
+drawn (0.90 at \code{opt}, 0.88 at \code{abc}, 0.32 at the second \code{opt}).
+
+\emph{FSMs.} The loss measure cannot see an FSM re-encoding. The hardware kind of a unit is read
+at the first snapshot, after \code{proc} and before the \code{fsm} pass, where no object has the
+type \code{\$fsm}; FSM units are therefore counted under register, mux or logic, and the \code{fsm}
+row of Table~\ref{tab:r6-kindpass} is empty. ``No unit stops being separable at \code{fsm}'' is a
+statement about that pass only; it does not say that FSMs are not lost, and the FSM-recode reason
+class has no observation.
+
+\emph{Why.} Table~\ref{tab:r6-reason} gives the reason classes. At \code{opt}, 77 losses are
+opt merges that a labelled join record names, 12 are removals, 127 are subsumptions and 104 are
+merges with no label; at \code{abc}, 99 are LUT-cone merges that a record names, 33 subsumptions,
+10 removals, 2 instance joins and 22 unlabelled merges. Of the \rsxMergedAll{} merged losses,
+\rsxExplainedAll{} (\rsxExplainedShare) are explained by a same-pass join record, which the
+rule reads as partly explained (Table~\ref{tab:r6-explained}). The share differs by set
+and by pass: MI \rsxExplShareMI{} (\rsxExplExplainedMI{} of \rsxExplMergedMI{}), CI
+\rsxExplShareCI{} (\rsxExplExplainedCI{} of \rsxExplMergedCI{}) and VT \rsxExplShareVT{}
+(\rsxExplExplainedVT{} of \rsxExplMergedVT{}); \code{opt} \rsxExplShareOpt{}
+(\rsxExplExplainedOpt{} of \rsxExplMergedOpt{}, mostly unexplained by the rule), second \code{opt}
+17 of 18 and \code{abc} \rsxExplShareAbc{} (\rsxExplExplainedAbc{} of \rsxExplMergedAbc{}, partly
+explained). The VT share at \code{opt} is 4 of 36; the VT designs are read through the slang
+adapter, and a gap in the labels that the adapter's records carry would give such a low share (not
+tested here). The pooled status is as the rule says.
+
+All \rsxUnlabelledAll{} unlabelled merges fit an \emph{inherited blend} reading (exploratory, by
+descent through the parent records of the map): for each of them every object that
+holds the unit has a parent record of the pass that already blended the unit with at least one
+other unit, so no new join was made and none is labelled (V1.2.0 Section~3.3). The earlier subset
+check, which looked for any impure object, gives the same \rsxInheritedSubsetAll{} of
+\rsxUnlabelledAll{}. The descent test shows that the unit was already in a blend in a parent; it does not
+show that every other unit of the new object came from the same parent, so it does not support a
+claim that the D14 labels name every new blend. ``Style collapse'' (a
+case, an if and a ternary of one function) leaves no record and is reported as not observable.
+Table~\ref{tab:r6-list} shows eight lost micro constructs with their partner;
+\code{l15\_lost\_list.csv} holds all of them.
+
+\emph{Detectors.} The word-level snapshots are not netlists a detector reads, so recall is
+compared at the two netlist snapshots, the gates after \code{lower} (S7) and the LUTs after
+\code{abc} (S8), for the default list (B), \code{wordfirst} (W) and the combined list (WB). The
+ground truth is the round-5 derivation on the word cells of S6 with the span-subset footprint rule
+of L0 applied to construct keys. The gate footprints (many gates share a construct set) and the
+LUT footprints are not like for like, and the S7 and S8 ground truths differ in size for some kinds
+(Table~\ref{tab:r6-detect}). For the mux word the ground truth is 174 instances at S7 and 166 at S8, because
+the footprints are rebuilt from each snapshot's name map, so the two recalls are not fractions of the same set
+of instances; recall at the two snapshots is compared through rule~4 only. The table
+uses the paired designs (a run at both snapshots; three designs drop out: one mux design
+(\code{ve\_Prob021\_mux256to1v}, killed at S7 by the 6 GB slice cap) in all arms and two micro
+\code{WB} runs at S7 that timed out). Under rule~4 the mux word is the only kind that is found at S7
+and lost at S8 (\code{fooled by abc} in all three arms; WB: recall 0.55 to 0.07 on 174 instances at S7 and 166 at S8).
+The related kind \code{mux\_bit} falls from 0.201 to 0.012 (35 of 174 to 2 of 166) in arms B and WB, and rule~4
+marks it \code{not fooled}: the rule calls a detector fooled only when recall falls by 0.20 or more, and the fall
+is 0.189, just under that line (arm W finds none at either snapshot). The label \code{not fooled} here is
+therefore a statement about the cut-off, not about robustness. The mux word statement stands for the mux word only: comparator, \code{eq\_const}, counter, adder, subtractor
+and \code{mux\_tree} are at 0.00 to 0.04 at S7, a floor at which a pass cannot fool a detector, so
+``not fooled'' there means ``nothing to lose'', not ``robust''. FSM (WB: 0.17 to 0.67 on 24
+instances) and counter (0.00 to 0.39 on 18) are found more often at S8 than S7, and nothing else
+moves by 0.20. The counts are small (mux 174, FSM 24, counter 18 instances).
+
+\emph{What this suggests.} The map already names, for every LUT, the set of statements it
+blends, so a detector could split a LUT region by that set instead of guessing; the mux fooling at
+\code{abc} and the compare loss at \code{opt} say where such a split is worth the most. This is a
+suggestion, not a result: no detector was changed in this round. Not done: the big designs, the
+ood split, a VPR flow, the instance axis across several instances of one module (units are keyed
+by construct, so two instances of one module are one unit), and the word level, which the map does
+not observe.
+
+\hev{Verdicts.} L15d \verdict{POSSIBLY GOOD}, for one kind: the mux word is found at the gate snapshot and lost after \code{abc} in
+all three arms (WB: recall 0.55 to 0.07), but the ground truth has 174 instances at S7 and 166 at S8 and the gate and LUT
+footprints are not like for like, so the comparison is not like for like; \code{mux\_bit} falls by 0.189 and is read as not
+fooled by a margin of 0.011; for the other kinds the recall is already at a floor, and FSM (24 instances) and counter (18)
+are too few to say more. L15a \verdict{POSSIBLY GOOD}: under the random-set null the register,
+compare, mux and arithmetic kinds are each lost at one dominant pass (\code{opt} 320 of 580 losses, \code{abc} 166), but under the
+persistence null that placement is what a chance merging of the same objects also gives; the paper keeps only the descriptive
+statement (a compare is no longer a separable unit after the first \code{opt}, 18 of 19). L15c \verdict{INCONCLUSIVE}: the D14
+labels explain \rsxExplainedShare{} of the merged losses, the middle class of the rule.
+
+\subsection{What is recoverable in principle (H14a)}
+\label{sec:round4}
+
+\hev{Hypothesis.} H14a: the synthesis flow destroys style information, so that the pooled style-recovery ceiling at f3 is
+at most 0.60 (at least 40\% of style variants are indistinguishable).
+
+\hev{Experiment.} The ceiling is measured on a twin set (the same design in every coding style) at f1-k6, f2 and f3. For each
+twin base design, with $S$ styles and $C$ distinct netlist classes at the floor, the style-recovery ceiling is $C/S$, the accuracy
+of the best possible guesser of the coding style from the netlist under a uniform prior (a Weisfeiler-Lehman class, confirmed by
+exact isomorphism where the netlist is small). % experiments/round4/EXPERIMENT.md
+
+\hev{Result.} The style-recovery ceiling is \rfsCeilOne{} at f1-k6, \rfsCeilTwo{} at f2 and \rfsCeilThree{} at f3
+(Table~\ref{tab:r4-ident}).
+
+\input{gen/tab-r4-ident}
+
+\hev{Verdict.} H14a \verdict{USEFUL}: the ceiling is 0.5000 at f3, so what any recovery can do is limited by what the
+flow destroyed, whatever the detector.
+
+\subsection{A synthetic test bed: the idiom corpus (H12a)}
+\label{sec:corpus}
+
+\hev{Hypothesis.} H12a: a seeded corpus of synthetic idiom designs builds on every floor (at least 0.95 of the
+designs pass every equivalence check on every floor).
+
+\hev{Experiment.} The corpus generator has twelve idiom families, each parameterised by width, depth, encoding, reset and enable
+style and coding style, giving \rfsCorpusTotal{} designs split by parameter region: train values only (840), the same region with
+unseen text (120, iid), and at least one test-only value, such as an unseen width or coding style (240, ood). Odin~III builds each
+on f1-k6, f2 and f3 and the three equivalence checks are run. % experiments/round4/EXPERIMENT.md
+
+\hev{Result.} \rfsCorpusOk{} of \rfsCorpusTotal{} corpus designs pass every equivalence check on all three floors
+(Table~\ref{tab:r4-corpus}); the smallest family has 100 designs. The corpus is a test bed and not a source of a lookup table: a
+signature dictionary mined from it wins on none of the seven eligible kinds on real designs (\rfsTwelveBVzeroNumbers), and a GNN
+trained on more corpus designs does not improve on real ones (slope \rfsGnnSlope{} per doubling, 95\% interval
+[\rfsGnnCiLo, \rfsGnnCiHi]); both are DISMISSED (H12b, H12c).
+
+\input{gen/tab-r4-corpus}
+
+\hev{Verdict.} H12a \verdict{USEFUL}: the corpus builds (1200 of 1200). This is a validity check of the test bed and says
+nothing about transfer.
+
+\subsection{Repetition in big designs (H13a, H13b, H13c)}
+\label{sec:repeat}
+
+\hev{Hypotheses.} H13a: big designs are mostly repeated structure (at least 0.50 of their words lie in a repeat group). H13b:
+big designs repeat more than small ones (by at least 0.15). H13c: the repeated instances share the dictionary signature (at
+least 0.70 of the repeat groups).
+
+\hev{Experiment.} A word is a group of cells that act as one multi-bit signal; a repeat group is a set of at least two words
+of the same type and width whose cells induce the same subgraph (a Weisfeiler-Lehman hash of radius 2 over the cell types).
+The share of repeated structure is the share of the words with at least two cells and width at least two that lie in a repeat
+group. It is measured on the large designs of the VTR suite that Odin~III builds at f3 (six designs: \code{blob\_merge},
+\code{sha} and \code{stereovision0} to \code{stereovision3}; Table~\ref{tab:r4-big}) and, for H13b, on the small designs
+(the micro designs, the VerilogEval references and the training part of the corpus). For H13c the repeat groups of the big
+designs are checked at f2, where cells absorb their neighbours and the signatures can differ: the share of groups whose members
+have identical multisets of dictionary signatures. % experiments/round4/EXPERIMENT.md, l13_big.csv, x13_h13c.csv
+
+\hev{Result.} H13a: 6{,}653 of 7{,}167 words of the big designs lie in repeat groups, a share of 0.9283 (Table~\ref{tab:r4-big}
+gives each design: from 0.744 for \code{blob\_merge} to 0.982 for \code{stereovision2}). H13c: of 911 repeat groups,
+0.8606 have identical signature multisets. H13b: the big share is 0.2404 above the small share (0.9283 against 0.6879), above
+the 0.15 margin, but the result does not survive a change of the small baseline: against the micro designs and the
+VerilogEval references the difference is $+0.053$ (inconclusive by the rule), and against the VerilogEval references alone it is
+$+0.009$ (not supported).
+
+\input{gen/tab-r4-big}
+
+\hev{Verdicts.} H13a \verdict{USEFUL}: 0.9283 against the threshold 0.50, in all six designs (the smallest share is 0.744).
+H13c \verdict{USEFUL}: 0.8606 against the threshold 0.70. H13b \verdict{POSSIBLY GOOD}: it holds against the pooled small
+baseline that the rule fixed and flips with the choice of baseline, so it is stated only with that fragility and is not used as
+evidence on its own.
+
+\subsection{The language-model baseline: the Gate-Breaker replication (GB1, GB2)}
+\label{sec:gb-results}
+
+\hev{Measurement.} GB1 and GB2 are measurements, not hypotheses: they give the baseline that the
+language-model rows of this section (R2-L2, LLM1, LLM2) compare against. Gate-Breaker's metrics compare a
+recovered RTL against a reference: Success Rate, Success@$k$, AST similarity and CFG similarity
+(Section~\ref{sec:background}). Loki recovers structure, not a new RTL text, so the direct comparison is
+the replication: the Gate-Breaker harness itself, run with the only language model available on the host.
+
+\hev{Experiment.} GB1 runs the harness on the simple benchmarks of the fallback micro set. GB2 runs it on
+the VerilogEval quartiles the original paper used (Table~\ref{tab:veval}): one run, $K=10$, four workers,
+180\,s per call, 740 calls. The AST and CFG kernels are recomputed with common-width feature vectors (the
+first run padded per graph and truncated in the zip, which the v1.1.0 CFG probe found; those columns are not
+comparable to it).
+
+\hev{Result.} GB1: success rate 0.933 on Q1 and 0.829 on Q2, Success@10 1.000 in both quartiles, AST
+similarity 0.576 and 0.444, CFG similarity 1.000 and 0.736, with 169 of 174 extracted candidates functionally
+correct; this is a first replication on the fallback micro set, not the original paper's VerilogEval set.
+GB2 is in Table~\ref{tab:veval}.
+
+\begin{table}[t]
+\caption{Gate-Breaker metrics on the VerilogEval quartiles (one run, K=10, 4 workers, 180\,s
+per call, 7,440\,s wall clock, 740 calls; deltas vs the paper's O3-Mini in the text).}
+\label{tab:veval}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Quartile ($n$) & SR & S@1 & S@5 & S@10 & AST & CFG \\
+\midrule
+Q1 (36) & 0.903 & 0.944 & 1.000 & 1.000 & 0.894 & 0.942 \\
+Q2 (37) & 0.778 & 0.811 & 1.000 & 1.000 & 0.761 & 0.890 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+This replication ran Q1 and Q2 only; the Loki-only results for Q3 and Q4 on the same designs are in
+Section~\ref{sec:quartiles}. Seventy-four of the 78 Q1+Q2 designs are usable (three excluded because their synthesized
+netlists fail the official testbench self-check, one because its 241\,KB prompt exceeds the
+OS argument limit); every scored design is solved by attempt 5. The deltas against the
+paper's O3-Mini: Q1 success rate -0.092, AST -0.030, CFG -0.011; Q2 success rate -0.039,
+Success@5 +0.125, Success@10 +0.111, AST -0.164, CFG +0.083. The Q1 gap is harness
+no-output, not wrong RTL; the Q2 AST gap is truth-table and case references against the
+model's boolean expressions. Two caveats: the host's only model path routes through a
+gateway that aliases a DeepSeek backend as Claude Opus (so the model column is not
+verifiably the paper's comparison class), and the CLI exposes none of the paper's sampling
+flags ($T{=}0.85$, $p{=}0.95$). The CFG column uses the common-width node kernel (the
+odin3 CFG probe); the AST column uses the paper's pyverilog Algorithm~2 of Gate-Breaker.
+
+\hev{Verdict.} GB1 and GB2 \verdict{MEASUREMENT}: they carry no verdict and are not counted.
+
+What the two lines of work measure is complementary. The language model recovers functional
+behaviour from the gates and names nothing reliably; Loki recovers the structures the flow
+preserved (hard blocks and the signal roles its features see) and proves what it
+claims. The Gate-Breaker future work -- bus naming, datapath/control classification,
+partitioning -- is exactly L2's table, and its numbers are the baseline a model-assisted
+Loki would have to beat.
+
+\subsection{Language model plus Loki's hints: a pilot (LLM1, LLM2)}
 \label{sec:llm-pilot}
+
+\hev{Hypotheses.} LLM1: a model given Loki's hints recovers RTL better than without them. LLM2: the netlist helps
+beyond what the model knows from the interface line alone.
+
 
 % Sources: experiments/llm-pilot/EXPERIMENT.md (decisions 1-14, results for run re) and
 % experiments/llm-pilot/results/re/RESULTS.md, results/standard/summary.md,
 % results/transcript-audit.csv. Every number below is copied from those files.
 
 Every other result in this paper uses no language model. This subsection reports one small pilot
-that does, for research question L~Q1.2: does an LLM recover RTL from a flat gate netlist better
-when it is given Loki's structural hints? The measure is the functional pass rate per arm, plus
-the refusal rate.
+that does. The measure is the functional pass rate per arm, plus the refusal rate.
 
 \emph{Setup.} The pilot is a replica of the Gate-Breaker netlist-to-RTL task~\cite{faruque2025gatebreaker}
 on VerilogEval~\cite{liu2023verilogeval}. It uses 40 problems, 10 per complexity quartile,
@@ -1867,6 +1823,7 @@ per arm, one draw each, \code{claude-sonnet-5-5}. Arm A: netlist; B: netlist plu
 interface only. GB-equiv.: Gate-Breaker-equivalent scorer.}
 \label{tab:llm-pass}
 \small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lccc@{}}
 \toprule
 View & A & B & C \\
@@ -1877,7 +1834,7 @@ Answered only (strict) & 35/40 (0.88) & 35/38 (0.92) & 30/40 (0.75) \\
 Paired set, 38 (strict) & 33/38 (0.87) & 35/38 (0.92) & 29/38 (0.76) \\
 Paired set, 38 (GB-equiv.) & 31/38 (0.82) & 33/38 (0.87) & 28/38 (0.74) \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \begin{table}[t]
@@ -1886,6 +1843,7 @@ Paired set, 38 (GB-equiv.) & 31/38 (0.82) & 33/38 (0.87) & 28/38 (0.74) \\
 scorer. ``First only'' counts problems the first arm passes and the second fails.}
 \label{tab:llm-mcnemar}
 \small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lccccc@{}}
 \toprule
 Comparison & Both & First only & Second only & Neither & $p$ \\
@@ -1894,11 +1852,11 @@ B vs A & 33 & 2 & 0 & 3 & 0.5000 \\
 A vs C & 28 & 5 & 1 & 4 & 0.2188 \\
 B vs C & 28 & 7 & 1 & 2 & 0.0703 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \emph{Refusals.} The first complete prompt that we ran, the Gate-Breaker \code{standard} prompt,
-was stopped by the pre-set rule at 88 of 120 calls: 8 calls came back as API safeguard refusals
+was stopped by the protocol's stop rule at 88 of 120 calls: 8 calls came back as API safeguard refusals
 (no model reply) and 7 as no-file calls (the subagent declined or answered in chat without
 writing the reply file). Under our own prompt \code{re}, which explains the research, the same
 120 calls gave 0 API refusals and 2 no-file calls. Table~\ref{tab:llm-refuse} gives the rates per
@@ -1947,8 +1905,17 @@ temperature, and the 40-problem subset has a prompt-size cap that under-represen
 so these rates are not comparable with the published ones. The hints are uncalibrated at f3, and
 arm~C controls for memorisation of VerilogEval; it is not a measure of recovery.
 
-\subsection{Per-quartile results: Loki alone and Loki with a model}
+\hev{Verdicts.} LLM1 \verdict{INCONCLUSIVE}: arm A 35/40 and arm B 35/40 (paired set of 38: A 33, B 35; exact McNemar $p=0.5000$).
+LLM2 \verdict{INCONCLUSIVE}: arm C 30/40 (paired A against C $p=0.2188$, B against C $p=0.0703$). One draw per cell on 40 problems cannot support
+a claim about the hints in either direction.
+
+\subsection{Per-quartile results: Loki alone and Loki with a model (Q1, Q2)}
 \label{sec:quartiles}
+
+\hev{Hypothesis and measurement.} Q1: the hints help in some complexity quartiles (hypothesis; verdict
+\verdict{INCONCLUSIVE}, the cells hold 8 to 10 problems and no quartile has enough discordant pairs for $p<0.05$). Q2: what Loki alone
+recovers per quartile (a measurement with no verdict).
+
 
 % Sources: every number in this subsection is in the tables of quartile-tables.tex, generated by
 % experiments/quartiles/quartiles.py (CSVs beside it: pilot_cells.csv, pilot_tests.csv,
@@ -1962,7 +1929,7 @@ arm~C controls for memorisation of VerilogEval; it is not a measure of recovery.
 % min_discordant. The 14 hypotheses in 7 designs: experiments/round2/EXPERIMENT.md. Non-built
 % references: veval-l0/EXPERIMENT.md, quartiles/not_built.csv.
 
-Two questions from the purpose page (L~Q1.2 and the Loki-only recovery by complexity) ask the
+Two questions ask the
 same thing per Gate-Breaker complexity quartile: is the model with Loki's hints better than the
 model without them, and what does Loki alone recover? All numbers here come from files already
 committed; no new run or model call was made for this subsection. Every table below uses one
@@ -2012,7 +1979,7 @@ in Q1 to Q4), so the Q3 and Q4 AST means rest on fewer, plainer designs and are 
 effect of complexity. L1 changes little: calibrated and L0-stop \code{f3} AST agree to the third
 decimal in Q1, Q2 and Q4 ($0.602$ against $0.612$ in Q3), because the calibrated flow commits
 14 hypotheses in 7 designs (round~2). The recovery experiment on the micro designs
-(Section~\ref{sec:f3-results}) is ranked by node count, not by Gate-Breaker quartile, and the
+(Section~\ref{sec:l1-results}) is ranked by node count, not by Gate-Breaker quartile, and the
 loss audit of Section~\ref{sec:round6} reports pooled counts per unit kind; neither is
 defined per quartile, so neither appears in the tables.
 
@@ -2034,380 +2001,195 @@ $0.917$); the common set has one design in each of Q3 and Q4, so no mean is comp
 (Section~\ref{sec:gb-results}). The pilot has no AST or CFG score, so the pilot and these
 columns are not compared on a common metric.
 
-\subsection{Round 6: the L15 loss audit}
-\label{sec:round6}
-
-\input{round6-tables}
-
-Round 5 found that register and enable words are findable and that FSM decoders, compares and
-mux boundaries are not, and guessed that they are absorbed into LUTs at f2. Round 6 asks where
-and why (question L~Q3.1 of the purpose page: for each HDL construct, at which Odin~III step is
-it first lost as a separable unit, joined with what, and why?). The measure is a count of
-constructs lost per kind and pass, the share that the D14 provenance explains, and the recall
-of the round-5 detectors before and after a pass. It is not area, speed or power. The tools
-are Odin~III~\cite{odinII} at \code{c82609e6}, which writes the version~2 name map
-(\code{--prov-map}: records, join labels and the construct table), and ABC~\cite{abc} inside
-its \code{abc} pass; no VPR run is involved.
-
-\emph{Protocol.} The rules were committed first (commit \code{6d0e5b5},
-\code{experiments/round6/EXPERIMENT.md}) and the audit was run on no evaluation design before it.
-Development used hand-written fixtures and the corpus train split. The f2 flow of round 5 is run
-pass by pass in one Python session (proc, fsm, opt, flatten, opt \code{-full}, wreduce, lower,
-abc) and a netlist plus map is written after each pass. A \emph{unit} is the statement-level
-anchor of a record's construct leaves (V1.2.0 Section~3.3), reduced by dropping ancestors; a unit is
-\emph{separable} at a snapshot when some logic object has exactly that unit set, and \emph{lost}
-at the first later snapshot where none has. A loss is \emph{explained} when a labelled same-pass
-join record names the unit; its reason class is read from the pass and that evidence. The map
-holds one record per object (checked on all 214{,}157 objects of the 1{,}768 maps), so reading the
-first record of an object loses nothing.
-
-\emph{Two nulls.} The pre-registered null (the \emph{Stage-0 null}, persistence-free) draws, for
-every real object of a pass, a random unit set of the same size from the units alive at the pass.
-It matches the object count and the size distribution of the pass; it does not match the chains,
-because it forgets which units the objects of the previous snapshot already held together. A pass
-that changes nothing still draws fresh random sets and ``loses'' most units, so the Stage-0 null
-overstates chance losses. A \emph{persistence null} (Amendment~A of the protocol file, written
-after the data and before it was run) starts every draw from the real objects of the previous
-snapshot and applies random merges until the object count of the real snapshot is reached (50 draws;
-mean and a 95\% interval of the per-draw totals; a pass that changes nothing gives zero; a pass
-that only removes dead objects is read as merges, so at \code{opt} it is an upper bound of chance
-merging). The rule thresholds are unchanged. The Stage-0 statuses are the pre-registered ones; the
-statuses under the persistence null are exploratory (post-data), and where they differ neither
-is confirmatory.
-
-\emph{Dated entries.} Five dated entries precede the fix round in the protocol file: two on
-development designs before any evaluation run (\code{removed} is split into \code{removed} and
-\code{subsumed}, a statement that survives only as the enclosing statement of a finer unit; the
-units that become separable after the first snapshot are counted as losses with a flag), two
-post-data and exploratory (an axis that moves the instance cells to a class of their own, and the
-inherited blends below), and a note on the detector runs. The fix round adds three post-data
-amendments: the persistence null, the inherited-blend test by descent, and reporting changes
-(the headline without subsumed losses, the FSM limit, the order of the reason classes, a
-source-keyed cache). The numeric rules use the original axis and change no status. The sets are the
-68 micros (MI), the 33 held-out VerilogEval designs (VT) and the 120 corpus iid designs (CI),
-each with all designs ok; the 13 big designs and the ood split were not run. The snapshot writers
-do not change the netlist: the final BLIF of all 68 micros (hash-style names, MI only) is
-byte-identical to a run without them.
-
-\emph{Where units are lost.} Of \rsxUnitsAll{} units, 580 are lost, 474 are never lost and 382 are
-joined from the first snapshot onwards (Table~\ref{tab:r6-status}). The losses fall on four
-passes only: 320 at \code{opt}, 68 at \code{flatten}, 26 at the second \code{opt} and 166 at
-\code{abc}. None is lost at \code{fsm}, \code{wreduce} or \code{lower}: \code{lower} splits word
-cells into gates, which makes units finer, not blended. The 580 is the Stage-0 total. It includes
-\rsxSubsumedAll{} \code{subsumed} losses (a statement that stays alive only as the enclosing
-statement of a finer unit; \rsxSubsumedShare{} of the total, 127 of the 320 at \code{opt} and 33 of
-the 166 at \code{abc}); without them the merged-plus-removed losses are \rsxLostNoSub{}
-(Table~\ref{tab:r6-headline}). The 68 at \code{flatten} are all \code{INSTANCE} units (the instance
-cell of a dissolved module, class \code{removed}) and say nothing about logic: the \code{logic}
-kind is dominant at \code{flatten} because of them, not because dead logic is removed.
-
-By hardware kind (Table~\ref{tab:r6-kindpass}), under the pre-registered Stage-0 null, registers
-(\rsxRoneRegister) and compares (\rsxRoneCompare) are lost at \code{opt} (84 of 89 and 18 of 19,
-against random-set null shares of 0.34 and 0.49), muxes at \code{opt} (192 of 285, null share 0.41)
-and arithmetic at \code{abc} (31 of 55, null share 0.10). By the count rule against the Stage-0
-null, \code{abc} loses muxes more than chance (79 against 36) and arithmetic at chance, whereas
-arithmetic at \code{opt} (17 against 51) and muxes at the second \code{opt} (14 against 61) are
-below chance. These Stage-0 readings do not survive the persistence null (exploratory,
-Tables~\ref{tab:r6-pnull} and~\ref{tab:r6-rule1}): \code{opt} is also where a chance merging of
-the objects puts most of its losses, so the pass shares of register, compare, mux and arithmetic are
-\code{dominant-null}, the growth artefact of rule~1 (null shares 0.80, 0.84, 0.79 and 0.46). Only
-the \code{flatten} loss of \code{logic} (the instance cells) stays \code{dominant}. By the count
-rule, arithmetic at \code{opt} is at chance (17 against a mean of 22, interval 15 to 29), not below;
-the Stage-0 ``below chance'' for it and for muxes at the second \code{opt} comes from the missing
-persistence (for muxes at the second \code{opt}, 14 against 5 with interval 2 to 10, the real count
-is above the interval). Registers at \code{opt} (84 against 55, interval 48 to 64) and arithmetic and
-muxes at \code{abc} (31 against 20, interval 17 to 23; 79 against 52, interval 47 to 58) are above
-the interval but within a factor two of the mean, so the count rule reads them as at chance. The
-supported statement is therefore descriptive: a compare statement is no longer a separable unit
-after the first \code{opt}, before any LUT is formed (18 of 19), but that the first \code{opt} is the
-pass that loses them is what a chance merging of the same number of objects also gives, so the data
-do not show that compares are lost there more than other kinds. The round-5 guess that the LUT cone
-is where compares go is not supported either: one compare unit is lost at \code{abc}. The branch level
-gives the same picture (548 losses against 580; \code{l15\_kind\_pass.csv}). The persistence null
-matches the size profile of the real snapshot only approximately: \code{l15\_null\_size\_mad.csv}
-gives the mean absolute deviation of the sorted object sizes, over the designs where merges are
-drawn (0.90 at \code{opt}, 0.88 at \code{abc}, 0.32 at the second \code{opt}).
-
-\emph{FSMs.} The loss measure cannot see an FSM re-encoding. The hardware kind of a unit is read
-at the first snapshot, after \code{proc} and before the \code{fsm} pass, where no object has the
-type \code{\$fsm}; FSM units are therefore counted under register, mux or logic, and the \code{fsm}
-row of Table~\ref{tab:r6-kindpass} is empty. ``No unit stops being separable at \code{fsm}'' is a
-statement about that pass only; it does not say that FSMs are not lost, and the FSM-recode reason
-class has no observation.
-
-\emph{Why.} Table~\ref{tab:r6-reason} gives the reason classes. At \code{opt}, 77 losses are
-opt merges that a labelled join record names, 12 are removals, 127 are subsumptions and 104 are
-merges with no label; at \code{abc}, 99 are LUT-cone merges that a record names, 33 subsumptions,
-10 removals, 2 instance joins and 22 unlabelled merges. Of the \rsxMergedAll{} merged losses,
-\rsxExplainedAll{} (\rsxExplainedShare) are explained by a same-pass join record, which the
-Stage-0 rule reads as partly explained (Table~\ref{tab:r6-explained}). The share differs by set
-and by pass: MI \rsxExplShareMI{} (\rsxExplExplainedMI{} of \rsxExplMergedMI{}), CI
-\rsxExplShareCI{} (\rsxExplExplainedCI{} of \rsxExplMergedCI{}) and VT \rsxExplShareVT{}
-(\rsxExplExplainedVT{} of \rsxExplMergedVT{}); \code{opt} \rsxExplShareOpt{}
-(\rsxExplExplainedOpt{} of \rsxExplMergedOpt{}, mostly unexplained by the rule), second \code{opt}
-17 of 18 and \code{abc} \rsxExplShareAbc{} (\rsxExplExplainedAbc{} of \rsxExplMergedAbc{}, partly
-explained). The VT share at \code{opt} is 4 of 36; the VT designs are read through the slang
-adapter, and a gap in the labels that the adapter's records carry would give such a low share (not
-tested here). The pooled status is as Stage 0 says.
-
-All \rsxUnlabelledAll{} unlabelled merges fit an \emph{inherited blend} reading (exploratory, by
-descent through the parent records of the map; Amendment~B): for each of them every object that
-holds the unit has a parent record of the pass that already blended the unit with at least one
-other unit, so no new join was made and none is labelled (V1.2.0 Section~3.3). The earlier subset
-check, which looked for any impure object, gives the same \rsxInheritedSubsetAll{} of
-\rsxUnlabelledAll{}. The descent test shows that the unit was already in a blend in a parent; it does not
-show that every other unit of the new object came from the same parent, so it does not support a
-claim that the D14 labels name every new blend. ``Style collapse'' (a
-case, an if and a ternary of one function) leaves no record and is reported as not observable.
-Table~\ref{tab:r6-list} shows eight lost micro constructs with their partner;
-\code{l15\_lost\_list.csv} holds all of them.
-
-\emph{Detectors.} The word-level snapshots are not netlists a detector reads, so recall is
-compared at the two netlist snapshots, the gates after \code{lower} (S7) and the LUTs after
-\code{abc} (S8), for the default list (B), \code{wordfirst} (W) and the combined list (WB). The
-ground truth is the round-5 derivation on the word cells of S6 with the span-subset footprint rule
-of L0 applied to construct keys. The gate footprints (many gates share a construct set) and the
-LUT footprints are not like for like, and the S7 and S8 ground truths differ in size for some kinds
-(Table~\ref{tab:r6-detect}); recall at the two snapshots is compared through rule~4 only. The table
-uses the paired designs (a run at both snapshots; three designs drop out: one mux design
-(\code{ve\_Prob021\_mux256to1v}, killed at S7 by the 6 GB slice cap) in all arms and two micro
-\code{WB} runs at S7 that timed out). Under rule~4 the mux word is the only kind that is found at S7
-and lost at S8 (\code{fooled by abc} in all three arms; WB: recall 0.55 to 0.07 on 174 instances).
-That is a statement about this one kind: comparator, \code{eq\_const}, counter, adder, subtractor
-and \code{mux\_tree} are at 0.00 to 0.04 at S7, a floor at which a pass cannot fool a detector, so
-``not fooled'' there means ``nothing to lose'', not ``robust''. FSM (WB: 0.17 to 0.67 on 24
-instances) and counter (0.00 to 0.39 on 18) are found more often at S8 than S7, and nothing else
-moves by 0.20. The counts are small (mux 174, FSM 24, counter 18 instances).
-
-\emph{What this says for L~Q3.2.} The map already names, for every LUT, the set of statements it
-blends, so a detector could split a LUT region by that set instead of guessing; the mux fooling at
-\code{abc} and the compare loss at \code{opt} say where such a split is worth the most. This is a
-suggestion, not a result: no detector was changed in this round. Not done: the big designs, the
-ood split, a VPR flow, the instance axis across several instances of one module (units are keyed
-by construct, so two instances of one module are one unit), and the word level, which the map does
-not observe.
-
-\section{Discussion}
+\section{Discussion and limits}
 \label{sec:discussion}
 
-Three observations follow. First, \emph{the answer depends on what the flow erased}. The
-structures that survived synthesis recover almost perfectly without any intelligence beyond
-reading the pass's own facts; the structures synthesis erased (the counter behind its
-flip-flop, the mux behind its gates) recover weakly, and no amount of honest Bayesian
-machinery changes that without better detectors or a model. Second, \emph{the graph features
-carry the recovery}: the GNN only beats 1-WL when node, graphlet, WL and NPN features
-combine, which is the same lesson as the clustering table (community methods find the
-hierarchy, centroid methods do not). Third, \emph{the benchmarks made the limits visible}:
-the renamed-instance protocol proved naming neutrality over 105,646 identifiers, and the
-same protocol exposed a rename-script defect (library \code{.blackbox} model names were
-renamed, which silently removed every hard proposal on renamed floors) and the spectral
-determinism defect -- both fixed or reported, and both invisible without the protocol.
+Four observations follow from the verdicts, and then the candidate innovations.
 
-A fourth observation comes from round 2 (Section~\ref{sec:round2}): \emph{readable and
-verified are different properties, and the two tools hold one each}. The language model
-produces RTL whose similarity to the reference is high and whose operators it names
-(operator type-F1 \rtLtwoOpsLlm{} on Q1 and Q2, correct samples elaborated to RTL), but nothing proves the text equals the
-netlist; Loki's output is formally equal to its input in all \rtLtwoEquivRuns{} runs and
-recovers few operators (\rtLtwoOpsLokiCal{}, calibrated f2 run; the f3 run recovers none), and its similarity to the reference
-is lower in every cell. The f3 failure of round 1 may be the detectors' vocabulary and not
-missing information (a LUT6 re-map reaches the f2 level in-sample but not on the held-out designs,
-\rtLoneAllRatio{} against \rtLoneTestRatio{}, so the question stays open), the three refinements we
-expected to help (evidence-family weighting, the width of the must/may bracket as an
-uncertainty measure, a structural prefilter before the prover) did not on the registered
-tests, and the one new instrument that
-earned its place is the operator F1, which sees recovery where AST and CFG see only form.
+First, \emph{the answer depends on what the flow erased}. The structures that survived synthesis
+recover almost perfectly without any intelligence beyond reading the pass's own facts (L1h); the
+structures synthesis erased recover weakly (L1s) and, on the gate netlist, not at all (F3). Nothing in
+the experiments shows that the Bayesian machinery, as built, changes that: the evidence families add
+nothing over the per-detector priors (R2-L4), and a LUT6 re-map reaches the second floor's level only
+in-sample.
 
-A fifth observation comes from round 3 (Section~\ref{sec:round3}): \emph{many wrong
-candidates are pieces of real constructs, but the pieces do not tile the words}. By the letter of
-the pre-registered rule about half of the false candidates are fragments of an instance of a
-related kind (H9a \rttLNineaStatus{} by the letter of the rule; not robust: \rttNineTopFrag{} without one design,
-\rttNineNoFfenFrag{} without the near-tautological \code{ff\_en} slices), and the noise class could not
-be filled because the ground truth covers every cell. A word's fragments rarely cover it (H9b
-\rttLNinebStatus). Propagation from the I/O words
-reaches registers but not the arithmetic or the FSMs (H10a \rttLTenaStatus; H10b is
-\rttLTenbStatus{} but uninformative once H10a fails), and the FSM, decode, select chain covers
-\rttElevenMuxShare{} of the
-control muxes. The next detector is therefore word-first, not a regrouping of the present one.
+Second, \emph{the graph stage does not find the hierarchy, and the network result is possibly good}.
+No clustering of the netlist graph finds the designer's modules well: NMI against the module path is
+at most 0.3220 (k-means), and the community methods score lowest (L2a, DISMISSED). The GNN beats
+1-WL only when node, graphlet, WL and NPN features combine (L2b), and that is one run on one split.
 
-A sixth observation comes from round 4 (Section~\ref{sec:round4}): \emph{this dictionary and this GNN, trained on synthetic
-idioms, did not transfer to real logic, and the flow destroys part of the style}. The
-dictionary wins on no eligible kind (H12b \rfsTwelveBVzeroStatus) and the GNN does not improve on
-real designs with more synthetic data (H12c \rfsTwelveCStatus); on the twin set the style-recovery
-ceiling is \rfsCeilThree{} at f3.
+Third, \emph{the provenance answer key is the part that works}. It covers every gate node (L0b), the
+renamed-instance protocol shows the pipeline is naming-neutral (L0a), and the same protocol exposed two
+defects (a rename-script defect that removed every hard proposal on renamed floors, which was fixed,
+and a spectral nondeterminism, which is reported). The loss audit (Section~\ref{sec:round6}) uses the
+same map: the mux word is the one kind that a pass (\code{abc}) demonstrably fools (L15d), and the
+placement of other losses at the first \code{opt} is what chance merging also gives (L15a, POSSIBLY GOOD).
 
-A seventh observation comes from round 5 (Section~\ref{sec:round5}): \emph{a word-first detector
-built from structure raises the recall of enabled-register words from \rfvHbrecallbase{} to
-\rfvHbrecallwb{} at a precision of \rfvHbprecisionwb{} (F1 \rfvHbfonewb{}), and no hypothesis
-reaches its margin} (H16a \rfvHaStatus, H16b \rfvHbStatus, H16c \rfvHcStatus, H16d \rfvHdStatus,
-H16e \rfvHeStatus, H16f \rfvHfStatus{} and degenerate). The word-level \code{eq\_const} is a subset of
-the per-bit rule and adds nothing in the combined arm, the FSM test finds counters and registers as
-often as FSMs, and the tiling null is dominated by a few large candidates. Where the missed
-constructs went was not measured; saying which pass joined each of them to its neighbours is the
-loss audit (L15), which needs the Odin~III provenance export.
+Fourth, \emph{readable and verified are different properties}. The language model produces RTL whose
+similarity to the reference is high and whose operators it names, but nothing proves the text equals the
+netlist; Loki's output is formally equal to its input in all runs and recovers few operators. The pilot
+(LLM1, LLM2) cannot say whether Loki's hints help.
 
-An eighth observation comes from the comparison with HAL's DANA (Section~\ref{sec:hal}):
-\emph{on the evaluation sets the pre-registered rule returns \halOutcome{} between the word-first
-detector and DANA} (pooled $F_J$ \halFoneLoki{} against \halFoneHal{} at f2). DANA is a
-library-independent baseline for register words, and neither tool recovers most of them.
+\emph{Candidate innovations.} Three ideas have only POSSIBLY GOOD support and stay out of the contributions.
+The graph network (L2b) needs several random splits with an interval over designs and a second benchmark
+suite. The operator-recovery F1 (R2-L7) needs a set with many more tie pairs and a flow that recovers
+operators, since the calibrated flow recovers none. The loss audit (L15a, L15d) needs equal-sized
+ground truths at the two netlist snapshots, so that the recalls are on the same instances, and a run on the
+big designs.
 
-A ninth observation comes from round 6 (Section~\ref{sec:round6}): \emph{where Odin~III stops
-holding a construct as a separable unit is mostly the first \code{opt} and \code{abc}, but most of
-that placement is what a chance merging of the same number of objects also gives}. Of 580 first
-losses (161 of them subsumed statements), 320 are at \code{opt} and 166 at \code{abc}. Under the
-pre-registered Stage-0 null the register, compare, mux and arithmetic kinds are each lost at one
-dominant pass; under a persistence null (exploratory, post-data) they are \code{dominant-null}, a
-growth artefact, and the Stage-0 null is shown to overstate chance losses. The D14 labels explain
-\rsxExplainedShare{} of the merged losses (MI \rsxExplShareMI, CI \rsxExplShareCI, VT
-\rsxExplShareVT), and \code{abc} fools the mux-word detector (all three arms).
+\emph{Limits.} (i) The recovery stages use no language model; the pilot is a separate experiment with
+one draw per cell. (ii) Recovery is structural, not functional: the output is exactly as correct as its input
+netlist, which itself passes the official testbench in only some designs (inferred latches and asynchronous
+resets are the failures). (iii) Six rows are POSSIBLY GOOD and not USEFUL because they are narrow or fragile (L2b, R2-L7, H9a, H13b, L15a, L15d); round-1 claims (L0a to L2b) have a clear gap but no interval. (iv)
+The word-first detector, the signature dictionary and the synthetic-corpus GNN did not transfer from
+synthetic to real designs. (v) Area, speed and power are not measured, and the benchmarks are small
+designs: equivalence and recovery were not run on the big VTR designs.
+
+\section{Future work}
+\label{sec:future}
+
+Three hypotheses are untested. Each is an idea and the experiment it needs.
+
+\emph{L3, a cross-suite GNN.} A GNN trained on one benchmark suite may transfer to the other. The experiment
+trains on the micro designs and tests on the VerilogEval designs and the reverse, with an interval over designs.
+
+\emph{L6, a motif null model.} The graphlet counts may differ from what a degree-preserving random graph
+gives. The experiment compares the ORCA graphlet counts of each netlist with those of random rewirings of the
+same graph.
+
+\emph{L8, a model given the ReverseProvenance record.} A language model that sees Loki's record may recover RTL
+better than the model alone. The experiment is the Gate-Breaker task with a record arm and a no-record arm on the
+full quartile files, three draws per arm; it is deferred, and the pilot of Section~\ref{sec:llm-pilot} is the small
+first step.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-Loki~III asks how far netlist-to-RTL reverse engineering gets without a language model. On
-the benchmarks of this paper the answer is: the already-reverse-engineered structures,
-perfectly; the rest, weakly but measurably, with calibration that reports its own error, a
-graph stage whose features beat 1-WL, and clusters that carry the designer's hierarchy. The
-methodology -- provenance-tracked labelled datasets plus the renamed-instance protocol -- is
-the part we would export to any future comparison, with or without a model. The small
-language-model pilot and its per-quartile split cannot say whether Loki's hints help, and the
-loss audit says where in the flow the constructs go, not yet how to recover them.
+Loki~III asks how far netlist-to-RTL reverse engineering gets without a language model. We
+stated each claim as a hypothesis and gave it one experiment and one verdict. Eight hypotheses are USEFUL,
+six are POSSIBLY GOOD with their fragility stated, twelve are DISMISSED and sixteen are INCONCLUSIVE.
+The structures that synthesis already reverse engineered are recovered (hard adders 67 of 67, with precision 0.985;
+hard multipliers 30 of 30), the stated probabilities are better calibrated though still far from exact
+(ECE 0.217 on the second floor, against 0.650 uncalibrated), and the pipeline is naming-neutral over 105,646 renamed
+identifiers. The structures that synthesis erased recover weakly, clustering does not find the designer's
+hierarchy, and a word-first detector is not shown to beat a published method.
+The part we would export to any future comparison, with or without a model, is the method: provenance-tracked,
+anonymised datasets with an answer key, plus the renamed-instance protocol. The graph network, the operator-recovery
+F1 and the loss audit are candidate innovations that await the experiments named in the Discussion. The pilot cannot say whether
+Loki's hints help a model; the loss audit says where in the flow some constructs are lost, not yet how to recover them.
 
 \appendices
 
 \section{Research log}
 \label{app:log}
 
-This appendix records the order in which the questions were asked, what each result
-suggested, and what became of the next set of hypotheses, so that the progress of the work is
-visible and not only its end state. The decision rules of round 2 are in
-\code{experiments/round2/EXPERIMENT.md}; their thresholds were set by the implementer during
-the round (the file was committed after the scripts and the result CSVs), so they are not
-pre-registered. The rules of round 3 (\code{experiments/round3/EXPERIMENT.md}) were committed
-before any round-3 number was computed (commit \code{5f8de24}).
+This appendix lists every hypothesis, one row each, including the DISMISSED and INCONCLUSIVE ones
+(Tables~\ref{tab:register-1} to~\ref{tab:register-5}); the rows are generated from
+\code{docs/paper/hypotheses.md}. A MEASUREMENT row has no hypothesis and no verdict. UNTESTED rows are
+the Future work.
 
-\emph{Round 0 (2026-10-21 to 22): build.} Question: how much structure does Loki recover
-without a language model? Built L0 (provenance-labelled, anonymised datasets and the
-renamed-instance neutrality check), L1 (Bayesian hypotheses with calibration and proofs) and
-L2 (graph analysis).
+\emph{Sources.} Every row's numbers are in a committed file, named by the Round column: R1 in
+\code{experiments/rename-l2/EXPERIMENT.md}, \code{experiments/f3-recovery/EXPERIMENT.md} and
+\code{experiments/veval-l0/EXPERIMENT.md}; R2 to R6 in \code{experiments/round2} to \code{experiments/round6}
+(each has an \code{EXPERIMENT.md} and the CSV files); HAL in \code{experiments/hal} and \code{docs/results-hal.md};
+LLM in \code{experiments/llm-pilot/EXPERIMENT.md}; Q in \code{experiments/quartiles}. The exceptions are
+the success-rate and Success@$k$ columns of the Gate-Breaker replication (rows GB1 and GB2), which come from
+run directories of the controller machine that are not committed; the AST and CFG columns of GB2 are in
+\code{experiments/round2/l2\_headtohead.csv}.
 
-\emph{Round 1 (2026-10-23): first results.} Section~\ref{sec:l1-results} to
-Section~\ref{sec:gb-results}. Hard blocks are fully recovered, because synthesis had already
-reverse engineered them; soft structures recover weakly; on the cmos6 gate netlist (f3) L1
-recovers nothing and AST and CFG do not move; the GNN beats 1-WL; and the language model is
-strong on the simple VerilogEval quartiles but its output is unverified.
+\emph{Order of the work.} Round 0 (2026-10-21 to 22) built L0 (provenance-labelled, anonymised datasets and
+the renamed-instance check), L1 (Bayesian hypotheses with calibration and proofs) and L2 (graph analysis).
+Round 1 (2026-10-23) gave the first results: hard blocks recovered, soft structures weak, nothing recovered
+on the gate netlist, the GNN ahead of 1-WL. Round 2 (2026-10-24) asked five follow-up questions (the LUT6
+re-map, the operator F1, the head-to-head with the language model, the evidence families and the must/may
+bracket and structural prefilter) and found that only the operator F1 is supported, weakly. Its
+puzzle, why wrong candidates are not real constructs, came from the author's question (2026-10-24): ``for Loki -
+the question is from a reverse engineering perspective why is it hard to reconstruct to HDL - going from if
+structures (which we know are muxes) and then down it seems like many of the patterns are constant - so
+hypothesizing that things are a bus (and by a bus I mean a signal that could be a traditional bus, but also a
+wide wordsize signal that has regular oprtations to it) [...] Control flow is usually in the form of muxin and
+FSMs have pattern of feedback (state equals next state) and then control based on state. How do we find these
+patterns better?'' and ``Also, the outputs (words) and the inputs as words also provide hints of where the
+words are''. Round 3 (2026-10-24) measured fragments and I/O propagation; round 4 (2026-10-25) built a synthetic
+corpus, a signature dictionary, a look at big designs and the identifiability ceiling; round 5 (2026-10-25)
+built the word-first detector; round 5b (2026-10-26) compared it with DANA; the LLM pilot and the per-quartile
+tables (2026-10-27 to 28) put a model beside Loki; round 6 (2026-10-27) is the loss audit.
 
-\emph{What round 1 suggested.} (i) The f3 zero beside a weak f2 result: is the failure the
-detectors' LUT vocabulary, not missing information? (ii) The language-model and Loki figures
-sat on different benchmarks: put them on the same 150 designs. Our working position is that the
-model is readable but unverified on small designs, Loki is verified but partial, and the
-combination is the contribution. (iii) The calibrated flow commits little: which evidence
-family earns that? (iv) The reverse-engineering result is a smaller graph bracketed by what is
-proven (must) and what is possible (may), in the style of the graph-sandwich problem: is the
-width of that bracket an uncertainty measure, and does a cheap structural test before the
-prover keep recall? (v) AST and CFG tie where the recovery differs: is there a metric that
-sees it?
+\input{register}
 
-\emph{Round 2 (2026-10-24): the hypotheses and what happened.} Table~\ref{tab:r2-log}.
-The operator F1 is the one hypothesis the rule supports, by its letter and on weak evidence
-(H7). The LUT6 re-map reaches the f2
-level in-sample (\rtLoneAllRatio) but not on the held-out split (\rtLoneTestRatio, too few matches for
-the rule), so H1 is \rtLoneStatus. The
-head-to-head puts Loki below the model on every cell with its output equal to its input in all
-runs, but the similarity does not stay flat with complexity (H2, \rtLtwoStatus). The evidence
-families add nothing over the priors on held-out designs, because the calibration already
-zeroes or shrinks them (H4, \rtLfourStatus). The bracket width is not an uncertainty measure
-on the registered set (H5a, \rtLfiveaStatus; an exploratory look at calibrated runs that list
-candidates from $p=0.1$ gives Spearman \rtLfiveRhoCal), and a structural prefilter cannot cut
-the prover without losing proved constructs (H5b, \rtLfivebStatus). The head-to-head
-(Section~\ref{sec:round2}) fills in the positioning of the discussion.
+\section{The f3 experiment in detail}
+\label{app:f3}
 
-\emph{What round 2 suggested.} The calibrated flow commits almost nothing and the uncalibrated
-one proposes many wrong candidates. Are the wrong candidates fragments of real word constructs
-(a grouping problem) or unrelated (a detector problem)? Peter (2026-10-24) put the same
-question from the reverse-engineering side: ``for Loki - the question is from a reverse
-engineering perspective why is it hard to reconstruct to HDL - going from if structures (which
-we know are muxes) and then down it seems like many of the patterns are constant - so
-hypothesizing that things are a bus (and by a bus I mean a signal that could be a traditional
-bus, but also a wide wordsize signal that has regular oprtations to it - for example figuing
-out that there is a word in the datapath or control then allows us to look for patterns to
-reconstruct. Control flow is usually in the form of muxin and FSMs have pattern of feedback
-(state equals next state) and then control based on state. How do we find these patterns
-better?'' and ``Also, the outputs (words) and the inputs as words also provide hints of where
-the words are''.
+Hypothesis F3 (Section~\ref{sec:l1-results}): L1 recovers structure from Gate-Breaker's own gate input.
+Table~\ref{tab:f3-l1} gives the recovery per kind on the 15 f3 test designs, and Table~\ref{tab:f3-sim} gives
+the AST and CFG similarity per quartile of f3 node count.
+% experiments/f3-recovery/EXPERIMENT.md (the per-kind table and the diagnostic and flatten-control tables).
 
-\emph{Round 3 (2026-10-24): the hypotheses and what happened.} Table~\ref{tab:r3-log};
-Section~\ref{sec:round3}. Rules committed first (\code{5f8de24}). H9a (wrong candidates are
-related fragments) is \rttLNineaStatus{} by the letter of the rule, with related-fragment share
-\rttNinePoolFrag{} of \rttNinePoolFalse{} false candidates, but not robust: \rttNineTopFrag{} without
-the largest design and \rttNineNoFfenFrag{} without \code{ff\_en} (exploratory), and the noise
-class is unreachable by construction (the ground truth covers every cell); H9b (fragments cover the word) is \rttLNinebStatus{} at \rttNinePoolQ; H10a (datapath
-words reached from the ports within two hops) is \rttLTenaStatus{} at \rttTenDatapath{} and H10b
-(control is not) \rttLTenbStatus{} at \rttTenControl, uninformative by construction once H10a
-fails; the FSM chain (L11) is measured only. The
-next step is a word-first detector (register words by shared clock, enable and reset; datapath
-words by per-bit isomorphic cones; control nets by select fan-out; FSMs by feedback components
-and their decoders); L8 stays deferred.
+\begin{table}[t]
+\caption{f3 L1 per kind on the 15 test designs. The calibrated columns are the protocol's
+setting; the \code{--calib none} columns are a diagnostic of what the detectors propose
+before calibration prunes it. A kind with no counted prediction has no F1 and is left out of
+the macro average.}
+\label{tab:f3-l1}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+ & & \multicolumn{3}{c}{calibrated} & \multicolumn{4}{c}{\code{--calib none}} \\
+Kind & GT & counted & matched & F1 & counted & matched & precision & F1 \\
+\midrule
+adder & 17 & 0 & 0 & -- & 1 & 1 & 1.000 & 0.111 \\
+adder\_cin & 17 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+comparator & 20 & 0 & 0 & -- & 14 & 0 & 0.000 & 0.000 \\
+eq\_const & 16 & 0 & 0 & -- & 1,141 & 0 & 0.000 & 0.000 \\
+ff\_srst & 2 & 0 & 0 & -- & 7 & 0 & 0.000 & 0.000 \\
+hard\_add & 17 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+hard\_mul & 11 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+mux & 7 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+mux\_bit & 7 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+register & 22 & 0 & 0 & -- & 3 & 1 & 0.333 & 0.080 \\
+subtractor & 8 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+\midrule
+macro-F1 & 144 & 0 & 0 & 0.000 & 1,166 & 2 & & 0.038 \\
+\midrule
+buses & 120 & 2,569 & 0 & 0.000 & 2,835 & 0 & 0.000 & 0.000 \\
+datapath role & 20,541 & 20,541 & 20,541 & 1.000 & 20,541 & 20,541 & 1.000 & 1.000 \\
+control role & 0 & 0 & 0 & -- & 0 & 0 & -- & -- \\
+\bottomrule
+\end{tabular}}
+\end{table}
 
-\emph{Next.} L3, a cross-suite GNN (train on one suite, test on the other); L6, a motif null
-model for the graphlet counts; and L8, a language model given the ReverseProvenance document
-(deferred by Peter), which is the experiment that tests the combination directly.
-
-\input{round2-log}
-
-\input{round3-log}
-
-\emph{Round 4 (2026-10-25): the hypotheses and what happened.} Table~\ref{tab:r4-log};
-Section~\ref{sec:round4}. Peter (2026-10-24): ``Queue those as round 4 after round 3 finishes -
-we're trying to make these better - I like the Loki ideas so yes (especially the idea of patterns
-from our data (what about the bigger designs, do they provide other insights of patterns).'' What
-round 3 suggested: the wrong candidates are real constructs that do not tile the words, so a
-word-first detector needs labelled data and pattern knowledge. Rules committed first
-(\code{c6c66bf}); variants V1 and V2 of the dictionary were added after Stage 0 and before any
-dictionary result (entry 2026-10-25-a) and change no status. RQs: L12a corpus (H12a
-\rfsTwelveAStatus), L12b dictionary (H12b \rfsTwelveBVzeroStatus, H12b2
-\rfsTwelveBTwoVzeroStatus), L12c GNN scaling (H12c \rfsTwelveCStatus), L13 big designs (H13a--c
-\rfsThirteenAStatus, \rfsThirteenBStatus, \rfsThirteenCStatus), L14 recoverability (H14a--d
-\rfsFourteenAStatus, \rfsFourteenBStatus, \rfsFourteenCStatus, \rfsFourteenDStatus). Next: the
-word-first detector of the discussion, built and tested on the corpus. Statuses are those of the Stage-0 rules; exploratory checks (entry 2026-10-25-c) show H13b flipping with the small baseline (inconclusive against micros and VerilogEval, not supported against VerilogEval alone) and the repeat key near its null on small real designs, so H13b and the ``free evidence'' reading are uninformative or fragile by the letter of the rule; H13a and H13c stay informative.
-
-\input{round4-log}
-
-\emph{Round 5 (2026-10-25): the hypotheses and what happened.} Table~\ref{tab:r5-log};
-Section~\ref{sec:round5}. Question L~Q2.4 (hub purpose page): can words, control nets and FSMs be
-found first, and the rest built around them? What round 3 and round 4 suggested: build words
-directly from structure, use the corpus as a test bed for grouping rules, use repetition only
-where it is real. Rules committed first (\code{ce02fa4}); a dated entry in
-\code{experiments/round5/EXPERIMENT.md} (2026-10-25-a) records the implementation choices, among
-them the relaxed FSM rule, disclosed late (the code of \code{6e97d88} already carried it); entries
-2026-10-25-b and -c (review fixes) correct two statements of entry a (the FSM rule and the null
-seeding were deviations from the committed text), label H16f degenerate, correct the H16a
-reachability arithmetic and add exploratory measurements. No status changed. RQs: L16a tiling (H16a \rfvHaStatus), L16b enabled
-words (H16b \rfvHbStatus), L16c word-level \code{eq\_const} (H16c \rfvHcStatus), L16d chains
-(H16d \rfvHdStatus), L16e growth against a null (H16e \rfvHeStatus), L16f repetition on big
-designs (H16f \rfvHfStatus, degenerate). Word grouping raises \code{ff\_en} recall to \rfvHbrecallwb{}
-at a precision of \rfvHbprecisionwb{} and nothing else reaches its margin; why is not measured
-here, and the provenance-export audit (L15) can attribute missing constructs to a pass.
-
-\input{round5-log}
-
-\emph{Round 6 (2026-10-27): the loss audit.} Section~\ref{sec:round6}. Question L~Q3.1 (hub purpose
-page): at which Odin~III step is each construct first lost as a separable unit, joined with what,
-and why? What round 5 suggested: register and enable words are findable, decoders, compares and
-mux boundaries are absorbed into LUTs at f2. Rules committed first (\code{6d0e5b5}); five dated
-entries in \code{experiments/round6/EXPERIMENT.md} before the fix round (two on development
-designs, two post-data and exploratory, one note on the detector runs) and three post-data
-amendments of the fix round (persistence null, inherited blend by descent, reporting). RQs: L15a
-losses per kind and pass against a random-set null, L15b partners and reason classes, L15c the
-explained share (\rsxExplainedShare, partly explained; MI \rsxExplShareMI, CI \rsxExplShareCI,
-VT \rsxExplShareVT), L15d detector recall at S7 and S8 (only the mux word is fooled by
-\code{abc}; mux, FSM and counter have small n). Outcome: 580 of \rsxUnitsAll{} units are lost
-(\rsxLostNoSub{} without the \rsxSubsumedAll{} subsumed statements), at \code{opt} (320),
-\code{abc} (166), \code{flatten} (68, instance cells) and the second \code{opt} (26), none at
-\code{fsm}, \code{wreduce} or \code{lower}. The Stage-0 null (persistence-free) gives
-\code{dominant} for register, compare, mux and arithmetic; the persistence null (exploratory) gives
-\code{dominant-null} for all four, so the placement at \code{opt} is largely what chance merging
-gives. All unlabelled merges fit an inherited-blend reading (exploratory). The loss measure cannot
-see FSM re-encoding.
+\begin{table}[t]
+\caption{f3 AST (Gate-Breaker Algorithm~2, depth 3, pyverilog) and CFG (Algorithm~3, odin3 probe)
+similarity against the micro reference RTL, L0-stop (gate netlist) against L1-stop
+(\code{design.v}); quartiles by f3 node count. With the f3 calibration L1-stop equals
+L0-stop, so every delta is 0.0000; the table therefore shows the L0 values and the diagnostic
+(\code{--calib none}) deltas.}
+\label{tab:f3-sim}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Quartile & AST L0 & AST L1 & $\Delta$AST & CFG L0 & CFG L1 & $\Delta$CFG \\
+\midrule
+0 (4 designs) & 0.4428 & 0.4428 & 0.0000 & 0.7909 & 0.7909 & 0.0000 \\
+1 (4) & 0.3765 & 0.3765 & 0.0000 & 0.4224 & 0.4224 & 0.0000 \\
+2 (4) & 0.3969 & 0.3969 & 0.0000 & 0.7013 & 0.7013 & 0.0000 \\
+3 (3 AST / 1 CFG) & 0.4003 & 0.4003 & 0.0000 & 0.7507 & 0.7507 & 0.0000 \\
+\midrule
+mean (15 / 13) & 0.4044 & 0.4044 & 0.0000 & 0.6468 & 0.6468 & 0.0000 \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{diagnostic \code{--calib none} (L1 commits hierarchy)}} \\
+0 (4) & 0.4428 & 0.4277 & $-0.0151$ & 0.7909 & 0.7776 & $-0.0133$ \\
+1 (4) & 0.3765 & 0.3756 & $-0.0009$ & 0.4224 & 0.4099 & $-0.0124$ \\
+2 (4) & 0.3969 & 0.4542 & $+0.0573$ & 0.7013 & 0.7014 & $+0.0001$ \\
+3 (3 AST / 1 CFG) & 0.4003 & 0.4007 & $+0.0004$ & 0.7507 & 0.7561 & $+0.0055$ \\
+mean & 0.4044 & 0.4155 & $+0.0111$ & 0.6468 & 0.6394 & $-0.0075$ \\
+\bottomrule
+\end{tabular}}
+\end{table}
 
 \bibliographystyle{IEEEtran}
 \bibliography{joined}

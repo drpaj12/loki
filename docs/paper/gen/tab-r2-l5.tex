@@ -1,0 +1,19 @@
+\begin{table}[t]
+\caption{Graph sandwich (RQ-L5): Spearman correlation of the bracket width (candidate fraction of the cells) and of the committed fraction with the per-design F1; cell-level soundness against the union of the scored ground-truth footprints (\code{must}: committed cells; \code{may}: committed plus candidate cells).}
+\label{tab:r2-l5}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Run set & Designs & $\rho$ width & $p$ & $\rho$ must & must prec. & must rec. & may rec. \\
+\midrule
+VerilogEval f2, uncalibrated & 90 & 0.087 & 0.417 & 0.485 & 0.840 & 0.240 & 0.625 \\
+VerilogEval f2, calibrated & 90 & $-$0.203 & 0.055 & 0.819 & 0.821 & 0.025 & 0.188 \\
+VerilogEval f2, calibrated, rp 0.1 & 90 & $-$0.346 & 0.001 & 0.819 & 0.821 & 0.025 & 0.447 \\
+VerilogEval f3, uncalibrated & 90 & $-$0.124 & 0.243 & 0.168 & 0.792 & 0.347 & 0.727 \\
+micro f2, uncalibrated & 48 & 0.162 & 0.272 & 0.219 & 0.879 & 0.268 & 0.364 \\
+micro f2, calibrated & 48 & 0.052 & 0.725 & 0.844 & 0.932 & 0.021 & 0.132 \\
+\bottomrule
+\end{tabular}}
+\end{table}

@@ -1,0 +1,18 @@
+\begin{table}[t]
+\caption{Round 6, rule 1: the pass that loses most of each hardware kind, its share, and the outcome under the random-set null (persistence-free) and, beside it, under the persistence null with the same thresholds (stmt, MI+VT+CI). Where they differ, neither is confirmatory.}
+\label{tab:r6-rule1}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llrclcl@{}}
+\toprule
+Kind & Pass & Losses & Share/random-set null & Random-set & Share/persist. & Persist. (expl.) \\
+\midrule
+arith & S8\_abc & 55 & 0.564/0.101 & dominant & 0.564/0.462 & dominant-null \\
+compare & S3\_opt & 19 & 0.947/0.489 & dominant & 0.947/0.844 & dominant-null \\
+logic & S4\_flatten & 132 & 0.515/0.168 & dominant & 0.515/0.055 & dominant \\
+mux & S3\_opt & 285 & 0.674/0.412 & dominant & 0.674/0.790 & dominant-null \\
+register & S3\_opt & 89 & 0.944/0.343 & dominant & 0.944/0.801 & dominant-null \\
+\bottomrule
+\end{tabular}}
+\end{table}

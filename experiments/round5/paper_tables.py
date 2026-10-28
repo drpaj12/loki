@@ -86,7 +86,7 @@ def status_macros() -> str:
             macro(key, tex(v))
     body = [[f"H16{c}", tex(st[f"H16{c}"][0]), tex(st[f"H16{c}"][1])] for c in "abcdef"
             if f"H16{c}" in st]
-    return table("Round 5: the six hypotheses, their status under the Stage-0 rules and the "
+    return table("Round 5: the six hypotheses, their status under the decision rules and the "
                  "numbers the rules use.", "tab:r5-status", ["Hypothesis", "Status", "Numbers"],
                  body, "lll")
 
@@ -226,7 +226,7 @@ def fsm_rule_table(counts: dict[str, dict[str, int]]) -> str:
             a[1] += 1
     body = []
     for arm, rule in (("R2N", "per-bit"), ("R2C", "per-bit"), ("W", "round 5"), ("WB", "round 5"),
-                      ("W1", "Stage 0"), ("WB1", "Stage 0")):
+                      ("W1", "first rule"), ("WB1", "first rule")):
         c, m, g = kind[arm]
         ch = chain[arm]
         cand = counts.get(arm)
@@ -239,8 +239,8 @@ def fsm_rule_table(counts: dict[str, dict[str, int]]) -> str:
         body.append([ARM_NAME.get(arm, arm), rule, f"{c}/{m}/{g}", f3(f1_of(c, m, g), 2),
                      f"{ch[0]}/{ch[1]}", f"{ch[2]}/{ch[3]}",
                      *([str(cand[x]) for x in ("all", *FSM_GROUPS)] if cand else ["--"] * 5)])
-    return table("Round 5, exploratory (2026-10-25-c): the FSM rule. W and WB use the evaluated "
-                 "rule (feedback coupling, no decoder), W1 and WB1 the Stage-0 rule (feedback "
+    return table("Round 5, additional analysis: the FSM rule. W and WB use the evaluated "
+                 "rule (feedback coupling, no decoder), W1 and WB1 the first rule (feedback "
                  "plus at least two word-level decoders). Kind-level counted/matched/GT of "
                  "\\code{fsm} and F1 pooled over MI, VT, CI and CO at f2; chains complete "
                  "and FSM instances hit on MI and VT; the last columns classify every "
@@ -265,7 +265,7 @@ def nullmix_table() -> str:
         body.append([ARM_NAME[r["arm"]], tex(r["subset"]), r["candidates"], r["cells_ge10"],
                      r["max_cells"], f3(float(r["covered_real"]) / inst),
                      f3(float(r["covered_null"]) / inst)])
-    return table("Round 5, exploratory (2026-10-25-c): tiling on VT and its random null by "
+    return table("Round 5, additional analysis: tiling on VT and its random null by "
                  "candidate subset. Candidates of at least ten cells and the largest candidate "
                  "drive the null; the same \\code{ff\\_en} candidates give a null of a few "
                  "percent for R2N and 0.19 for WB.", "tab:r5x-null",
@@ -367,7 +367,7 @@ def bigwb_table() -> str:
         macro(f"XBigWbGt{ARM_CAP[arm]}", fi(gt))
         macro(f"XBigWbFAll{ARM_CAP[arm]}", f3(f1_of(c, m, gt)) if done else "n/a")
         macro(f"XBigWbFFilt{ARM_CAP[arm]}", f3(f1_of(cf, mf, gt)) if done else "n/a")
-    return table("Round 5, exploratory (2026-10-25-c): arm WB on BIG with the Stage-0 cap of "
+    return table("Round 5, additional analysis: arm WB on BIG with the cap of "
                  "1800 s per design (smallest first). Counted/matched for W and WB on the "
                  "designs where WB finished; GT words of the design.", "tab:r5x-bigwb",
                  ["Design", "WB status", "s", "W c/m", "WB c/m", "GT"], body, "llrccr")

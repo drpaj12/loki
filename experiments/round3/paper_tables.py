@@ -155,7 +155,7 @@ def l9_block() -> tuple[str, str, str]:
                  f3(sget(ex, "pool_noise_prime"), 2), f3(sget(b, "pool_q"), 3),
                  f3(sget(xb, "pool_qtouched"), 3)])
     t4 = table(
-        r"Exploratory, non-deciding additions (2026-10-24, after the data), set P: share of "
+        r"Additional, non-deciding analyses, set P: share of "
         r"false candidates that are related fragments (by candidate, by distinct cell), the "
         r"noise$'$ share (cells only in plain-gate ground-truth words), $q$ over all words and "
         r"over the words touched by a candidate.",

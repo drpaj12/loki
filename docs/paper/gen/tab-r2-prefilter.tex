@@ -1,0 +1,19 @@
+\begin{table}[t]
+\caption{Structural prefilter (RQ-L5b), measured offline on the 210 \code{cone\_check} calls of all round-2 runs (166 proved \code{equivalent}): the rules that prune calls without losing a proved construct, and the largest rule overall.}
+\label{tab:r2-prefilter}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Rule (kind/feature=bin) & Calls pruned & Fraction & Equivalent lost \\
+\midrule
+adder/out\_reads=no & 14 & 0.067 & 0 \\
+subtractor/width=2 & 8 & 0.038 & 0 \\
+subtractor/out\_reads=no & 4 & 0.019 & 0 \\
+adder/npn\_sum=low & 3 & 0.014 & 0 \\
+subtractor/npn\_carry=all & 3 & 0.014 & 0 \\
+\emph{unrestricted best} & 79 & 0.376 & 79 \\
+\bottomrule
+\end{tabular}}
+\end{table}

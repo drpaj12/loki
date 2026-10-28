@@ -1,0 +1,22 @@
+\begin{table}[t]
+\caption{Round 6: first losses per reason class and pass (stmt level, MI+VT+CI). Classes with no loss are kept.}
+\label{tab:r6-reason}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Reason & fsm & opt & flatten & opt -full & wreduce & lower & abc \\
+\midrule
+removed & 0 & 12 & 68 & 7 & 0 & 0 & 10 \\
+subsumed & 0 & 127 & 0 & 1 & 0 & 0 & 33 \\
+fsm-recode & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+instance-join & 0 & 0 & 0 & 0 & 0 & 0 & 2 \\
+opt-merge & 0 & 77 & 0 & 17 & 0 & 0 & 0 \\
+width-reduce & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+lower-share & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+lut-cone & 0 & 0 & 0 & 0 & 0 & 0 & 99 \\
+unlabelled-merge & 0 & 104 & 0 & 1 & 0 & 0 & 22 \\
+\bottomrule
+\end{tabular}}
+\end{table}

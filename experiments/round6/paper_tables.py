@@ -23,7 +23,7 @@ PASSES = ("S3_opt", "S4_flatten", "S5_opt_full", "S8_abc")
 ALLP = ("S2_fsm", "S3_opt", "S4_flatten", "S5_opt_full", "S6_wreduce", "S7_lower", "S8_abc")
 PASS_HEAD = {"S2_fsm": "fsm", "S3_opt": "opt", "S4_flatten": "flatten", "S5_opt_full": "opt -full",
              "S6_wreduce": "wreduce", "S7_lower": "lower", "S8_abc": "abc"}
-STAGE0 = "Stage-0 null (persistence-free; see amendment)"
+STAGE0 = "random-set null (persistence-free)"
 ARMS = ("B", "W", "WB")
 KDICT = ("ff_en", "ff_srst", "register", "adder", "subtractor", "comparator", "eq_const", "mux",
          "mux_tree", "counter", "fsm")
@@ -64,11 +64,12 @@ def kind_pass() -> str:
             cells.append(f"{a[1]}/{a[2]:.0f}/{a[3]:.0f}" if a and a[0] else "--")
         n0 = acc.get((k, "S3_opt"))
         body.append([k, str(n0[0]) if n0 else "0", *cells])
-    return table("Round 6: first losses of a unit per hardware kind and pass, as real/Stage-0 "
+    return table("Round 6: first losses of a unit per hardware kind and pass, as real/random-set "
                  "null/persistence null (expected counts, stmt level, MI+VT+CI). The first column "
-                 "is the units at risk at \\code{opt}. The Stage-0 null is persistence-free and "
-                 "overstates chance losses; the persistence null (mean of 50 draws, exploratory, "
-                 "post-data) starts from the real objects of the previous snapshot. Both nulls and "
+                 "is the units at risk at \\code{opt}. The random-set null is persistence-free and "
+                 "overstates chance losses; the persistence null (mean of 50 draws) starts "
+                 "from the "
+                 "real objects of the previous snapshot. Both nulls and "
                  "the real count use the same units at risk (separable at the previous snapshot, "
                  "not lost earlier). The \\code{logic} loss at \\code{flatten} is the 68 "
                  "\\code{INSTANCE} units (\\code{removed}), not dead logic. The loss measure "
@@ -93,7 +94,7 @@ def pnull_table() -> str:
             cells.append(f"{a[0]} / {float(a[1]):.0f} / {float(a[2]):.0f} [{a[3]}--{a[4]}]"
                          if a and any(float(x) for x in a) else "--")
         body.append([k, *cells])
-    return table("Round 6 (exploratory, post-data): real first losses / Stage-0 null / "
+    return table("Round 6: real first losses / random-set null / "
                  "persistence-null mean [2.5th--97.5th percentile of the 50 per-draw totals], "
                  "stmt level, MI+VT+CI. The interval covers the draws within the fixed designs, "
                  "not variation across designs. A pass that removes objects lowers the object "
@@ -131,7 +132,8 @@ def headline() -> str:
     macro("SubsumedAll", str(tot[1]))
     macro("LostNoSub", str(tot[2] + tot[3]))
     macro("SubsumedShare", f"{tot[1] / tot[0]:.2f}")
-    return table("Round 6: first losses (the Stage-0 total) and, apart from them, the "
+    return table("Round 6: first losses (the total under the random-set null) and, apart "
+                 "from them, the "
                  "\\code{subsumed} ones (the unit survives only as the enclosing statement of a "
                  "finer unit that is still alive) and the remaining merged-plus-removed losses "
                  "(stmt level, MI+VT+CI).", "tab:r6-headline",
@@ -212,11 +214,11 @@ def rules() -> str:
         macro("Rone" + kind.title(), tex(s0["outcome"]))
         macro("RonePersist" + kind.title(), tex(pp["outcome"]))
     return table("Round 6, rule 1: the pass that loses most of each hardware kind, its share, and "
-                 "the outcome under the pre-registered Stage-0 null (persistence-free; see "
-                 "amendment) and, beside it and exploratory (post-data), under the persistence "
-                 "null with the same thresholds (stmt, MI+VT+CI). Where they differ, neither is "
+                 "the outcome under the random-set null (persistence-free) and, beside it, "
+                 "under the persistence null with the same thresholds (stmt, MI+VT+CI). Where they "
+                 "differ, neither is "
                  "confirmatory.", "tab:r6-rule1",
-                 ["Kind", "Pass", "Losses", "Share/Stage-0 null", "Stage-0", "Share/persist.",
+                 ["Kind", "Pass", "Losses", "Share/random-set null", "Random-set", "Share/persist.",
                   "Persist. (expl.)"], body, "llrcl" + "cl")
 
 
