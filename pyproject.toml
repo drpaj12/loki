@@ -41,6 +41,8 @@ select = ["E", "F", "W", "I", "B", "UP", "SIM"]
 [tool.mypy]
 strict = true
 python_version = "3.11"
+# docs/paper holds check_terms.py, imported by tests/test_check_terms.py.
+mypy_path = "$MYPY_CONFIG_FILE_DIR/docs/paper"
 
 [[tool.mypy.overrides]]
 # Wyrd ships no py.typed marker; analyse its source instead of treating it as Any.
