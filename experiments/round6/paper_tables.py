@@ -67,7 +67,8 @@ def kind_pass() -> str:
     return table("Round 6: first losses of a unit per hardware kind and pass, as real/random-set "
                  "null/persistence null (expected counts, stmt level, MI+VT+CI). The first column "
                  "is the units at risk at \\code{opt}. The random-set null is persistence-free and "
-                 "overstates chance losses; the persistence null (mean of 50 draws) starts from the "
+                 "overstates chance losses; the persistence null (mean of 50 draws) starts "
+                 "from the "
                  "real objects of the previous snapshot. Both nulls and "
                  "the real count use the same units at risk (separable at the previous snapshot, "
                  "not lost earlier). The \\code{logic} loss at \\code{flatten} is the 68 "
@@ -131,7 +132,8 @@ def headline() -> str:
     macro("SubsumedAll", str(tot[1]))
     macro("LostNoSub", str(tot[2] + tot[3]))
     macro("SubsumedShare", f"{tot[1] / tot[0]:.2f}")
-    return table("Round 6: first losses (the total under the random-set null) and, apart from them, the "
+    return table("Round 6: first losses (the total under the random-set null) and, apart "
+                 "from them, the "
                  "\\code{subsumed} ones (the unit survives only as the enclosing statement of a "
                  "finer unit that is still alive) and the remaining merged-plus-removed losses "
                  "(stmt level, MI+VT+CI).", "tab:r6-headline",
@@ -213,7 +215,8 @@ def rules() -> str:
         macro("RonePersist" + kind.title(), tex(pp["outcome"]))
     return table("Round 6, rule 1: the pass that loses most of each hardware kind, its share, and "
                  "the outcome under the random-set null (persistence-free) and, beside it, "
-                 "under the persistence null with the same thresholds (stmt, MI+VT+CI). Where they differ, neither is "
+                 "under the persistence null with the same thresholds (stmt, MI+VT+CI). Where they "
+                 "differ, neither is "
                  "confirmatory.", "tab:r6-rule1",
                  ["Kind", "Pass", "Losses", "Share/random-set null", "Random-set", "Share/persist.",
                   "Persist. (expl.)"], body, "llrcl" + "cl")

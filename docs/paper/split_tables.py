@@ -47,7 +47,9 @@ def split(name: str) -> list[str]:
             env = ""
     if env:
         raise SystemExit(f"{name}: unterminated {env}")
-    (HERE / "gen" / f"{name}-macros.tex").write_text("".join(macros), encoding="utf-8", newline="\n")
+    (HERE / "gen" / f"{name}-macros.tex").write_text(
+        "".join(macros), encoding="utf-8", newline="\n"
+    )
     return labels
 
 

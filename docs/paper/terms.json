@@ -1,0 +1,409 @@
+[
+ {
+  "key": "hdl",
+  "name": "HDL",
+  "definition": "Hardware description language: the language, such as Verilog, in which a designer writes a circuit~\\cite{jamiesonthesis}.",
+  "depends": [],
+  "search": "\\bHDL\\b|hardware description language",
+  "intro": true
+ },
+ {
+  "key": "rtl",
+  "name": "RTL",
+  "definition": "Register-transfer level: the HDL text that says what the registers hold and how they change~\\cite{jamiesonthesis}.",
+  "depends": [
+   "HDL"
+  ],
+  "search": "\\bRTL\\b|register-transfer",
+  "intro": true
+ },
+ {
+  "key": "gate",
+  "name": "gate",
+  "definition": "A basic logic element (AND, OR, NOT); the elaborated design is first written with such primitive gates~\\cite{jamiesonthesis}.",
+  "depends": [],
+  "search": "\\bgates?\\b(?!-)",
+  "intro": true
+ },
+ {
+  "key": "netlist",
+  "name": "netlist",
+  "definition": "The list of the basic blocks of a design and the nets (wires) that join them; every net is driven by exactly one block~\\cite{luuthesis}.",
+  "depends": [
+   "gate"
+  ],
+  "search": "\\bnetlists?\\b",
+  "intro": true
+ },
+ {
+  "key": "ff",
+  "name": "flip-flop",
+  "definition": "A one-bit storage element that keeps its value between clock edges.",
+  "depends": [],
+  "search": "flip-flops?|\\bFFs?\\b",
+  "intro": false
+ },
+ {
+  "key": "lut",
+  "name": "LUT",
+  "definition": "Look-up table: a small memory that implements any logic function of $K$ inputs ($K=6$ here). In most FPGAs a LUT and a flip-flop form one basic logic element~\\cite{jamiesonthesis}~\\cite{luuthesis}.",
+  "depends": [
+   "flip-flop"
+  ],
+  "search": "\\bLUT6?s?\\b|look-up table",
+  "intro": false
+ },
+ {
+  "key": "techmap",
+  "name": "technology mapping",
+  "definition": "The CAD step that covers the logic of a netlist with the cells the target offers: gates for a gate library, LUTs and flip-flops for an FPGA~\\cite{jamiesonthesis}.",
+  "depends": [
+   "netlist",
+   "gate",
+   "LUT",
+   "flip-flop"
+  ],
+  "search": "technology.map",
+  "intro": false
+ },
+ {
+  "key": "prov",
+  "name": "provenance",
+  "definition": "The link from each netlist object back to the HDL that produced it.",
+  "depends": [
+   "HDL",
+   "netlist"
+  ],
+  "search": "provenance",
+  "intro": true
+ },
+ {
+  "key": "odin",
+  "name": "Odin III",
+  "definition": "The provenance-tracked synthesis front end under Loki; it keeps that link in one intermediate representation.",
+  "depends": [
+   "provenance"
+  ],
+  "search": "Odin~?III",
+  "intro": true
+ },
+ {
+  "key": "key",
+  "name": "answer key / ground truth",
+  "definition": "What the synthesis tool recorded about which netlist objects form which HDL construct; the target that recovery is scored against.",
+  "depends": [
+   "provenance"
+  ],
+  "search": "answer.key|ground.truth",
+  "intro": true
+ },
+ {
+  "key": "gb",
+  "name": "Gate-Breaker",
+  "definition": "An earlier study in which a language model rewrites gate netlists into RTL; Loki's method baseline.",
+  "depends": [
+   "netlist",
+   "RTL"
+  ],
+  "search": "Gate-Breaker",
+  "intro": true
+ },
+ {
+  "key": "hyp",
+  "name": "hypothesis",
+  "definition": "A claim that an experiment can confirm or fail to confirm. In L1 a structure hypothesis is the claim that a set of netlist cells is a structure of some kind (register, adder, mux, ...).",
+  "depends": [
+   "netlist"
+  ],
+  "search": "hypothes[ei]s",
+  "intro": true
+ },
+ {
+  "key": "layers",
+  "name": "L0 / L1 / L2",
+  "definition": "Loki's three layers: L0 labelled datasets, L1 a Bayesian flow over structure hypotheses, L2 graph analysis.",
+  "depends": [
+   "answer key / ground truth",
+   "hypothesis"
+  ],
+  "search": "\\bL0\\b|\\bL1\\b|\\bL2\\b",
+  "intro": true
+ },
+ {
+  "key": "quart",
+  "name": "quartile",
+  "definition": "One quarter of the benchmark designs ordered by Gate-Breaker's complexity score (Q1 simplest, Q4 most complex).",
+  "depends": [
+   "Gate-Breaker"
+  ],
+  "search": "quartile",
+  "intro": false
+ },
+ {
+  "key": "astcfg",
+  "name": "AST / CFG similarity",
+  "definition": "How alike two RTL texts are by subtree overlap of the syntax trees (AST) and by a kernel on the control-flow graphs (CFG); Gate-Breaker's measures of a recovered text against its reference.",
+  "depends": [
+   "RTL",
+   "Gate-Breaker"
+  ],
+  "search": "\\bAST\\b|\\bCFG\\b",
+  "intro": false
+ },
+ {
+  "key": "micro",
+  "name": "micro designs",
+  "definition": "The 68 small synthesizable RTL designs (counters, registers, arithmetic, ALUs, muxes, comparators, small state machines) used as the first benchmark.",
+  "depends": [
+   "RTL"
+  ],
+  "search": "micro (suite|designs?)|micro-",
+  "intro": false
+ },
+ {
+  "key": "veval",
+  "name": "VerilogEval references",
+  "definition": "The 156 reference RTL designs of the VerilogEval spec-to-RTL set; the second benchmark.",
+  "depends": [
+   "RTL"
+  ],
+  "search": "VerilogEval",
+  "intro": false
+ },
+ {
+  "key": "floor",
+  "name": "floor",
+  "definition": "The abstraction level and technology mapping at which a design is cut and written as the netlist to reconstruct (f1-k6, f1-earch, f2, f3).",
+  "depends": [
+   "netlist",
+   "technology mapping"
+  ],
+  "search": "\\bfloors?\\b|\\bf1-|\\bf2\\b|\\bf3\\b",
+  "intro": false
+ },
+ {
+  "key": "renamed",
+  "name": "renamed-instance protocol",
+  "definition": "Rename every identifier through one shared permutation, run the pipeline, map the tokens back: equal results show that the pipeline does not use names.",
+  "depends": [
+   "floor"
+  ],
+  "search": "renamed",
+  "intro": false
+ },
+ {
+  "key": "det",
+  "name": "detector",
+  "definition": "A plug-in that proposes structure hypotheses for a netlist and reports features of them, never a likelihood.",
+  "depends": [
+   "hypothesis"
+  ],
+  "search": "detectors?",
+  "intro": false
+ },
+ {
+  "key": "cal",
+  "name": "calibration",
+  "definition": "Fitting priors and likelihood ratios on a training split so that predicted probabilities match observed rates.",
+  "depends": [
+   "detector"
+  ],
+  "search": "calibrat",
+  "intro": false
+ },
+ {
+  "key": "ece",
+  "name": "ECE",
+  "definition": "Expected calibration error: the average gap between predicted probability and observed match rate over ten bins.",
+  "depends": [
+   "calibration"
+  ],
+  "search": "\\bECE\\b",
+  "intro": false
+ },
+ {
+  "key": "prover",
+  "name": "prover",
+  "definition": "An engine (cone check, truth table, transfer) that proves a structure hypothesis equal to the netlist; a proof makes it near certain.",
+  "depends": [
+   "hypothesis"
+  ],
+  "search": "prover|proof",
+  "intro": false
+ },
+ {
+  "key": "count",
+  "name": "count / match (scoring)",
+  "definition": "A hypothesis is counted when it is committed or has probability at least 0.5; it matches an answer-key instance by an overlap rule (Section~\\ref{sec:eval}).",
+  "depends": [
+   "hypothesis",
+   "answer key / ground truth"
+  ],
+  "search": "\\bcounted\\b|\\bmatched\\b|\\bmatches\\b",
+  "intro": false
+ },
+ {
+  "key": "prf",
+  "name": "precision / recall / F1",
+  "definition": "Precision is the share of counted hypotheses that match; recall is the share of answer-key instances matched; F1 is their harmonic mean.",
+  "depends": [
+   "count / match (scoring)"
+  ],
+  "search": "precision|recall|(?<![\\w-])F1(?![\\w-])",
+  "intro": false
+ },
+ {
+  "key": "macro",
+  "name": "macro-F1 / micro-F1",
+  "definition": "F1 averaged over the kinds of structure (macro) or pooled over all instances (micro).",
+  "depends": [
+   "precision / recall / F1"
+  ],
+  "search": "macro-F1|micro-F1",
+  "intro": false
+ },
+ {
+  "key": "louv",
+  "name": "Louvain / modularity / NMI",
+  "definition": "Louvain is a community-detection method; modularity scores how dense the clusters are; NMI scores the agreement of a clustering with the known module hierarchy.",
+  "depends": [
+   "netlist",
+   "answer key / ground truth"
+  ],
+  "search": "Louvain|modularity|\\bNMI\\b",
+  "intro": false
+ },
+ {
+  "key": "gnn",
+  "name": "GNN and 1-WL baseline",
+  "definition": "A graph neural network (GNN) labels each netlist node from its neighbours; the 1-WL baseline is colour refinement, whose distinguishing power a message-passing GNN cannot exceed.",
+  "depends": [
+   "netlist"
+  ],
+  "search": "\\bGNN|1-WL",
+  "intro": false
+ },
+ {
+  "key": "word",
+  "name": "word",
+  "definition": "A group of cells that act as one multi-bit signal (a register, a datapath operator, a bus).",
+  "depends": [
+   "netlist"
+  ],
+  "search": "\\bwords?\\b",
+  "intro": false
+ },
+ {
+  "key": "opf1",
+  "name": "operator type-F1",
+  "definition": "F1 of the recovered word-level operator types (adder, mux, comparator, ...) against the answer key's operators.",
+  "depends": [
+   "precision / recall / F1",
+   "word"
+  ],
+  "search": "operator (type-)?F1",
+  "intro": false
+ },
+ {
+  "key": "frag",
+  "name": "fragment",
+  "definition": "A wrong-looking candidate that is in fact part of a real construct.",
+  "depends": [
+   "word",
+   "detector"
+  ],
+  "search": "fragment",
+  "intro": false
+ },
+ {
+  "key": "wf",
+  "name": "word-first detector",
+  "definition": "A detector that first groups flip-flops into register words by shared clock, enable and reset, then builds the rest around them.",
+  "depends": [
+   "word",
+   "detector",
+   "flip-flop"
+  ],
+  "search": "word-first|wordfirst",
+  "intro": false
+ },
+ {
+  "key": "dana",
+  "name": "DANA (through HAL)",
+  "definition": "A published method, run through the HAL framework, that groups flip-flops into register words from their shared control nets and the dataflow between them.",
+  "depends": [
+   "word",
+   "flip-flop"
+  ],
+  "search": "DANA|\\bHAL\\b",
+  "intro": false
+ },
+ {
+  "key": "tests",
+  "name": "McNemar / Wilcoxon test",
+  "definition": "An exact paired test on discordant pairs; a paired rank test.",
+  "depends": [],
+  "search": "McNemar|Wilcoxon",
+  "intro": false
+ },
+ {
+  "key": "corpus",
+  "name": "synthetic corpus",
+  "definition": "A seeded generator's 1200 labelled idiom designs (twelve families) with train, iid and ood splits.",
+  "depends": [
+   "floor"
+  ],
+  "search": "synthetic corpus|\\bcorpus\\b",
+  "intro": false
+ },
+ {
+  "key": "dict",
+  "name": "signature dictionary",
+  "definition": "A table from a cell's cone class and WL colour to the construct it usually is, mined from the synthetic corpus.",
+  "depends": [
+   "synthetic corpus"
+  ],
+  "search": "dictionary",
+  "intro": false
+ },
+ {
+  "key": "d14",
+  "name": "D14 provenance map",
+  "definition": "Odin III's version-2 name map: per object, the source-statement units it blends, and labelled join records.",
+  "depends": [
+   "provenance"
+  ],
+  "search": "D14|name map|prov-map",
+  "intro": false
+ },
+ {
+  "key": "unit",
+  "name": "unit, separable, lost",
+  "definition": "A unit is the statement-level anchor of a construct; it is separable while some object has exactly that unit set, and lost at the first later snapshot where none has.",
+  "depends": [
+   "D14 provenance map"
+  ],
+  "search": "separable|unit set|statement-level",
+  "intro": false
+ },
+ {
+  "key": "nullm",
+  "name": "random-set null / persistence null",
+  "definition": "The random-set null draws random unit sets of the real sizes at each pass; the persistence null starts from the objects of the previous snapshot and merges at random until the real object count is reached.",
+  "depends": [
+   "unit, separable, lost"
+  ],
+  "search": "random-set null|persistence null|persistence-free",
+  "intro": false
+ },
+ {
+  "key": "arms",
+  "name": "LLM pilot arms A, B, C",
+  "definition": "Arm A: gate netlist; arm B: netlist plus Loki hints; arm C: interface line only (memorisation control).",
+  "depends": [
+   "Gate-Breaker"
+  ],
+  "search": "\\barms?[~ ]?[ABC]\\b",
+  "intro": false
+ }
+]

@@ -719,7 +719,8 @@ def tex_table(runs8: list[Run], runs2: list[Run]) -> list[str]:
            "\\caption{Loki word-first detector (\\code{W}) against HAL's DANA on MI and VT "
            "(E\\_real), word recovery against the L0 ground truth; one scorer for both tools. "
            "$P_J$, $R_J$, $F_J$: Jaccard-0.5 matching; purity and completeness over flip-flops. "
-           "The round-5 scorer row counts Loki as round 5 did (the scorer used for Loki in round 5). "
+           "The round-5 scorer row counts Loki as round 5 did (the scorer used for Loki in "
+           "round 5). "
            + wb_note(runs8) + "}",
            "\\label{tab:hal}", "\\centering", "\\footnotesize",
            "\\begin{tabular}{@{}l" + "rrrrr" * 2 + "@{}}", "\\toprule",

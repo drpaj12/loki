@@ -78,7 +78,8 @@ def main() -> None:
         first, last = n + 1, n + len(part)
         lines += [
             "\\begin{table*}[t]\n",
-            f"\\caption{{Research log, hypotheses {first} to {last} of {len(data)}: every hypothesis, "
+            f"\\caption{{Research log, hypotheses {first} to {last} of {len(data)}: "
+            "every hypothesis, "
             "one row each, with the verdict.}\n",
             f"\\label{{tab:register-{n // CHUNK + 1}}}\n",
             "\\centering\\scriptsize\n",
@@ -86,7 +87,10 @@ def main() -> None:
             "\\toprule\nID & Round & Hypothesis & Result & Verdict \\\\\n\\midrule\n",
         ]
         for hid, rnd, hyp, res, ver in part:
-            lines.append(f"{esc(hid)} & {esc(rnd)} & {esc(hyp)} & {esc(res)} & \\textsc{{{ver.lower()}}} \\\\\n")
+            lines.append(
+                f"{esc(hid)} & {esc(rnd)} & {esc(hyp)} & {esc(res)} & "
+                f"\\textsc{{{ver.lower()}}} \\\\\n"
+            )
         lines += ["\\bottomrule\n\\end{tabular}\n\\end{table*}\n\n"]
     (HERE / "register.tex").write_text("".join(lines), encoding="utf-8", newline="\n")
     print(len(data), "rows")

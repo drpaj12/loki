@@ -125,7 +125,7 @@ class Glossary(unittest.TestCase):
     def test_glossary_and_terms(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             d = Path(tmp)
-            for f in ("make_glossary.py", "check_terms.py"):
+            for f in ("make_glossary.py", "check_terms.py", "terms.json"):
                 shutil.copy(PAPER / f, d)
             (d / "loki.tex").write_text(TEX, encoding="utf-8")
             run("make_glossary.py", d, "--tex", str(d / "loki.tex"))
