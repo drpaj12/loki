@@ -5,10 +5,7 @@ Verilog, with a Bayesian hypothesis flow over Odin III's provenance IR. Three le
 a plan in `docs/specs/` and `docs/plans/`: L0 ground-truth dataset, L1 Bayesian hypotheses (`loki re`), L2
 analysis plugins (`loki analyze`).
 
-Loki III is part of **Yggdrasil III** (the project / world tree), the suite of Odin III
-(<https://github.com/drpaj12/odin3>), Wyrd III (<https://github.com/drpaj12/wyrd>), Loki III, Verdandi III
-(<https://github.com/drpaj12/verdandiIII>), The Norns III (<https://github.com/drpaj12/nornsIII>, which uses Loki III's L2
-clusters as placement seeds) and Midgard III (the Verilog Town game). Loki III depends on the `odin3` Python package and never changes the Odin III core.
+Loki III is part of **Yggdrasil III**, the suite of Odin III (<https://github.com/drpaj12/odin3>, the trunk), Wyrd III (<https://github.com/drpaj12/wyrd>, the canopy, with Bifrost III and Midgard III), Loki III (<https://github.com/drpaj12/loki>), The Norns III (<https://github.com/drpaj12/nornsIII>) and Verdandi III (<https://github.com/drpaj12/verdandiIII>) on side branches, and Mímir III (<https://github.com/drpaj12/mimirIII>, the fruit). Loki III is a side branch, a tool and experiment; it uses Odin III's provenance IR and its L2 clusters seed The Norns III. It depends on the `odin3` Python package and never changes the Odin III core. Version 0.1.0 (`pyproject.toml`). The hub is <https://github.com/drpaj12/YggdrasilIII> (documentation: <https://drpaj12.github.io/YggdrasilIII/>, versions of every piece: <https://drpaj12.github.io/YggdrasilIII/versions.html>) and its picture of the tree is <https://github.com/drpaj12/YggdrasilIII/blob/main/images/yggdrasil-tree.png>.
 
 License: MIT.
 
