@@ -1,0 +1,20 @@
+\begin{table}[t]
+\caption{H12b on real designs (micros and the 33 VerilogEval test designs, f2): pooled F1 of the dictionary (V0 as written; V1 and V2 added after Stage 0) and of the better detector arm, and the number of designs and ground-truth constructs.}
+\label{tab:r4-kinds}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+kind & dict V0 & dict V1 & dict V2 & best detector & designs & GT \\
+\midrule
+adder & 0.000 & 0.012 & 0.008 & 0.208 & 29 & 69 \\
+subtractor & 0.000 & 0.000 & 0.000 & 0.129 & 14 & 29 \\
+comparator & 0.000 & 0.002 & 0.010 & 0.003 & 27 & 663 \\
+eq\_const & 0.000 & 0.000 & 0.008 & 0.001 & 25 & 643 \\
+mux & 0.027 & 0.031 & 0.013 & 0.025 & 22 & 71 \\
+register & 0.000 & 0.026 & 0.080 & 0.104 & 41 & 240 \\
+ff\_srst & 0.000 & 0.019 & 0.021 & 0.000 & 12 & 15 \\
+\bottomrule
+\end{tabular}}
+\end{table}

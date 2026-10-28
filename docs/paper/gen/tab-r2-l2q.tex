@@ -1,0 +1,17 @@
+\begin{table}[t]
+\caption{Loki on all 150 VerilogEval designs by complexity quartile (mean AST and CFG of the output Verilog against the reference; last column: operator type-F1 of the uncalibrated f2 run). Calibrated f3 equals the f3 netlist wherever L1 commits nothing.}
+\label{tab:r2-l2q}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+Quartile & $n$ & f3 AST & f3 CFG & f3 cal. AST & f3 cal. CFG & f2 cal. AST & f2 cal. CFG & op F1 \\
+\midrule
+Q1 & 38 & 0.754 & 0.750 & 0.754 & 0.750 & 0.793 & 0.820 & 0.061 \\
+Q2 & 38 & 0.455 & 0.741 & 0.455 & 0.741 & 0.455 & 0.784 & 0.075 \\
+Q3 & 32 & 0.614 & 0.751 & 0.605 & 0.750 & 0.607 & 0.811 & -- \\
+Q4 & 21 & 0.505 & 0.768 & 0.505 & 0.768 & 0.507 & 0.870 & -- \\
+\bottomrule
+\end{tabular}}
+\end{table}

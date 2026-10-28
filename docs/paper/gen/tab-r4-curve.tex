@@ -1,0 +1,17 @@
+\begin{table}[t]
+\caption{GNN macro-F1 (f2, mean of 3 seeds) by corpus train size, on four test sets; last column: trained on the VerilogEval train split.}
+\label{tab:r4-curve}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+test set & 36 & 72 & 144 & 288 & 576 & 840 & VE train \\
+\midrule
+iid & 0.336 & 0.358 & 0.367 & 0.374 & 0.402 & 0.423 & 0.084 \\
+ood & 0.244 & 0.308 & 0.294 & 0.306 & 0.325 & 0.346 & 0.098 \\
+micro & 0.147 & 0.105 & 0.126 & 0.115 & 0.111 & 0.122 & 0.068 \\
+vetest & 0.042 & 0.036 & 0.043 & 0.031 & 0.030 & 0.031 & 0.169 \\
+\bottomrule
+\end{tabular}}
+\end{table}

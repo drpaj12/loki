@@ -1,0 +1,25 @@
+\begin{table}[t]
+\caption{Operator-recovery F1 (RQ-L7) of the existing and new L1 runs: the multiset of recovered operators (class and operand width) against the operators of the L0 key, pooled over designs. \code{type} ignores the width, \code{tw} requires it.}
+\label{tab:r2-l7}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Run set & Designs & Key ops & Got ops & P & R & type-F1 & tw-F1 \\
+\midrule
+f1-k6, calibrated & 68 & 468 & 169 & 0.657 & 0.237 & 0.349 & 0.204 \\
+f1-k6, none & 68 & 468 & 964 & 0.233 & 0.481 & 0.314 & 0.166 \\
+f2, calibrated & 68 & 468 & 21 & 0.810 & 0.036 & 0.070 & 0.061 \\
+f2, none & 68 & 468 & 756 & 0.180 & 0.291 & 0.222 & 0.080 \\
+f3 gates, calibrated & 15 & 108 & 0 & -- & 0.000 & 0.000 & 0.000 \\
+f3 gates, none & 15 & 108 & 1{,}161 & 0.009 & 0.102 & 0.017 & 0.008 \\
+f3 as LUT6, calibrated & 65 & 463 & 19 & 0.895 & 0.037 & 0.071 & 0.062 \\
+f3 as LUT6, none & 65 & 463 & 753 & 0.190 & 0.309 & 0.235 & 0.086 \\
+VerilogEval f2, calibrated & 150 & 3{,}585 & 11 & 0.727 & 0.002 & 0.004 & 0.002 \\
+VerilogEval f2, none & 150 & 3{,}585 & 1{,}151 & 0.196 & 0.063 & 0.095 & 0.042 \\
+VerilogEval f3, calibrated & 150 & 3{,}585 & 2 & 1.000 & 0.001 & 0.001 & 0.001 \\
+VerilogEval f3, none & 150 & 3{,}585 & 5{,}488 & 0.107 & 0.163 & 0.129 & 0.027 \\
+\bottomrule
+\end{tabular}}
+\end{table}

@@ -1,0 +1,21 @@
+\begin{table}[t]
+\caption{Slope of macro-F1 per doubling of the corpus train size, with 95\% bootstrap interval over test designs.}
+\label{tab:r4-slope}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llrcc@{}}
+\toprule
+floor & test set & designs & slope & 95\% CI \\
+\midrule
+f2 & iid & 118 & 0.0171 & [0.0053, 0.0261] \\
+f2 & ood & 231 & 0.0174 & [0.0092, 0.0234] \\
+f2 & micro & 62 & $-$0.0039 & [$-$0.0100, 0.0031] \\
+f2 & vetest & 29 & $-$0.0026 & [$-$0.0097, 0.0094] \\
+f3 & iid & 118 & 0.0077 & [0.0005, 0.0151] \\
+f3 & ood & 231 & 0.0111 & [0.0067, 0.0146] \\
+f3 & micro & 59 & $-$0.0022 & [$-$0.0048, 0.0006] \\
+f3 & vetest & 29 & $-$0.0038 & [$-$0.0071, $-$0.0009] \\
+\bottomrule
+\end{tabular}}
+\end{table}

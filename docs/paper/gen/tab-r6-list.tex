@@ -1,0 +1,21 @@
+\begin{table}[t]
+\caption{Round 6: eight lost micro constructs, 'construct at file:line lost at pass P because merged with Q' (first rows of \code{l15\_lost\_list.csv} with one labelled partner).}
+\label{tab:r6-list}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lllll@{}}
+\toprule
+Design & Construct & Kind & Pass & Joined with \\
+\midrule
+bm\_expr\_all\_mod & bm\_expr\_all\_mod.v:124.2-124.29 & NONBLOCKING\_ASSIGN & opt & NONBLOCKING\_ASSIGN 146.2-146.122 \\
+bm\_expr\_all\_mod & bm\_expr\_all\_mod.v:133.2-133.39 & NONBLOCKING\_ASSIGN & opt & NONBLOCKING\_ASSIGN 147.2-147.126 \\
+bm\_lpm\_all & bm\_lpm\_all.v:44.8-44.20 & NET\_ASSIGN & opt & NET\_ASSIGN 51.8-51.43 \\
+bm\_match1\_str\_arch & bm\_match1\_str\_arch.v:49.8-49.26 & NET\_ASSIGN & opt & NONBLOCKING\_ASSIGN 55.2-55.22 \\
+bm\_match1\_str\_arch & bm\_match1\_str\_arch.v:50.8-50.26 & NET\_ASSIGN & opt & NONBLOCKING\_ASSIGN 56.2-56.22 \\
+bm\_match1\_str\_arch & bm\_match1\_str\_arch.v:51.8-51.26 & NET\_ASSIGN & opt & NONBLOCKING\_ASSIGN 57.2-57.22 \\
+bm\_match1\_str\_arch & bm\_match1\_str\_arch.v:55.2-55.22 & NONBLOCKING\_ASSIGN & opt & NET\_ASSIGN 49.8-49.26 \\
+bm\_match1\_str\_arch & bm\_match1\_str\_arch.v:56.2-56.22 & NONBLOCKING\_ASSIGN & opt & NET\_ASSIGN 50.8-50.26 \\
+\bottomrule
+\end{tabular}}
+\end{table}

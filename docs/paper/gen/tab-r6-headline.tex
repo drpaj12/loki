@@ -1,0 +1,18 @@
+\begin{table}[t]
+\caption{Round 6: first losses (the Stage-0 total) and, apart from them, the \code{subsumed} ones (the unit survives only as the enclosing statement of a finer unit that is still alive) and the remaining merged-plus-removed losses (stmt level, MI+VT+CI).}
+\label{tab:r6-headline}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Pass & First losses & Subsumed & Share & Merged + removed \\
+\midrule
+S3\_opt & 320 & 127 & 0.40 & 193 \\
+S4\_flatten & 68 & 0 & 0.00 & 68 \\
+S5\_opt\_full & 26 & 1 & 0.04 & 25 \\
+S8\_abc & 166 & 33 & 0.20 & 133 \\
+all & 580 & 161 & 0.28 & 419 \\
+\bottomrule
+\end{tabular}}
+\end{table}

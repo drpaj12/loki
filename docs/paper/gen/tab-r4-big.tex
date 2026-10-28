@@ -1,0 +1,19 @@
+\begin{table}[t]
+\caption{Big VTR designs at f3: cells, Odin III peak RSS (MB, all three floors), words with at least two cells and width $\geq 2$, share of them in a repeat group, memories, buses of at least 8 bits, nets with at least 8 readers, FSM words.}
+\label{tab:r4-big}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+design & cells & RSS & words & repeated & mem & buses & hi-fanout & fsm \\
+\midrule
+blob\_merge & 31{,}778 & 4915.6 & 1{,}090 & 0.744 & 0 & 51 & 717 & 1 \\
+sha & 10{,}629 & 841.7 & 225 & 0.924 & 0 & 29 & 99 & 0 \\
+stereovision0 & 56{,}208 & 1665.9 & 1{,}814 & 0.942 & 0 & 1263 & 182 & 0 \\
+stereovision1 & 142{,}932 & 1863.8 & 1{,}892 & 0.972 & 0 & 830 & 1430 & 48 \\
+stereovision2 & 254{,}419 & 4793.1 & 2{,}001 & 0.982 & 0 & 951 & 1724 & 0 \\
+stereovision3 & 859 & 75.8 & 145 & 0.834 & 0 & 9 & 10 & 1 \\
+\bottomrule
+\end{tabular}}
+\end{table}

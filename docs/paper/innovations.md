@@ -1,6 +1,6 @@
 # Innovations of the Loki III paper
 
-Plain English first, then the technical paragraph, then the H-IDs (hypotheses.md) whose USEFUL verdict proves the value, then what is still unproven. Round-1 claims (L0a, L0b, L1h, L1c, L2a, L2b) carry no registered rule; they are USEFUL by their numbers only.
+Plain English first, then the technical paragraph, then the H-IDs (hypotheses.md) whose USEFUL verdict proves the value, then what is still unproven. Step 2 (Peter's decisions of 2026-10-28): rows that were USEFUL but narrow or fragile (L2b, L7, H9a, H13b, L15a) are POSSIBLY GOOD and never proof of an innovation on their own, so innovation 4 (operator F1) has no USEFUL hypothesis yet and innovations 3 and 6 are proven only by L2a and L15d. Round-1 claims (L0a, L0b, L1h, L1c, L2a) carry no registered rule; they are USEFUL by their numbers only.
 
 ## 1. Provenance-labelled, anonymised netlist datasets with a renamed-instance protocol
 

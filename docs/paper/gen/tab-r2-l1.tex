@@ -1,0 +1,25 @@
+\begin{table}[t]
+\caption{Round-2 L1 (RQ-L1): recovery from the f3 gate netlist re-mapped to LUT6 against the native f2 floor, same 65 micro designs. \code{test} is the 15 held-out designs, \code{all} the 65. Calibration: the micro-fit f2 table (gate rows: the f3 table). Hard kinds excluded from counts and averages; macro-F1 averages the kinds with a counted prediction.}
+\label{tab:r2-l1}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llrrrrrrr@{}}
+\toprule
+Netlist & Calib. & Split & Runs & Counted & Matched & GT & micro-F1 & macro-F1 \\
+\midrule
+f3 gate netlist & calibrated & test & 15 & 0 & 0 & 116 & 0.000 & 0.000 \\
+ & uncalibrated & test & 15 & 1{,}166 & 2 & 116 & 0.003 & 0.038 \\
+\midrule
+f3 re-mapped to LUT6 & calibrated & test & 15 & 68 & 2 & 116 & 0.022 & 0.076 \\
+ & calibrated & all & 65 & 92 & 14 & 580 & 0.042 & 0.062 \\
+ & uncalibrated & test & 15 & 252 & 4 & 116 & 0.022 & 0.044 \\
+ & uncalibrated & all & 65 & 921 & 31 & 580 & 0.041 & 0.049 \\
+\midrule
+f2 floor (native LUT6) & calibrated & test & 15 & 72 & 4 & 116 & 0.043 & 0.153 \\
+ & calibrated & all & 65 & 88 & 16 & 579 & 0.048 & 0.095 \\
+ & uncalibrated & test & 15 & 255 & 13 & 116 & 0.070 & 0.121 \\
+ & uncalibrated & all & 65 & 930 & 32 & 579 & 0.042 & 0.070 \\
+\bottomrule
+\end{tabular}}
+\end{table}

@@ -1,0 +1,24 @@
+\begin{table}[t]
+\caption{Word-level overlap $q_K$ (report only): share of ground-truth instances of kind $K$ with at least two cells that a fragment of the arm covers to at least 0.8, detectors (N uncalibrated, C calibrated) and dictionary variants.}
+\label{tab:r4-overlap}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrccccc@{}}
+\toprule
+kind & instances & det N & det C & dict V0 & dict V1 & dict V2 \\
+\midrule
+adder & 59 & 0.130 & 0.111 & 0.000 & 0.000 & 0.000 \\
+comparator & 647 & 0.049 & 0.000 & 0.000 & 0.006 & 0.006 \\
+counter & 8 & 0.750 & 0.250 & 0.000 & 0.000 & 0.125 \\
+eq\_const & 630 & 0.049 & 0.000 & 0.000 & 0.006 & 0.006 \\
+ff\_en & 134 & 0.045 & 0.000 & 0.000 & 0.000 & 0.000 \\
+ff\_srst & 15 & 0.667 & 0.133 & 0.000 & 0.133 & 0.067 \\
+fsm & 4 & 1.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+mux & 62 & 0.000 & 0.000 & 0.000 & 0.000 & 0.032 \\
+mux\_tree & 4 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+register & 240 & 0.096 & 0.008 & 0.000 & 0.158 & 0.054 \\
+subtractor & 20 & 0.100 & 0.100 & 0.000 & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}}
+\end{table}

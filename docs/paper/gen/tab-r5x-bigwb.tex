@@ -1,0 +1,26 @@
+\begin{table}[t]
+\caption{Round 5, exploratory (2026-10-25-c): arm WB on BIG with the Stage-0 cap of 1800 s per design (smallest first). Counted/matched for W and WB on the designs where WB finished; GT words of the design.}
+\label{tab:r5x-bigwb}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llrccr@{}}
+\toprule
+Design & WB status & s & W c/m & WB c/m & GT \\
+\midrule
+stereovision3 & ok & 8.45 & 38/8 & 285/7 & 204 \\
+mkPktMerge & ok & 1.0 & 10/10 & 238/18 & 45 \\
+boundtop & ok & 27.6 & 136/2 & 798/2 & 731 \\
+spree & ok & 40.14 & 58/5 & 502/9 & 443 \\
+mkSMAdapter4B & ok & 175.38 & 374/3 & 1747/3 & 530 \\
+mkDelayWorker32B & ok & 73.0 & 5/0 & 460/0 & 910 \\
+sha & ok & 91.88 & 69/0 & 1185/0 & 402 \\
+raygentop & ok & 111.01 & 295/6 & 1245/7 & 492 \\
+blob\_merge & ok & 848.46 & 142/0 & 2164/0 & 1392 \\
+or1200 & ok & 733.63 & 120/0 & 1675/0 & 938 \\
+stereovision0 & ok & 651.97 & 410/10 & 13090/12 & 3121 \\
+stereovision1 & timeout & -- & -- & -- & -- \\
+stereovision2 & timeout & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}}
+\end{table}

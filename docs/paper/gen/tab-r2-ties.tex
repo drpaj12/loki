@@ -1,0 +1,17 @@
+\begin{table}[t]
+\caption{AST and CFG similarity against operator F1 on the 15 f3 test designs (the f3-recovery runs). Calibrated and uncalibrated L1 tie on AST and CFG; the flatten control moves both and leaves the recovery record unchanged.}
+\label{tab:r2-ties}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Condition & AST & CFG & Ops recovered & type-F1 \\
+\midrule
+L0-stop gate netlist & 0.4044 & 0.6468 & 0 & 0.0000 \\
+L1 calibrated & 0.4044 & 0.6468 & 0 & 0.0000 \\
+L1 uncalibrated & 0.4155 & 0.6394 & 1{,}161 & 0.0173 \\
+L1 uncalibrated, flattened & 0.4576 & 0.6941 & 1{,}161 & 0.0173 \\
+\bottomrule
+\end{tabular}}
+\end{table}

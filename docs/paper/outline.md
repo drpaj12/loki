@@ -1,6 +1,6 @@
-# Proposed new main-paper outline: Loki III
+# Main-paper outline: Loki III (step 2 applied 2026-10-28)
 
-Order requested in the brief. Loki's measures are recovery measures (precision, recall, F1, ECE, similarity, pass rate); none is area, speed or power (the purpose chain says so, hypotheses.md header). Paper text is not edited in this step.
+Order requested in the brief; step 2 follows it: Introduction (plain English, innovations with their confirming hypotheses), Background (Glossary in dependency order from terms.md, with the Jamieson 2007 and Luu 2014 theses), The innovations, Methodology (floors, benchmarks, metrics with the area/speed/power note, statistics), Experiments (Hypothesis / Experiment / Result / Verdict), Discussion and limits, Future work (untested L3, L6, L8), Conclusion, Appendix (research log, 48 rows from hypotheses.md). The pre-registration framing is not argued in the paper (decision 7). Loki's measures are recovery measures (precision, recall, F1, ECE, similarity, pass rate); none is area, speed or power (the purpose chain says so, hypotheses.md header). Paper text is not edited in this step.
 
 ## New structure
 

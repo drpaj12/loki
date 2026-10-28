@@ -1,0 +1,19 @@
+\begin{table}[t]
+\caption{Round 6 (exploratory, post-data): real first losses / Stage-0 null / persistence-null mean [2.5th--97.5th percentile of the 50 per-draw totals], stmt level, MI+VT+CI. The interval covers the draws within the fixed designs, not variation across designs. A pass that removes objects lowers the object count and the persistence null reads every removal as a merge, so at \code{opt} it is an upper bound of chance merging.}
+\label{tab:r6-pnull}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Kind & opt & flatten & opt -full & abc \\
+\midrule
+fsm & -- & -- & -- & -- \\
+register & 84 / 94 / 55 [48--64] & 0 / 35 / 0 [0--0] & 4 / 35 / 4 [1--7] & 1 / 13 / 9 [6--12] \\
+arith & 17 / 51 / 22 [15--29] & 0 / 36 / 0 [0--0] & 7 / 36 / 0 [0--2] & 31 / 22 / 20 [17--23] \\
+mux & 192 / 223 / 216 [202--226] & 0 / 57 / 0 [0--0] & 14 / 61 / 5 [2--10] & 79 / 36 / 52 [47--58] \\
+compare & 18 / 14 / 16 [11--20] & 0 / 3 / 0 [0--0] & 0 / 1 / 0 [0--1] & 1 / 1 / 3 [2--3] \\
+logic & 9 / 81 / 14 [9--19] & 68 / 58 / 4 [4--4] & 1 / 38 / 5 [3--7] & 54 / 46 / 50 [45--56] \\
+\bottomrule
+\end{tabular}}
+\end{table}
