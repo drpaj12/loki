@@ -29,9 +29,3 @@ All,all_calls,A vs C,40,6,1,7,0.1250
 All,paired,B vs A,38,2,0,2,0.5000
 All,paired,B vs C,38,7,1,8,0.0703
 All,paired,A vs C,38,5,1,6,0.2188
-Stratified,all_calls,A vs C,40,6,1,7,0.1250
-Stratified,all_calls,B vs A,40,2,2,4,1.0000
-Stratified,all_calls,B vs C,40,7,2,9,0.1797
-Stratified,paired,A vs C,38,5,1,6,0.2188
-Stratified,paired,B vs A,38,2,0,2,0.5000
-Stratified,paired,B vs C,38,7,1,8,0.0703
