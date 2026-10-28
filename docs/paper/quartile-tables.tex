@@ -53,7 +53,7 @@ paired & Pooled (stratified) & 2/0 (0.500) & 7/1 (0.070) & 5/1 (0.219) \\
 
 \begin{table*}[t]
 \centering
-\caption{Loki without a language model on the VerilogEval references, per Gate-Breaker quartile. Built: designs with the floor built (of 38, 39, 40, 39 references). Coverage: mean per-design coverage on \code{f3} (label rows, \code{cell\_type}, HDL span, module scopes, declared signals). AST and CFG: mean similarity of the re-emitted Verilog to the reference (round~2); $n$ is the designs with an AST value (references that pyverilog cannot parse are excluded, 21 in all, mostly Q3 and Q4); the CFG mean is over the designs with a CFG value, so it can rest on fewer designs.}
+\caption{Loki without a language model on the VerilogEval references, per Gate-Breaker quartile. Built: designs with the floor built (of 38, 39, 40, 39 references). Coverage: mean per-design coverage on \code{f3} (label rows, \code{cell\_type}, HDL span, module scopes, declared signals; signal coverage can exceed 1 where flattened array elements add names). AST and CFG: mean similarity of the re-emitted Verilog to the reference (round~2); $n$ is the designs with an AST value (references that pyverilog cannot parse are excluded, 21 in all, mostly Q3 and Q4); the CFG mean is over the designs with a CFG value, so it can rest on fewer designs.}
 \label{tab:q-loki}
 \footnotesize
 \begin{tabular}{@{}lrrrr@{}}

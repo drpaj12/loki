@@ -19,6 +19,9 @@ Every number traces to the experiment records:
   VerilogEval references (three floors), the complexity quartiles, the feature matrix and the
   sizes. `veval-tables.tex` is generated from them: run
   `python3 experiments/veval-l0/paper_tables.py` to rewrite it (byte-identical on rerun).
+- `experiments/quartiles/` — per-quartile (Q1-Q4) tables for the LLM pilot (arms A, B, C, exact
+  McNemar per quartile and stratified) and for the Loki-only results. `quartile-tables.tex` is
+  generated: run `python3 experiments/quartiles/quartiles.py` (byte-identical on rerun).
 - The Gate-Breaker VerilogEval replication table (`tab:veval`) fills in as that run lands.
 
 Tables marked `[TODO: ...]` are numbers not yet measured.
