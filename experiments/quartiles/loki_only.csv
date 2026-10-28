@@ -1,0 +1,93 @@
+source,metric,quartile,n,value
+veval-l0 f3 ceiling,label_cov,Q1,38,1.000
+veval-l0 f3 ceiling,cell_type_cov,Q1,38,1.000
+veval-l0 f3 ceiling,hdl_cov,Q1,38,1.000
+veval-l0 f3 ceiling,module_cov,Q1,38,1.000
+veval-l0 f3 ceiling,signal_cov,Q1,38,0.987
+veval-l0 f3 ceiling,label_cov,Q2,39,1.000
+veval-l0 f3 ceiling,cell_type_cov,Q2,39,1.000
+veval-l0 f3 ceiling,hdl_cov,Q2,39,1.000
+veval-l0 f3 ceiling,module_cov,Q2,39,1.000
+veval-l0 f3 ceiling,signal_cov,Q2,39,1.000
+veval-l0 f3 ceiling,label_cov,Q3,37,1.000
+veval-l0 f3 ceiling,cell_type_cov,Q3,37,1.000
+veval-l0 f3 ceiling,hdl_cov,Q3,37,1.000
+veval-l0 f3 ceiling,module_cov,Q3,37,1.000
+veval-l0 f3 ceiling,signal_cov,Q3,37,0.974
+veval-l0 f3 ceiling,label_cov,Q4,36,1.000
+veval-l0 f3 ceiling,cell_type_cov,Q4,36,1.000
+veval-l0 f3 ceiling,hdl_cov,Q4,36,1.000
+veval-l0 f3 ceiling,module_cov,Q4,36,1.000
+veval-l0 f3 ceiling,signal_cov,Q4,36,1.161
+veval-l0 sizes,built_f1-k6,Q1,38,38
+veval-l0 sizes,built_f1-k6,Q2,39,39
+veval-l0 sizes,built_f1-k6,Q3,37,37
+veval-l0 sizes,built_f1-k6,Q4,36,36
+veval-l0 sizes,built_f2,Q1,38,38
+veval-l0 sizes,built_f2,Q2,39,39
+veval-l0 sizes,built_f2,Q3,37,37
+veval-l0 sizes,built_f2,Q4,36,36
+veval-l0 sizes,built_f3,Q1,38,38
+veval-l0 sizes,built_f3,Q2,39,39
+veval-l0 sizes,built_f3,Q3,37,37
+veval-l0 sizes,built_f3,Q4,36,36
+round2 head-to-head,f3-l0 ast_mean,Q1,38,0.754
+round2 head-to-head,f3-l0 cfg_mean,Q1,38,0.750
+round2 head-to-head,f2-l0 ast_mean,Q1,38,0.810
+round2 head-to-head,f2-l0 cfg_mean,Q1,38,0.852
+round2 head-to-head,f3-calib ast_mean,Q1,38,0.754
+round2 head-to-head,f3-calib cfg_mean,Q1,38,0.750
+round2 head-to-head,f3-none ast_mean,Q1,38,0.671
+round2 head-to-head,f3-none cfg_mean,Q1,38,0.559
+round2 head-to-head,f2-calib ast_mean,Q1,38,0.793
+round2 head-to-head,f2-calib cfg_mean,Q1,38,0.820
+round2 head-to-head,f2-none ast_mean,Q1,38,0.713
+round2 head-to-head,f2-none cfg_mean,Q1,38,0.672
+round2 head-to-head,f3-l0 ast_mean,Q2,38,0.455
+round2 head-to-head,f3-l0 cfg_mean,Q2,38,0.741
+round2 head-to-head,f2-l0 ast_mean,Q2,38,0.463
+round2 head-to-head,f2-l0 cfg_mean,Q2,38,0.821
+round2 head-to-head,f3-calib ast_mean,Q2,38,0.455
+round2 head-to-head,f3-calib cfg_mean,Q2,38,0.741
+round2 head-to-head,f3-none ast_mean,Q2,38,0.435
+round2 head-to-head,f3-none cfg_mean,Q2,38,0.679
+round2 head-to-head,f2-calib ast_mean,Q2,38,0.455
+round2 head-to-head,f2-calib cfg_mean,Q2,38,0.784
+round2 head-to-head,f2-none ast_mean,Q2,38,0.444
+round2 head-to-head,f2-none cfg_mean,Q2,38,0.762
+round2 head-to-head,f3-l0 ast_mean,Q3,32,0.614
+round2 head-to-head,f3-l0 cfg_mean,Q3,32,0.751
+round2 head-to-head,f2-l0 ast_mean,Q3,32,0.616
+round2 head-to-head,f2-l0 cfg_mean,Q3,32,0.823
+round2 head-to-head,f3-calib ast_mean,Q3,32,0.605
+round2 head-to-head,f3-calib cfg_mean,Q3,32,0.750
+round2 head-to-head,f3-none ast_mean,Q3,32,0.593
+round2 head-to-head,f3-none cfg_mean,Q3,32,0.728
+round2 head-to-head,f2-calib ast_mean,Q3,32,0.607
+round2 head-to-head,f2-calib cfg_mean,Q3,32,0.811
+round2 head-to-head,f2-none ast_mean,Q3,32,0.608
+round2 head-to-head,f2-none cfg_mean,Q3,32,0.791
+round2 head-to-head,f3-l0 ast_mean,Q4,21,0.505
+round2 head-to-head,f3-l0 cfg_mean,Q4,21,0.768
+round2 head-to-head,f2-l0 ast_mean,Q4,21,0.507
+round2 head-to-head,f2-l0 cfg_mean,Q4,21,0.870
+round2 head-to-head,f3-calib ast_mean,Q4,21,0.505
+round2 head-to-head,f3-calib cfg_mean,Q4,21,0.768
+round2 head-to-head,f3-none ast_mean,Q4,21,0.480
+round2 head-to-head,f3-none cfg_mean,Q4,21,0.760
+round2 head-to-head,f2-calib ast_mean,Q4,21,0.507
+round2 head-to-head,f2-calib cfg_mean,Q4,21,0.870
+round2 head-to-head,f2-none ast_mean,Q4,21,0.459
+round2 head-to-head,f2-none cfg_mean,Q4,21,0.802
+hal VT f2,lokiW matched/n_pred/n_gt,Q1,11,0/0/0
+hal VT f2,lokiW matched/n_pred/n_gt,Q2,7,0/0/0
+hal VT f2,lokiW matched/n_pred/n_gt,Q3,5,5/6/7
+hal VT f2,lokiW matched/n_pred/n_gt,Q4,10,8/142/139
+hal VT f2,lokiWB matched/n_pred/n_gt,Q1,11,0/0/0
+hal VT f2,lokiWB matched/n_pred/n_gt,Q2,7,0/0/0
+hal VT f2,lokiWB matched/n_pred/n_gt,Q3,5,5/7/7
+hal VT f2,lokiWB matched/n_pred/n_gt,Q4,10,7/160/139
+hal VT f2,hal8 matched/n_pred/n_gt,Q1,11,0/0/0
+hal VT f2,hal8 matched/n_pred/n_gt,Q2,7,0/0/0
+hal VT f2,hal8 matched/n_pred/n_gt,Q3,5,6/6/7
+hal VT f2,hal8 matched/n_pred/n_gt,Q4,10,7/11/139
