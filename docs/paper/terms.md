@@ -5,15 +5,15 @@ Check with `python3 docs/paper/check_terms.py --tex docs/paper/loki.tex` (the ab
 Generated 2026-10-28 against origin/main ae709e4.
 | term | definition | defined at | first used at | depends on | search |
 |---|---|---|---|---|---|
-| netlist | A list of the gates (or LUTs) of a design and the wires between them. | none | loki.tex:35 | - | `\bnetlists?\b` |
+| netlist | A list of the gates (or LUTs) of a design and the wires between them. | none | loki.tex:84 | - | `\bnetlists?\b` |
 | gate | A basic logic element (AND, OR, NOT) of the cmos6 gate library. | none | loki.tex:84 | netlist | `\bgates?\b` |
 | LUT | Look-up table: a small memory that implements any logic function of K inputs (K = 6 here). | none | loki.tex:173 | netlist | `\bLUT6?s?\b` |
 | RTL | Register-transfer level: the Verilog text that says what registers hold and how they change. | none | loki.tex:86 | - | `\bRTL\b` |
 | HDL | Hardware description language: the Verilog source a designer writes. | none | loki.tex:117 | RTL | `\bHDL\b` |
-| provenance | The link from each netlist object back to the HDL that produced it. | loki.tex:117 | loki.tex:36 | HDL; netlist | `provenance` |
+| provenance | The link from each netlist object back to the HDL that produced it. | loki.tex:117 | loki.tex:94 | HDL; netlist | `provenance` |
 | Odin III | The provenance-tracked synthesis front end under Loki; it keeps the link in one IR. | loki.tex:118 | loki.tex:118 | provenance | `Odin~?III` |
 | answer key / ground truth | What the synthesis tool kept about which objects form which HDL construct; the target the recovery is scored against. | loki.tex:121 | loki.tex:94 | provenance | `answer key\|ground.truth` |
-| L0 / L1 / L2 | Loki's three layers: L0 labelled datasets, L1 a Bayesian hypothesis flow, L2 graph analysis. | loki.tex:94 | loki.tex:36 | answer key / ground truth | `\bL0\b\|\bL1\b\|\bL2\b` |
+| L0 / L1 / L2 | Loki's three layers: L0 labelled datasets, L1 a Bayesian hypothesis flow, L2 graph analysis. | loki.tex:94 | loki.tex:94 | answer key / ground truth | `\bL0\b\|\bL1\b\|\bL2\b` |
 | Gate-Breaker | The earlier study in which a language model rewrites gate netlists into RTL; Loki's method baseline. | loki.tex:84 | loki.tex:84 | netlist; RTL | `Gate-Breaker` |
 | quartile (complexity) | One quarter of the benchmark designs ordered by Gate-Breaker's construct-count complexity score. | loki.tex:599 | loki.tex:88 | Gate-Breaker | `quartile` |
 | AST / CFG similarity | How alike two Verilog texts are by subtree overlap (AST) and control-flow-graph kernel (CFG). | loki.tex:128 | loki.tex:128 | RTL | `\bAST\b\|\bCFG\b` |
