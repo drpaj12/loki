@@ -42,6 +42,14 @@ def verdict_word(cell: str) -> str:
     raise SystemExit(f"unknown verdict: {cell}")
 
 
+def round_tag(cell: str, previous: str) -> str:
+    """The round of a register row: R<n>, HAL or LLM; ``same`` repeats the row above; else Q."""
+    m = re.match(r"(R\d+|HAL|LLM)\b", cell)
+    if m:
+        return m.group(1)
+    return previous if cell == "same" else "Q"
+
+
 def rows() -> list[tuple[str, str, str, str, str]]:
     """(id, round, hypothesis, result, verdict) for every register row."""
     out = []
@@ -56,8 +64,8 @@ def rows() -> list[tuple[str, str, str, str, str]]:
         if untested and len(c) == 3:
             out.append((c[0], "-", c[1], "not run; needs: " + c[2], "UNTESTED"))
         elif len(c) == 11:
-            rnd = re.match(r"[A-Za-z]+\d*[a-z]?", c[1]).group(0)
-            out.append((c[0], rnd, c[3], c[7], verdict_word(c[9])))
+            out.append((c[0], round_tag(c[1], out[-1][1] if out else "-"), c[3], c[7],
+                        verdict_word(c[9])))
     return out
 
 

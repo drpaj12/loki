@@ -19,8 +19,9 @@ Framing for all rows in this block: RECONSTRUCTED from the question "how much st
 | L1h | R1, loki.tex:788-800 | L1 hard-block detector | Structures the synthesis flow already reverse-engineered (hard adders and multipliers) are recovered almost perfectly. | RECONSTRUCTED (loki.tex:2274-2279) | micro suite f1, calibrated | precision, recall | hard adders 67/67 (P 0.985), hard multipliers 30/30 | none | USEFUL | yes |
 | L1s | R1, loki.tex:788-806 | L1 soft-structure recovery | The Bayesian flow recovers the structures the flow erased. | RECONSTRUCTED (loki.tex:2274-2279) | f1 and f2, calibrated vs uncalibrated | macro-F1 | f1 0.354 (271 counted, 107 matched, 688 GT); f2 0.108 (91/19/686); uncalibrated f1 0.202, f2 0.075 | none | INCONCLUSIVE (weak, but no threshold or baseline was set) | yes (the honest limit) |
 | L1c | R1, loki.tex:790-799 | Calibration | Calibration makes the predicted probabilities honest. | RECONSTRUCTED | f2 | ECE | calibrated 0.217 vs uncalibrated 0.650 | none | USEFUL | yes |
-| F3 | R1, loki.tex:833-945 | Recovery from the cmos6 gate netlist (f3) | L1 recovers structure from Gate-Breaker's own gate input. | RECONSTRUCTED (f3-recovery/EXPERIMENT.md:11-16) | 15 f3 test designs, 144 GT instances | macro-F1 | 0 of 144 counted, 0 committed; buses proposed 2,569, none match | none | DISMISSED | yes (the f3 failure drives round 2 L1) |
-| L2a | R1, loki.tex:946-960 | L2 clustering | Community methods find the designer's hierarchy; centroid methods do not. | RECONSTRUCTED | 68 designs, four clusterings | modularity, NMI | Louvain modularity 0.4220, NMI 0.1360; k-means and affinity propagation negative | none | USEFUL (clear gap, no test) | yes |
+| F3 | R1, loki.tex:833-945 | Recovery from the cmos6 gate netlist (f3) | L1 recovers structure from Gate-Breaker's own gate input. | RECONSTRUCTED (f3-recovery/EXPERIMENT.md:11-16) | 15 f3 test designs, 144 GT instances | macro-F1 | 0 of 144 counted, 0 committed; buses proposed 2,569, none match; similarity probe: with the f3 calibration L1-stop equals L0-stop (every delta 0.0000); uncalibrated, 1,535 hypotheses in 11 of 15 designs move AST by +0.0111 and CFG by -0.0075; the flatten control raises AST by +0.0533 and CFG by +0.0559 (experiments/f3-recovery/EXPERIMENT.md) | none | DISMISSED | yes (the f3 failure drives round 2 L1) |
+| L2a | R1, loki.tex:946-960 | L2 clustering | Community methods find the designer's hierarchy; centroid methods do not. | RECONSTRUCTED | 68 designs, four clusterings | modularity, NMI | NMI against module_path: k-means 0.3220, affinity propagation 0.2708, spectral 0.1378, Louvain 0.1360 (the reverse of the hypothesis); modularity is not a hierarchy measure (row L2m) | none | DISMISSED (the only hierarchy measure ranks the centroid methods above the community methods) | yes (the honest limit) |
+| L2m | R1, loki.tex Table tab:l2, experiments/rename-l2/EXPERIMENT.md | L2 clustering quality | (measurement, no hypothesis) the modularity of the four clusterings of the netlist graph | measurement | 68 designs, four clusterings | modularity | Louvain 0.4220, spectral 0.3620, affinity propagation -0.2264, k-means -0.2912 | | MEASUREMENT (not counted; modularity scores how dense the clusters are, not how well they match the designer's hierarchy) | yes |
 | L2b | R1, loki.tex:957-980 | L2 GNN with combined features | A GNN with node, graphlet, WL and NPN features beats the 1-WL baseline. | RECONSTRUCTED | 13 test designs, 3,932 test nodes | macro-F1, accuracy | 0.4241 vs 0.2717; accuracy 0.8863 vs 0.8492; node-only GNN loses (0.2413 vs 0.2711) | none | POSSIBLY GOOD (narrow: one run, one split of 13 test designs, no interval) | yes |
 
 ## Round 2 (NOT pre-registered)
@@ -29,12 +30,12 @@ Framing: the thresholds were set by the implementer during the round and the rul
 
 | H-ID | round / section | innovation tested | hypothesis | framing | experiment | metrics | result | test, p / CI | verdict | main paper? |
 |---|---|---|---|---|---|---|---|---|---|---|
-| L1 | R2:22, loki.tex:1045-1068 | LUT6 re-map of the f3 netlist | The f3 failure is detector vocabulary, not missing information. | RECONSTRUCTED (rules not registered) | 65 designs in-sample, 15 held-out | micro-F1 ratio LUT6/f2 | 0.87 in-sample (14 vs 16 constructs of 580), 0.51 held-out (2 vs 4) | rule thresholds 0.8 / 0.5 | INCONCLUSIVE (too few matches on the held-out 15) | yes: the honest answer on f3 |
-| L2 | R2:23, loki.tex:1092-1136 | Head-to-head with the language model | Loki's AST/CFG is below the LLM's on Q1/Q2 and does not fall Q1 to Q4, with output equal to input. | RECONSTRUCTED | 150 VerilogEval designs | AST, CFG, final equivalence | Loki AST 0.763/0.460 vs LLM 0.894/0.761 (Q1/Q2); AST falls Q1 to Q4 (0.754 ... 0.505); equivalence 150/150 | paired Wilcoxon, all differences significant | INCONCLUSIVE (below the LLM, but AST falls with complexity) | yes: positioning |
-| L4 | R2:24, loki.tex:1137-1157 | Evidence families in the posterior | One or two evidence families carry the calibrated performance. | RECONSTRUCTED | 49 held-out designs | held-out micro-F1 | full 0.0038 vs priors-only 0.0051 (difference -0.0013; the gap is below the 0.02 floor) | rule | INCONCLUSIVE | no (log row) |
-| L5a | R2:25, loki.tex:1158-1175 | Must/may bracket as uncertainty | Bracket width falls with per-design F1. | RECONSTRUCTED | uncalibrated VerilogEval f2 | Spearman | rho 0.087, p 0.417 (exploratory calibrated: -0.346, p 0.0008) | Spearman | DISMISSED | log row only |
-| L5b | R2:26, loki.tex:1175-1181 | Structural prefilter before the prover | A cheap structural rule prunes >= 30% of prover calls with no lost proof. | RECONSTRUCTED | 210 cone_check calls | pruned share | best zero-loss rule prunes 0.067 | rule | DISMISSED | log row only |
-| L7 | R2:27, loki.tex:1069-1091 | Operator type-F1 | Word-level operator F1 separates runs that AST and CFG tie on. | RECONSTRUCTED | tie pairs plus a flatten control | operator F1 vs AST/CFG | tie pair dF1 0.0173; flatten control moves AST by 0.0422, operator F1 unchanged | rule | POSSIBLY GOOD (fragile: small margins on few pairs; the calibrated flow recovers no operator) | yes: the one new instrument |
+| R2-L1 | R2:22, loki.tex:1045-1068 | LUT6 re-map of the f3 netlist | The f3 failure is detector vocabulary, not missing information. | RECONSTRUCTED (rules not registered) | 65 designs in-sample, 15 held-out | micro-F1 ratio LUT6/f2 | 0.87 in-sample (14 vs 16 constructs of 580), 0.51 held-out (2 vs 4) | rule thresholds 0.8 / 0.5 | INCONCLUSIVE (too few matches on the held-out 15) | yes: the honest answer on f3 |
+| R2-L2 | R2:23, loki.tex:1092-1136 | Head-to-head with the language model | Loki's AST/CFG is below the LLM's on Q1/Q2 and does not fall Q1 to Q4, with output equal to input. | RECONSTRUCTED | 150 VerilogEval designs | AST, CFG, final equivalence | Loki AST 0.763/0.460 vs LLM 0.894/0.761 (Q1/Q2); AST falls Q1 to Q4 (0.754 ... 0.505); equivalence 150/150 | paired Wilcoxon, all differences significant | INCONCLUSIVE (below the LLM, but AST falls with complexity) | yes: positioning |
+| R2-L4 | R2:24, loki.tex:1137-1157 | Evidence families in the posterior | One or two evidence families carry the calibrated performance. | RECONSTRUCTED | 49 held-out designs | held-out micro-F1 | full 0.0038 vs priors-only 0.0051 (difference -0.0013; the gap is below the 0.02 floor) | rule | INCONCLUSIVE | no (log row) |
+| R2-L5a | R2:25, loki.tex:1158-1175 | Must/may bracket as uncertainty | Bracket width falls with per-design F1. | RECONSTRUCTED | uncalibrated VerilogEval f2 | Spearman | rho 0.087, p 0.417 (exploratory calibrated: -0.346, p 0.0008) | Spearman | DISMISSED | log row only |
+| R2-L5b | R2:26, loki.tex:1175-1181 | Structural prefilter before the prover | A cheap structural rule prunes >= 30% of prover calls with no lost proof. | RECONSTRUCTED | 210 cone_check calls | pruned share | best zero-loss rule prunes 0.067 | rule | DISMISSED | log row only |
+| R2-L7 | R2:27, loki.tex:1069-1091 | Operator type-F1 | Word-level operator F1 separates runs that AST and CFG tie on. | RECONSTRUCTED | tie pairs plus a flatten control | operator F1 vs AST/CFG | tie pair dF1 0.0173; flatten control moves AST by 0.0422, operator F1 unchanged | rule | POSSIBLY GOOD (fragile: small margins on few pairs; the calibrated flow recovers no operator) | yes: the one new instrument |
 
 ## Round 3 (why the detectors miss; pre-registered)
 
@@ -50,7 +51,7 @@ Framing: PRE-REGISTERED, `5f8de24` 2026-10-24 21:26, "before any round-3 number 
 
 ## Round 4 (patterns from our data; pre-registered)
 
-Framing: PRE-REGISTERED, `c6c66bf` 2026-10-25 03:12 (loki.tex:1349-1360); dictionary variants V1, V2 added after Stage 0 and before any dictionary result (entry 2026-10-25-a); exploratory checks of entry 2026-10-25-c do not change statuses. Results: R4 lines cited, round4-log.tex:11-20, loki.tex:1346-1513.
+Framing: PRE-REGISTERED, `c6c66bf` 2026-10-25 03:12 (loki.tex:1349-1360); dictionary variants V1, V2 added after Stage 0 and before any dictionary result (experiments/round4/EXPERIMENT.md); exploratory checks (experiments/round4/EXPERIMENT.md) do not change statuses. Results: R4 lines cited, round4-log.tex:11-20, loki.tex:1346-1513.
 
 | H-ID | round / section | innovation tested | hypothesis | framing | experiment | metrics | result | test, p / CI | verdict | main paper? |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -59,7 +60,7 @@ Framing: PRE-REGISTERED, `c6c66bf` 2026-10-25 03:12 (loki.tex:1349-1360); dictio
 | H12b2 | R4:158-196 | Dictionary generalisation | The dictionary generalises over unseen regions. | PRE-REGISTERED | corpus iid vs ood | ratio R | R 0.3288 (iid 0.1866, ood 0.0614) | rule | INCONCLUSIVE (iid below 0.20: ratio uninformative) | no |
 | H12c | R4:197 | GNN scaling | GNN transfer to real designs improves with corpus size. | PRE-REGISTERED | 6 sizes, 33 VerilogEval designs | slope per doubling | -0.0026, CI [-0.0097, 0.0094], 29 designs | bootstrap CI | DISMISSED | yes (transfer failure) |
 | H13a | R4:235 | Repetition in big designs | Big designs are mostly repeated structure. | PRE-REGISTERED | 6 big VTR designs | share repeated | 0.9283 (6,653 of 7,167) | threshold 0.50 | USEFUL | no (log row) |
-| H13b | R4:239 | same | Big designs repeat more than small. | PRE-REGISTERED | big vs small | difference | 0.2404 (0.9283 vs 0.6879); flips with the small baseline (entry 2026-10-25-c) | threshold 0.15 | POSSIBLY GOOD (fragile: flips with the small baseline) | no |
+| H13b | R4:239 | same | Big designs repeat more than small. | PRE-REGISTERED | big vs small | difference | 0.2404 (0.9283 vs 0.6879); flips with the small baseline (experiments/round4/EXPERIMENT.md) | threshold 0.15 | POSSIBLY GOOD (fragile: flips with the small baseline) | no |
 | H13c | R4:242 | same | Repeated instances share the dictionary signature. | PRE-REGISTERED | 911 repeat groups | share identical | 0.8606 | threshold 0.70 | USEFUL | no |
 | H14a | R4:270 | Identifiability | The flow destroys style information. | PRE-REGISTERED | twin sets | ceiling(f3) | 0.5000 (f2 0.4823, f1 0.4697) | <= 0.60 | USEFUL | yes (limit on what any recovery can do) |
 | H14b | R4:274 | same | The coarser floor destroys more. | PRE-REGISTERED | f3 minus f2 ceiling | difference | 0.0177 | >= 0.05 / <= 0.00 | INCONCLUSIVE | no |
@@ -85,6 +86,13 @@ Framing: PRE-REGISTERED, `ce02fa4` 2026-10-25 15:54 (R5:157-217; loki.tex:1514-1
 |---|---|---|---|---|---|---|---|---|---|---|
 | RQ-H1 | HAL:95-112, loki.tex:1721-1808 | Word-first detector vs an outside baseline | Loki's word-first detector recovers register words better than, equal to or worse than DANA. | PRE-REGISTERED (363187f, 2026-10-26 17:27; scorer fixed after Loki's round-5 counts were seen, before any DANA score, docs/results-hal.md:5-17) | E_real f2: 100 designs in both arms, 41 with a GT word, 24 non-zero pairs | pooled F1_J | Loki 0.169 vs HAL 0.261, D = -0.092, 95% CI [-0.317, 0.043] | Wilcoxon p(Loki greater) 0.8284 | INCONCLUSIVE (no difference shown) | yes |
 
+## Gate-Breaker replication (measurement: the language-model baseline)
+
+| H-ID | round / section | innovation tested | hypothesis | framing | experiment | metrics | result | test, p / CI | verdict | main paper? |
+|---|---|---|---|---|---|---|---|---|---|---|
+| GB1 | R1, work/gatebreaker-exp (off-repo, not committed: the only source of this row; see experiments/rename-l2/EXPERIMENT.md for the protocol) | Gate-Breaker harness on the fallback micro set | (measurement, no hypothesis) what the Gate-Breaker harness scores on the simple micro benchmarks with the model available on the host | measurement | Gate-Breaker harness, Q1 and Q2 of the fallback micro set | success rate, Success@10, AST, CFG | success rate 0.933 (Q1) and 0.829 (Q2), Success@10 1.000 in both, AST 0.576 and 0.444, CFG 1.000 and 0.736; 169 of 174 candidates correct | | MEASUREMENT (not counted) | yes |
+| GB2 | R1, experiments/round2/l2_headtohead.csv (AST, CFG); work/gatebreaker-exp2/data/results.json (SR, S@k; off-repo, not committed) | Gate-Breaker harness on VerilogEval Q1 and Q2 | (measurement, no hypothesis) the baseline the model-based rows compare against | measurement | one run, K=10, 740 calls, 74 of 78 Q1+Q2 designs usable | success rate, Success@k, AST, CFG | Q1 (36): SR 0.903, S@1 0.944, S@5 1.000, AST 0.894, CFG 0.942; Q2 (37): SR 0.778, S@1 0.811, S@5 1.000, AST 0.761, CFG 0.890 | | MEASUREMENT (not counted) | yes |
+
 ## LLM pilot and quartiles
 
 | H-ID | round / section | innovation tested | hypothesis | framing | experiment | metrics | result | test, p / CI | verdict | main paper? |
@@ -96,13 +104,13 @@ Framing: PRE-REGISTERED, `ce02fa4` 2026-10-25 15:54 (R5:157-217; loki.tex:1514-1
 
 ## Round 6 (the L15 loss audit; pre-registered)
 
-Framing: PRE-REGISTERED, `6d0e5b5` 2026-10-27 08:20 (R6:186-206; loki.tex:2020-2172); five dated entries and three post-data amendments (persistence null, inherited blend by descent, reporting) described at loki.tex:2323-2330; the persistence-null statuses are exploratory, post-data. Results: R6 `r6_status.csv`, loki.tex:2060-2172.
+Framing: PRE-REGISTERED, `6d0e5b5` 2026-10-27 08:20 (R6:186-206; loki.tex:2020-2172); three amendments (persistence null, inherited blend by descent, reporting) described in experiments/round6/EXPERIMENT.md; the persistence-null statuses are exploratory, post-data. Results: R6 `r6_status.csv`, loki.tex:2060-2172.
 
 | H-ID | round / section | innovation tested | hypothesis | framing | experiment | metrics | result | test, p / CI | verdict | main paper? |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L15a | R6:186-195 (rules 1, 2) | Loss audit with the D14 provenance map | Each construct kind is first lost at one dominant Odin III pass. | PRE-REGISTERED (6d0e5b5) | 1,436 units, 580 first losses (419 without 161 subsumed); passes proc..abc | share at the dominant pass | register, compare, mux, arithmetic `dominant` under the random-set null (opt 320, abc 166, flatten 68, second opt 26); under the persistence null (exploratory) `dominant-null` for all four (null shares 0.80, 0.84, 0.79, 0.46); only flatten of logic stays dominant | null counts | POSSIBLY GOOD (fragile: the persistence null says chance merging gives the same placement; the paper keeps only the descriptive statement) | yes with the caveat |
 | L15c | R6:197-200 | Explained share | The D14 labels explain the merged losses. | PRE-REGISTERED | merged losses | explained share | 0.606 pooled "partly explained"; MI 0.978, CI 0.462, VT 0.459; opt 0.425, abc 0.821 | thresholds 0.50/0.90 | INCONCLUSIVE (partly explained is the middle class) | yes |
-| L15d | R6:200-203 | Detector recall across a pass | A pass fools a detector. | PRE-REGISTERED | arms B, W, WB, S7 vs S8, kinds with GT >= 10 | recall change | mux word fooled by abc in all arms (WB 0.55 to 0.07, 174 instances); others at a floor | rule 4 | USEFUL for the mux word only (small n for FSM 24, counter 18) | yes |
+| L15d | R6:200-203 | Detector recall across a pass | A pass fools a detector. | PRE-REGISTERED | arms B, W, WB, S7 vs S8, kinds with GT >= 10 | recall change | mux word fooled by abc in all arms (WB 0.55 to 0.07; the ground truth is 174 instances at S7 and 166 at S8, so the two recalls are not on the same set); mux_bit: B and WB 0.201 to 0.012 (35 of 174 to 2 of 166), delta -0.189, which rule 4 reads as "not fooled" because it needs a delta of -0.20 or less; others at a floor | rule 4 | POSSIBLY GOOD (for the mux word only; the S7 and S8 ground truths differ in size and the gate and LUT footprints are not like for like; small n for FSM 24, counter 18) | yes |
 | L15b | R6:20 | Partners and reason classes | (descriptive) which constructs are joined with which, why | measurement | | | | | MEASUREMENT (not counted) | yes |
 
 ## Untested hypotheses (decision 10: idea and the experiment it needs only)
@@ -115,10 +123,12 @@ Framing: PRE-REGISTERED, `6d0e5b5` 2026-10-27 08:20 (R6:186-206; loki.tex:2020-2
 
 ## Counts
 
-45 register rows (grouped H-IDs count once; H12b covers V0, V1, V2), plus 3 untested hypotheses listed above.
+51 register rows (grouped H-IDs count once; H12b covers V0, V1, V2): 42 hypotheses with a verdict, 6 measurements and 3 untested hypotheses listed above. Round-2 IDs carry the prefix R2- so that they do not collide with the layer names L1 and L2.
 
 | USEFUL | POSSIBLY GOOD | DISMISSED | INCONCLUSIVE | measurement, not a hypothesis | untested |
 |---|---|---|---|---|---|
-| 10 | 5 (L2b, L7, H9a, H13b, L15a) | 11 | 16 | 3 (L11, Q2, L15b) | 3 (L3, L6, L8) |
+| 8 (L0a, L0b, L1h, L1c, H12a, H13a, H13c, H14a) | 6 (L2b, R2-L7, H9a, H13b, L15a, L15d) | 12 | 16 | 6 (L11, L15b, L2m, GB1, GB2, Q2) | 3 (L3, L6, L8) |
 
-Rows that bear on a result for the paper's question: L0a, L0b, L1h, L1c, L2a (USEFUL), L2b (POSSIBLY GOOD); H12c, H16a, H9b, F3 (failures that drive later rounds); RQ-H1, LLM1, LLM2, L1, L2 (INCONCLUSIVE answers).
+Changes of the fix round (loki PR 58): L2a is DISMISSED (the NMI against module_path ranks k-means 0.3220, affinity propagation 0.2708, spectral 0.1378, Louvain 0.1360, so the community methods do not find the hierarchy; modularity is recorded as the measurement L2m); L15d is POSSIBLY GOOD (the S7 and S8 ground truths differ in size, 174 and 166 mux instances).
+
+Rows that bear on a result for the paper's question: L0a, L0b, L1h, L1c (USEFUL), L2b (POSSIBLY GOOD); L2a, H12c, H16a, H9b, F3 (failures that drive later rounds); RQ-H1, LLM1, LLM2, R2-L1, R2-L2 (INCONCLUSIVE answers).
