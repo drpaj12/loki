@@ -55,7 +55,7 @@ VT & 33 & 125 & 42 & 83 & 0 & 0 \\
 \end{table}
 
 \begin{table}[t]
-\caption{Round 6: first losses (the Stage-0 total) and, apart from them, the \code{subsumed} ones (the unit survives only as the enclosing statement of a finer unit that is still alive) and the remaining merged-plus-removed losses (stmt level, MI+VT+CI).}
+\caption{Round 6: first losses (the total under the random-set null) and, apart from them, the \code{subsumed} ones (the unit survives only as the enclosing statement of a finer unit that is still alive) and the remaining merged-plus-removed losses (stmt level, MI+VT+CI).}
 \label{tab:r6-headline}
 \centering
 \footnotesize
@@ -74,7 +74,7 @@ all & 580 & 161 & 0.28 & 419 \\
 \end{table}
 
 \begin{table}[t]
-\caption{Round 6: first losses of a unit per hardware kind and pass, as real/Stage-0 null/persistence null (expected counts, stmt level, MI+VT+CI). The first column is the units at risk at \code{opt}. The Stage-0 null is persistence-free and overstates chance losses; the persistence null (mean of 50 draws, exploratory, post-data) starts from the real objects of the previous snapshot. Both nulls and the real count use the same units at risk (separable at the previous snapshot, not lost earlier). The \code{logic} loss at \code{flatten} is the 68 \code{INSTANCE} units (\code{removed}), not dead logic. The loss measure cannot see FSM re-encoding (hardware kind \code{fsm} is read at S1, before the \code{fsm} pass), so the \code{fsm} row is empty and FSM units are counted under register, mux or logic.}
+\caption{Round 6: first losses of a unit per hardware kind and pass, as real/random-set null/persistence null (expected counts, stmt level, MI+VT+CI). The first column is the units at risk at \code{opt}. The random-set null is persistence-free and overstates chance losses; the persistence null (mean of 50 draws) starts from the real objects of the previous snapshot. Both nulls and the real count use the same units at risk (separable at the previous snapshot, not lost earlier). The \code{logic} loss at \code{flatten} is the 68 \code{INSTANCE} units (\code{removed}), not dead logic. The loss measure cannot see FSM re-encoding (hardware kind \code{fsm} is read at S1, before the \code{fsm} pass), so the \code{fsm} row is empty and FSM units are counted under register, mux or logic.}
 \label{tab:r6-kindpass}
 \centering
 \footnotesize
@@ -94,7 +94,7 @@ logic & 272 & 0/71/0 & 9/81/14 & 68/58/4 & 1/38/5 & 0/39/0 & 0/13/0 & 54/46/50 \
 \end{table}
 
 \begin{table}[t]
-\caption{Round 6 (exploratory, post-data): real first losses / Stage-0 null / persistence-null mean [2.5th--97.5th percentile of the 50 per-draw totals], stmt level, MI+VT+CI. The interval covers the draws within the fixed designs, not variation across designs. A pass that removes objects lowers the object count and the persistence null reads every removal as a merge, so at \code{opt} it is an upper bound of chance merging.}
+\caption{Round 6: real first losses / random-set null / persistence-null mean [2.5th--97.5th percentile of the 50 per-draw totals], stmt level, MI+VT+CI. The interval covers the draws within the fixed designs, not variation across designs. A pass that removes objects lowers the object count and the persistence null reads every removal as a merge, so at \code{opt} it is an upper bound of chance merging.}
 \label{tab:r6-pnull}
 \centering
 \footnotesize
@@ -155,14 +155,14 @@ all & 322 & 195 & 0.606 & 127 & 127 & 127 \\
 \end{table}
 
 \begin{table}[t]
-\caption{Round 6, rule 1: the pass that loses most of each hardware kind, its share, and the outcome under the pre-registered Stage-0 null (persistence-free; see amendment) and, beside it and exploratory (post-data), under the persistence null with the same thresholds (stmt, MI+VT+CI). Where they differ, neither is confirmatory.}
+\caption{Round 6, rule 1: the pass that loses most of each hardware kind, its share, and the outcome under the random-set null (persistence-free) and, beside it, under the persistence null with the same thresholds (stmt, MI+VT+CI). Where they differ, neither is confirmatory.}
 \label{tab:r6-rule1}
 \centering
 \footnotesize
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}llrclcl@{}}
 \toprule
-Kind & Pass & Losses & Share/Stage-0 null & Stage-0 & Share/persist. & Persist. (expl.) \\
+Kind & Pass & Losses & Share/random-set null & Random-set & Share/persist. & Persist. (expl.) \\
 \midrule
 arith & S8\_abc & 55 & 0.564/0.101 & dominant & 0.564/0.462 & dominant-null \\
 compare & S3\_opt & 19 & 0.947/0.489 & dominant & 0.947/0.844 & dominant-null \\

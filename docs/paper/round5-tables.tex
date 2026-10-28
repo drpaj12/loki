@@ -357,7 +357,7 @@
 \newcommand{\rfvXTimeWbMedHi}{0.44}
 \newcommand{\rfvXTimeWbMedLo}{0.29}
 \begin{table}[t]
-\caption{Round 5: the six hypotheses, their status under the Stage-0 rules and the numbers the rules use.}
+\caption{Round 5: the six hypotheses, their status under the decision rules and the numbers the rules use.}
 \label{tab:r5-status}
 \centering
 \footnotesize
@@ -569,7 +569,7 @@ WB VT f3 & 33 & 13.29 & 0.39 & 339.61 \\
 \end{table}
 
 \begin{table}[t]
-\caption{Round 5, exploratory (2026-10-25-c): the FSM rule. W and WB use the evaluated rule (feedback coupling, no decoder), W1 and WB1 the Stage-0 rule (feedback plus at least two word-level decoders). Kind-level counted/matched/GT of \code{fsm} and F1 pooled over MI, VT, CI and CO at f2; chains complete and FSM instances hit on MI and VT; the last columns classify every \code{fsm} hypothesis by the ground-truth kind of its flip-flops (FSM, counter, register that is neither, none).}
+\caption{Round 5, additional analysis: the FSM rule. W and WB use the evaluated rule (feedback coupling, no decoder), W1 and WB1 the first rule (feedback plus at least two word-level decoders). Kind-level counted/matched/GT of \code{fsm} and F1 pooled over MI, VT, CI and CO at f2; chains complete and FSM instances hit on MI and VT; the last columns classify every \code{fsm} hypothesis by the ground-truth kind of its flip-flops (FSM, counter, register that is neither, none).}
 \label{tab:r5x-fsm}
 \centering
 \footnotesize
@@ -582,14 +582,14 @@ R2N & per-bit & 47/39/64 & 0.70 & 1/22 & 2/4 & -- & -- & -- & -- & -- \\
 R2C & per-bit & 59/59/64 & 0.96 & 1/22 & 0/4 & -- & -- & -- & -- & -- \\
 W & round 5 & 30/2/64 & 0.04 & 2/22 & 0/4 & 138 & 59 & 31 & 43 & 5 \\
 WB & round 5 & 68/37/64 & 0.56 & 3/22 & 1/4 & 165 & 62 & 37 & 62 & 4 \\
-W1 & Stage 0 & 6/1/64 & 0.03 & 2/22 & 0/4 & 15 & 8 & 6 & 1 & 0 \\
-WB1 & Stage 0 & 45/37/64 & 0.68 & 3/22 & 2/4 & 14 & 7 & 6 & 1 & 0 \\
+W1 & first rule & 6/1/64 & 0.03 & 2/22 & 0/4 & 15 & 8 & 6 & 1 & 0 \\
+WB1 & first rule & 45/37/64 & 0.68 & 3/22 & 2/4 & 14 & 7 & 6 & 1 & 0 \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
 \begin{table}[t]
-\caption{Round 5, exploratory (2026-10-25-c): tiling on VT and its random null by candidate subset. Candidates of at least ten cells and the largest candidate drive the null; the same \code{ff\_en} candidates give a null of a few percent for R2N and 0.19 for WB.}
+\caption{Round 5, additional analysis: tiling on VT and its random null by candidate subset. Candidates of at least ten cells and the largest candidate drive the null; the same \code{ff\_en} candidates give a null of a few percent for R2N and 0.19 for WB.}
 \label{tab:r5x-null}
 \centering
 \footnotesize
@@ -609,7 +609,7 @@ WB & other & 978 & 33 & 1016 & 0.023 & 0.203 \\
 \end{table}
 
 \begin{table}[t]
-\caption{Round 5, exploratory (2026-10-25-c): arm WB on BIG with the Stage-0 cap of 1800 s per design (smallest first). Counted/matched for W and WB on the designs where WB finished; GT words of the design.}
+\caption{Round 5, additional analysis: arm WB on BIG with the cap of 1800 s per design (smallest first). Counted/matched for W and WB on the designs where WB finished; GT words of the design.}
 \label{tab:r5x-bigwb}
 \centering
 \footnotesize

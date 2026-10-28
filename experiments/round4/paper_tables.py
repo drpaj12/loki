@@ -85,7 +85,7 @@ def kinds_block() -> str:
         line += [f3(r0["f1_det"]), r0["designs_with_gt"], r0["gt"]]
         body.append(line)
     return table("H12b on real designs (micros and the 33 VerilogEval test designs, f2): pooled "
-                 "F1 of the dictionary (V0 as written; V1 and V2 added after Stage 0) and of the "
+                 "F1 of the dictionary (V0 as written; V1 and V2 are later variants) and of the "
                  "better detector arm, and the number of designs and ground-truth constructs.",
                  "tab:r4-kinds",
                  ["kind", "dict V0", "dict V1", "dict V2", "best detector", "designs", "GT"],
@@ -398,8 +398,8 @@ def log_table(st: dict[tuple[str, str], tuple[str, str]]) -> str:
     body = []
     rows_ = [("L12a", "corpus is usable", "H12a", "-"),
              ("L12b", "dictionary beats detectors (V0 as written)", "H12b", "V0"),
-             ("L12b", "same, V1 (added after Stage 0)", "H12b", "V1"),
-             ("L12b", "same, V2 (added after Stage 0)", "H12b", "V2"),
+             ("L12b", "same, V1 (later variant)", "H12b", "V1"),
+             ("L12b", "same, V2 (later variant)", "H12b", "V2"),
              ("L12b2", "dictionary generalises over unseen regions (V0)", "H12b2", "V0"),
              ("L12c", "GNN transfer improves with corpus size", "H12c", "-"),
              ("L13a", "big designs mostly repeated structure", "H13a", "-"),
@@ -412,7 +412,7 @@ def log_table(st: dict[tuple[str, str], tuple[str, str]]) -> str:
     for rq, hyp, i, v in rows_:
         s, n = g(i, v)
         body.append([rq, hyp, "4", tex(s), tex(n)])
-    return table(r"Research log: the round-4 questions, their status under the Stage-0 rules "
+    return table(r"Research log: the round-4 questions, their status under the decision rules "
                  r"and the deciding number (generated from \code{experiments/round4}).",
                  "tab:r4-log", ["RQ", "Hypothesis", "Round", "Status", "Deciding number"],
                  body, "lp{3.0cm}lp{2.2cm}p{3.8cm}")

@@ -644,11 +644,11 @@ def tex_scorers(dec: dict[str, object]) -> list[str]:
                     f"[{_fmt(a['ci90'][0])}, {_fmt(a['ci90'][1])}] & {_fmt(a['p_loki_greater'])} & "
                     f"{_fmt(a['p_hal_greater'])} & {a['outcome']} \\\\")
     return out + ["\\begin{table}[t]",
-                  "\\caption{The pre-registered decision on E\\_real at f2 under the two scorers "
+                  "\\caption{The decision on E\\_real at f2 under the two scorers "
                   "for Loki (HAL counts identical in both rows). $D = F_J(\\text{Loki}) - "
                   "F_J(\\text{DANA})$; $p_L$, $p_H$: one-sided Wilcoxon p, Loki greater and DANA "
                   "greater. The last column applies the rule to that row alone; the "
-                  "pre-registered outcome needs Loki ahead under both.}",
+                  "decision needs Loki ahead under both.}",
                   "\\label{tab:hal-decision}", "\\centering", "\\footnotesize",
                   "\\begin{tabular}{@{}lrrrrrl@{}}", "\\toprule",
                   "Scorer & $D$ & 95\\% CI & 90\\% CI & $p_L$ & $p_H$ & rule alone \\\\",
@@ -718,7 +718,7 @@ def tex_table(runs8: list[Run], runs2: list[Run]) -> list[str]:
            "\\caption{Loki word-first detector (\\code{W}) against HAL's DANA on MI and VT "
            "(E\\_real), word recovery against the L0 ground truth; one scorer for both tools. "
            "$P_J$, $R_J$, $F_J$: Jaccard-0.5 matching; purity and completeness over flip-flops. "
-           "The round-5 scorer row counts Loki as round 5 did (Amendment A1). "
+           "The round-5 scorer row counts Loki as round 5 did (the scorer used for Loki in round 5). "
            + wb_note(runs8) + "}",
            "\\label{tab:hal}", "\\centering", "\\footnotesize",
            "\\begin{tabular}{@{}l" + "rrrrr" * 2 + "@{}}", "\\toprule",

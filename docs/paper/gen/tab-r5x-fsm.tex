@@ -1,5 +1,5 @@
 \begin{table}[t]
-\caption{Round 5, exploratory (2026-10-25-c): the FSM rule. W and WB use the evaluated rule (feedback coupling, no decoder), W1 and WB1 the Stage-0 rule (feedback plus at least two word-level decoders). Kind-level counted/matched/GT of \code{fsm} and F1 pooled over MI, VT, CI and CO at f2; chains complete and FSM instances hit on MI and VT; the last columns classify every \code{fsm} hypothesis by the ground-truth kind of its flip-flops (FSM, counter, register that is neither, none).}
+\caption{Round 5, additional analysis: the FSM rule. W and WB use the evaluated rule (feedback coupling, no decoder), W1 and WB1 the first rule (feedback plus at least two word-level decoders). Kind-level counted/matched/GT of \code{fsm} and F1 pooled over MI, VT, CI and CO at f2; chains complete and FSM instances hit on MI and VT; the last columns classify every \code{fsm} hypothesis by the ground-truth kind of its flip-flops (FSM, counter, register that is neither, none).}
 \label{tab:r5x-fsm}
 \centering
 \footnotesize
@@ -12,8 +12,8 @@ R2N & per-bit & 47/39/64 & 0.70 & 1/22 & 2/4 & -- & -- & -- & -- & -- \\
 R2C & per-bit & 59/59/64 & 0.96 & 1/22 & 0/4 & -- & -- & -- & -- & -- \\
 W & round 5 & 30/2/64 & 0.04 & 2/22 & 0/4 & 138 & 59 & 31 & 43 & 5 \\
 WB & round 5 & 68/37/64 & 0.56 & 3/22 & 1/4 & 165 & 62 & 37 & 62 & 4 \\
-W1 & Stage 0 & 6/1/64 & 0.03 & 2/22 & 0/4 & 15 & 8 & 6 & 1 & 0 \\
-WB1 & Stage 0 & 45/37/64 & 0.68 & 3/22 & 2/4 & 14 & 7 & 6 & 1 & 0 \\
+W1 & first rule & 6/1/64 & 0.03 & 2/22 & 0/4 & 15 & 8 & 6 & 1 & 0 \\
+WB1 & first rule & 45/37/64 & 0.68 & 3/22 & 2/4 & 14 & 7 & 6 & 1 & 0 \\
 \bottomrule
 \end{tabular}}
 \end{table}
