@@ -34,6 +34,22 @@ A gate-level `netlist.v` input (floor f3) is checked as the BLIF that level 0 wr
 netlist read back from the mapped Verilog), because `equiv-check` reads BLIF only; a faithful
 rewrite gives `report.final_equiv` `equivalent` (fixed Loki issue #14).
 
+### Run record
+
+Every `loki re` run (exit 0 or 1) also writes `mimir-run.json` into `--out`: the full how-obtained
+data that Mimir III imports as a `full` flow configuration (`mimir import-runrecords`), with
+no reconstruction. It holds the Loki and Odin III commits (how found, clean or dirty), the sha256
+of the Odin III library, the command line (the netlist, `--out` and `--score-design` as
+placeholders), every option as `{value, conf, source}` (`given` from the command line or the
+environment, else the default cited `file:line` of `loki/re/main.py` at the Loki commit), the seed,
+time, peak RSS, the host alias from `$MIMIR_HOST_MAP` (`unknown` without the map) and the sha256 of
+the netlist, calibration file and outputs. The Loki commit is `given` when the Loki tree is clean at
+record time; the Odin III commit is `unknown` when the library's version text names no commit, so
+the configuration is `partial` with that parameter named. A record that would hold an absolute path,
+a home path or a private name is not written (stderr names the rule and the key). Format: Mimir's
+`docs/specs/2026-10-28-mimir-run-record.md`; `loki/runrecord.py` is stdlib only and does not import
+Mimir. The other drivers (`experiments/`) are not covered yet.
+
 ## 3. Calibration (train split)
 
     ODIN3_HEAVY_OK=1 $ODIN3_ROOT/tools/heavy-run .venv/bin/loki calibrate --dataset dataset --floor f2 \
