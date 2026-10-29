@@ -7,10 +7,11 @@ import argparse
 import json
 import os
 import sys
+import time
 from collections.abc import Sequence
 from pathlib import Path
 
-from loki.re import bayes
+from loki.re import bayes, record
 from loki.re.loop import ReOptions, run_re
 from loki.re.normalise import NormaliseError, floor_from_path
 from loki.re.report import write_outputs
@@ -79,8 +80,9 @@ def _score(args: argparse.Namespace, opts: ReOptions, out: Path) -> None:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the flow and write ``--out``; the exit codes are those of spec 13."""
+    words = list(sys.argv[1:] if argv is None else argv)
     try:
-        args = _parser().parse_args(argv)
+        args = _parser().parse_args(words)
     except SystemExit as exc:
         return 0 if exc.code in (0, None) else 2
     if bool(args.score_dataset) != bool(args.score_design):
@@ -90,6 +92,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not opts.netlist.is_file():
         print(f"loki re: {opts.netlist}: cannot read the netlist", file=sys.stderr)
         return 3
+    started = time.monotonic()
+    code = _execute(args, opts)
+    if code in (0, 1) and Path(args.out).is_dir():
+        record.write_record(_parser(), args, words, opts, Path(args.out), code,
+                            time.monotonic() - started)
+    return code
+
+
+def _execute(args: argparse.Namespace, opts: ReOptions) -> int:
+    """The run itself: the exit code of spec 13."""
     try:
         res = run_re(opts)
         write_outputs(res, opts, Path(args.out))
