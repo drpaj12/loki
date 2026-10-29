@@ -152,3 +152,15 @@ hand-computed values (arm A 0.5556 and 0.8333 on the six problems), the paired t
   1233 call files). User-message hashes equal the pilot's for all 120 shared (problem, arm) pairs.
   Dry run: 54 fake replies score as expected, 0 timeouts. Wording fix to the plan text only: the
   exclusion reason for Prob099 reads "ports Y2, Y4 not in the reference" in `excluded.csv`.
+- 2026-10-29 (before any model call): dispatch route. The call subagents are as planned (one fresh
+  Sonnet subagent per call, the CALL-INSTRUCTIONS.md template verbatim, no resumed subagent, no
+  retry or rewording). They are spawned by a Sonnet dispatcher subagent acting for the controller,
+  not by the controller session itself, so that 1233 replies do not pass through the controller's
+  context. One dispatcher runs at most 6 batches (144 calls), checks the weekly meter before each
+  batch and stops at 85 percent, writes `run/dispatch-log.tsv` and `run/status.csv`, and reports
+  counts only. The controller checks the meter between dispatcher runs. The first dispatcher first
+  runs one blinding probe (not a problem: which tools and files the subagent can see, its model
+  name), logged to `run/responses/blinding-probe-full.txt`, because a subagent spawned by a subagent
+  may see a different tool set than the pilot's. The dispatcher records the tool-call count each
+  call reports; the transcript audit after the run checks every call used only Read of its call file
+  and Write of its outbox file.
