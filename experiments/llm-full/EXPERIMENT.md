@@ -164,3 +164,91 @@ hand-computed values (arm A 0.5556 and 0.8333 on the six problems), the paired t
   may see a different tool set than the pilot's. The dispatcher records the tool-call count each
   call reports; the transcript audit after the run checks every call used only Read of its call file
   and Write of its outbox file.
+
+## Results (2026-10-29)
+
+Plan written before the runs; the verdict rules below are the ones that plan set, applied unchanged.
+Tracked outputs are in `results/` (`results.csv`, `summary.md`, `dispatch-log.tsv`, `status.csv`,
+`transcript-audit.txt`, `blinding-probe-full.txt`). The call files, prompts and replies stay in the
+git-ignored `run/`; unlike the pilot, no raw replies are committed.
+
+### Plain English
+
+All 1233 calls were answered (1233 ok, 0 api_refused, 0 no_file, 0 timeouts). Giving the model
+Loki's hints did not change how often it recovered working RTL: arm A (netlist only) and arm B
+(netlist plus hints) are level, A 0.888 and B 0.878 mean pass@1, and the interval on their
+difference is narrow. Taking the netlist away does hurt: arm C (interface only, no netlist) still
+passes 0.560, which is the share of these problems the model can write from the module header
+alone. The netlist adds 0.319 on top of that (B minus C). The hints add nothing measurable on top
+of the netlist.
+
+Outcome codes over all calls: pass 956, runtime 257, compile 20. By arm: A 365 pass, 41 runtime,
+5 compile; B 361, 47, 3; C 230, 169, 12 (411 calls each).
+
+### Headline
+
+| arm | problems | pass@1 | pass@3 | MAJ (>= 2 of 3 draws) |
+| --- | --- | --- | --- | --- |
+| A netlist | 137 | 0.888 | 0.942 | 123/137 (0.90) |
+| B netlist + hints | 137 | 0.878 | 0.942 | 124/137 (0.91) |
+| C interface only | 137 | 0.560 | 0.686 | 77/137 (0.56) |
+
+Mean pass@1 difference (problem-level bootstrap 95% interval, 2000 resamples): A minus B +0.010
+[-0.017, +0.036]; B minus C +0.319 [+0.241, +0.394]; A minus C +0.328 [+0.246, +0.406] (exploratory).
+
+### Planned comparisons and verdicts
+
+Primary outcome: the problem passes in at least 2 of 3 draws. Exact two-sided McNemar on discordant
+problems per quartile, exact stratified test over the four quartiles (pooled discordant pairs,
+binomial p = 0.5), Holm over the 10 tests. A claim needs adjusted p < 0.05. Verdict words are the
+paper register's (USEFUL = supported under the rule; DISMISSED = not supported; INCONCLUSIVE =
+neither).
+
+| comparison | stratum | first only, second only | p | p (Holm) |
+| --- | --- | --- | --- | --- |
+| A vs B | Q1 | 0, 2 | 0.5000 | 1.0000 |
+| A vs B | Q2 | 1, 0 | 1.0000 | 1.0000 |
+| A vs B | Q3 | 0, 0 | 1.0000 | 1.0000 |
+| A vs B | Q4 | 2, 2 | 1.0000 | 1.0000 |
+| A vs B | all (stratified) | 3, 4 | 1.0000 | 1.0000 |
+| B vs C | Q1 | 19, 0 | 0.0000 | 0.0000 |
+| B vs C | Q2 | 12, 1 | 0.0034 | 0.0273 |
+| B vs C | Q3 | 9, 1 | 0.0215 | 0.1504 |
+| B vs C | Q4 | 12, 3 | 0.0352 | 0.2109 |
+| B vs C | all (stratified) | 52, 5 | 0.0000 | 0.0000 |
+
+- A vs B (does Loki help; LLM1): DISMISSED. Stratified discordant 3 against 4, Holm p = 1.0000,
+  mean pass@1 difference +0.010 [-0.017, +0.036]. No quartile moves. The interval rules out a gain
+  larger than about 0.04 on this task; arm A is already near the ceiling in Q1 and Q2, which limits
+  how much any hint could show. Secondary outcome (pass@3): 2 against 2, Holm p = 1.0000, same
+  reading.
+- B vs C (does the netlist matter beyond memorisation; LLM2): USEFUL overall. Stratified 52 against
+  5, Holm p < 0.0001. By quartile: Q1 (p Holm < 0.0001) and Q2 (0.0273) pass the rule; Q3 (0.1504)
+  and Q4 (0.2109) have the same sign (9 against 1; 12 against 3) but do not reach adjusted
+  p < 0.05, so per quartile they are INCONCLUSIVE. The secondary pass@3 test agrees overall
+  (40 against 5, Holm p < 0.0001); only Q1 passes it per quartile.
+- A vs C: exploratory, not tested in the family. Difference +0.328 [+0.246, +0.406].
+- Bound from arm C: C passes 0.56, so the interface line alone explains over half of the passes,
+  and the netlist (B minus C) accounts for +0.319 of pass@1.
+
+### Deviations
+
+1. Dispatch route (amendment above): a Sonnet dispatcher subagent spawned the 1233 call subagents,
+   in runs of at most 6 batches, checking the meter before each batch. The weekly meter went from 62
+   to 70 percent over the run; the 85 percent stop rule never fired and the refusal stop rule never
+   fired (0 api_refused, 0 no_file).
+2. Tools and blinding: the blinding probe (`results/blinding-probe-full.txt`) shows the call
+   subagents had Agent, Artifact, Bash, Edit, Read, Skill, ToolSearch, Write and the Docs tools, with
+   file and web tools loadable by ToolSearch; model `claude-sonnet-5-5`; the workspace CLAUDE.md, the
+   memory index and the caveman hook text were in their context. This is wider than the pilot's
+   tool set. The reference files sit on the same disk; only observed behaviour separates them.
+3. Transcript audit (`results/transcript-audit.txt`): 1233 calls audited, 0 calls touched any path
+   other than their own call file and outbox file. 37 calls used more than the expected two tool
+   calls: paged Reads, double Writes, and in 3 calls (0354, 0410, 0809) Bash grep or sed on their
+   own call file. All 37 are scored as made. Not a technical block, only evidence from behaviour.
+4. Seven problems excluded (see Population): four over the 40000 B prompt cap (Prob018, Prob052,
+   Prob105, Prob115), one whose reference fails its own testbench (Prob099), two whose arm B hints
+   cannot be built (Prob028, Prob145). The largest designs are under-represented as in the pilot.
+5. The `re` system prompt mentions Loki hints in every arm (a cue, same in all arms); sampling
+   temperature was not controlled, so draws are independent but not reproducible.
+6. The estimator citation for pass@k stays unverified here, as the plan said.

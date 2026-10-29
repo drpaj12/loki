@@ -55,18 +55,18 @@ way. Loki~III asks how much of the design can be recovered \emph{without} a lang
 from provenance (the link from each netlist object back to the source text), a Bayesian
 hypothesis flow and graph analysis.
 
-Every claim is a hypothesis with one experiment and one verdict. Eight are USEFUL: the
+Every claim is a hypothesis with one experiment and one verdict. Nine are USEFUL: the
 provenance answer key covers all 54,306 gate nodes of 150 designs and the pipeline is
 naming-neutral over 105,646 renamed identifiers; structures that synthesis already reverse
 engineered are recovered (hard adders 67 of 67) and calibration cuts the calibration error from
 0.650 to 0.217; synthesis destroys style (ceiling 0.50 on the gate floor); big designs are
-mostly repeated structure.
+mostly repeated structure; a model does far better with the netlist than without (LLM4).
 
 Six are POSSIBLY GOOD and stated with their fragility: a graph network ahead of a 1-WL
 baseline (one split), an operator-recovery F1, and a loss audit. Structures that synthesis
 erased recover weakly, clustering does not find the designer's hierarchy, a word-first
-detector is not shown to beat DANA, and a language-model pilot shows no effect of Loki's hints.
-Twelve hypotheses were DISMISSED and sixteen are INCONCLUSIVE. No area, speed or power is measured.
+detector is not shown to beat DANA, and a full language-model run shows no effect of Loki's hints on top of the netlist.
+Thirteen hypotheses were DISMISSED and sixteen are INCONCLUSIVE. No area, speed or power is measured.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -146,7 +146,7 @@ What would confirm it: the same audit with equal-sized ground truths at the two 
 The other answers to the paper's question are negative or undecided. Clustering does not find
 the designer's hierarchy (L2a, DISMISSED); the structures that synthesis erased recover weakly; a
 pattern finder that looks for multi-bit signals first is not shown to beat a published method;
-and a small language-model pilot does not show that Loki's hints help.
+and a full language-model run (137 problems, three draws) shows that Loki's hints add nothing measurable to the netlist.
 
 Loki's measures are recovery measures (how much of the answer key is found) and not circuit
 measures. Area, speed and power are not measured by any experiment in this paper, and we do not
@@ -523,7 +523,7 @@ snapshot where none does (Section~\ref{sec:round6} gives the protocol).
 
 The setup is: the floors and the two benchmark sets (Section~\ref{sec:bench}), the scoring of L1 and
 L2 against the answer key (Section~\ref{sec:eval}), the metrics and the statistics (below), and
-the language-model baseline of Gate-Breaker. All experiments except the language-model pilot use
+the language-model baseline of Gate-Breaker. All experiments except the language-model pilot and the full run use
 no language model.
 
 \subsection{Evaluation protocol: how L1 and L2 are scored}
@@ -1909,6 +1909,85 @@ arm~C controls for memorisation of VerilogEval; it is not a measure of recovery.
 LLM2 \verdict{INCONCLUSIVE}: arm C 30/40 (paired A against C $p=0.2188$, B against C $p=0.0703$). One draw per cell on 40 problems cannot support
 a claim about the hints in either direction.
 
+\subsection{Language model plus Loki's hints: the full run (LLM3, LLM4)}
+\label{sec:llm-full}
+
+\hev{Hypotheses.} LLM3: a model given Loki's hints recovers RTL better than the same model given the netlist
+alone. LLM4: the netlist helps beyond what the model knows from the interface line alone.
+
+% Sources: experiments/llm-full/EXPERIMENT.md (Results 2026-10-29), experiments/llm-full/results/summary.md,
+% results.csv, transcript-audit.txt, blinding-probe-full.txt. Every number below is copied from those files.
+
+The pilot could not separate the arms, so the same question was asked on every eligible problem of the four
+quartile files. The plan (arms, scorer, primary outcome, tests, stop rules) was written before the runs and committed first.
+
+\emph{Setup.} 137 problems (144 in the quartile files, 7 excluded: four prompts over the 40000-byte cap, one
+reference that fails its own testbench, two whose hints cannot be built), arms A (netlist), B (netlist and Loki's hints)
+and C (interface only), three independent draws per problem and arm: 1233 calls to fresh \code{claude-sonnet-5-5}
+subagents, with the pilot's prompts, scorer and answer format. The primary outcome is that a problem passes in at least 2 of
+its 3 draws. Per quartile, the exact two-sided McNemar test; across quartiles, the exact stratified form (discordant problems pooled); Holm
+adjustment over the ten tests. A claim needs an adjusted $p<0.05$.
+
+\emph{Results.} All 1233 calls were answered (0 API refusals, 0 no-file calls, 0 timeouts). Table~\ref{tab:llm-full}
+gives the pass rates and Table~\ref{tab:llm-full-tests} the tests. Arms A and B are level
+(mean pass@1 0.888 against 0.878; A minus B $+0.010$, 95\% interval $[-0.017,+0.036]$), with 3 problems
+only A passes and 4 only B passes. Arm~C, with no netlist, still passes 0.560, so over half of the passes need only the interface line. The
+netlist adds the rest: B minus C is $+0.319$ ($[+0.241,+0.394]$), 52 problems only B passes against 5 only C passes
+(Holm $p<0.0001$). By quartile the B-against-C difference passes the rule in Q1 and Q2; Q3 and Q4 have the same sign but
+Holm $p=0.1504$ and $0.2109$.
+
+\begin{table}[t]
+\centering
+\caption{LLM full run: pass rates per arm, 137 problems, 3 draws, strict scorer. MAJ: passes in at least 2 of 3 draws.}
+\label{tab:llm-full}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Arm & Calls & pass@1 & pass@3 & MAJ \\
+\midrule
+A netlist & 411 & 0.888 & 0.942 & 123/137 \\
+B netlist + hints & 411 & 0.878 & 0.942 & 124/137 \\
+C interface only & 411 & 0.560 & 0.686 & 77/137 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{LLM full run: primary tests (MAJ), exact McNemar per quartile and stratified; discordant problems (first only, second only), Holm $p$ over ten tests.}
+\label{tab:llm-full-tests}
+\small
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Comparison & Stratum & Discordant & $p$ & Holm $p$ \\
+\midrule
+A vs B & Q1 & 0, 2 & 0.5000 & 1.0000 \\
+A vs B & Q2 & 1, 0 & 1.0000 & 1.0000 \\
+A vs B & Q3 & 0, 0 & 1.0000 & 1.0000 \\
+A vs B & Q4 & 2, 2 & 1.0000 & 1.0000 \\
+A vs B & all & 3, 4 & 1.0000 & 1.0000 \\
+B vs C & Q1 & 19, 0 & $<0.0001$ & $<0.0001$ \\
+B vs C & Q2 & 12, 1 & 0.0034 & 0.0273 \\
+B vs C & Q3 & 9, 1 & 0.0215 & 0.1504 \\
+B vs C & Q4 & 12, 3 & 0.0352 & 0.2109 \\
+B vs C & all & 52, 5 & $<0.0001$ & $<0.0001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{Threats to validity.} (i)~Dispatch: a Sonnet dispatcher subagent spawned the call subagents, so the controller
+session did not. (ii)~Blinding: the call subagents were not tool-less. A probe lists Agent, Artifact, Bash, Edit, Read, Skill, ToolSearch, Write
+and the Docs tools, with the workspace instructions, a memory index and a terse-style hook text in context; the reference files are on
+the same disk. The transcript audit of all 1233 calls found 0 calls touching any path other than their own call file and reply
+file; 37 used more than two tool calls (paged reads, double writes, and in 3 calls a shell search of their own call file). All are scored as made. This
+is evidence from behaviour, not a technical block. (iii)~The 7 excluded problems and the prompt-size cap
+under-represent the largest designs. (iv)~Arm~A is near the ceiling in Q1 and Q2, which limits how much any hint could show.
+(v)~The system prompt mentions Loki hints in every arm, and sampling is not controlled.
+
+\hev{Verdicts.} LLM3 \verdict{DISMISSED}: A minus B $+0.010$ [$-0.017,+0.036$], stratified discordant 3 against 4, Holm $p=1.0000$; the
+interval rules out a gain larger than about 0.04. LLM4 \verdict{USEFUL}: B minus C $+0.319$, stratified 52 against 5, Holm $p<0.0001$; per quartile Q1 and Q2
+pass the rule and Q3 and Q4 are \verdict{INCONCLUSIVE}. Arm~C passing 0.56 bounds what the netlist adds: B minus C $=+0.319$.
+
 \subsection{Per-quartile results: Loki alone and Loki with a model (Q1, Q2)}
 \label{sec:quartiles}
 
@@ -2028,7 +2107,8 @@ placement of other losses at the first \code{opt} is what chance merging also gi
 Fourth, \emph{readable and verified are different properties}. The language model produces RTL whose
 similarity to the reference is high and whose operators it names, but nothing proves the text equals the
 netlist; Loki's output is formally equal to its input in all runs and recovers few operators. The pilot
-(LLM1, LLM2) cannot say whether Loki's hints help.
+(LLM1, LLM2) could not separate the arms; the full run (LLM3, LLM4) shows that the hints add nothing
+measurable to the netlist (LLM3 DISMISSED) while the netlist itself adds a lot (LLM4 USEFUL).
 
 \emph{Candidate innovations.} Three ideas have only POSSIBLY GOOD support and stay out of the contributions.
 The graph network (L2b) needs several random splits with an interval over designs and a second benchmark
@@ -2037,8 +2117,7 @@ operators, since the calibrated flow recovers none. The loss audit (L15a, L15d) 
 ground truths at the two netlist snapshots, so that the recalls are on the same instances, and a run on the
 big designs.
 
-\emph{Limits.} (i) The recovery stages use no language model; the pilot is a separate experiment with
-one draw per cell. (ii) Recovery is structural, not functional: the output is exactly as correct as its input
+\emph{Limits.} (i) The recovery stages use no language model; the pilot and the full run are separate experiments. (ii) Recovery is structural, not functional: the output is exactly as correct as its input
 netlist, which itself passes the official testbench in only some designs (inferred latches and asynchronous
 resets are the failures). (iii) Six rows are POSSIBLY GOOD and not USEFUL because they are narrow or fragile (L2b, R2-L7, H9a, H13b, L15a, L15d); round-1 claims (L0a to L2b) have a clear gap but no interval. (iv)
 The word-first detector, the signature dictionary and the synthetic-corpus GNN did not transfer from
@@ -2059,8 +2138,8 @@ same graph.
 
 \emph{L8, a model given the ReverseProvenance record.} A language model that sees Loki's record may recover RTL
 better than the model alone. The experiment is the Gate-Breaker task with a record arm and a no-record arm on the
-full quartile files, three draws per arm; it is deferred, and the pilot of Section~\ref{sec:llm-pilot} is the small
-first step.
+full quartile files, three draws per arm. The full run of Section~\ref{sec:llm-full} did this for the hints (arm B against
+arm A) but not yet for the ReverseProvenance record.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -2075,8 +2154,7 @@ identifiers. The structures that synthesis erased recover weakly, clustering doe
 hierarchy, and a word-first detector is not shown to beat a published method.
 The part we would export to any future comparison, with or without a model, is the method: provenance-tracked,
 anonymised datasets with an answer key, plus the renamed-instance protocol. The graph network, the operator-recovery
-F1 and the loss audit are candidate innovations that await the experiments named in the Discussion. The pilot cannot say whether
-Loki's hints help a model; the loss audit says where in the flow some constructs are lost, not yet how to recover them.
+F1 and the loss audit are candidate innovations that await the experiments named in the Discussion. The full language-model run finds no effect of Loki's hints on a model that already has the netlist; the loss audit says where in the flow some constructs are lost, not yet how to recover them.
 
 \appendices
 
