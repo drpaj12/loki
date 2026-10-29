@@ -53,7 +53,7 @@ class HostAlias(TmpCase):
 
 class Privacy(unittest.TestCase):
     def test_rule_and_key_not_value(self) -> None:
-        hits = rr.privacy_hits({"a": "/home/someone/x", "b": ["k=/abs/p"], "c": "a/b.py:3"})
+        hits = rr.privacy_hits({"a": "/home" + "/someone/x", "b": ["k=/abs/p"], "c": "a/b.py:3"})
         self.assertEqual(hits, ["home-path at record.a", "absolute-path at record.b[0]"])
 
     def test_user_name(self) -> None:
