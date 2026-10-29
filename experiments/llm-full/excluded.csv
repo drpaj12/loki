@@ -1,0 +1,8 @@
+problem,quartile,reason,value
+Prob018_mux256to1,Q1,prompt over 40000 B (pilot cap),69426
+Prob028_m2014_q4a,Q2,arm B hints fail: Odin III cmos6 library has no latch cell (loki re error),
+Prob052_gates100,Q2,prompt over 40000 B (pilot cap),56405
+Prob099_m2014_q6c,Q2,"reference fails its own testbench (ports Y2, Y4 not in the reference)",
+Prob105_rotate100,Q3,prompt over 40000 B (pilot cap),79721
+Prob145_circuit8,Q3,arm B hints fail: Odin III cmos6 library has no latch cell (loki re error),
+Prob115_shift18,Q4,prompt over 40000 B (pilot cap),78899

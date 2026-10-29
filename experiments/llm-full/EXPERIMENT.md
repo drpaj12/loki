@@ -143,3 +143,12 @@ expected, 0 timeouts, pass counts per (arm, problem) match, pass@1 and pass@3 me
 hand-computed values (arm A 0.5556 and 0.8333 on the six problems), the paired tests and Holm run.
 
 ## Amendments
+
+- 2026-10-29 (before any model call): preparation committed after the plan commit 5a780d4. The
+  scripts, `selection.csv`, `excluded.csv`, `hints_stats.csv`, `hint_failures.csv`,
+  `prompt_sizes_full.csv` (sha256 of every user message), `batches.json` and `dryrun_result.json`
+  are tracked; `run/` (prompts, call files, calls.jsonl, hints) is git-ignored and rebuilt by
+  `make_hints_full.py` then `build_full.py`. Leak gate: 0 hits (system message, 411 user messages,
+  1233 call files). User-message hashes equal the pilot's for all 120 shared (problem, arm) pairs.
+  Dry run: 54 fake replies score as expected, 0 timeouts. Wording fix to the plan text only: the
+  exclusion reason for Prob099 reads "ports Y2, Y4 not in the reference" in `excluded.csv`.
