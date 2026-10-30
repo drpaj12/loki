@@ -123,8 +123,8 @@ Framing: PRE-REGISTERED (plan amendment in experiments/fsm-encoding/EXPERIMENT.m
 
 | H-ID | round / section | innovation tested | hypothesis | framing | experiment | metrics | result | test, p / CI | verdict | main paper? |
 |---|---|---|---|---|---|---|---|---|---|---|
-| FSM2a | experiments/fsm-encoding/EXPERIMENT.md | v2 FSM claims against the stage 1 detector | The v2 FSM claims recover more FSMs than the stage 1 detector in every arm and floor without losing precision. | PRE-REGISTERED | 100 FSM designs + 100 negatives x 3 arms x 2 floors | recall, pooled precision | recall 0.98/0.99 against 0.13 to 0.51 (+0.48 to +0.85, Holm p < 0.0001); pooled precision 0.17 against 0.70 to 0.92 (446 of 577 counted claims on the 20 regfile negatives) | paired bootstrap, Holm over 6 cells, precision guard 0.05 | INCONCLUSIVE (recall up, precision guard failed in all six cells) | yes |
-| FSM2b | same | One-hot FSMs recovered about as well as binary | Reading how state bits turn each other on lets Loki recover one-hot FSMs about as well as binary ones. | PRE-REGISTERED | 100 FSM designs x 2 floors | recall one-hot minus binary | -0.010 [-0.025, 0.000] pooled; encoding call right for 97 of 98 one-hot FSMs | CI inside +-0.10 | POSSIBLY GOOD (recall holds; the false-claim rate on memories is high and the shipped p is constant) | yes |
+| FSM2a | experiments/fsm-encoding/EXPERIMENT.md | v2 FSM claims against the stage 1 detector | The v2 FSM claims recover more FSMs than the stage 1 detector in every arm and floor without losing precision. | PRE-REGISTERED | 100 FSM designs + 100 negatives x 3 arms x 2 floors | recall, pooled precision | recall 0.98/0.99 against 0.13 to 0.51 (+0.48 to +0.85, Holm p < 0.0001); pooled precision 0.17 against 0.70 to 0.92 (446 of 577 counted claims on the 20 regfile negatives) | paired bootstrap, Holm over 6 cells, precision guard 0.05 | DISMISSED (the precision half is falsified: pooled precision 0.17 against 0.70 to 0.92; design-level 0.82, 0.75 without regfile; recall is up +0.48 to +0.85) | yes |
+| FSM2b | same | One-hot FSMs recovered about as well as binary | Reading how state bits turn each other on lets Loki recover one-hot FSMs about as well as binary ones. | PRE-REGISTERED | 100 FSM designs x 2 floors | recall one-hot minus binary | -0.010 [-0.025, 0.000] pooled; encoding call right for 97 of 98 one-hot FSMs | CI inside +-0.10 | POSSIBLY GOOD (SUPPORTED by the plan's equivalence rule, CI inside +-0.10; recall only: the claims are not selective (memories called FSMs) and the shipped p is constant) | yes |
 
 ## Untested hypotheses (decision 10: idea and the experiment it needs only)
 
@@ -140,7 +140,7 @@ Framing: PRE-REGISTERED (plan amendment in experiments/fsm-encoding/EXPERIMENT.m
 
 | USEFUL | POSSIBLY GOOD | DISMISSED | INCONCLUSIVE | measurement, not a hypothesis | untested |
 |---|---|---|---|---|---|
-| 8 (L0a, L0b, L1h, L1c, H12a, H13a, H13c, H14a) | 7 (L2b, R2-L7, H9a, H13b, L15a, L15d, FSM2b) | 12 | 17 (adds FSM2a) | 6 (L11, L15b, L2m, GB1, GB2, Q2) | 3 (L3, L6, L8) |
+| 8 (L0a, L0b, L1h, L1c, H12a, H13a, H13c, H14a) | 7 (L2b, R2-L7, H9a, H13b, L15a, L15d, FSM2b) | 13 (adds FSM2a) | 16 | 6 (L11, L15b, L2m, GB1, GB2, Q2) | 3 (L3, L6, L8) |
 
 Changes of the fix round (loki PR 58): L2a is DISMISSED (the NMI against module_path ranks k-means 0.3220, affinity propagation 0.2708, spectral 0.1378, Louvain 0.1360, so the community methods do not find the hierarchy; modularity is recorded as the measurement L2m); L15d is POSSIBLY GOOD (the S7 and S8 ground truths differ in size, 174 and 166 mux instances).
 

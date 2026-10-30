@@ -234,3 +234,7 @@ all have a state count that is not a power of two, so the codes are not dense. N
 precision verdict (guard failed) is the open problem for v2 FSM claims, not recall or encoding. No
 v2 calibration refit was done (the shipped table has a constant p = 0.95 for `fsm`).
 Scripts: `run_re.py` (`FSMENC_INTENT`), `score_v2.py`. Run data: `work/fsmenc-out/re/v2`.
+
+### Amendment (controller, 2026-10-30, after review, no new data)
+
+Verdict mapping: a failed precision guard falsifies the "without losing precision" half of FSM2a, so FSM2a is DISMISSED (it was written INCONCLUSIVE). FSM2b is SUPPORTED by the equivalence rule (CI inside +-0.10) and is entered as POSSIBLY GOOD in the register; the test is recall only, so a detector that called every register an FSM would also pass it. The fsm p is the constant 0.95 on both floors, so the p >= 0.5 count rule counts every non-rejected claim and no ECE is reported. Per-design counts are equal in 600 of 600 f2/f3 pairs (separate runs on different netlists; the sequential analysis reads the next-state function). "Other" for binary FSMs means the reachable codes are not 0..n-1.
