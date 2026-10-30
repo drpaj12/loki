@@ -1,0 +1,13 @@
+scope,v1_counted,v1_matched,v1_precision,v1_ece,v2_counted,v2_matched,v2_precision,v2_ece
+all counted claims,1166,2,,0.09295,0,0,,0.026375
+adder,1,1,1.0,,0,0,,
+adder_cin,0,0,,,0,0,,
+comparator,14,0,0.0,,0,0,,
+eq_const,1141,0,0.0,,0,0,,
+ff_srst,7,0,0.0,,0,0,,
+hard_add,0,0,,,0,0,,
+hard_mul,0,0,,,0,0,,
+mux,0,0,,,0,0,,
+mux_bit,0,0,,,0,0,,
+register,3,1,0.333333,,0,0,,
+subtractor,0,0,,,0,0,,

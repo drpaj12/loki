@@ -46,6 +46,8 @@ class ReOptions:
     keep_levels: Path | None
     features: str = "all"
     rp_min_p: float = 0.5
+    intent: bool = False
+    intent_calib: Path | None = None
 
 
 @dataclass

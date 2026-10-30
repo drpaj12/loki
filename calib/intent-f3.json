@@ -1,0 +1,35 @@
+{
+ "kinds": {
+  "counter": {
+   "hits": 11,
+   "n": 11,
+   "p": 0.9231
+  },
+  "fsm": {
+   "hits": 18,
+   "n": 18,
+   "p": 0.95
+  },
+  "lfsr": {
+   "hits": 1,
+   "n": 1,
+   "p": 0.6667
+  },
+  "register": {
+   "hits": 1,
+   "n": 1,
+   "p": 0.6667
+  },
+  "shift_reg": {
+   "hits": 26,
+   "n": 26,
+   "p": 0.9643
+  }
+ },
+ "prior": [
+  1.0,
+  1.0
+ ],
+ "schema": 1,
+ "source": "0 claims on 0 train problems plus 57 claims on 32 test problems; outcome = next-state function agrees with the original netlist (loki.intent.verify); Beta(1,1) posterior mean per kind"
+}

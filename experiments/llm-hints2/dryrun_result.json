@@ -1,0 +1,23 @@
+{
+ "calls": 768,
+ "not_run": 696,
+ "pass_at_1_dry_set": {
+  "A2": 0.5556,
+  "B1p": 0.5556,
+  "B2": 0.5556,
+  "W": 0.3889
+ },
+ "problems": [
+  "Prob023_vector100r",
+  "Prob151_review2015_fsm",
+  "Prob031_dff",
+  "Prob156_review2015_fancytimer",
+  "Prob049_m2014_q4b",
+  "Prob107_fsm1s"
+ ],
+ "replies": 72,
+ "timeouts": 0,
+ "unexpected_outcomes": [],
+ "wrong_counts": [],
+ "wrong_used_fields": []
+}

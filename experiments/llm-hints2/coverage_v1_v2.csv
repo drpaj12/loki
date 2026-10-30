@@ -1,0 +1,14 @@
+measure,v1,v2
+claims (all kinds),1659,69
+problems with a fsm claim,8,19
+problems with a counter claim,2,8
+problems with a shift_reg claim,1,5
+problems with a lfsr claim,0,1
+problems with a register claim,14,2
+problems with a bus claim,44,0
+FSM claims with states and transitions (v1: of 9 fsm rows),2,19
+problems with an empty-claims hint block,12,28
+claims with role control,0,19
+problems with a bus that has a purpose link,0,29
+problems with any bus claim or bus,44,29
+claims with a calibrated p printed,0 (calib none),69
