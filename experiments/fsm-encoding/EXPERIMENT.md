@@ -1,0 +1,106 @@
+# Loki FSM encoding experiment: does speculating the target's encoding recover more FSMs?
+
+Plan written 2026-10-30, before the runs. This file is committed and pushed first. A later change
+is a dated entry under "Amendments"; the old text stays. Results go in a dated section at the end.
+
+## Plain-English summary
+
+When Odin III maps a design, its `fsm` pass can rewrite the state register: with `auto` it makes
+a one-hot register below 32 states (same rule as Yosys fsm_recode), so the FSM that Loki sees in
+a netlist may not have the encoding the designer wrote. Loki's FSM detector today walks the state
+space from state 0, which is wrong for one-hot (state 0 is not a legal one-hot code), and one of
+its evidence terms (`fsm_detect` marked, +4.61) cannot fire on a gate netlist. This experiment asks
+two things. First, how much does the target transformation fool the current detector (stage 1,
+measurement only). Second, does Loki recover more when it speculates which transformation was
+applied, i.e. when it has competing kinds `fsm_onehot` and `fsm_binary` with their own features
+(stage 2 and 3). Stage 1 is committed before any detector change.
+
+Purpose chain (hub `docs/purpose.md`): Loki L3 (say why a construct is not recovered: which step
+fooled the unmapping) and L Q3.3 (hub #62: how a target-specific transformation changes a
+construct's netlist footprint, and does Loki recover more when it speculates the transformation).
+Odin III O Q2.4 is the other side (the target allows one-hot recoding). Measures: FSM recall and
+precision, accuracy of the encoding call, states recovered, calibration (ECE) of the fsm
+confidences. These are structure-recovery measures; area/speed/power are not touched.
+
+## Corpus
+
+Round 4 generator (`experiments/round4/gen`, tag `r4`, deterministic): the 100 `fsm` designs
+(3 to 16 states; binary, one-hot or gray HDL encoding; Moore or Mealy; 1 to 3 inputs; case or
+if/else) as positives. Negatives (no FSM in the HDL, but flip-flop groups that the detector could
+call an FSM): 20 each of `counter`, `shifter`, `register`, `pipeline`, `regfile` (family indices
+70 to 89: the iid split plus the first 10 ood designs). `dpfsm` is excluded (an FSM with a
+datapath: truth is ambiguous). Total 200 designs. The VerilogEval FSM problems are not in the
+measured population: their truth (states, transitions) is not available without hand work.
+
+## Arms (Odin III synthesis, `--vtr-compat --nolatches`, then `lower; abc; dfflibmap/--lut 6`)
+
+The front script is the L0 front with the `fsm` step varied (set from the experiment driver; no
+change to Loki or Odin III):
+- `onehot`: `proc; fsm -encoding one-hot; opt; flatten; opt -full; wreduce`
+- `binary`: `proc; fsm -encoding binary; opt; flatten; opt -full; wreduce`
+- `none`: `proc; opt; flatten; opt -full; wreduce` (the HDL's own encoding survives)
+
+Floors: f3 (cmos6 gates, as in the hint runs) and f2 (LUT6, k6_frac_N10_frac_chain_mem32K_40nm).
+So 200 designs x 3 arms x 2 floors = 1200 builds. A build that Odin III skips or fails is
+excluded for that cell and listed.
+
+## Ground truth per FSM design and arm
+
+- State register: the flip-flops whose `key.json` name starts with `state.` (the generated
+  register is always named `state`; the arms keep the name, checked).
+- States and transitions: the reachable states from S0 and the distinct (source, destination)
+  state pairs, parsed from the generated Verilog text (arm independent). Checked against the
+  Odin III log (`fsm: extracting ... N states`, transition table) in the two recoded arms; a
+  disagreement is reported, and the Odin III log value is used for that design.
+- Encoding after the target transformation: the Odin III log line `fsm: recoding '<x>' with
+  <enc> encoding (...)` in the recoded arms (`one-hot` or `binary`); in the `none` arm, and for a
+  design whose FSM Odin III did not extract, the HDL encoding (`onehot` -> one-hot, `binary` ->
+  binary, `gray` -> other). Odin III is not changed; the log is read through the Python capture.
+
+## Measures
+
+For a netlist, a hypothesis is counted when its status is not rejected and `p_comp >= 0.5` (the
+`score_p` of `loki.score`). An FSM-kind hypothesis (`fsm`, and in stage 3 `fsm_onehot`,
+`fsm_binary`) matches the truth when the Jaccard index of its flip-flop set with the truth
+flip-flop set is >= 0.5.
+- Recall (per design): 1 when some counted FSM-kind hypothesis matches. Reported as a fraction
+  of the positives.
+- Precision (pooled): matching counted FSM-kind hypotheses over all counted FSM-kind hypotheses,
+  over positives and negatives. False-positive rate on negatives reported too.
+- Encoding accuracy: fraction of matched designs whose predicted encoding equals the truth. The
+  current detector makes no encoding call (reported n/a); the new detector's call is
+  the kind (`fsm_onehot` / `fsm_binary`; `fsm` = other/unknown).
+- States recovered: of the positives with a counted match, the fraction whose reported state
+  count equals the truth; mean of reported over true.
+- Calibration: ECE (10 equal-width bins over p_comp) of all FSM-kind hypotheses against the
+  match label, per arm and floor.
+- Runs use `--calib none` (the defaults in `bayes.py`), the detector list of the hint runs
+  (`wordfirst,hard,ff_pattern,mux,arith,seqfn,fsm,bus,unit,role,wordgroup`), seed 1. The shipped
+  `calib/f2.json` and `calib/f3.json` are not used: they were fitted before the new kinds exist
+  and a refit on this population would be circular. New log-odds in stage 2 are hand-set,
+  written down in the commit, and not fitted on the measured designs.
+
+## Rule for the verdicts (stage 3)
+
+Same designs, same arms, same floors: paired by design. Per cell (3 arms x 2 floors) and per
+measure (recall; state-count correct) the difference d = new - old per positive design takes
+values in {-1, 0, 1}. 95 % percentile bootstrap CI of mean(d) over designs (10000 resamples, seed
+20261030); two-sided bootstrap p; Holm over the 12 tests (6 cells x 2 measures). A cell is
+USEFUL only if Holm p < 0.05 and the CI excludes 0 on the positive side. Guard: the pooled
+precision of the new detector must not fall more than 0.05 below the old one in the cell, else
+the cell is NOT USEFUL regardless of recall. Negative significant difference: HARMFUL. Anything
+else: NOT USEFUL (no detectable effect). The encoding-accuracy and ECE results are descriptive
+(Wilson CI for the accuracy); they get no verdict. Failed or null hypotheses are dismissed to the
+log in the results section, not hidden.
+
+## Stages
+
+0. This plan (commit, push).
+1. Measurement with the current detector: `run_stage1.py`, tables in `results/stage1/`. Commit and
+   push before any detector change.
+2. Detector: `fsm_onehot` and `fsm_binary` kinds, features, hint text, tests.
+3. Re-run, same table, verdicts.
+4. Results section, register rows, paper paragraph, PR (not merged).
+
+Outputs live outside the worktree (`work/fsmenc-out`); only scripts, small CSVs and this file are
+committed.
