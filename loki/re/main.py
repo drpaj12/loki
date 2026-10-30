@@ -39,6 +39,10 @@ def _parser() -> argparse.ArgumentParser:
     ap.add_argument("--features", choices=("all", "none"), default="all")
     ap.add_argument("--rp-min-p", type=float, default=0.5,
                     help="lowest p_comp of a candidate listed in reverse-provenance.json")
+    ap.add_argument("--intent", action="store_true",
+                    help="also write intent.json (claims v2: counters, FSMs, roles, buses)")
+    ap.add_argument("--intent-calib", default="",
+                    help="intent calibration file (calib/intent-f3.json) for the sequential p")
     ap.add_argument("--score-dataset", default="", help="L0 dataset: also write score.json")
     ap.add_argument("--score-design", default="", help="design id inside --score-dataset")
     ap.add_argument("--score-p", type=float, default=0.5)
@@ -62,6 +66,8 @@ def _options(args: argparse.Namespace) -> ReOptions:
         keep_levels=Path(args.keep_levels) if args.keep_levels else None,
         features=args.features,
         rp_min_p=args.rp_min_p,
+        intent=args.intent,
+        intent_calib=Path(args.intent_calib) if args.intent_calib else None,
     )
 
 

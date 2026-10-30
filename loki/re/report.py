@@ -233,7 +233,7 @@ def write_markdown(report: Mapping[str, object]) -> str:
 
 def write_outputs(res: RunResult, opts: ReOptions, out: Path) -> None:
     """Write ``design.v``, ``overlay.json``, ``report.json``, ``report.md``, ``timing.json`` and
-    ``reverse-provenance.json``."""
+    ``reverse-provenance.json`` (and ``intent.json`` when ``opts.intent``)."""
     from loki.rp.build import build_rp
 
     out.mkdir(parents=True, exist_ok=True)
@@ -249,3 +249,8 @@ def write_outputs(res: RunResult, opts: ReOptions, out: Path) -> None:
     (out / "report.md").write_text(write_markdown(report), encoding="utf-8")
     (out / "timing.json").write_text(dump_json(res.timing), encoding="utf-8")
     (out / "reverse-provenance.json").write_text(dump_json(build_rp(res, opts)), encoding="utf-8")
+    if opts.intent:
+        from loki.intent.build import build_intent
+
+        (out / "intent.json").write_text(
+            dump_json(build_intent(res, opts, opts.intent_calib)), encoding="utf-8")

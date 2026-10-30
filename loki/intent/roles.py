@@ -30,12 +30,14 @@ def _data_nets(claim: dict[str, Any]) -> set[str]:
     return out
 
 
-def sinks(claims: list[dict[str, Any]]) -> dict[str, float]:
-    """Control sink nets of the claims, each with the largest ``p`` of a claim that has it."""
-    out: dict[str, float] = {}
+def sinks(claims: list[dict[str, Any]]) -> dict[str, float | None]:
+    """Control sink nets of the claims, each with the largest ``p`` of a claim that has it (None
+    when no such claim has a probability)."""
+    out: dict[str, float | None] = {}
 
     def add(net: str, p: float | None) -> None:
-        out[net] = max(out.get(net, 0.0), p or 0.0)
+        old = out.get(net)
+        out[net] = p if old is None else (old if p is None else max(old, p))
 
     for c in claims:
         p = c.get("p")
@@ -106,7 +108,8 @@ def assign_roles(graph: FnGraph, claims: list[dict[str, Any]]) -> dict[str, dict
         if label is None:
             continue
         role = "mixed" if ks == {CONTROL, DATA} else ("control" if CONTROL in ks else "datapath")
-        roles[label] = {"role": role, "p": round(ctrl[label], 6) if label in ctrl else None}
+        p = ctrl.get(label)
+        roles[label] = {"role": role, "p": None if p is None else round(p, 6)}
     _claim_roles(claims, roles)
     return roles
 

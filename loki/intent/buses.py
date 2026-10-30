@@ -105,4 +105,15 @@ def find_buses(claims: list[dict[str, Any]], port_names: Iterable[str]) -> list[
         add(bits, "index", base)
     for bits, source in _claim_lists(claims):
         add(list(bits), source, "")
-    return out
+    return _drop_inner(out)
+
+
+def _drop_inner(buses: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """A bus whose bits lie inside a wider bus with the same purpose is dropped (``state[2:0]``
+    next to ``state[0], state[1], state[2], done`` for one machine); ids are renumbered."""
+    def key(b: dict[str, Any]) -> frozenset[str]:
+        return frozenset(x["text"] for x in b["links"])
+
+    keep = [b for b in buses if not any(
+        o is not b and set(b["bits"]) < set(o["bits"]) and key(b) == key(o) for o in buses)]
+    return [{**b, "id": f"b{i + 1}"} for i, b in enumerate(keep)]

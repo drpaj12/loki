@@ -24,11 +24,11 @@ _SHIFT = ("shift-l", "shift-r")
 class Mode:
     """``label`` is a seqtable label; ``cond`` the control values that give it; ``data`` the control
     net that carries bit ``i`` of a loaded word (``load``) or ``(net,)`` the serial input
-    (``shift``), when one net does."""
+    (``shift``), when one net does; a shifted-in constant is ``("#0",)`` or ``("#1",)``."""
 
     label: str
     cond: tuple[Product, ...]
-    data: tuple[int, ...] = ()
+    data: tuple[int | str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -43,7 +43,7 @@ def _bit(v: int, j: int) -> int:
     return (v >> j) & 1
 
 
-def _load_data(t: SeqTable, cvs: list[int]) -> tuple[int, ...]:
+def _load_data(t: SeqTable, cvs: list[int]) -> tuple[int | str, ...]:
     """Per state bit, the one control net equal to the loaded bit on every ``cvs`` (or none)."""
     by = rows_by_control(t)
     const = {c: by[c][min(by[c])] for c in cvs}
@@ -57,10 +57,12 @@ def _load_data(t: SeqTable, cvs: list[int]) -> tuple[int, ...]:
     return tuple(out)
 
 
-def _serial(t: SeqTable, cvs: list[int], left: bool) -> tuple[int, ...]:
+def _serial(t: SeqTable, cvs: list[int], left: bool) -> tuple[int | str, ...]:
     by = rows_by_control(t)
     xs = {c: (by[c][min(by[c])] & 1) if left else _bit(by[c][min(by[c])], len(t.q) - 1)
           for c in cvs}
+    if len(set(xs.values())) == 1:
+        return (f"#{next(iter(xs.values()))}",)
     hit = [j for j in range(len(t.controls)) if all(_bit(c, j) == xs[c] for c in cvs)]
     return (t.controls[hit[0]],) if len(hit) == 1 else ()
 
@@ -110,7 +112,7 @@ def mode_table(graph: FnGraph, q: tuple[int, ...], seed: str = "modes") -> ModeT
     modes: list[Mode] = []
     for label in sorted(set(labels.values())):
         cvs = sorted(c for c, v in labels.items() if v == label)
-        data: tuple[int, ...] = ()
+        data: tuple[int | str, ...] = ()
         if label == "load-const":
             data = _load_data(t, cvs)
         elif label in _SHIFT:

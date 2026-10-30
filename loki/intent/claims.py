@@ -13,6 +13,7 @@ from typing import Any
 from loki.intent.boolmin import Product
 from loki.intent.modes import Mode
 from loki.intent.seq import SeqClaim
+from loki.re.commit import fn_text
 from loki.re.fngraph import FnGraph
 from loki.re.overlay import Hypothesis
 
@@ -33,8 +34,11 @@ def wires_of(graph: FnGraph, cells: Sequence[int] | frozenset[int], name: Namer)
 
 
 def _modes_json(modes: Sequence[Mode], name: Namer) -> list[dict[str, Any]]:
-    return [{"label": m.label, "cond": cond_json(m.cond, name), "data": [name(n) for n in m.data]}
-            for m in modes]
+    return [
+        {"label": m.label, "cond": cond_json(m.cond, name),
+         "data": [n if isinstance(n, str) else name(n) for n in m.data]}
+        for m in modes
+    ]
 
 
 def _counter_facts(sc: SeqClaim, name: Namer) -> dict[str, Any]:
@@ -110,5 +114,5 @@ def from_overlay(graph: FnGraph, h: Hypothesis, status: str, name: Namer) -> dic
         "nets": {role: [name(n) for n in ns] for role, ns in sorted(h.nets.items())},
         "wires": wires_of(graph, sorted(h.cells), name),
         "params": {k: v for k, v in sorted(h.params.items()) if k != "rows"},
-        "facts": {}, "merged": [],
+        "facts": {"fn": fn_text(h)}, "merged": [],
     }
