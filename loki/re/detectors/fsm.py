@@ -6,6 +6,15 @@ the bit-level analogue of its rules D-3 to D-5 on level 0.
 
 Deviation from the spec text (reported in the plan result): without a found reset the walk of the
 reachable states starts from the state 0. A decoder reads at least two bits of the group.
+
+Encoding kinds (FSM encoding experiment): the target may recode the state register (Odin III and
+Yosys make a register of fewer than 32 states one-hot), so the detector speculates which encoding
+it sees. ``fsm_onehot``: the states reached from the reset state (a control value that sets the
+same next state from every state, else the ``ff_srst`` reset, else any single-bit state) all have
+at most one bit set and at least three have exactly one; the bit-to-bit graph (state bit i turns
+on state bit j under control values V) is kept. ``fsm_binary``: the reachable state count fits the
+bit width tightly (``ceil(log2(states)) == width``). ``fsm``: neither. The walk of every kind
+starts from the reset state, never from an all-zero code that is not reset.
 """
 
 from __future__ import annotations
@@ -19,7 +28,7 @@ from loki.re.detectors import Candidate, RoundContext, bin_count, sorted_candida
 from loki.re.detectors.seqfn import SeqfnDetector, find_groups
 from loki.re.fngraph import Cell
 from loki.re.overlay import Hypothesis
-from loki.re.seqtable import SeqTable, d_nets, reachable, transition_table
+from loki.re.seqtable import SeqTable, d_nets, onehot_table, reachable, transition_table
 from loki.re.sim import cone, simulate
 
 CTRL_EDGES = (0, 1, 5)
@@ -27,6 +36,10 @@ CTRL_LABELS = ("0", "1-4", "5+")
 ROWS_MAX = 256
 SELF_RESET_MAX = 16
 DECODER_SUPPORT_MAX = 12
+ONEHOT_MIN_STATES = 3
+DECODER_EDGES = (0, 1, 2)
+DECODER_LABELS = ("0", "1", "2+")
+FSM_KINDS = ("fsm", "fsm_onehot", "fsm_binary")
 
 
 def fsm_detect_marks(working: Any) -> dict[frozenset[int], str]:
@@ -155,9 +168,111 @@ def _transition_params(t: SeqTable, start: int) -> dict[str, int | str]:
     }
 
 
+def _const_reset(t: SeqTable) -> int | None:
+    """The next state shared by every state under one control value (a synchronous reset or
+    load); the smallest such control value wins. ``None`` when there is none."""
+    by_cv: dict[int, set[int]] = {}
+    qs: set[int] = set()
+    for (qv, cv), nxt in t.rows.items():
+        by_cv.setdefault(cv, set()).add(nxt)
+        qs.add(qv)
+    if len(qs) < 2:
+        return None
+    for cv in sorted(by_cv):
+        if len(by_cv[cv]) == 1:
+            return next(iter(by_cv[cv]))
+    return None
+
+
+@dataclass(frozen=True)
+class _OneHot:
+    start: int
+    states: int
+    edges: tuple[tuple[int, int, tuple[int, ...]], ...]
+    or_form: str  # "yes", "no" or "n/a"
+    reset_const: bool
+    table: SeqTable
+
+
+def _is_single(v: int) -> bool:
+    return v != 0 and v & (v - 1) == 0
+
+
+def _bit_edges(
+    t: SeqTable, states: list[int]
+) -> tuple[tuple[int, int, tuple[int, ...]], ...]:
+    """Bit-to-bit graph: ``(i, j, control values)`` where state bit i set turns state bit j on."""
+    conds: dict[tuple[int, int], list[int]] = {}
+    for (qv, cv), nxt in sorted(t.rows.items()):
+        if _is_single(qv) and qv in states and _is_single(nxt):
+            conds.setdefault((qv.bit_length() - 1, nxt.bit_length() - 1), []).append(cv)
+    return tuple((i, j, tuple(v)) for (i, j), v in sorted(conds.items()))
+
+
+def _or_form(t: SeqTable) -> str:
+    """Whether the next state of every two-bit state is the OR of the next states of its bits."""
+    pairs = [qv for (qv, _) in t.rows if qv.bit_count() == 2]
+    if not pairs:
+        return "n/a"
+    for (qv, cv), nxt in t.rows.items():
+        if qv.bit_count() != 2:
+            continue
+        lo = qv & -qv
+        hi = qv ^ lo
+        if nxt != (t.rows[(lo, cv)] | t.rows[(hi, cv)]):
+            return "no"
+    return "yes"
+
+
+def _onehot(
+    ctx: RoundContext, q: tuple[int, ...], reset: tuple[tuple[int, int], int] | None
+) -> _OneHot | None:
+    """One-hot analysis of the group, or None when its reachable states are not one-hot."""
+    k = len(q)
+    if k < ONEHOT_MIN_STATES:
+        return None
+    t = onehot_table(ctx.graph, q, pairs=True)
+    if t is None:
+        return None
+    const = _const_reset(t)
+    if const is not None and _is_single(const):
+        start, via_const = const, True
+    elif reset is not None and _is_single(reset[1]):
+        start, via_const = reset[1], False
+    else:
+        start, via_const = None, False
+        best = -1
+        for i in range(k):
+            n = len(reachable(t, 1 << i)[0])
+            if n > best:
+                start, best = 1 << i, n
+    if start is None:
+        return None
+    seen, _ = reachable(t, start)
+    if any(v.bit_count() > 1 for v in seen):
+        return None
+    singles = [v for v in seen if _is_single(v)]
+    if len(singles) < ONEHOT_MIN_STATES:
+        return None
+    return _OneHot(start, len(seen), _bit_edges(t, seen), _or_form(t), via_const, t)
+
+
+def _binary_dense(t: SeqTable, start: int) -> str | None:
+    """``partial`` or ``full`` when the reachable state count needs exactly the register width."""
+    states, _ = reachable(t, start)
+    n, k = len(states), len(t.q)
+    if n < ONEHOT_MIN_STATES or (n - 1).bit_length() != k:
+        return None
+    return "full" if n == 1 << k else "partial"
+
+
+def _bitgraph_json(edges: tuple[tuple[int, int, tuple[int, ...]], ...]) -> str:
+    return json.dumps([[i, j, list(v)] for i, j, v in edges[:ROWS_MAX]], separators=(",", ":"))
+
+
 class FsmDetector:
     name = "fsm"
-    kinds = ("fsm",)
+    kinds = FSM_KINDS
 
     def propose(self, ctx: RoundContext) -> list[Candidate]:
         classified = {frozenset(c.nets["Q"]) for c in SeqfnDetector().propose(ctx)}
@@ -191,11 +306,40 @@ class FsmDetector:
         if frozenset(q) in marks:
             feats["fsm_detect"] = "marked"
         params: dict[str, int | str] = {"width": len(q)}
-        if t.exact:
-            params.update(_transition_params(t, 0 if reset is None else reset[1]))
         nets: dict[str, tuple[int, ...]] = {"Q": q, "D": tuple(ds)}
         if t.controls:
             nets["C"] = t.controls
         if reset is not None:
             nets["RST"] = (reset[0][0],)
-        return Candidate("fsm", frozenset(cone_cells) | frozenset(order), nets, params, feats)
+        cells = frozenset(cone_cells) | frozenset(order)
+        oh = _onehot(ctx, q, reset)
+        if oh is not None:
+            return _onehot_candidate(oh, feats, params, nets, cells)
+        kind = "fsm"
+        if t.exact:
+            const = _const_reset(t)
+            start = reset[1] if reset is not None else (const if const is not None else 0)
+            params.update(_transition_params(t, start))
+            dense = _binary_dense(t, start)
+            if dense is not None:
+                kind = "fsm_binary"
+                feats["dense_codes"] = dense
+                feats["wide_decoders"] = bin_count(len(decoders), DECODER_EDGES, DECODER_LABELS)
+        return Candidate(kind, cells, nets, params, feats)
+
+
+def _onehot_candidate(
+    oh: _OneHot, feats: dict[str, str],
+    params: dict[str, int | str], nets: dict[str, tuple[int, ...]], cells: frozenset[int],
+) -> Candidate:
+    t = oh.table
+    del feats["decoder_readers"]
+    feats["onehot_closed"] = "yes"
+    feats["reset_const"] = "yes" if oh.reset_const else "no"
+    if oh.or_form != "n/a":
+        feats["onehot_or_form"] = oh.or_form
+    params.update(_transition_params(t, oh.start))
+    params["bitgraph"] = _bitgraph_json(oh.edges)
+    if t.controls:
+        nets["C"] = t.controls
+    return Candidate("fsm_onehot", cells, nets, params, feats)

@@ -41,7 +41,9 @@ def jac(a: set[str], b: set[str]) -> float:
     return len(a & b) / len(a | b) if a | b else 0.0
 
 
-def design_row(arm: str, floor: str, d: dict[str, str], tag: str, enc: bool) -> dict[str, Any] | None:
+def design_row(
+    arm: str, floor: str, d: dict[str, str], tag: str, enc: bool
+) -> dict[str, Any] | None:
     bdir = lib.OUT / "build" / arm / d["design"]
     ov = lib.OUT / "re" / tag / arm / floor / d["design"] / "overlay.json"
     key = bdir / floor / "key.json"
@@ -115,7 +117,8 @@ def summarise(rows: list[dict[str, Any]], arm: str, floor: str, enc: bool) -> di
     return {
         "arm": arm, "floor": floor, "n_pos": len(pos), "n_neg": len(neg),
         "recall": round(len(m) / len(pos), 3) if pos else "n/a",
-        "proposed_any_p": round(sum(r["prop_matched"] for r in pos) / len(pos), 3) if pos else "n/a",
+        "proposed_any_p": round(sum(r["prop_matched"] for r in pos) / len(pos), 3)
+        if pos else "n/a",
         "precision": round(ok / cnt, 3) if cnt else "n/a", "counted": cnt, "counted_true": ok,
         "neg_designs_with_fp": sum(1 for r in neg if r["n_counted"]),
         "enc_acc": wilson(sum(1 for r in m if r["pred_enc"] == r["truth_enc"]), len(m))

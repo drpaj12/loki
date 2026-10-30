@@ -85,7 +85,7 @@ def fn_text(h: Hypothesis) -> str:
         return _shift_text(h)
     if h.kind == "lfsr":
         return _lfsr_text(h)
-    if h.kind == "fsm":
+    if h.kind.startswith("fsm"):
         states = h.params.get("states")
         return f"fsm: {states} states" if states is not None else f"fsm: {_int(h, 'width')} bits"
     op = h.claim.op if h.claim is not None else ""

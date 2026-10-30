@@ -108,7 +108,7 @@ def build_report(res: RunResult, opts: ReOptions) -> dict[str, object]:
         "pieces": [_piece(res, h) for h in done if (h.commit or {}).get("form") != "attrs"],
         "buses": [_bus(res, h) for h in done if h.kind == "bus"],
         "roles": _roles(res),
-        "fsms": [_fsm(h) for h in done if h.kind == "fsm"],
+        "fsms": [_fsm(h) for h in done if h.kind.startswith("fsm")],
         "unmap": res.notes.get("unmap", "n/a"),
         "fsm_detect": res.notes.get("fsm_detect", "not-applicable"),
         "final_equiv": dict(res.final_equiv),

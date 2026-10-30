@@ -37,6 +37,8 @@ SCORED_TYPES: dict[str, frozenset[str]] = {
     "mux_tree": frozenset({MUX_TREE}),
     "counter": frozenset({COUNTER}),
     "fsm": frozenset({FSM}),
+    "fsm_onehot": frozenset({FSM}),
+    "fsm_binary": frozenset({FSM}),
     "hard_add": frozenset({"$add"}),
     "hard_mul": frozenset({"$mul"}),
     "hard_mem": frozenset({"$mem"}),

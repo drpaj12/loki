@@ -55,10 +55,11 @@ def _seeds(
     """Initial kinds per cell and, per control sink net, the cells whose reads it ignores."""
     kinds: dict[int, set[str]] = {cid: set() for cid in ctx.graph.cells}
     sinks: dict[int, set[int]] = {}
-    for h in ctx.overlay.by_kind("fsm"):
-        if h.status in LIVE:
-            for c in h.cells:
-                kinds.setdefault(c, set()).add(CONTROL)
+    for fsm_kind in ("fsm", "fsm_onehot", "fsm_binary"):
+        for h in ctx.overlay.by_kind(fsm_kind):
+            if h.status in LIVE:
+                for c in h.cells:
+                    kinds.setdefault(c, set()).add(CONTROL)
     for kind in SINK_KINDS:
         for h in ctx.overlay.by_kind(kind):
             if h.status in LIVE:

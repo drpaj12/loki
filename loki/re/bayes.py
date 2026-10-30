@@ -137,12 +137,21 @@ def _defaults() -> dict[str, dict[str, float]]:
         "fsm/counter_like": {"yes": -2.30},
         "fsm/self_reset": {"yes": -0.69},
         "fsm/reset_found": {"yes": 0.69},
+        "fsm_onehot/onehot_closed": {"yes": SIM_LLR},
+        "fsm_onehot/onehot_or_form": {"yes": 1.10},
+        "fsm_onehot/reset_const": {"yes": 0.69},
+        "fsm_binary/dense_codes": {"partial": 1.10, "full": 0.0},
+        "fsm_binary/wide_decoders": {"0": -0.69, "1": 0.0, "2+": 1.39},
         "role/role_prop": {"control": 2.30, "data": -2.30, "mixed": 0.0, "none": 0.0},
         "role/in_bus4": {"yes": -1.10},
     }
     for kind in _ARITH:
         t[f"{kind}/width"] = dict(_K_BINS)
         t[f"{kind}/out_reads"] = dict(_YES)
+    for kind in ("fsm_onehot", "fsm_binary"):  # the shared fsm features
+        for feat in ("ctrl_inputs", "decoder_readers", "fsm_detect", "counter_like", "self_reset",
+                     "reset_found"):
+            t[f"{kind}/{feat}"] = dict(t[f"fsm/{feat}"])
     for kind in _CHAIN:
         t[f"{kind}/npn_sum"] = {"all": 2.30, "half": 0.69, "low": -1.39, "no_cut": 0.0}
         t[f"{kind}/npn_carry"] = {"all": 1.39, "half": 0.41, "low": -0.69, "no_cut": 0.0}

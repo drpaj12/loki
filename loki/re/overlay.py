@@ -67,8 +67,8 @@ class KindSpec:
 
 def _kinds() -> dict[str, KindSpec]:
     rank = [
-        "counter", "lfsr", "shift_reg", "fsm", "adder", "subtractor", "adder_cin", "comparator",
-        "eq_const", "mux_tree", "mux", "register", "hard_group",
+        "counter", "lfsr", "shift_reg", "fsm", "fsm_onehot", "fsm_binary", "adder", "subtractor",
+        "adder_cin", "comparator", "eq_const", "mux_tree", "mux", "register", "hard_group",
     ]
     r = {name: len(rank) - i for i, name in enumerate(rank)}
 
@@ -83,7 +83,7 @@ def _kinds() -> dict[str, KindSpec]:
     for name in ("adder", "subtractor", "comparator", "mux"):
         table[name] = k(2, True, "raise+submod", name)
     for name in ("adder_cin", "eq_const", "mux_tree", "counter", "shift_reg", "lfsr", "fsm",
-                 "hard_add", "hard_mul", "hard_mem", "hard_group"):
+                 "fsm_onehot", "fsm_binary", "hard_add", "hard_mul", "hard_mem", "hard_group"):
         table[name] = k(2, True, "submod", name)
     for name in ("datapath_unit", "control_unit"):
         table[name] = k(3, True, "submod", name)

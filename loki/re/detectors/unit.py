@@ -187,7 +187,7 @@ class UnitDetector:
         g = ctx.graph
         out: list[Candidate] = []
         for fi, fsm in enumerate(nets.pieces):
-            if fsm.kind != "fsm":
+            if not fsm.kind.startswith("fsm"):
                 continue
             reached = set(fsm.outs)
             cells: set[int] = set()

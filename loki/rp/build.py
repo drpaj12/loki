@@ -324,7 +324,7 @@ def build_rp(res: RunResult, opts: ReOptions) -> dict[str, object]:
         "netlist": _inventory(res),
         "elements": elements,
         "buses": [_bus(res, h, status[h.id]) for h in live if h.kind == "bus"],
-        "fsms": [_fsm(res, h, status[h.id]) for h in live if h.kind == "fsm"],
+        "fsms": [_fsm(res, h, status[h.id]) for h in live if h.kind.startswith("fsm")],
         "hierarchy": _tree(committed),
         "coverage": _coverage(res, shown, status),
     }

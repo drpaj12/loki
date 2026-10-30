@@ -203,3 +203,39 @@ def reachable(t: SeqTable, start: int) -> tuple[list[int], list[tuple[int, int, 
                 seen.add(nxt)
                 todo.append(nxt)
     return sorted(seen), sorted(edges)
+
+
+ONEHOT_CTRL_MAX = 12
+ONEHOT_PAIRS_CTRL_MAX = 8
+
+
+def onehot_table(graph: FnGraph, q: Sequence[int], pairs: bool = False) -> SeqTable | None:
+    """Rows for the state values with at most one bit set (all-zero, then ``1 << i``), plus the
+    two-bit values when ``pairs``, over every control value; ``None`` when the cone has more
+    than ``ONEHOT_CTRL_MAX`` control nets. Needs no ``2**k`` walk, so a wide one-hot register
+    is cheap. ``exact`` is set: every control value is in the table."""
+    k = len(q)
+    ds = d_nets(graph, q)
+    cells, side = cone(graph, frozenset(), ds, frozenset())
+    consts = _constants(graph, side, 1)
+    controls = tuple(sorted(n for n in side if n not in set(q) and n not in consts))
+    c = len(controls)
+    if c > ONEHOT_CTRL_MAX:
+        return None
+    states = [0] + [1 << i for i in range(k)]
+    if pairs and c <= ONEHOT_PAIRS_CTRL_MAX:
+        states += [(1 << i) | (1 << j) for i in range(k) for j in range(i + 1, k)]
+    cvs = 1 << c
+    keys = [(qv, cv) for cv in range(cvs) for qv in states]
+    n = len(keys)
+    values: dict[int, int] = {}
+    for i, net in enumerate(q):
+        values[net] = sum(((qv >> i) & 1) << x for x, (qv, _) in enumerate(keys))
+    for j, net in enumerate(controls):
+        values[net] = sum(((cv >> j) & 1) << x for x, (_, cv) in enumerate(keys))
+    values.update(_constants(graph, side, n))
+    nets = simulate(graph, cells, values, n)
+    rows: dict[tuple[int, int], int] = {}
+    for x, key in enumerate(keys):
+        rows[key] = sum(((nets.get(d, 0) >> x) & 1) << i for i, d in enumerate(ds))
+    return SeqTable(tuple(q), controls, True, rows)
