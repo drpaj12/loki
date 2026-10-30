@@ -193,3 +193,44 @@ in that cell. Hypothesis test: for v2, per floor and pooled over floors, the pai
 recall(one-hot) - recall(binary) over the same 100 designs, bootstrap CI as above. "About as well" =
 the CI lies inside +-0.10: SUPPORTED. Otherwise NOT SUPPORTED. Failed outcomes are reported in the
 results section, not hidden.
+
+## v2 measurement results (2026-10-30): hypothesis, experiment, verdict
+
+Plain English. Hypothesis (Peter): reading how state bits turn each other on lets Loki recover
+one-hot FSMs about as well as binary ones. Experiment: `loki re --intent` on the 1200 builds
+(200 designs x 3 arms x 2 floors; every run exited 0), v2 FSM claims scored against the same truth
+as stage 1. Result: yes for recall. The v2 detector finds 98 of 100 one-hot FSMs and 99 of 100 in
+the binary and HDL arms, and the v2 claim is the state register with its states and transitions. Its
+claims are the same on f3 and f2 (the sequential analysis reads the next-state function, not the
+gate or LUT shape). The cost is false claims: 22 of 100 negative designs get a counted FSM claim,
+and 446 of the 577 counted claims sit on the 20 `regfile` negatives (each memory word is a
+self-holding "state"), so the claim-pooled precision is 0.17 (design-level 0.82; 0.75 without the
+regfile claims), far below stage 1 (0.70 to 0.92).
+
+`results/v2/summary.csv` (100 positives, 100 negatives per cell; counted = `p >= 0.5`, not
+rejected; encoding, states and transitions among matched designs, Wilson 95 % CI; transitions
+exact = rooted-isomorphic transition graph):
+
+| arm | floor | recall v2 (stage 1) | precision v2 (stage 1) | enc. acc. | states exact | transitions exact |
+| --- | --- | --- | --- | --- | --- | --- |
+| one-hot | f3 | 0.98 (0.13) | 0.170 (0.700) | 97/98 [0.94,1.00] | 98/98 | 98/98 |
+| one-hot | f2 | 0.98 (0.35) | 0.170 (0.867) | 97/98 [0.94,1.00] | 98/98 | 98/98 |
+| binary | f3 | 0.99 (0.35) | 0.171 (0.917) | 79/99 [0.71,0.87] | 95/99 | 95/99 |
+| binary | f2 | 0.99 (0.49) | 0.171 (0.915) | 79/99 [0.71,0.87] | 95/99 | 95/99 |
+| none (HDL) | f3 | 0.99 (0.33) | 0.171 (0.907) | 83/99 [0.75,0.90] | 97/99 | 97/99 |
+| none (HDL) | f2 | 0.99 (0.51) | 0.171 (0.919) | 83/99 [0.75,0.90] | 97/99 | 97/99 |
+
+Paired recall difference v2 minus stage 1 (`paired.csv`, 95 % bootstrap CI, Holm p < 0.0001 in all
+six cells): one-hot f3 +0.85 [0.78, 0.92], one-hot f2 +0.63 [0.53, 0.72], binary f3 +0.64 [0.55,
+0.73], binary f2 +0.50 [0.40, 0.60], none f3 +0.66 [0.57, 0.75], none f2 +0.48 [0.38, 0.58]. By
+the plan rule every cell fails the precision guard (v2 pooled precision more than 0.05 below
+stage 1), so no cell is "V2 BETTER" under the rule as written.
+
+Verdict on the hypothesis (`onehot_vs_binary.csv`): recall(one-hot) minus recall(binary) for v2 is
+-0.01 [-0.03, 0.00] on f3, the same on f2, -0.010 [-0.025, 0.000] pooled over the 200 paired
+cells; the CI lies inside +-0.10: SUPPORTED (as recall). The encoding call is right for 97 of 98
+one-hot FSMs, but "binary" is called "other" for 20 of 99 binary FSMs (and 13 of 99 in the HDL arm):
+all have a state count that is not a power of two, so the codes are not dense. Not hidden: the
+precision verdict (guard failed) is the open problem for v2 FSM claims, not recall or encoding. No
+v2 calibration refit was done (the shipped table has a constant p = 0.95 for `fsm`).
+Scripts: `run_re.py` (`FSMENC_INTENT`), `score_v2.py`. Run data: `work/fsmenc-out/re/v2`.

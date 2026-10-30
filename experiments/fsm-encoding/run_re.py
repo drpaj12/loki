@@ -2,6 +2,7 @@
 
 Reads ``OUT/build/<arm>/<design>/<floor>/netlist.blif``, writes ``OUT/re/TAG/<arm>/<floor>/
 <design>/``. Smallest netlists first; resumes (an existing overlay.json is kept).
+With ``FSMENC_INTENT=<table>`` also writes ``intent.json`` (claims v2, stage "v2 measurement").
 """
 
 from __future__ import annotations
@@ -37,6 +38,8 @@ def one(job: tuple[int, Path, Path]) -> int:
     out.mkdir(parents=True, exist_ok=True)
     cmd = [sys.executable, "-B", "-m", "loki.re.main", str(net), "--floor", floor,
            "--calib", "none", "--detectors", lib.DETECTORS, "--seed", "1", "--out", str(out)]
+    if os.environ.get("FSMENC_INTENT"):
+        cmd += ["--intent", "--intent-calib", os.environ["FSMENC_INTENT"]]
     done = subprocess.run(cmd, env=dict(os.environ), capture_output=True, text=True, check=False,
                           cwd=str(lib.OUT))
     (out / "stderr.txt").write_text(done.stderr[-2000:], encoding="utf-8")

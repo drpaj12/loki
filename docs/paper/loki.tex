@@ -2226,12 +2226,21 @@ transformation changes the netlist footprint of a construct and whether Loki rec
 transformation was applied, starting with state-machine encoding and then carry chains and hard blocks. The hints-v2 run
 (LLM5) gives a first reason to try: state-machine claims are the ones the model used most.
 
+For one-hot recoding the answer is in. On the 100 generated state machines of round~4, built three ways (the fsm pass
+recoding one-hot, recoding binary, or leaving the HDL encoding) on the gate and the LUT floor, the version-2 claims of
+\code{loki re --intent}, which read how the state bits turn each other on, recover 98 of 100 one-hot machines and 99 of
+100 binary ones, against 0.13 and 0.35 for the stage-one detector. The recall difference one-hot minus binary is
+$-0.010$ with 95\% interval $[-0.025,0.000]$, inside $\pm0.10$ (hypotheses FSM2a, FSM2b). The encoding call is right for
+97 of 98 one-hot machines, but a binary machine whose state count is not a power of two is called other. The cost is
+precision: 446 of 577 counted claims sit on memory words of the 20 register-file negatives, so the pooled precision is
+0.17 against 0.70 to 0.92, and the claim stays a measurement until that is fixed.
+
 \section{Conclusion}
 \label{sec:conclusion}
 
 Loki~III asks how far netlist-to-RTL reverse engineering gets without a language model. We
 stated each claim as a hypothesis and gave it one experiment and one verdict. Eight hypotheses are USEFUL,
-six are POSSIBLY GOOD with their fragility stated, twelve are DISMISSED and sixteen are INCONCLUSIVE.
+seven are POSSIBLY GOOD with their fragility stated, twelve are DISMISSED and seventeen are INCONCLUSIVE.
 The structures that synthesis already reverse engineered are recovered (hard adders 67 of 67, with precision 0.985;
 hard multipliers 30 of 30), the stated probabilities are better calibrated though still far from exact
 (ECE 0.217 on the second floor, against 0.650 uncalibrated), and the pipeline is naming-neutral over 105,646 renamed

@@ -1,0 +1,4 @@
+floor,n,diff_onehot_minus_binary,ci_lo,ci_hi,p,verdict
+f3,100,-0.01,-0.03,0.0,0.7382,SUPPORTED
+f2,100,-0.01,-0.03,0.0,0.7382,SUPPORTED
+pooled,200,-0.01,-0.025,0.0,0.2778,SUPPORTED
