@@ -125,6 +125,7 @@ Framing: PRE-REGISTERED (plan amendment in experiments/fsm-encoding/EXPERIMENT.m
 |---|---|---|---|---|---|---|---|---|---|---|
 | FSM2a | experiments/fsm-encoding/EXPERIMENT.md | v2 FSM claims against the stage 1 detector | The v2 FSM claims recover more FSMs than the stage 1 detector in every arm and floor without losing precision. | PRE-REGISTERED | 100 FSM designs + 100 negatives x 3 arms x 2 floors | recall, pooled precision | recall 0.98/0.99 against 0.13 to 0.51 (+0.48 to +0.85, Holm p < 0.0001); pooled precision 0.17 against 0.70 to 0.92 (446 of 577 counted claims on the 20 regfile negatives) | paired bootstrap, Holm over 6 cells, precision guard 0.05 | DISMISSED (the precision half is falsified: pooled precision 0.17 against 0.70 to 0.92; design-level 0.82, 0.75 without regfile; recall is up +0.48 to +0.85) | yes |
 | FSM2b | same | One-hot FSMs recovered about as well as binary | Reading how state bits turn each other on lets Loki recover one-hot FSMs about as well as binary ones. | PRE-REGISTERED | 100 FSM designs x 2 floors | recall one-hot minus binary | -0.010 [-0.025, 0.000] pooled; encoding call right for 97 of 98 one-hot FSMs | CI inside +-0.10 | POSSIBLY GOOD (SUPPORTED by the plan's equivalence rule, CI inside +-0.10; recall only: the claims are not selective (memories called FSMs) and the shipped p is constant) | yes |
+| FSM3 | experiments/fsm-encoding/EXPERIMENT.md (Amendment Q-L3) | Memory-word rule for FSM claims | An FSM's next state depends on its own state bits through logic other than a hold/load mux; a rule that separates state machines from memory words keeps recall >= 0.95 and raises claim precision to >= 0.80. (controller's proposal, to be confirmed by Peter) | PRE-REGISTERED | 50 TEST FSM designs + 50 TEST negatives x 3 arms x 2 floors (tune/test split fixed before the rule) | recall, pooled claim precision, per family false claims | recall 1.000 (50 of 50, unchanged from v2); pooled claim precision 0.676 against 0.149 for v2 (regfile false claims 256 to 0; pipeline 21 and counter 3 remain); design precision 0.877 | thresholds 0.95 and 0.80, paired bootstrap of recall (CI [0, 0]) | DISMISSED (precision 0.676 < 0.80; recall holds) | yes |
 
 ## Untested hypotheses (decision 10: idea and the experiment it needs only)
 
@@ -136,11 +137,11 @@ Framing: PRE-REGISTERED (plan amendment in experiments/fsm-encoding/EXPERIMENT.m
 
 ## Counts
 
-53 register rows (grouped H-IDs count once; H12b covers V0, V1, V2): 44 hypotheses with a verdict, 6 measurements and 3 untested hypotheses listed above. Round-2 IDs carry the prefix R2- so that they do not collide with the layer names L1 and L2.
+54 register rows (grouped H-IDs count once; H12b covers V0, V1, V2): 45 hypotheses with a verdict, 6 measurements and 3 untested hypotheses listed above. Round-2 IDs carry the prefix R2- so that they do not collide with the layer names L1 and L2.
 
 | USEFUL | POSSIBLY GOOD | DISMISSED | INCONCLUSIVE | measurement, not a hypothesis | untested |
 |---|---|---|---|---|---|
-| 8 (L0a, L0b, L1h, L1c, H12a, H13a, H13c, H14a) | 7 (L2b, R2-L7, H9a, H13b, L15a, L15d, FSM2b) | 13 (adds FSM2a) | 16 | 6 (L11, L15b, L2m, GB1, GB2, Q2) | 3 (L3, L6, L8) |
+| 8 (L0a, L0b, L1h, L1c, H12a, H13a, H13c, H14a) | 7 (L2b, R2-L7, H9a, H13b, L15a, L15d, FSM2b) | 14 (adds FSM2a, FSM3) | 16 | 6 (L11, L15b, L2m, GB1, GB2, Q2) | 3 (L3, L6, L8) |
 
 Changes of the fix round (loki PR 58): L2a is DISMISSED (the NMI against module_path ranks k-means 0.3220, affinity propagation 0.2708, spectral 0.1378, Louvain 0.1360, so the community methods do not find the hierarchy; modularity is recorded as the measurement L2m); L15d is POSSIBLY GOOD (the S7 and S8 ground truths differ in size, 174 and 166 mux instances).
 

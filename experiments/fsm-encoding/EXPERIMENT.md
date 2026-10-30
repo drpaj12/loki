@@ -238,3 +238,93 @@ Scripts: `run_re.py` (`FSMENC_INTENT`), `score_v2.py`. Run data: `work/fsmenc-ou
 ### Amendment (controller, 2026-10-30, after review, no new data)
 
 Verdict mapping: a failed precision guard falsifies the "without losing precision" half of FSM2a, so FSM2a is DISMISSED (it was written INCONCLUSIVE). FSM2b is SUPPORTED by the equivalence rule (CI inside +-0.10) and is entered as POSSIBLY GOOD in the register; the test is recall only, so a detector that called every register an FSM would also pass it. The fsm p is the constant 0.95 on both floors, so the p >= 0.5 count rule counts every non-rejected claim and no ECE is reported. Per-design counts are equal in 600 of 600 f2/f3 pairs (separate runs on different netlists; the sequential analysis reads the next-state function). "Other" for binary FSMs means the reachable codes are not 0..n-1.
+
+## Amendment 2026-10-30 (Q-L3, before any detector change): can Loki tell a real FSM from a memory word?
+
+Plain English. v2 claims an FSM on 22 of the 100 negative designs, and 446 of the 577 counted claims
+sit on the 20 `regfile` designs: every memory word register feeds back to itself through its
+write-enable mux and is called an FSM. This amendment asks whether a rule on the next-state function
+can reject memory words and keep the real FSMs.
+
+Purpose: Loki L Q1.1 / L Q3.3 (recover FSMs selectively). Measure: FSM claim precision (pooled over
+claims, and per design) at kept recall, on the same 1200 builds. Branch `exp/fsm-vs-memory`.
+
+Hypothesis (the controller's proposal, to be confirmed by Peter): "An FSM's next state depends on its
+own state bits through logic other than a hold/load mux; a memory word's next state is either its old
+value or a data input selected by an address decode. A rule that separates these keeps recall >= 0.95
+and raises claim precision to >= 0.80."
+
+Held-out split (fixed here, by the numeric suffix of the design name; deterministic, no data seen):
+- TUNE = even suffix: 50 `r4_fsm_*` positives (000, 002, ..., 098) and, for each of the five
+  negative families, suffixes 70, 72, ..., 88 (10 each, 50 negatives).
+- TEST = odd suffix: 50 positives (001, ..., 099) and suffixes 71, 73, ..., 89 (50 negatives).
+Diagnosis and every threshold or feature choice use TUNE only. TEST designs' claims are not
+inspected before the final scoring run; the rule is frozen (committed) before that run.
+
+Rule under test (written before diagnosis; a diagnosed refinement is a dated entry below, tune-only):
+a candidate `fsm` claim is dropped when its next-state function is a hold/load structure: every
+state-bit next value is its own old value or a value that does not depend on the group's state bits,
+chosen by a select over the other nets (a flip-flop with enable, a memory word). The claim is kept
+when some transition depends on the state bits through other logic (the next state is a function of
+the current state).
+
+Measure and verdict. Per arm x floor (6 cells) on TEST: recall (positives with a counted matching
+claim), pooled claim precision (matching counted claims over all counted FSM claims), design
+precision, and false claims per negative family. Paired by design against v2 on the TEST positives:
+d = new - v2 recall in {-1, 0, 1}, 95 % percentile bootstrap CI (10000, seed 20261030), Holm over
+the 6 cells. Hypothesis SUPPORTED when, pooled over the 6 cells on TEST, recall >= 0.95 and pooled
+claim precision >= 0.80; per cell the same two numbers are reported. Otherwise NOT SUPPORTED; the
+number is reported either way. The TUNE numbers are reported separately and are not evidence.
+
+### Diagnosis on TUNE (2026-10-30, tune designs only; arm none / one-hot / binary on f3)
+
+Features per FSM candidate (`diagnose_tune.py`, output `work/fsmenc-out/v3/diag_*.csv`):
+- regfile (270 candidates in the none arm) and register (74): all are one flip-flop, 2 states, and for every
+  control value the next state is the old state or one value whatever the state is (hold/load); no
+  other behaviour. Each memory word bit is a hold/load machine selected by a write enable and an
+  address decode (several controls, so the single-control `_register_like` test missed it).
+- FSM positives (49 candidates): none is hold/load, except none; the state bits depend on each other
+  (cross-bit dependence in every multi-bit case); the largest number of distinct successors of a
+  state is 2 or 3 (2 for 2-bit 4-state machines).
+- counter (load/up/down, 3 of the 10 tune designs): the 5-bit group and its 4/3/2-bit sub-groups have a
+  state that reaches all 2^k codes in one step (the load port copies the data inputs), fan-out 2^k =
+  32, 16, 8, 4; the 1-bit LSB is a hold/toggle/load bit.
+Rule as committed: reject when (a) `hold-load` (above) or (b) `free-load`: some state reaches all 2^k
+codes in one step. First choice k >= 3 for (b) left the 2-bit sub-groups of the loadable counters
+(fan-out 4 of 4); the tune positives have fan-out <= 2 for k = 2, so (b) is set to k >= 2 (a tune-only
+refinement, before any TEST scoring). A 1-bit machine cannot be split by this rule (every function of
+one bit and its controls is hold, set, clear or toggle per control value); the toggle-with-load bit of
+a counter and a real 2-state flag stay claimable. Limits: an FSM whose next state is set to an
+arbitrary code from inputs in one step (a 4-state `state <= x` machine) is rejected as a loaded register.
+
+## Q-L3 results (2026-10-30): hypothesis, experiment, verdict
+
+Plain English. Hypothesis (controller's proposal, to be confirmed by Peter): a rule that tells a
+state machine from a memory word keeps recall at 0.95 or more and raises claim precision to 0.80 or
+more. Experiment: rule frozen in commit 828436b (hold-load and free-load patterns, above), then
+`loki re --intent` on all 1200 builds (every run exited 0), scored on the fixed split. Result: the
+rule removes every memory-word claim (regfile false claims 256 to 0 on TEST, 190 to 0 on TUNE) and
+loses no FSM, but the claim precision on TEST is 0.676, below the 0.80 bar, because 24 claims per
+cell remain on 3 counter and 4 pipeline negatives (counter 3, pipeline 21), families that no TUNE design
+produced a claim for after the rule. Verdict: NOT SUPPORTED on the precision half; recall half
+holds. Registered as FSM3, DISMISSED.
+
+`results/v3/summary.csv`, TEST split (50 positives and 50 negatives per cell; the six cells have the
+same counts, as in v2 where the sequential analysis reads the next-state function):
+
+| detector | recall | counted claims | true | pooled claim precision | design precision | negative designs with a claim |
+| --- | --- | --- | --- | --- | --- | --- |
+| v2 | 1.000 (50/50 per cell) | 336 per cell (2016 pooled) | 50 | 0.149 | 0.806 | 12 of 50 per cell |
+| v3 (rule) | 1.000 (50/50 per cell) | 74 per cell (444 pooled) | 50 | 0.676 | 0.877 | 7 of 50 per cell |
+
+False counted claims per cell by negative family on TEST (`families.csv`), v2 to v3: regfile 256 to 0,
+pipeline 27 to 21, counter 3 to 3, shifter 0, register 0. TUNE (not evidence): v2 precision 0.201,
+v3 1.000 (292 of 292), recall 0.973 for both (one tune positive per cell has no claim in either).
+Paired recall difference v3 minus v2 on the TEST positives, all six cells: 0.000, 95 % CI [0, 0],
+Holm p = 1 (no recall lost). Hypothesis check (pooled TEST, 6 cells): recall 1.000 >= 0.95 yes;
+precision 0.676 >= 0.80 no: NOT SUPPORTED. Per cell the numbers are identical. Dismissed to the log:
+"a hold-load plus free-load rule gives claim precision >= 0.80" (0.676). Not diagnosed: the pipeline
+and counter claims left on TEST; looking at them now would tune on TEST, so a follow-up needs a new
+split (the TUNE pipeline designs give no candidate to learn from). Known cost: a 4-state machine
+that copies a 2-bit input into its state would be rejected as a loaded register (none in the corpus).
+Scripts: `diagnose_tune.py`, `score_v3.py`; data in `work/fsmenc-out/re/v3` and `work/fsmenc-out/v3`.

@@ -1,4 +1,5 @@
 import unittest
+from collections.abc import Callable, Sequence
 
 from loki.intent import boolmin
 from loki.intent.fsm import encoding_of, read_fsm
@@ -72,6 +73,56 @@ class ReadFsmTest(unittest.TestCase):
         self.assertEqual(encoding_of((1, 2, 4), 3), "one-hot")
         self.assertEqual(encoding_of((0, 1, 2, 3), 2), "binary")
         self.assertEqual(encoding_of((1, 2, 6), 3), "coded")
+
+
+def _load_count(i: int) -> Callable[[Sequence[int]], int]:
+    """Bit ``i`` of an up counter with a load port; inputs (load, data, q0..qi)."""
+
+    def fn(v: Sequence[int]) -> int:
+        return v[1] if v[0] else v[2 + i] ^ int(all(v[2 : 2 + i]))
+
+    return fn
+
+
+class MemoryPatternTest(unittest.TestCase):
+    def test_word_bit_with_address_decode_is_hold_load(self) -> None:
+        g = GB()
+        clk, we, wa, wd = g.pi("clk"), g.pi("we"), g.pi("wa"), g.pi("wd")
+        q = g.net("q")
+        d = g.lut(table_of(4, lambda v: v[2] if v[0] and v[1] else v[3]), (we, wa, wd, q))
+        g.ff(d, clk, q)
+        fsm = read_fsm(g.build(), (q,))
+        assert fsm is not None
+        self.assertEqual(fsm.memory, "hold-load")
+
+    def test_toggle_is_not_hold_load(self) -> None:
+        g = GB()
+        clk, go = g.pi("clk"), g.pi("go")
+        q = g.net("s")
+        g.ff(g.lut(table_of(2, lambda v: v[0] ^ v[1]), (q, go)), clk, q)
+        fsm = read_fsm(g.build(), (q,))
+        assert fsm is not None
+        self.assertEqual(fsm.memory, "")
+
+    def test_counter_with_load_port_is_free_load(self) -> None:
+        g = GB()
+        clk, load = g.pi("clk"), g.pi("load")
+        data = g.pis_n(3, "d")
+        qs = [g.net(f"q{i}") for i in range(3)]
+        for i in range(3):
+            ins = (load, data[i], *qs[: i + 1])
+
+            g.ff(g.lut(table_of(len(ins), _load_count(i)), ins), clk, qs[i])
+        fsm = read_fsm(g.build(), tuple(qs))
+        assert fsm is not None
+        self.assertEqual(fsm.memory, "free-load")
+
+    def test_state_machines_are_not_memory(self) -> None:
+        g = GB()
+        q0, q1, _, _ = three_state(g)
+        fsm = read_fsm(g.build(), (q0, q1))
+        assert fsm is not None
+        self.assertEqual(fsm.memory, "")
 
 
 class GroupsTest(unittest.TestCase):

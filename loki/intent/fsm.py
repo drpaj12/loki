@@ -21,6 +21,7 @@ from loki.re.sim import cone, simulate
 CONTROLS_MAX = 14
 STATES_MAX = 40
 SAMPLE_STATES = 24
+LOAD_BITS_MIN = 2
 
 
 @dataclass(frozen=True)
@@ -41,6 +42,7 @@ class Fsm:
     states: tuple[int, ...]
     encoding: str
     transitions: tuple[Transition, ...]
+    memory: str = ""
 
 
 def _column(i: int, m: int) -> int:
@@ -129,6 +131,28 @@ def encoding_of(states: Sequence[int], k: int) -> str:
     return "coded"
 
 
+def memory_pattern(rows: dict[int, list[int]], k: int) -> str:
+    """Why the explored machine is a memory word and not a state machine, or ``""``.
+
+    ``hold-load``: for every control value the next state is either the old state of every
+    explored state (hold) or one value whatever the state is (load), so the state never decides
+    where it goes next (a register with write enable, a memory word, a flip-flop with enable).
+    ``free-load``: a state reaches every one of the ``2**k`` codes (``k >= LOAD_BITS_MIN``) in
+    one step, so the next state can be set from the inputs (a counter or register with a load
+    port). A state machine's next state is a function of its own state through other logic."""
+    width = len(next(iter(rows.values())))
+    for cv in range(width):
+        if all(row[cv] == s for s, row in rows.items()):
+            continue
+        if len({row[cv] for row in rows.values()}) != 1:
+            break
+    else:
+        return "hold-load"
+    if k >= LOAD_BITS_MIN and any(len(set(row)) == 1 << k for row in rows.values()):
+        return "free-load"
+    return ""
+
+
 def _relevant(rows: dict[int, list[int]], m: int) -> list[int]:
     """Indices of the control bits that change some next state of some explored state."""
     keep = []
@@ -209,4 +233,4 @@ def read_fsm(graph: FnGraph, q: Sequence[int], seed: str = "fsm") -> Fsm | None:
     nets, trans = got_t
     states = tuple(sorted(rows))
     return Fsm(tuple(q), tuple(nets), reset, start, states, encoding_of(states, len(q)),
-               tuple(t for t in trans))
+               tuple(t for t in trans), memory_pattern(rows, len(q)))

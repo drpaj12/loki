@@ -1,0 +1,13 @@
+split,arm,floor,n,diff_recall,ci_lo,ci_hi,p,holm_p
+tune,onehot,f3,50,0.0,0.0,0.0,1.0,1.0
+tune,onehot,f2,50,0.0,0.0,0.0,1.0,1.0
+tune,binary,f3,50,0.0,0.0,0.0,1.0,1.0
+tune,binary,f2,50,0.0,0.0,0.0,1.0,1.0
+tune,none,f3,50,0.0,0.0,0.0,1.0,1.0
+tune,none,f2,50,0.0,0.0,0.0,1.0,1.0
+test,onehot,f3,50,0.0,0.0,0.0,1.0,1.0
+test,onehot,f2,50,0.0,0.0,0.0,1.0,1.0
+test,binary,f3,50,0.0,0.0,0.0,1.0,1.0
+test,binary,f2,50,0.0,0.0,0.0,1.0,1.0
+test,none,f3,50,0.0,0.0,0.0,1.0,1.0
+test,none,f2,50,0.0,0.0,0.0,1.0,1.0

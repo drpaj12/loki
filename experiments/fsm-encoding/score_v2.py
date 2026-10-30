@@ -56,9 +56,9 @@ def rooted_iso(a: nx.DiGraph, a0: int, b: nx.DiGraph, b0: int) -> bool:
     return bool(nx.is_isomorphic(a, b, node_match=lambda x, y: x["root"] == y["root"]))
 
 
-def v2_row(arm: str, floor: str, d: dict[str, str]) -> dict[str, Any] | None:
+def v2_row(arm: str, floor: str, d: dict[str, str], tag: str = "v2") -> dict[str, Any] | None:
     bdir = lib.OUT / "build" / arm / d["design"]
-    ip = lib.OUT / "re" / "v2" / arm / floor / d["design"] / "intent.json"
+    ip = lib.OUT / "re" / tag / arm / floor / d["design"] / "intent.json"
     key = bdir / floor / "key.json"
     if not ip.is_file() or not key.is_file():
         return None

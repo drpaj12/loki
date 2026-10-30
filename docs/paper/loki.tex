@@ -2236,6 +2236,15 @@ precision: 446 of 577 counted claims sit on memory words of the 20 register-file
 0.17 against 0.70 to 0.92 (per design 0.82, and 0.75 without the register-file claims); FSM2a is therefore
 DISMISSED on its precision half, and FSM2b holds for recall only until the claims are selective.
 
+A rule on the next-state function makes the claims more selective, but not enough. A memory word never decides
+where it goes next: for every control value its next state is its old state or one value whatever the state is
+(hold or load), and a counter with a load port can reach every code in one step. Rejecting these two patterns
+(chosen on the even-numbered half of the designs, scored on the odd-numbered half, fixed before the change) removes all
+256 register-file claims per cell on the test half and loses no state machine (recall stays $1.00$), and the pooled
+claim precision rises from $0.15$ to $0.68$ (per design $0.81$ to $0.88$). The bar of $0.80$ is not reached:
+21 claims on pipeline negatives and 3 on counters remain, and no tuning design produced one, so the rule has not
+seen them (hypothesis FSM3, DISMISSED).
+
 \section{Conclusion}
 \label{sec:conclusion}
 
