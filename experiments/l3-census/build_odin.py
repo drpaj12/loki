@@ -30,8 +30,8 @@ def main(cell: str, only: str) -> int:
         if done.is_file():
             continue
         arch = None if floor == "f3" else lib.ARCH
-        res = bd.build_floor(r["design"], [Path(r["src"])], r["top"] or None, floor, arch, base,
-                             lib.ODIN)
+        src = Path(r.get("osrc", r["src"]))
+        res = bd.build_floor(r["design"], [src], r["top"] or None, floor, arch, base, lib.ODIN)
         ddir.mkdir(parents=True, exist_ok=True)
         done.write_text(json.dumps({"status": res.status, "reason": res.reason}, sort_keys=True),
                         encoding="utf-8")

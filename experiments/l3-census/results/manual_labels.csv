@@ -1,0 +1,4 @@
+design,patterns,reason
+ve_Prob046_dff8p,register:1,Odin III build fails equivalence (negedge flip-flops); read from the source: registers only
+ve_Prob078_dualedge,register:1,Odin III build fails equivalence (dual-edge flip-flop); read from the source: registers only
+ve_Prob145_circuit8,register:1,Odin III build fails equivalence (negedge flip-flop plus a latch); read from the source: register and latch

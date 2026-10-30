@@ -2,7 +2,9 @@
 
 Y-gate: the Gate-Breaker script (proc; fsm; opt; memory; opt; techmap; opt; dfflibmap; abc with
 cmos_cells.lib; clean), then read back through ``read_liberty`` and written as BLIF.
-Y-lut: same front, then ``abc -lut 6``. Writes OUT/build/CELL/<design>/{netlist.blif,stat.txt}.
+Y-lut: same front, then ``dfflegalize -cell $_DFF_P_ 01 ...; abc -lut 6`` (enable and reset
+become LUT logic; v1 kept $_SDFFE_ cells and is not used).
+Writes OUT/build/CELL/<design>/{netlist.blif,stat.txt}.
 """
 
 from __future__ import annotations
@@ -29,7 +31,9 @@ def script(cell: str, r: dict[str, str], out: Path) -> str:
                 f"write_verilog -noattr {out}/gates.v\ntee -o {out}/stat.txt stat\n"
                 f"design -reset\nread_liberty {lib.LIB}\nread_verilog {out}/gates.v\n"
                 f"hierarchy -auto-top\nflatten\nopt_clean\nwrite_blif {out}/netlist.blif\n")
-    return (head + f"abc -lut 6\nclean\ntee -o {out}/stat.txt stat\n"
+    legal = "-cell $_DFF_P_ 01 -cell $_DFF_PP0_ 01 -cell $_DFF_PP1_ 01 -cell $_DLATCH_P_ x"
+    return (head + f"dfflegalize {legal}\n"
+            f"abc -lut 6\nclean\ntee -o {out}/stat.txt stat\n"
             f"write_blif {out}/netlist.blif\n")
 
 

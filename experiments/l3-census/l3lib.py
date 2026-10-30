@@ -26,12 +26,22 @@ FLOOR_OF = {"O-gate": "f3", "O-lut": "f2", "O-hard": "f1-k6", "Y-gate": "f3", "Y
 DETECTORS = "wordfirst,hard,ff_pattern,mux,arith,seqfn,fsm,bus,unit,role,wordgroup"
 
 
+# Odin III's read_slang refuses the 4-bit enum cast States'(...) of these two references; the
+# Odin III builds use a copy with the cast removed and the state variables plain logic
+# (OUT/patched/, same logic); Yosys reads the
+# originals.
+PATCHED = ("Prob151_review2015_fsm", "Prob156_review2015_fancytimer")
+
+
 def manifest() -> list[dict[str, str]]:
     """Every design of the three corpora: corpus, design, source path, top ('' = auto)."""
     rows: list[dict[str, str]] = []
     for ref in sorted(VEVAL.glob("*_ref.sv")):
-        rows.append({"corpus": "veval", "design": "ve_" + ref.name[: -len("_ref.sv")],
-                     "src": str(ref), "top": "RefModule"})
+        name = ref.name[: -len("_ref.sv")]
+        row = {"corpus": "veval", "design": "ve_" + name, "src": str(ref), "top": "RefModule"}
+        if name in PATCHED:
+            row["osrc"] = str(OUT / "patched" / ref.name)
+        rows.append(row)
     with (R4 / "corpus.csv").open(encoding="utf-8", newline="") as fh:
         per: dict[str, int] = {}
         for r in csv.DictReader(fh):

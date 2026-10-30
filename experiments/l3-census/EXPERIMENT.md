@@ -92,3 +92,27 @@ Memory at most 6 GB; `/mnt/c` below 15 GB free stops; weekly meter at 100 stops.
 outside the worktree (`work/l3-out`); only scripts, small CSVs and this file are committed.
 
 ## Amendments
+
+- 2026-10-30 (before any scoring; changes to the text above, found while building the tooling):
+  1. Link depth. The connectedness test reports the smallest number of combinational cells (0 to 8,
+     BFS through `.names` and hard blocks, stopping at flip-flops) from a flip-flop of one claim to the
+     D pin of a flip-flop of the other, in either direction. "Connected" in the tables means depth
+     0 to 6 (the spec's `max_depth` default); the depths themselves are in `per_design.csv`.
+     Hard-block pins named out/sumout/cout/o/y/q (or containing "out") count as outputs.
+  2. Labels. `counter` needs the `$add`/`$sub` word of the loop to have a constant operand
+     (an accumulator is not a counter); `regfile` is an array declaration, a `$mem` word or at least
+     4 enabled register words (a register file written as separate regs); `shift` and `lfsr` come from
+     the named source idioms listed in `labels_rtl.py`. Odin III's `read_slang` refuses the 4-bit enum
+     cast `States'(...)` of Prob151 and Prob156 and the state variables typed `States`; the Odin III
+     builds of those two use a copy with the cast removed and the variables plain `logic` (`patch_src.py`,
+     same logic); Yosys reads the originals. Three references whose Odin III build fails equivalence
+     (Prob046_dff8p, Prob078_dualedge, Prob145_circuit8: negedge, dual-edge, latch) are labelled by
+     hand from the source, listed with the reason in `results/manual_labels.csv`; they have Yosys
+     netlists only. `vtr_ch_intrinsics_nolatches` (memory module not defined) has no label.
+  3. Corpus: the VTR set is `single_ff`, `diffeq1`, `diffeq2`, `ch_intrinsics_nolatches`.
+  4. Yosys `Y-lut`: the first attempt (v1) left enable/reset flip-flops as `$_SDFFE_*` cells in the
+     BLIF, so Loki saw no flip-flops; it was discarded (moved to `Y-lut-v1`, not used) and rebuilt with
+     `dfflegalize` to plain and async-reset D flip-flops (initialised flip-flops kept) before `abc -lut 6`.
+     Designs that Yosys refuses are excluded for that cell and listed (inferred latch in `always_comb`
+     with the Gate-Breaker script, 6 FSM references).
+  5. Each `loki re` run is capped at 330 s wall and 6 GB address space; a timeout is an excluded cell.
