@@ -23,6 +23,7 @@ from loki.re.detectors.seqfn import Group as SeqGroup
 from loki.re.detectors.seqfn import SeqfnDetector
 from loki.re.fngraph import FnGraph
 from loki.re.overlay import Overlay
+from loki.re.sim import cone
 from loki.re.view import View
 
 _INDEXED = re.compile(r"^(.*)\[(\d+)\]$")
@@ -117,8 +118,14 @@ def _mode_claim(graph: FnGraph, order: tuple[int, ...], q: tuple[int, ...],
         params["rst_active"] = reset[1]
         params["rst_value"] = reset[2]
     d = tuple(graph.cells[c].ins[0] for c in order)
-    return SeqClaim(mt.kind, q, d, frozenset(order), params, nets, True, None, bool(set(q) & asyn),
-                    modes=mt.modes)
+    return SeqClaim(mt.kind, q, d, _with_cone(graph, order, d), params, nets, True, None,
+                    bool(set(q) & asyn), modes=mt.modes)
+
+
+def _with_cone(graph: FnGraph, order: tuple[int, ...], d: tuple[int, ...]) -> frozenset[int]:
+    """The flip-flops and the logic cells of their next-state cones."""
+    cells, _ = cone(graph, frozenset(), d, frozenset())
+    return frozenset(order) | frozenset(cells)
 
 
 def _contiguous(graph: FnGraph, q: tuple[int, ...]) -> bool:
@@ -176,7 +183,8 @@ def _fsm_claim(graph: FnGraph, order: tuple[int, ...], asyn: set[int]) -> SeqCla
         nets["rst"] = (fsm.reset[0],)
         params["rst_active"] = fsm.reset[1]
         params["rst_state"] = fsm.reset[2]
-    return SeqClaim("fsm", q, d, frozenset(order), params, nets, True, fsm, bool(set(q) & asyn))
+    return SeqClaim("fsm", q, d, _with_cone(graph, order, d), params, nets, True, fsm,
+                    bool(set(q) & asyn))
 
 
 def _claim_group(graph: FnGraph, group: Group, asyn: set[int]) -> SeqClaim | None:
