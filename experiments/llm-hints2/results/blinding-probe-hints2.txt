@@ -1,0 +1,14 @@
+Model id: claude-sonnet-5-5 (Sonnet 5.5). tool_uses: 0.
+
+Tools callable: Agent, Bash, Edit, Read, Skill, ToolSearch, Write; mcp__claude-artifacts__ edit_version, get_artifact, guide, list_artifacts, publish_files, publish_version, read_artifact; mcp__claude_ai_Claude_Docs__ batch, guide, update.
+Deferred (schema via ToolSearch): EnterWorktree, ExitWorktree, LSP, Monitor, NotebookEdit, SendMessage, TaskStop, WebFetch, WebSearch; many mcp__claude-artifacts__*, mcp__claude_ai_Claude_Docs__*, mcp__claude_ai_Gmail__*, mcp__claude_ai_Google_Calendar__*, mcp__claude_ai_Google_Drive__*, mcp__code-review-graph__* tools.
+
+Context besides message:
+- Workspace CLAUDE.md (odin3-ws): controller hand-off, repo list, token-saving rules, code-review-graph MCP use.
+- MEMORY.md index: ~60 one-line pointers to Peter's preferences and project notes.
+- Attribution reminder: commit/PR trailers with Claude Sonnet 5.5 and session link.
+- Caveman-mode hook: terse replies.
+- User-context block: user email.
+- Environment block: cwd <home>/odin3-ws, WSL2, bash, scratchpad dir, date 2026-10-30.
+- Skills list: ~70 entries.
+- Agent-role instructions: Claude Code agent, absolute paths, no report files.
