@@ -2245,6 +2245,29 @@ claim precision rises from $0.15$ to $0.68$ (per design $0.81$ to $0.88$). The b
 21 claims on pipeline negatives and 3 on counters remain, and no tuning design produced one, so the rule has not
 seen them (hypothesis FSM3, DISMISSED).
 
+\paragraph{Loki L3: design patterns.}
+The structures above are single constructs. Our observation is that the failures of the model baseline
+(\code{Prob151\_review2015\_fsm}, \code{Prob156\_review2015\_fancytimer}) are compositions: a sequence-detector state
+machine, a shift register that loads, a prescaler, a down counter and a done/ack handshake. We therefore introduce a
+third level, Loki~L3: a catalogue of composite design patterns, each with its hardware forms, its composition from level-one
+claims, its netlist footprint per synthesis tool and per target technology, and a closed loop (inspect, hypothesise,
+rebuild the RTL, test against the netlist, refine) whose stages follow the loop described in a project note for a published
+software reverse-engineering system (inventory and parsing, evidence linked to exact file and line, explanation and
+proof, reconstruction and testing); we describe that system only from that note and make no comparison of results.
+The specification is \code{docs/specs/2026-10-30-l3-patterns-design.md}; no detector is built.
+
+A first census (hypothesis register row P3C, a measurement) counts the seed patterns in 519 designs (the 156 VerilogEval
+references, 360 round-4 designs, three VTR designs), labelled from the register-transfer side, and synthesises each with
+Odin~III (gates, LUT6, LUT6 with hard blocks) and Yosys (gates, LUT6). A state machine occurs in 78 designs, a counter in
+44, a shift register in 11, a timer (counter with terminal compare) in 12, and a composite is rare: three designs have a
+state machine that drives a shift register and one has a state machine with counters and a shift register. The footprint
+changes with the target and the tool. On the hard-block target no counter claim survives (0 of 43; a hard-adder claim
+appears in all 43), against 37 of 43 on gates and LUTs. At the same gate target the terminal compare of a timer is a separate
+claim in 7 of 9 Yosys netlists and 2 of 11 Odin~III netlists, and the Yosys gate netlists are about four times larger. Both tools recode
+state machines to one-hot, so the encoding call does not differ. The motivating fancy timer yields no state-machine,
+counter or shift-register claim in any Odin~III cell, and the Gate-Breaker Yosys script turns it into constant outputs,
+which is the gap an L3 composite is meant to explain. No two claims of a composite were joined by a register-input path.
+
 \section{Conclusion}
 \label{sec:conclusion}
 

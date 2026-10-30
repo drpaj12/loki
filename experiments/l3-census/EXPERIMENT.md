@@ -224,8 +224,8 @@ kinds that appear around each pattern are in `pattern_claims.csv`.
 FSM encoding call (designs, fsm claims of the design): O-gate one-hot 70, plus 4 with a second claim
 of unknown encoding, binary 1, coded 1, no claim 2; O-lut one-hot 53 plus 21 with extra claims of
 unknown encoding; O-hard 57 plus 17; Y-gate one-hot 69, coded 2, none 2; Y-lut one-hot 48 plus 21
-with extra claims. Soft LUT targets therefore give more than one FSM claim per design (the overlay
-claim and the sequential claim); the gate targets mostly give one.
+with extra claims. Soft LUT targets therefore give more than one FSM claim per design (cause not
+investigated); the gate targets mostly give one.
 
 ### Differences called out (tool and target)
 
@@ -236,7 +236,7 @@ claim and the sequential claim); the gate targets mostly give one.
 2. Tool changes what stays visible at the same target: timer compare 7/9 (Yosys gate) against 2/11
    (Odin III gate); register-file register claims 8/25 (Yosys gate) against 19/25 (Odin III gate) and
    25/25 (Yosys LUT) against 26/26 (Odin III LUT); `eq_const` claims in Yosys gate netlists are many
-   (3009 around register-only designs against 357) because the gate library decomposes comparisons.
+   (3009 around register-only designs against 357) (probably because the gate library decomposes comparisons into 2-input gates; not tested).
 3. Encoding is the same across tools and across gate/LUT targets (one-hot); the FSM claim count per
    design differs (soft LUT targets duplicate).
 4. Provenance path: observed for Odin III (construct chain, mean 1.4 to 5.9 distinct construct types
