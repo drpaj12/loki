@@ -6,6 +6,7 @@ with Odin III provenance as the answer key. Part of Yggdrasil III. Later: L1 Bay
 Spec: `docs/specs/2026-10-21-l0-dataset-design.md`. Plan: `docs/plans/2026-10-21-l0-dataset-plan.md`.
 L1 (`loki re`): spec `docs/specs/2026-10-21-l1-hypotheses-design.md`, plan `docs/plans/2026-10-21-l1-hypotheses-plan.md`.
 L2 (`loki analyze`): spec `docs/specs/2026-10-21-l2-analysis-design.md`, plan `docs/plans/2026-10-21-l2-analysis-plan.md`.
+L3 (design patterns; spec only, census in `experiments/l3-census`): `docs/specs/2026-10-30-l3-patterns-design.md`.
 The base install stays `odin3` only; numpy, scipy, scikit-learn and networkx are the `analysis` extra,
 torch and torch_geometric (`torch_geometric`) the `gnn` extra, and `dev` unions both. Install them with
 `.venv/bin/pip install --no-deps -e .` plus the extras' libraries (odin3 is not on PyPI); tests that

@@ -22,6 +22,7 @@ Every number traces to the experiment records:
 - `experiments/quartiles/` — per-quartile (Q1-Q4) tables for the LLM pilot (arms A, B, C, exact
   McNemar per quartile and stratified) and for the Loki-only results. `quartile-tables.tex` is
   generated: run `python3 experiments/quartiles/quartiles.py` (byte-identical on rerun).
+- `experiments/l3-census/EXPERIMENT.md` and `results/` -- the Loki L3 pattern census (register row P3C; loki.tex paragraph "Loki L3: design patterns").
 - `experiments/llm-full/EXPERIMENT.md` (Results 2026-10-29) and `experiments/llm-full/results/` -- the full LLM run (137 problems, 3 draws, arms A, B, C); loki.tex Section `sec:llm-full`, register rows LLM3 and LLM4. The PDF was not rebuilt in the session that wrote it (no TeX tools on that machine).
 - The Gate-Breaker VerilogEval replication table (`tab:veval`) is in Experiments (rows GB1, GB2 of the register).
 

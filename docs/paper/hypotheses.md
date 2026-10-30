@@ -127,6 +127,14 @@ Framing: PRE-REGISTERED (plan amendment in experiments/fsm-encoding/EXPERIMENT.m
 | FSM2b | same | One-hot FSMs recovered about as well as binary | Reading how state bits turn each other on lets Loki recover one-hot FSMs about as well as binary ones. | PRE-REGISTERED | 100 FSM designs x 2 floors | recall one-hot minus binary | -0.010 [-0.025, 0.000] pooled; encoding call right for 97 of 98 one-hot FSMs | CI inside +-0.10 | POSSIBLY GOOD (SUPPORTED by the plan's equivalence rule, CI inside +-0.10; recall only: the claims are not selective (memories called FSMs) and the shipped p is constant) | yes |
 | FSM3 | experiments/fsm-encoding/EXPERIMENT.md (Amendment Q-L3) | Memory-word rule for FSM claims | An FSM's next state depends on its own state bits through logic other than a hold/load mux; a rule that separates state machines from memory words keeps recall >= 0.95 and raises claim precision to >= 0.80. (controller's proposal, to be confirmed by Peter) | PRE-REGISTERED | 50 TEST FSM designs + 50 TEST negatives x 3 arms x 2 floors (tune/test split fixed before the rule) | recall, pooled claim precision, per family false claims | recall 1.000 (50 of 50, unchanged from v2); pooled claim precision 0.676 against 0.149 for v2 (regfile false claims 256 to 0; pipeline 21 and counter 3 remain); design precision 0.877 | thresholds 0.95 and 0.80, paired bootstrap of recall (CI [0, 0]) | DISMISSED (precision 0.676 < 0.80; recall holds) | yes |
 
+## Loki L3 design patterns (measurement, 2026-10-30)
+
+Framing: plan committed before the runs (experiments/l3-census/EXPERIMENT.md); hub questions L Q2.2, L Q3.1, L Q3.3. No detector is built.
+
+| H-ID | round / section | innovation tested | hypothesis | framing | experiment | metrics | result | test, p / CI | verdict | main paper? |
+|---|---|---|---|---|---|---|---|---|---|---|
+| P3C | experiments/l3-census/EXPERIMENT.md | Loki L3 design patterns: seed-pattern census and footprints per tool and target | (measurement, no hypothesis) which composite patterns occur in the corpora and how their L1 claim footprint changes between Odin III and Yosys and between gate, LUT and hard-block targets | measurement | 519 designs (156 VerilogEval, 360 round 4, 3 VTR) x 5 cells (Odin III gate/LUT/hardmap, Yosys gate/LUT) | pattern frequency; expected L1 claim hit; FSM encoding; link depth; cell counts | fsm 78 designs, counter 44, shift 11, timer 12, fsm_shift 3, fsm_counter 1, glue 199; counter claim 37/43 (Odin III gate, LUT), 38/41 (Yosys), 0/43 on hardmap (hard_add 43/43); timer compare claim 7/9 Yosys gate against 2/11 Odin III gate; FSM claim one-hot on both tools; 0 of 4 composites linked by a D path | none | MEASUREMENT (not counted) | yes |
+
 ## Untested hypotheses (decision 10: idea and the experiment it needs only)
 
 | H-ID | idea | experiment it needs |
@@ -137,11 +145,11 @@ Framing: PRE-REGISTERED (plan amendment in experiments/fsm-encoding/EXPERIMENT.m
 
 ## Counts
 
-54 register rows (grouped H-IDs count once; H12b covers V0, V1, V2): 45 hypotheses with a verdict, 6 measurements and 3 untested hypotheses listed above. Round-2 IDs carry the prefix R2- so that they do not collide with the layer names L1 and L2.
+55 register rows (grouped H-IDs count once; H12b covers V0, V1, V2): 45 hypotheses with a verdict, 7 measurements and 3 untested hypotheses listed above. Round-2 IDs carry the prefix R2- so that they do not collide with the layer names L1 and L2.
 
 | USEFUL | POSSIBLY GOOD | DISMISSED | INCONCLUSIVE | measurement, not a hypothesis | untested |
 |---|---|---|---|---|---|
-| 8 (L0a, L0b, L1h, L1c, H12a, H13a, H13c, H14a) | 7 (L2b, R2-L7, H9a, H13b, L15a, L15d, FSM2b) | 14 (adds FSM2a, FSM3) | 16 | 6 (L11, L15b, L2m, GB1, GB2, Q2) | 3 (L3, L6, L8) |
+| 8 (L0a, L0b, L1h, L1c, H12a, H13a, H13c, H14a) | 7 (L2b, R2-L7, H9a, H13b, L15a, L15d, FSM2b) | 14 (adds FSM2a, FSM3) | 16 | 7 (L11, L15b, L2m, GB1, GB2, Q2, P3C) | 3 (L3, L6, L8) |
 
 Changes of the fix round (loki PR 58): L2a is DISMISSED (the NMI against module_path ranks k-means 0.3220, affinity propagation 0.2708, spectral 0.1378, Louvain 0.1360, so the community methods do not find the hierarchy; modularity is recorded as the measurement L2m); L15d is POSSIBLY GOOD (the S7 and S8 ground truths differ in size, 174 and 166 mux instances).
 

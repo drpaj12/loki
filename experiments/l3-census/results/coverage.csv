@@ -1,0 +1,6 @@
+cell,designs,built,re_done,ffsub_excluded
+O-gate,520,519,516,0
+O-lut,520,520,519,0
+O-hard,520,520,519,0
+Y-gate,520,514,508,14
+Y-lut,520,514,512,14

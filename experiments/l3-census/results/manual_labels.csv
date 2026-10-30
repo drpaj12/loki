@@ -1,0 +1,6 @@
+design,patterns,reason
+ve_Prob046_dff8p,register:1,Odin III build fails equivalence (negedge flip-flops); read from the source: registers only
+ve_Prob078_dualedge,register:1,Odin III build fails equivalence (dual-edge flip-flop); read from the source: registers only
+ve_Prob145_circuit8,register:1,Odin III build fails equivalence (negedge flip-flop plus a latch); read from the source: register and latch
+ve_Prob151_review2015_fsm,fsm:1,Odin III fsm detection does not flag the patched copy; read from the source: one state machine
+ve_Prob156_review2015_fancytimer,fsm:1|counter:2|shift:1|timer:1|fsm_counter:1|fsm_shift:1,Odin III fsm detection does not flag the patched copy; read from the source: FSM + fcount prescaler + scount shift/down counter
