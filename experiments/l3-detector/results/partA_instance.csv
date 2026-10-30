@@ -1,0 +1,10 @@
+pattern,cell,designs,TP,FP,FN,precision,precision_lo,recall,recall_lo,label
+fsm,O-gate,249,40,7,1,0.851,0.762,0.976,0.929,INCONCLUSIVE
+fsm,O-lut,249,40,5,1,0.889,0.805,0.976,0.929,WORKING
+fsm,O-hard,249,40,5,1,0.889,0.805,0.976,0.929,WORKING
+counter,O-gate,249,21,0,6,1.0,1.0,0.778,0.607,NOT WORKING
+counter,O-lut,249,21,0,6,1.0,1.0,0.778,0.607,NOT WORKING
+counter,O-hard,249,28,0,0,1.0,1.0,1.0,1.0,WORKING
+timer,O-gate,249,1,5,10,0.167,0.0,0.091,0.0,NOT WORKING
+timer,O-lut,249,1,0,10,1.0,1.0,0.091,0.0,NOT WORKING
+timer,O-hard,249,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING

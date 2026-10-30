@@ -1,0 +1,118 @@
+{
+ "composition": {
+  "parts": [
+   {
+    "role": "reg"
+   }
+  ],
+  "wires": []
+ },
+ "detector": {
+  "gate": [
+   {
+    "forbid": [
+     "fsm",
+     "counter",
+     "shift",
+     "lfsr",
+     "regfile"
+    ],
+    "parts": [
+     {
+      "group": true,
+      "kinds": [
+       "register",
+       "ff_en",
+       "ff_srst"
+      ],
+      "min": 1,
+      "role": "reg"
+     }
+    ]
+   },
+   {
+    "forbid": [
+     "fsm",
+     "counter",
+     "shift",
+     "lfsr",
+     "regfile"
+    ],
+    "latches": true
+   }
+  ],
+  "lut": [
+   {
+    "forbid": [
+     "fsm",
+     "counter",
+     "shift",
+     "lfsr",
+     "regfile"
+    ],
+    "parts": [
+     {
+      "group": true,
+      "kinds": [
+       "register",
+       "ff_en",
+       "ff_srst"
+      ],
+      "min": 1,
+      "role": "reg"
+     }
+    ]
+   },
+   {
+    "forbid": [
+     "fsm",
+     "counter",
+     "shift",
+     "lfsr",
+     "regfile"
+    ],
+    "latches": true
+   }
+  ],
+  "lut+hard": [
+   {
+    "forbid": [
+     "fsm",
+     "counter",
+     "shift",
+     "lfsr",
+     "regfile"
+    ],
+    "parts": [
+     {
+      "group": true,
+      "kinds": [
+       "register",
+       "ff_en",
+       "ff_srst"
+      ],
+      "min": 1,
+      "role": "reg"
+     }
+    ]
+   },
+   {
+    "forbid": [
+     "fsm",
+     "counter",
+     "shift",
+     "lfsr",
+     "regfile"
+    ],
+    "latches": true
+   }
+  ]
+ },
+ "footprint": "filled from the census, see experiments/l3-census/EXPERIMENT.md",
+ "id": "register",
+ "name": "Plain register",
+ "provenance": "Odin III: per-pass construct chain; Yosys: inferred from the pass script (spec 5)",
+ "purpose": "L Q2.2 (netlist patterns for RTL idioms); measure: precision and recall per pattern",
+ "schema": 1,
+ "version": 1
+}

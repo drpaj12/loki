@@ -1,0 +1,102 @@
+{
+ "composition": {
+  "parts": [
+   {
+    "role": "counter"
+   },
+   {
+    "role": "compare"
+   }
+  ],
+  "wires": [
+   {
+    "from": "counter",
+    "to": "compare",
+    "via": "direct"
+   }
+  ]
+ },
+ "detector": {
+  "gate": [
+   {
+    "constraints": [
+     {
+      "kinds": [
+       "eq_const",
+       "comparator"
+      ],
+      "reaches_back": true,
+      "role": "counter",
+      "type": "compare_on"
+     }
+    ],
+    "parts": [
+     {
+      "kinds": [
+       "counter"
+      ],
+      "role": "counter"
+     }
+    ]
+   }
+  ],
+  "lut": [
+   {
+    "constraints": [
+     {
+      "kinds": [
+       "eq_const",
+       "comparator"
+      ],
+      "reaches_back": true,
+      "role": "counter",
+      "type": "compare_on"
+     }
+    ],
+    "parts": [
+     {
+      "kinds": [
+       "counter"
+      ],
+      "role": "counter"
+     }
+    ]
+   }
+  ],
+  "lut+hard": [
+   {
+    "constraints": [
+     {
+      "narrow_operand": true,
+      "role": "counter",
+      "type": "feedback"
+     },
+     {
+      "kinds": [
+       "eq_const",
+       "comparator"
+      ],
+      "reaches_back": true,
+      "role": "counter",
+      "type": "compare_on"
+     }
+    ],
+    "parts": [
+     {
+      "kinds": [
+       "hard_add"
+      ],
+      "role": "counter"
+     }
+    ]
+   }
+  ]
+ },
+ "footprint": "filled from the census, see experiments/l3-census/EXPERIMENT.md",
+ "id": "timer",
+ "name": "Timer (counter plus terminal compare)",
+ "provenance": "Odin III: per-pass construct chain; Yosys: inferred from the pass script (spec 5)",
+ "purpose": "L Q2.2 (netlist patterns for RTL idioms); measure: precision and recall per pattern",
+ "schema": 1,
+ "version": 1
+}

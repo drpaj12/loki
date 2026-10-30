@@ -1,0 +1,55 @@
+{
+ "composition": {
+  "parts": [
+   {
+    "role": "lfsr"
+   }
+  ],
+  "wires": []
+ },
+ "detector": {
+  "gate": [
+   {
+    "parts": [
+     {
+      "kinds": [
+       "lfsr"
+      ],
+      "role": "lfsr"
+     }
+    ]
+   }
+  ],
+  "lut": [
+   {
+    "parts": [
+     {
+      "kinds": [
+       "lfsr"
+      ],
+      "role": "lfsr"
+     }
+    ]
+   }
+  ],
+  "lut+hard": [
+   {
+    "parts": [
+     {
+      "kinds": [
+       "lfsr"
+      ],
+      "role": "lfsr"
+     }
+    ]
+   }
+  ]
+ },
+ "footprint": "filled from the census, see experiments/l3-census/EXPERIMENT.md",
+ "id": "lfsr",
+ "name": "LFSR",
+ "provenance": "Odin III: per-pass construct chain; Yosys: inferred from the pass script (spec 5)",
+ "purpose": "L Q2.2 (netlist patterns for RTL idioms); measure: precision and recall per pattern",
+ "schema": 1,
+ "version": 1
+}

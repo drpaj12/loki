@@ -127,4 +127,12 @@ with a regression test; the Yosys netlist of `vtr_ch_intrinsics_nolatches` is re
 
 ## Amendments
 
-(none yet)
+- 2026-10-30 (during Part A, after the first TEST table was produced; stated so the reader can
+  discount it): (1) the hard-target counter rule used "one adder operand constant"; on TUNE the
+  incrementers have a 1-bit enable operand, so the rule became "one operand constant or a single
+  net" (`narrow_operand`); the change was found by reading TUNE failures, but the first TEST table
+  (counter O-hard recall 0.76) had been generated before it, so TEST is not untouched for this one
+  rule. (2) `register` and `glue` also read the netlist (flip-flops present or not), since L1
+  register claims miss many plain flip-flops; `timer` requires the compare result to reach the
+  counter again within `max_depth`; `regfile` has a second signature (at least `regfile_k2` register
+  claims, no select claim). These were written from TUNE tables before the first TEST table.
