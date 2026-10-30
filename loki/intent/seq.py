@@ -173,7 +173,9 @@ def _holds(cond: tuple[tuple[tuple[int, int], ...], ...], nets: tuple[int, ...],
 def _fsm_claim(graph: FnGraph, order: tuple[int, ...], asyn: set[int]) -> SeqClaim | None:
     q = tuple(graph.cells[c].outs[0] for c in order)
     fsm = read_fsm(graph, q, f"{min(order)}")
-    if fsm is None or (len(q) == 1 and (fsm.reset is None or not _single_ok(graph, fsm))):
+    if fsm is None or fsm.memory:
+        return None
+    if len(q) == 1 and (fsm.reset is None or not _single_ok(graph, fsm)):
         return None
     d = tuple(graph.cells[c].ins[0] for c in order)
     params: dict[str, int | str] = {"width": len(q), "states": len(fsm.states),

@@ -132,6 +132,14 @@ class FsmClaimTest(unittest.TestCase):
         g.ff(g.lut(table_of(3, lambda v: v[1] if v[0] else v[2]), (en, d, q)), clk, q)
         self.assertEqual(sequential_claims(g.build()), [])
 
+    def test_memory_word_bit_with_reset_is_not_an_fsm(self) -> None:
+        g = GB()
+        clk, rst, we, wd = g.pi("clk"), g.pi("rst"), g.pi("we"), g.pi("wd")
+        q = g.net("q")
+        d = g.lut(table_of(4, lambda v: 0 if v[0] else (v[2] if v[1] else v[3])), (rst, we, wd, q))
+        g.ff(d, clk, q)
+        self.assertEqual([c for c in sequential_claims(g.build()) if c.kind == "fsm"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

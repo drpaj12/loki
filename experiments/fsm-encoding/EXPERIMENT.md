@@ -275,3 +275,24 @@ d = new - v2 recall in {-1, 0, 1}, 95 % percentile bootstrap CI (10000, seed 202
 the 6 cells. Hypothesis SUPPORTED when, pooled over the 6 cells on TEST, recall >= 0.95 and pooled
 claim precision >= 0.80; per cell the same two numbers are reported. Otherwise NOT SUPPORTED; the
 number is reported either way. The TUNE numbers are reported separately and are not evidence.
+
+### Diagnosis on TUNE (2026-10-30, tune designs only; arm none / one-hot / binary on f3)
+
+Features per FSM candidate (`diagnose_tune.py`, output `work/fsmenc-out/v3/diag_*.csv`):
+- regfile (270 candidates in the none arm) and register (74): all are one flip-flop, 2 states, and for every
+  control value the next state is the old state or one value whatever the state is (hold/load); no
+  other behaviour. Each memory word bit is a hold/load machine selected by a write enable and an
+  address decode (several controls, so the single-control `_register_like` test missed it).
+- FSM positives (49 candidates): none is hold/load, except none; the state bits depend on each other
+  (cross-bit dependence in every multi-bit case); the largest number of distinct successors of a
+  state is 2 or 3 (2 for 2-bit 4-state machines).
+- counter (load/up/down, 3 of the 10 tune designs): the 5-bit group and its 4/3/2-bit sub-groups have a
+  state that reaches all 2^k codes in one step (the load port copies the data inputs), fan-out 2^k =
+  32, 16, 8, 4; the 1-bit LSB is a hold/toggle/load bit.
+Rule as committed: reject when (a) `hold-load` (above) or (b) `free-load`: some state reaches all 2^k
+codes in one step. First choice k >= 3 for (b) left the 2-bit sub-groups of the loadable counters
+(fan-out 4 of 4); the tune positives have fan-out <= 2 for k = 2, so (b) is set to k >= 2 (a tune-only
+refinement, before any TEST scoring). A 1-bit machine cannot be split by this rule (every function of
+one bit and its controls is hold, set, clear or toggle per control value); the toggle-with-load bit of
+a counter and a real 2-state flag stay claimable. Limits: an FSM whose next state is set to an
+arbitrary code from inputs in one step (a 4-state `state <= x` machine) is rejected as a loaded register.
