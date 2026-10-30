@@ -104,3 +104,42 @@ log in the results section, not hidden.
 
 Outputs live outside the worktree (`work/fsmenc-out`); only scripts, small CSVs and this file are
 committed.
+
+## Amendments
+
+- 2026-10-30 (before stage 1 scoring): the truth for states and transitions is the exact
+  reachable set computed from the generated Verilog (first matching `x == c` branch, else the
+  default, for every input value), in every arm. The Odin III `extracting` line counts statically
+  dead states (`else` after all input values are covered) and the recode line sometimes keeps
+  them (15 of 100 designs in the one-hot arm differ, 6 in the binary arm); the optimiser removes
+  the dead state's flip-flop, so the netlist holds the exact reachable set. The Odin III log
+  value is kept in `truth.odin_states` of the scoring and is not used. The encoding is read from
+  the `mapping auto encoding to` line (it covers "existing encoding is already a packed binary
+  encoding", where no recode line is printed). All 600 builds (200 designs x 3 arms, f3 and f2)
+  ended `ok`.
+
+## Stage 1 results (2026-10-30): the current detector (Loki at 414e159)
+
+Plain English: the target's recoding hides most FSMs from the current detector. The detector
+almost always proposes the state register as an FSM (93 to 99 % of the designs have a
+hypothesis on the right flip-flops), but it counts it (`p_comp >= 0.5`) in only 13 % of the
+designs in the one-hot arm on gates, against 33 % for the HDL's own encoding. The FSM
+hypothesis is mostly outvoted by competing hypotheses on the same cells. The detector makes no
+encoding call, and when it counts an FSM the reported state count is right in about 60 to 90 %
+of the cases (one-hot on gates: 3 of 13).
+
+`results/stage1/summary.csv` (100 positives, 100 negatives per cell; counted = committed, or live
+with `p_comp >= 0.5`; defaults calibration; truth as above):
+
+| arm | floor | recall | proposed at any p | precision | negatives with a counted FSM | states exact among matched | ECE |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| one-hot | f3 | 0.13 | 0.99 | 0.700 (14/20) | 4 | 3/13 | 0.678 |
+| one-hot | f2 | 0.35 | 0.99 | 0.867 (39/45) | 5 | 23/35 | 0.647 |
+| binary | f3 | 0.35 | 0.93 | 0.917 (44/48) | 4 | 24/35 | 0.739 |
+| binary | f2 | 0.49 | 0.93 | 0.915 (54/59) | 5 | 43/49 | 0.588 |
+| none (HDL) | f3 | 0.33 | 0.95 | 0.907 (39/43) | 4 | 20/33 | 0.714 |
+| none (HDL) | f2 | 0.51 | 0.95 | 0.919 (57/62) | 5 | 39/51 | 0.595 |
+
+Encoding accuracy: n/a (the current detector makes no encoding call). Per-design rows:
+`results/stage1/per_design.csv`. Scripts: `fsmlib.py`, `build_arms.py`, `run_re.py`,
+`score_fsm.py`. Run data: `work/fsmenc-out` (outside the repo).
