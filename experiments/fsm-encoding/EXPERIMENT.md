@@ -296,3 +296,35 @@ refinement, before any TEST scoring). A 1-bit machine cannot be split by this ru
 one bit and its controls is hold, set, clear or toggle per control value); the toggle-with-load bit of
 a counter and a real 2-state flag stay claimable. Limits: an FSM whose next state is set to an
 arbitrary code from inputs in one step (a 4-state `state <= x` machine) is rejected as a loaded register.
+
+## Q-L3 results (2026-10-30): hypothesis, experiment, verdict
+
+Plain English. Hypothesis (controller's proposal, to be confirmed by Peter): a rule that tells a
+state machine from a memory word keeps recall at 0.95 or more and raises claim precision to 0.80 or
+more. Experiment: rule frozen in commit 828436b (hold-load and free-load patterns, above), then
+`loki re --intent` on all 1200 builds (every run exited 0), scored on the fixed split. Result: the
+rule removes every memory-word claim (regfile false claims 256 to 0 on TEST, 190 to 0 on TUNE) and
+loses no FSM, but the claim precision on TEST is 0.676, below the 0.80 bar, because 24 claims per
+cell remain on 3 counter and 4 pipeline negatives (counter 3, pipeline 21), families that no TUNE design
+produced a claim for after the rule. Verdict: NOT SUPPORTED on the precision half; recall half
+holds. Registered as FSM3, DISMISSED.
+
+`results/v3/summary.csv`, TEST split (50 positives and 50 negatives per cell; the six cells have the
+same counts, as in v2 where the sequential analysis reads the next-state function):
+
+| detector | recall | counted claims | true | pooled claim precision | design precision | negative designs with a claim |
+| --- | --- | --- | --- | --- | --- | --- |
+| v2 | 1.000 (50/50 per cell) | 336 per cell (2016 pooled) | 50 | 0.149 | 0.806 | 12 of 50 per cell |
+| v3 (rule) | 1.000 (50/50 per cell) | 74 per cell (444 pooled) | 50 | 0.676 | 0.877 | 7 of 50 per cell |
+
+False counted claims per cell by negative family on TEST (`families.csv`), v2 to v3: regfile 256 to 0,
+pipeline 27 to 21, counter 3 to 3, shifter 0, register 0. TUNE (not evidence): v2 precision 0.201,
+v3 1.000 (292 of 292), recall 0.973 for both (one tune positive per cell has no claim in either).
+Paired recall difference v3 minus v2 on the TEST positives, all six cells: 0.000, 95 % CI [0, 0],
+Holm p = 1 (no recall lost). Hypothesis check (pooled TEST, 6 cells): recall 1.000 >= 0.95 yes;
+precision 0.676 >= 0.80 no: NOT SUPPORTED. Per cell the numbers are identical. Dismissed to the log:
+"a hold-load plus free-load rule gives claim precision >= 0.80" (0.676). Not diagnosed: the pipeline
+and counter claims left on TEST; looking at them now would tune on TEST, so a follow-up needs a new
+split (the TUNE pipeline designs give no candidate to learn from). Known cost: a 4-state machine
+that copies a 2-bit input into its state would be rejected as a loaded register (none in the corpus).
+Scripts: `diagnose_tune.py`, `score_v3.py`; data in `work/fsmenc-out/re/v3` and `work/fsmenc-out/v3`.
