@@ -57,7 +57,8 @@ def main(arm: str) -> int:
             r = bd.build_floor(did, [lib.src_path(did)], None, floor, arch, base, lib.ODIN)
             res[floor] = r.status if not r.reason else f"{r.status}: {r.reason}"
             if floor == "f3":
-                (ddir / "fsm.log").write_text("\n".join(_STASH.get(floor, [])) + "\n", encoding="utf-8")
+                log_text = "\n".join(_STASH.get(floor, [])) + "\n"
+                (ddir / "fsm.log").write_text(log_text, encoding="utf-8")
         done.write_text(json.dumps(res, sort_keys=True), encoding="utf-8")
         status[did] = res
     print(arm, "built", len(status))

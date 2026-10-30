@@ -99,7 +99,9 @@ def hdl_truth(text: str) -> tuple[int, int]:
     return len(seen), sum(len(g.get(s, ())) for s in seen)
 
 
-_REC = re.compile(r"fsm: recoding '[^']*' with (one-hot|binary) encoding \((\d+) states, (\d+) bits")
+_REC = re.compile(
+    r"fsm: recoding '[^']*' with (one-hot|binary) encoding \((\d+) states, (\d+) bits"
+)
 _MAP = re.compile(r"fsm: '[^']*': mapping auto encoding to '(one-hot|binary)'")
 _EXT = re.compile(r"fsm: extracting '[^']*': (\d+) states")
 
