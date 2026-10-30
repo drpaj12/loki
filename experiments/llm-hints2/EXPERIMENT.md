@@ -121,3 +121,61 @@ or at the weekly meter reading 85 percent (the controller's rule at run time).
      (prompt bytes / 3.2 plus the mean pilot reply per arm): input 2,583,393, output 95,424.
      Dry run (`dryrun_result.json`): 72 fake replies score as expected, 0 timeouts, the
      CLAIMS-USED fields and the analysis run.
+
+- 2026-10-30 (before any model call): fix round after review of PR 62. Nothing below depends on
+  any model result; there is none. These amendments supersede the wording of the amendment above
+  where they differ.
+  1. Arm W, new construction (supersedes "inside its class"). The first W kept every claim inside
+     the classes input / state / other wire, so its `// loki` comments landed on largely the same
+     flip-flops as the true ones (mean tag overlap 0.63; 17 problems at or above 0.64; Prob041_dff8r
+     1.0), which made W only weakly wrong. Now every net a claim names (`wires`, `nets`, the net
+     fields of `facts`, bus bits, `net_roles` keys) is moved by a seeded map to a wire that no claim
+     names and whose driving line carries no true tag, across classes (`netlink.permutation`);
+     ids, kinds, p, text and format are kept. Where the claims cover most of a small netlist the
+     free wires run out: a net the hint text never prints then reuses an untagged wire (W has fewer
+     tags), and a printed net takes a tagged line whose true tags exclude every claim that names
+     it. Of 40 seeded candidates per problem (`hints2-w:<problem>:<k>`) the one with the fewest
+     shared (line, claim id) tags is kept, so W is a function of the problem name. Result
+     (`wrong_overlap.csv`, `wrong_overlap.py`; 36 problems with claims; a tag is a (line, claim id)
+     pair): share of the true tags that W also has on the same line, mean 0.182, max 0.333; share of
+     W's tags that are true, mean 0.280, max 0.857; 13 of 36 problems below 0.2 on the worse of the
+     two, 31 of 36 at or below 0.5. The aim of 0.2 per problem is not reached for every problem; it
+     cannot be where one claim covers most of a small netlist. The 5 problems above 0.5
+     (Prob041_dff8r, Prob086_lfsr5, Prob136_m2014_q6, Prob121_2014_q3bfsm, Prob133_2014_q3fsm) are
+     marked `excluded` and are left out of every comparison with W (W vs A2) in the analysis; their
+     calls are still made. Size: W user messages are 98.7% of B2's in bytes (hint text 95.6%).
+  2. p of sequential claims (counter, shift register, LFSR, register, state machine) is a per-kind
+     constant: the Laplace posterior of "the extracted next-state function matched the netlist it
+     was extracted from" (57 of 57 held). It measures that the extraction is consistent with the
+     netlist, not that the claim states the designer's intent. The analysis must not treat the
+     per-claim p as informative, and none of the analyses uses p as a covariate. p of overlay
+     claims is the calibrated `p_comp` of `calib/f3.json`.
+  3. Calibration is in-sample only. `calib_intent_report.csv` has train_n 0 for every kind: all 57
+     checked claims come from the 64 problems of this run, so there is no held-out or
+     out-of-sample calibration figure for the intent claims.
+  4. The earlier statement that v2 is "not worse than v1" in calibration (A6) is withdrawn.
+     `l1_calibration_compare.csv` counts 0 v2 claims on the L1 benchmark (v2_counted 0, because v2
+     overlay claims need p of at least 0.9), so the comparison of ECE is vacuous. No claim of
+     improved or equal calibration is made.
+  5. Secondary analysis, stated before the calls: 28 of the 64 problems have no v2 claim (their B2
+     equals A2 plus the prompt text, and W equals B2). The same rule (MAJ, exact McNemar stratified
+     over Q3 and Q4, 9 tests, Holm) is also run on the 36 problems with at least one v2 claim, as
+     its own Holm family. It is labelled secondary and gives no verdict; the verdict stays with the
+     64-problem primary. `analyze_hints2.py` prints it.
+  6. Confound: A2 has no hint explanation and no `CLAIMS-USED` line, B1', B2 and W have both. B2 vs
+     A2 therefore differs by the hints and by those two prompt parts together; B2 vs B1' (same
+     prompt) isolates the content of the hints.
+  7. Prompt wording: "candidate" now covers every claim that is not proved, including a claim
+     checked on sampled inputs only; for a proved claim p is Loki's own estimate of the
+     reliability of its checks (see 2), not a measure of designer intent.
+  8. LLM6 sign: W minus A2 is negative when W-only problems are fewer than A2-only problems in the
+     MAJ discordant counts (the counts that give its p), not the pass@1 difference.
+  9. Leak gate extended: besides the v1 patterns (0 hits), the identifiers of the reference RTL
+     that are not ports, keywords, numeric-literal digits, comments, or words of the netlist, the
+     dataset prompt, the system message or our fixed templates (30 names over the 64 problems) are
+     searched as whole words in the system message, the 256 user messages and the 768 call files:
+     0 hits.
+  10. Build after the fixes: 768 calls, 33 batches, estimated tokens in 2,592,156, out 95,424;
+     the v1 blocks rebuild the llm-full arm B messages for 64 of 64 problems; every `hN` of
+     `hints_v1/` has a kind (checked by the build). Dry run: 72 fake replies as expected, 0
+     timeouts, CLAIMS-USED fields and analysis run.

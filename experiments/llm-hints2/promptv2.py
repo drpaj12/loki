@@ -27,11 +27,13 @@ EXPLAIN_V1 = (
 )
 EXPLAIN_V2 = (
     "How to read the Loki claims. Each claim has an id (such as h7), a probability p and a "
-    "status. p is Loki's calibrated probability that the claim is true of this netlist. "
-    "\"proved\" means Loki checked the claim against the netlist logic (a truth table or an "
-    "exhaustive simulation of the next-state logic); \"candidate\" means a structural guess that "
-    "can be wrong, so check it against the netlist before you rely on it. A claim says what a "
-    "group of signals is (a counter, a state machine, a bus), not what the designer called it. "
+    "status. \"proved\" means Loki checked the claim against the netlist logic (a truth table or "
+    "an exhaustive simulation of the next-state logic); for a proved claim p is Loki's own "
+    "estimate of how reliable its checks of that kind of claim are, not a measure of what the "
+    "designer intended. A \"candidate\" is any claim that is not proved: a structural match, or "
+    "a claim checked on sampled inputs only; candidates can be wrong, so check them against the "
+    "netlist before you rely on them. A claim says what a group of signals is (a counter, a "
+    "state machine, a bus), not what the designer called it. "
     "The netlist above carries comments of the form \"// loki h7 ...\" on the gates and ports a "
     "claim covers, so you can see which gates belong to which claim. Use the claims where they "
     "help you."

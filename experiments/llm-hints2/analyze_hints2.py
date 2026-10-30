@@ -84,17 +84,22 @@ class TestRow:
     p_holm: float = 1.0
 
 
-def tests(counts: dict[tuple[str, str], int], quart: dict[str, str], kind: str) -> list[TestRow]:
+def tests(counts: dict[tuple[str, str], int], quart: dict[str, str], kind: str,
+          skip_w: frozenset[str] = frozenset()) -> list[TestRow]:
+    """The 9 planned tests. Comparisons with W leave out the problems in ``skip_w`` (those whose
+    wrong linking still overlaps the true one by more than half; ``wrong_overlap.csv``)."""
     rows: list[TestRow] = []
     for x, y in COMPARISONS:
         pool = [0, 0]
+        drop = skip_w if "W" in (x, y) else frozenset()
         for q in STRATA:
-            probs = sorted(p for p in quart if quart[p] == q)
+            probs = sorted(p for p in quart if quart[p] == q and p not in drop)
             b, c = discordant(counts, probs, x, y, kind)
             pool[0] += b
             pool[1] += c
             rows.append(TestRow(f"{x} vs {y}", q, len(probs), b, c, stats.mcnemar(b, c)))
-        rows.append(TestRow(f"{x} vs {y}", "all (stratified)", len(quart), pool[0], pool[1],
+        rows.append(TestRow(f"{x} vs {y}", "all (stratified)", len(quart) - len(drop & set(quart)),
+                            pool[0], pool[1],
                             stats.mcnemar(pool[0], pool[1])))
     for r, adj in zip(rows, holm([r.p for r in rows]), strict=True):
         r.p_holm = adj
@@ -118,8 +123,22 @@ def verdict(p_holm: float, mean: float, lo: float, hi: float) -> str:
     return "INCONCLUSIVE"
 
 
-def llm6(w_row: TestRow, w_mean: float, use_rate: float) -> bool:
-    return w_row.p_holm < 0.05 and w_mean < 0 and use_rate > 0.5
+def llm6(w_row: TestRow, use_rate: float) -> bool:
+    """W minus A2 is negative on MAJ (W-only problems fewer than A2-only, the same counts as p)."""
+    return w_row.p_holm < 0.05 and w_row.x_only < w_row.y_only and use_rate > 0.5
+
+
+def excluded_w(path: Path) -> frozenset[str]:
+    """Problems marked ``excluded`` in ``wrong_overlap.csv`` (empty set when the file is absent)."""
+    if not path.exists():
+        return frozenset()
+    with path.open(encoding="utf-8", newline="") as fh:
+        return frozenset(r["problem"] for r in csv.DictReader(fh) if r["status"] == "excluded")
+
+
+def with_claims(kinds: dict[str, dict[str, dict[str, str]]]) -> set[str]:
+    """Problems that have at least one v2 claim (B2 differs from A2 by more than its text)."""
+    return {p for p, k in kinds.get("B2", {}).items() if k}
 
 
 def rate_table(counts: dict[tuple[str, str], int], quart: dict[str, str]) -> list[str]:
@@ -170,7 +189,8 @@ def kind_table(rows: list[dict[str, str]], kinds: dict[str, dict[str, dict[str, 
 
 
 def render(counts: dict[tuple[str, str], int], quart: dict[str, str],
-           rows: list[dict[str, str]], kinds: dict[str, dict[str, dict[str, str]]]) -> str:
+           rows: list[dict[str, str]], kinds: dict[str, dict[str, dict[str, str]]],
+           skip_w: frozenset[str] = frozenset()) -> str:
     probs = sorted(quart)
     out = [f"# Hints v2 summary ({len(probs)} problems, 3 draws, strict: no pass = fail)", "",
            "## pass@k per arm and quartile", "", *rate_table(counts, quart), "",
@@ -180,9 +200,13 @@ def render(counts: dict[tuple[str, str], int], quart: dict[str, str],
         cis[(x, y)] = boot_ci(counts, probs, x, y)
         m, lo, hi = cis[(x, y)]
         out.append(f"- {x} minus {y}: {m:+.3f} [{lo:+.3f}, {hi:+.3f}]")
-    maj = tests(counts, quart, "MAJ")
+    maj = tests(counts, quart, "MAJ", skip_w)
+    sub = {p: q for p, q in quart.items() if p in with_claims(kinds)}
+    sec = tests(counts, sub, "MAJ", skip_w) if sub else []
     for title, table in (("primary: at least 2 of 3 draws", maj),
-                         ("secondary: any draw passes", tests(counts, quart, "ANY"))):
+                         ("secondary: any draw passes", tests(counts, quart, "ANY", skip_w)),
+                         (f"secondary, pre-stated: the {len(sub)} problems with v2 claims, at "
+                          "least 2 of 3 draws (own Holm family)", sec)):
         out += ["", f"## Paired tests, {title} (Holm over {len(table)})", "",
                 "| comparison | stratum | problems | first only | second only | p | p (Holm) |",
                 "| --- | --- | --- | --- | --- | --- | --- |"]
@@ -198,9 +222,14 @@ def render(counts: dict[tuple[str, str], int], quart: dict[str, str],
             f"{MIN_GAIN:+.2f})"]
     u, line, n = rates["B2"]
     wm = cis[("W", "A2")][0]
-    word = "supported" if llm6(wrow, wm, u / n if n else 0) else "not supported"
-    out.append(f"- LLM6, W vs A2: {word} (W minus A2 {wm:+.3f}, stratified Holm p "
-               f"{wrow.p_holm:.4f}, B2 use rate {u}/{n})")
+    word = "supported" if llm6(wrow, u / n if n else 0) else "not supported"
+    out.append(f"- LLM6, W vs A2: {word} (MAJ: W only {wrow.x_only}, A2 only {wrow.y_only}; "
+               f"stratified Holm p {wrow.p_holm:.4f}; B2 use rate {u}/{n}; pass@1 W minus A2 "
+               f"{wm:+.3f} over all problems; {len(skip_w)} problems left out of the W tests)")
+    if sec:
+        s2 = next(r for r in sec if r.cmp == "B2 vs A2" and r.stratum.startswith("all"))
+        out.append(f"- Secondary (problems with claims), B2 vs A2: MAJ B2 only {s2.x_only}, A2 "
+                   f"only {s2.y_only}, stratified Holm p {s2.p_holm:.4f} (not a verdict)")
     out += ["", "## Use of the claims (CLAIMS-USED line)", "",
             "| arm | calls naming a claim | calls with the line | calls |",
             "| --- | --- | --- | --- |"]
@@ -214,12 +243,13 @@ def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--results", type=Path, required=True)
     ap.add_argument("--kinds", type=Path, default=HERE / "claim_kinds.json")
+    ap.add_argument("--excluded", type=Path, default=HERE / "wrong_overlap.csv")
     ap.add_argument("--out", type=Path, default=None)
     a = ap.parse_args(argv)
     counts, quart, rows = load(a.results)
     kinds = json.loads(a.kinds.read_text(encoding="utf-8")) if a.kinds.exists() else {
         arm: {} for arm in HINT_ARMS}
-    text = render(counts, quart, rows, kinds)
+    text = render(counts, quart, rows, kinds, excluded_w(a.excluded))
     if a.out:
         a.out.write_text(text, encoding="utf-8", newline="\n")
     sys.stdout.write(text)

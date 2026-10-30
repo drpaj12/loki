@@ -40,7 +40,8 @@ CLAIM: dict[str, Any] = {"id": "h7", "kind": "counter", "source": "seq", "p": 0.
          "status": "proved", "evidence": "exhaustive", "merged": [], "params": {},
          "nets": {"q": ["q[0]", "q[1]"], "d": ["_00_", "q[0]"], "rst": ["reset"]},
          "wires": ["_00_", "q[0]", "q[1]"],
-         "facts": {"q": ["q[0]", "q[1]"], "rst": {"net": "reset", "active": 1, "value": 0}}}
+         "facts": {"q": ["q[0]", "q[1]"], "rst": {"net": "reset", "active": 1, "value": 0},
+                   "width": 2, "modulus": 4, "wrap": 0, "dir": "up", "start": 0, "async": False}}
 INTENT: dict[str, Any] = {"claims": [CLAIM], "buses": [], "net_roles": {}}
 
 
@@ -56,20 +57,38 @@ class Annotate(unittest.TestCase):
         stripped = "\n".join(x.split("  // loki")[0] for x in lines)
         self.assertEqual(stripped, NETLIST)
 
-    def test_wrong_content_moves_every_name_inside_its_class(self) -> None:
+    def test_wrong_content_is_reproducible_and_keeps_ids_kinds_p(self) -> None:
         wrong = netlink.wrong_content(NETLIST, INTENT, "seed")
         again = netlink.wrong_content(NETLIST, INTENT, "seed")
         self.assertEqual(wrong, again)
         c = wrong["claims"][0]
         self.assertEqual((c["id"], c["kind"], c["p"]), ("h7", "counter", 0.97))
         self.assertNotEqual(c["nets"]["q"], CLAIM["nets"]["q"])
-        self.assertEqual(sorted(c["nets"]["q"]), sorted(CLAIM["nets"]["q"]))
         self.assertEqual(INTENT["claims"][0]["nets"]["q"], ["q[0]", "q[1]"])
+
+    def test_translate_touches_only_net_fields(self) -> None:
+        c = dict(CLAIM, facts={"q": ["a"], "rst": {"net": "r", "active": 1, "value": 0},
+                               "fn": "a", "dir": "up", "x": "#1",
+                               "modes": [{"cond": [[["a", 0]]], "data": ["#0", "a"],
+                                          "label": "a"}]})
+        out = netlink.translate({"claims": [c], "buses": [], "net_roles": {"a": {"p": None}}},
+                                lambda n: n.upper())
+        f = out["claims"][0]["facts"]
+        self.assertEqual((f["q"], f["rst"]["net"], f["fn"], f["dir"]), (["A"], "R", "a", "up"))
+        self.assertEqual(f["modes"][0], {"cond": [[["A", 0]]], "data": ["#0", "A"], "label": "a"})
+        self.assertEqual(list(out["net_roles"]), ["A"])
 
     def test_clock_is_never_a_target(self) -> None:
         mapping = netlink.permutation(NETLIST, INTENT, "x")
         self.assertNotIn("clk", mapping)
         self.assertNotIn("clk", mapping.values())
+
+    def test_overlap_counts_line_and_claim_tags(self) -> None:
+        linked = netlink.annotate(NETLIST, INTENT)
+        o = netlink.overlap(linked, linked)
+        self.assertEqual((o["tag_of_linked"], o["line_of_wrong"]), (1.0, 1.0))
+        none = netlink.overlap(linked, NETLIST)
+        self.assertEqual((none["wrong_lines"], none["tag_of_linked"]), (0, 0.0))
 
 
 class Prompt(unittest.TestCase):
@@ -128,9 +147,10 @@ class Analysis(unittest.TestCase):
 
     def test_llm6_needs_a_drop_and_use(self) -> None:
         row = analyze.TestRow("W vs A2", "all", 16, 0, 8, 0.01, 0.04)
-        self.assertTrue(analyze.llm6(row, -0.3, 0.8))
-        self.assertFalse(analyze.llm6(row, -0.3, 0.4))
-        self.assertFalse(analyze.llm6(row, 0.1, 0.8))
+        self.assertTrue(analyze.llm6(row, 0.8))
+        self.assertFalse(analyze.llm6(row, 0.4))
+        up = analyze.TestRow("W vs A2", "all", 16, 8, 0, 0.01, 0.04)
+        self.assertFalse(analyze.llm6(up, 0.8))
 
     def test_pooled_equals_mcnemar(self) -> None:
         counts, quart = self.counts(2, 10, 2)

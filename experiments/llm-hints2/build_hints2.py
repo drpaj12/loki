@@ -21,6 +21,7 @@ import csv
 import hashlib
 import importlib
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -40,6 +41,46 @@ DELIM_USER = "\n===== USER MESSAGE =====\n"
 V1_DIR = HERE / "hints_v1"
 FULL_SIZES = hintscfg.FULL / "prompt_sizes_full.csv"
 PILOT_REPLY_ARM = {"A2": "A", "B1p": "B", "B2": "B", "W": "B"}
+
+
+KEYWORDS = frozenset([
+    "module", "endmodule", "input", "output", "inout", "wire", "reg", "logic", "integer",
+    "parameter", "localparam", "assign", "always", "always_ff", "always_comb",
+    "always_latch", "initial", "begin", "end", "if", "else", "case", "casex", "casez",
+    "endcase", "default", "for", "while", "posedge", "negedge", "or", "and", "not", "xor",
+    "nand", "nor", "xnor", "function", "endfunction", "task", "endtask", "signed",
+    "unsigned", "genvar", "generate", "endgenerate", "typedef", "enum", "struct", "int",
+    "bit", "byte"
+])
+WORD = re.compile(r"[A-Za-z_]\w*")
+
+
+def template_words() -> set[str]:
+    """Words of the fixed English templates (hint renderer and prompt pieces): a reference name that
+    is also an ordinary word of our own text ("bits") is not a leak."""
+    root = HERE.parents[1]
+    return set(WORD.findall((root / "loki" / "intent" / "text.py").read_text(encoding="utf-8"))) | \
+        set(WORD.findall((HERE / "promptv2.py").read_text(encoding="utf-8"))) | \
+        set(WORD.findall(common.system_msg()))
+
+
+def ref_names(problem: str) -> set[str]:
+    """Identifiers of the reference RTL that are not ports, keywords or already present in the
+    original netlist or the dataset prompt (what the model is allowed to see): reaching a prompt,
+    they would be a leak from the reference. Names shorter than 3 characters are not checked."""
+    d = common.dataset_dir()
+    ref = (d / f"{problem}_ref.sv").read_text(encoding="utf-8")
+    ref = re.sub(r"//[^\n]*|/\*.*?\*/", " ", ref, flags=re.S)
+    ref = re.sub(r"\d*'[sS]?[bBoOdDhH][0-9a-fA-F_xXzZ]+", " ", ref)
+    head = ref.split(");", 1)[0]
+    seen = set(WORD.findall((d / f"{problem}_netlist.v").read_text(encoding="utf-8"))) | set(
+        WORD.findall((d / f"{problem}_prompt.txt").read_text(encoding="utf-8")))
+    ids = set(WORD.findall(ref)) - set(WORD.findall(head)) - KEYWORDS - seen - template_words()
+    return {i for i in ids if len(i) >= 3}
+
+
+def ref_hits(problem: str, text: str) -> list[str]:
+    return sorted(ref_names(problem) & set(WORD.findall(text)))
 
 
 def call_file_text(system: str, user: str) -> str:
@@ -152,6 +193,10 @@ def claim_kinds(problems: list[str]) -> dict[str, dict[str, dict[str, str]]]:
         v1 = json.loads((hintscfg.RUN / "hints" / p / "out" / "reverse-provenance.json")
                         .read_text(encoding="utf-8"))
         out["B1p"][p] = {e["id"]: e["kind"] for e in v1["elements"]}
+        used = set(re.findall(r"\bh\d+\b", v1_block(p)))
+        if not used <= set(out["B1p"][p]):
+            raise SystemExit(f"{p}: ids {sorted(used - set(out['B1p'][p]))} of hints_v1 have no "
+                             "kind in reverse-provenance.json")
         v2 = json.loads((hintscfg.RUN / "hints2" / p / "intent.json").read_text(encoding="utf-8"))
         kinds = {c["id"]: c["kind"] for c in v2["claims"]}
         out["B2"][p], out["W"][p] = kinds, dict(kinds)
@@ -187,6 +232,9 @@ def main() -> int:
             user = build_one(prefix, r["problem"], arm)
             if bp.leak_hits(user):
                 raise SystemExit(f"leak gate: {arm} {r['problem']}: {bp.leak_hits(user)}")
+            if ref_hits(r["problem"], user):
+                raise SystemExit(f"ref-name gate: {arm} {r['problem']}: "
+                                 f"{ref_hits(r['problem'], user)}")
             users[(arm, r["problem"])] = user
     run = hintscfg.RUN
     for (arm, p), user in sorted(users.items()):
@@ -201,6 +249,8 @@ def main() -> int:
         text = call_file_text(system, user)
         if bp.leak_hits(text):
             raise SystemExit(f"leak gate: call file {n}: {bp.leak_hits(text)}")
+        if ref_hits(p, text):
+            raise SystemExit(f"ref-name gate: call file {n}: {ref_hits(p, text)}")
         nbytes = len(user.encode("utf-8"))
         base = Path("prompts") / arm / p
         calls.append({
@@ -226,6 +276,8 @@ def main() -> int:
     sizes = [c["user_bytes"] for c in calls]
     tin = sum(c["est_tokens_in"] for c in calls)
     tout = sum(c["est_tokens_out"] for c in calls)
+    print(f"ref-name gate: 0 hits ({sum(len(ref_names(r['problem'])) for r in rows)} names over "
+          f"{len(rows)} problems, {len(calls)} call files)")
     print(f"{len(rows)} problems, {len(calls)} calls, {len(batches)} batches; v1 fidelity "
           f"{fidelity}/{len(rows)}; max user message {max(sizes)} bytes; est tokens in {tin}, "
           f"out {tout}")
