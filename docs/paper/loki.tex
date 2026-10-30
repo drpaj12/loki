@@ -1988,6 +1988,83 @@ under-represent the largest designs. (iv)~Arm~A is near the ceiling in Q1 and Q2
 interval rules out a gain larger than about 0.04. LLM4 \verdict{USEFUL}: B minus C $+0.319$, stratified 52 against 5, Holm $p<0.0001$; per quartile Q1 and Q2
 pass the rule and Q3 and Q4 are \verdict{INCONCLUSIVE}. Arm~C passing 0.56 bounds what the netlist adds: B minus C $=+0.319$.
 
+\subsection{Language model plus Loki's hints, version 2 (LLM5, LLM6)}
+\label{sec:llm-hints2}
+
+\hev{Hypotheses.} LLM5: a model given Loki's linked hints (version 2) recovers RTL better than the netlist alone.
+LLM6: the model uses the hints, so hints with wrong content hurt.
+
+% Sources: experiments/llm-hints2/EXPERIMENT.md (Results 2026-10-30), experiments/llm-hints2/results/summary.md,
+% results.csv, transcript-audit.txt, blinding-probe-hints2.txt. Every number below is copied from those files.
+
+The full run found no gain from the version-1 hints. Two defects were fixed before this run: the claims were weak
+(no counter kind, empty state-machine claims, duplicates), and the model was never told what the hints are. Version 2
+writes one plain-English line per claim with a probability, links it into the netlist as a comment on the line of each
+cell the claim covers, and the prompt explains the hints and asks the model to name the claims it used. The plan was
+written and committed before the calls.
+
+\emph{Setup.} The 64 problems of Q3 (34) and Q4 (30), where arm A of the full run was not at the ceiling. Four arms:
+A2 (netlist only), B1' (the version-1 hints with the new prompt), B2 (version-2 hints) and W (version-2 claims moved to
+wires they do not describe; 5 problems whose wrong claims stayed too close to the true ones are left out of the W tests).
+Three draws per problem and arm: 768 calls to fresh \code{claude-sonnet-5-5} subagents, the full-run scorer and tests
+(at least 2 of 3 draws; exact stratified McNemar; Holm over nine tests). The stop was set at 97 percent of the weekly
+meter (Peter, before the calls); the meter never passed 89.
+
+\emph{Results.} 762 calls produced a reply file; 6 did not (the model answered in chat), with 0 API refusals and 0 timeouts.
+Outcomes: pass 645, runtime 109, compile 8. Table~\ref{tab:llm-hints2} gives the pass rates. In Q4 the model passes more
+often with the version-2 hints (pass@1 0.933 for B2 against 0.744 for A2, 0.800 for B1' and 0.789 for W); in Q3 all arms sit
+between 0.85 and 0.87. Over all 64 problems B2 minus A2 is $+0.099$ with 95\% interval $[+0.052,+0.151]$ and B2 minus B1'
+is $+0.073$ $[+0.031,+0.115]$. Pass@3 is 0.906 for A2, B1' and B2 (W 0.875): the hints raise the consistency of a single
+draw, not the best-of-three ceiling. The primary test does not reach the rule: 4 problems only B2 passes against 0 only
+A2 passes, Holm $p=1.0000$. A2 already passes 54 of 64 problems by that measure, so few problems can differ.
+
+\emph{Use of the claims.} The model names a claim in 107 of 192 B2 calls. FSM claims were used in 57 B2 calls and all 57
+passed; counter claims in 24 and all passed. In W, FSM claims were used in 33 calls with 27 passes, against 24 calls where
+an FSM claim was offered and not used with 19 passes (0.82 against 0.79, no difference); a used wrong state-machine hint passed
+less often than a used right one (27 of 33 against 57 of 57), but on different problems, so this is not a paired test. W minus
+A2 is $+0.026$ ($[-0.021,+0.073]$), with 2 problems only W passes and 2 only A2 passes.
+
+\begin{table}[t]
+\centering
+\caption{LLM hints v2: pass rates per arm, 64 problems, 3 draws, strict scorer. MAJ: passes in at least 2 of 3 draws.}
+\label{tab:llm-hints2}
+\small
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Stratum & Arm & Problems & pass@1 & pass@3 & MAJ \\
+\midrule
+Q3 & A2 & 34 & 0.853 & 0.882 & 30/34 \\
+Q3 & B1' & 34 & 0.853 & 0.882 & 30/34 \\
+Q3 & B2 & 34 & 0.873 & 0.882 & 30/34 \\
+Q3 & W & 34 & 0.863 & 0.882 & 30/34 \\
+Q4 & A2 & 30 & 0.744 & 0.933 & 24/30 \\
+Q4 & B1' & 30 & 0.800 & 0.933 & 26/30 \\
+Q4 & B2 & 30 & 0.933 & 0.933 & 28/30 \\
+Q4 & W & 30 & 0.789 & 0.867 & 25/30 \\
+All & A2 & 64 & 0.802 & 0.906 & 54/64 \\
+All & B1' & 64 & 0.828 & 0.906 & 56/64 \\
+All & B2 & 64 & 0.901 & 0.906 & 58/64 \\
+All & W & 64 & 0.828 & 0.875 & 55/64 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{Threats to validity.} (i)~Underpowered: the primary test counts discordant problems, A2 is near the ceiling, and 4
+against 0 cannot pass after Holm; the pass@1 interval and the claim-use table are not the pre-stated rule. (ii)~Blinding: as in
+the full run, the call subagents were not tool-less and saw the workspace instructions, a memory index and a terse-style hook text.
+The transcript audit of all 768 calls found 0 calls touching any path other than their own call file and reply file and 0 using other
+tools; 26 used more than two tool calls (paged reads, double writes, and 6 calls that edited their own reply file with Edit instead
+of Write). All are scored as made. (iii)~Confound: A2 has neither the hint explanation nor the claim-use line, so B2 against A2 differs by
+both; B2 against B1' holds the prompt fixed and isolates the hint content. (iv)~The probability of a sequential claim is a per-kind
+constant checked on the netlist, not a measure of designer intent, and it was not used in any analysis. The checks are in-sample.
+(v)~Wrong claims (W) stay partly close to the true ones in small designs. (vi)~Memorisation is not controlled in this run. Sampling is
+not controlled.
+
+\hev{Verdicts.} LLM5 \verdict{INCONCLUSIVE}: B2 against A2 stratified discordant 4 against 0, Holm $p=1.0000$, although mean pass@1
+is $+0.099$ $[+0.052,+0.151]$. The interval and the claim-use table suggest that version-2 hints help on Q4 and that the model reads
+and uses state-machine and counter claims; this is a pointer for a better-powered test, not a verdict. LLM6 \verdict{DISMISSED}: W against
+A2 discordant 2 against 2, Holm $p=1.0000$; the hypothesis that wrong hints lower the pass rate is not supported by the pre-stated test.
+
 \subsection{Per-quartile results: Loki alone and Loki with a model (Q1, Q2)}
 \label{sec:quartiles}
 
@@ -2108,7 +2185,8 @@ Fourth, \emph{readable and verified are different properties}. The language mode
 similarity to the reference is high and whose operators it names, but nothing proves the text equals the
 netlist; Loki's output is formally equal to its input in all runs and recovers few operators. The pilot
 (LLM1, LLM2) could not separate the arms; the full run (LLM3, LLM4) shows that the hints add nothing
-measurable to the netlist (LLM3 DISMISSED) while the netlist itself adds a lot (LLM4 USEFUL).
+measurable to the netlist (LLM3 DISMISSED) while the netlist itself adds a lot (LLM4 USEFUL). A second run with better, linked hints (LLM5, LLM6) gave a Q4 pass@1 of 0.933 against 0.744 but did not meet
+the pre-stated test (LLM5 INCONCLUSIVE, LLM6 DISMISSED); it is a pointer, not a verdict.
 
 \emph{Candidate innovations.} Three ideas have only POSSIBLY GOOD support and stay out of the contributions.
 The graph network (L2b) needs several random splits with an interval over designs and a second benchmark
@@ -2127,7 +2205,7 @@ designs: equivalence and recovery were not run on the big VTR designs.
 \section{Future work}
 \label{sec:future}
 
-Three hypotheses are untested. Each is an idea and the experiment it needs.
+Four hypotheses are untested. Each is an idea and the experiment it needs.
 
 \emph{L3, a cross-suite GNN.} A GNN trained on one benchmark suite may transfer to the other. The experiment
 trains on the micro designs and tests on the VerilogEval designs and the reverse, with an interval over designs.
@@ -2140,6 +2218,13 @@ same graph.
 better than the model alone. The experiment is the Gate-Breaker task with a record arm and a no-record arm on the
 full quartile files, three draws per arm. The full run of Section~\ref{sec:llm-full} did this for the hints (arm B against
 arm A) but not yet for the ReverseProvenance record.
+
+\emph{Target-aware transformations.} The flow that makes a netlist can recode a construct for its target: a state
+machine may be rewritten one-hot instead of binary, a sum may map to a carry chain, a memory to a hard block. Each
+changes the footprint the construct leaves in the netlist. The experiment (hub question L Q3.3) measures how each
+transformation changes the netlist footprint of a construct and whether Loki recovers more when it speculates which
+transformation was applied, starting with state-machine encoding and then carry chains and hard blocks. The hints-v2 run
+(LLM5) gives a first reason to try: state-machine claims are the ones the model used most.
 
 \section{Conclusion}
 \label{sec:conclusion}

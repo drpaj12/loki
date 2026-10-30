@@ -179,3 +179,92 @@ or at the weekly meter reading 85 percent (the controller's rule at run time).
      the v1 blocks rebuild the llm-full arm B messages for 64 of 64 problems; every `hN` of
      `hints_v1/` has a kind (checked by the build). Dry run: 72 fake replies as expected, 0
      timeouts, CLAIMS-USED fields and analysis run.
+
+- 2026-10-30 (amendment 11, before the calls): the weekly stop is raised from 85 to 97 percent. Peter,
+  2026-10-30: "Don't stop - go until 97% and then we'll talk". This replaces the 85 percent in the
+  stop rule above; the refusal stop rule is unchanged. The calls ran with the 97 percent stop. The
+  meter never passed 89 percent.
+
+## Results (2026-10-30)
+
+Plan written before the runs; the verdict rules are the ones that plan set, applied unchanged. No
+model call and no re-scoring was done for this section. Tracked outputs are in `results/`
+(`results.csv`, `summary.md`, `dispatch-log.tsv`, `status.csv`, `transcript-audit.txt`,
+`blinding-probe-hints2.txt`); the call files, prompts and replies stay in the git-ignored `run/`,
+no raw replies are committed.
+
+### Plain English
+
+All 768 calls were made: 762 produced a file (ok) and 6 did not (no_file: calls 107, 120, 160, 230,
+342, 639; the model replied in chat and wrote no file), 0 api_refused, 0 timeouts. Outcomes: pass 645,
+runtime 109, compile 8.
+
+The primary test did not find a gain. Under the rule fixed in advance (a problem counts if it
+passes in at least 2 of 3 draws; exact stratified McNemar; Holm over 9 tests) B2 against A2 is
+INCONCLUSIVE: 4 problems only B2 passes, 0 only A2 passes, Holm p = 1.0. The test is underpowered:
+A2 already passes 54 of 64 problems by that measure, so only a handful of problems can differ, and
+4 against 0 cannot reach p < 0.05 after Holm.
+
+The softer measures point the same way, on Q4. Mean pass@1 on Q4 is A2 0.744, B1p 0.800, B2 0.933,
+W 0.789; on Q3 all arms sit at 0.85 to 0.87. Over all 64 problems B2 minus A2 is +0.099 with
+interval [+0.052, +0.151], and B2 minus B1p is +0.073 [+0.031, +0.115]. Pass@3 is 0.906 for A2, B1p
+and B2 (W 0.875): the v2 hints make single draws more consistent, they do not raise the best-of-3
+ceiling. When a B2 call names a claim, it passes: FSM claims used in 57 B2 calls, 57 pass; counter 24
+of 24. In W (wrong claims) FSM claims used in 33 calls, 27 pass, against 24 calls where an FSM claim
+was offered and not used, 19 pass (0.82 against 0.79: no difference). A used wrong FSM hint passed less
+often than a used right one (27/33 against 57/57), but on different problems: not a paired test.
+
+What this does and does not show. It does not show, under the pre-stated rule, that v2 hints help.
+It also does not show they do not: the test could not have said yes on this ceiling. The pass@1
+interval and the claim-use table suggest B2 helps on Q4 and that the model reads and uses FSM and
+counter claims. This is a pointer to a better-powered test (harder problems, lower A2 ceiling), not
+a verdict.
+
+### Headline
+
+| stratum | arm | problems | pass@1 | pass@3 | MAJ |
+| --- | --- | --- | --- | --- | --- |
+| Q3 | A2 / B1p / B2 / W | 34 | 0.853 / 0.853 / 0.873 / 0.863 | 0.882 all | 30/34 all |
+| Q4 | A2 | 30 | 0.744 | 0.933 | 24/30 |
+| Q4 | B1p | 30 | 0.800 | 0.933 | 26/30 |
+| Q4 | B2 | 30 | 0.933 | 0.933 | 28/30 |
+| Q4 | W | 30 | 0.789 | 0.867 | 25/30 |
+| all | A2 | 64 | 0.802 | 0.906 | 54/64 |
+| all | B1p | 64 | 0.828 | 0.906 | 56/64 |
+| all | B2 | 64 | 0.901 | 0.906 | 58/64 |
+| all | W | 64 | 0.828 | 0.875 | 55/64 |
+
+Mean pass@1 difference (problem-level bootstrap 95% interval): B2 minus A2 +0.099 [+0.052, +0.151];
+B2 minus B1p +0.073 [+0.031, +0.115]; W minus A2 +0.026 [-0.021, +0.073]; B1p minus A2 +0.026
+[-0.021, +0.073].
+
+### Verdicts
+
+- LLM5 (hints v2 help; B2 vs A2): INCONCLUSIVE. Stratified MAJ discordant 4 against 0, Holm p = 1.0000
+  (Q3 0, 0; Q4 4, 0). Mean pass@1 +0.099 [+0.052, +0.151] is above the minimum gain of 0.05 but the
+  pre-stated MAJ rule is not met. Secondary (pass@3): 0 against 0. Secondary on the 36 problems with
+  claims (own Holm family, no verdict): 4 against 0, Holm p = 1.0000. B2 vs B1p (prompt held fixed):
+  2 against 0, Holm p = 1.0000, pass@1 +0.073 [+0.031, +0.115].
+- LLM6 (the model uses the hints; W vs A2): not supported (DISMISSED in the register). MAJ W only 2,
+  A2 only 2, Holm p = 1.0000, 59 problems (5 left out as too similar to the true claims); pass@1 W
+  minus A2 +0.026, wrong sign for the hypothesis. Use rate: B2 107 of 192 calls name a claim (B1p
+  116, W 60).
+
+Claim use (CLAIMS-USED line), selected rows: B2 fsm 57 calls using, 57 pass; counter 24, 24; shift_reg
+15, 15; eq_const 11, 10. W fsm 33 using, 27 pass; fsm offered not used 24, 19 pass.
+
+### Deviations
+
+1. Stop rule: amendment 11 above (97 percent). The meter never passed 89 percent, so no stop fired.
+2. Transcript audit (`results/transcript-audit.txt`): 768 calls audited, 0 touched any path other
+   than their own call file and outbox file, 0 used other tools. 26 used more than the expected two
+   tool calls: paged Reads, double Writes, and 6 calls (0173, 0238, 0240, 0493, 0749, 0751) that
+   used Edit twice on their own outbox file, a deviation from the Write-only
+   instruction. All are scored as made.
+3. Blinding: as in llm-full, the call subagents were not blind to the workspace context (probe
+   `results/blinding-probe-hints2.txt`: the workspace CLAUDE.md, the memory index, the caveman hook,
+   the Agent, Bash, Edit, Read, Skill, ToolSearch, Write and Docs tools). Evidence from behaviour only.
+4. Six no_file calls (107, 120, 160, 230, 342, 639) are scored as failures (strict: no pass = fail).
+5. Confound and power: A2 differs from B2 by hints and by the hint explanation and CLAIMS-USED line;
+   B2 vs B1p isolates the hint content. A2 is near ceiling (MAJ 0.84), so the primary test is
+   underpowered. p of sequential claims is a per-kind constant and was not used as a covariate.
