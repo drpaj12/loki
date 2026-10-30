@@ -4,8 +4,8 @@ Pure helpers on the original gate netlist text and the translated ``intent.json`
 
 ``annotate`` appends a comment ``// loki h7 counter bit 2, p=0.97`` to the line of every gate,
 flip-flop or port declaration whose output wire a claim covers. ``wrong_content`` moves every
-claim to other wires of the same netlist: a seeded permutation inside each class of wire (primary
-input, flip-flop output, other wire) is applied to every name of every claim, so kinds, shapes and
+claim to wires no claim names, on cells carrying no true tag (a seeded injective map over
+every net a claim names, across classes), so ids, kinds, shapes and
 probabilities stay and only the place is wrong.
 """
 
@@ -111,58 +111,168 @@ def annotate(text: str, intent: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _classes(text: str, intent: dict[str, Any]) -> dict[str, list[str]]:
-    decl = declarations(text)
-    ff_q = {w for c in intent["claims"] for w in c["facts"].get("q", [])}
-    pins = {w for _, w in _PIN.findall(text)}
-    clocks = {w for p, w in _PIN.findall(text) if p == "C"}
-    cls: dict[str, list[str]] = {"input": [], "state": [], "wire": []}
-    for w, kind in sorted(decl.items()):
-        if w in clocks:
-            continue
-        if kind == "input":
-            cls["input"].append(w)
-        elif w in ff_q or (w in pins and kind == "output"):
-            cls["state"].append(w)
-        else:
-            cls["wire"].append(w)
-    return cls
+def _cond(cond: Any, f: Any) -> Any:
+    """A condition ``[[[net, value], ...], ...]`` with ``f`` applied to the nets."""
+    return [[[f(n), v] for n, v in term] for term in cond]
+
+
+def _fact(key: str, val: Any, f: Any) -> Any:
+    """One ``facts`` entry with ``f`` applied to the net names it holds (all else kept)."""
+    if key in ("q", "controls"):
+        return [f(n) for n in val]
+    if key in ("rst", "en"):
+        return {**val, "net": f(val["net"])}
+    if key == "x":
+        return f(val)
+    if key == "transitions":
+        return [{**t, "cond": _cond(t["cond"], f)} for t in val]
+    if key == "modes":
+        return [{**m, "cond": _cond(m["cond"], f),
+                 "data": [d if d.startswith("#") else f(d) for d in m["data"]]} for m in val]
+    return val
+
+
+def translate(intent: dict[str, Any], f: Any) -> dict[str, Any]:
+    """Copy of ``intent`` with ``f`` applied to every net name: ``wires``, ``nets``, the net
+    fields of ``facts``, bus bits and ``net_roles`` keys. Ids, kinds, p and text stay."""
+    out = copy.deepcopy(intent)
+    for c in out["claims"]:
+        c["wires"] = [f(n) for n in c["wires"]]
+        c["nets"] = {k: [f(n) for n in v] for k, v in c["nets"].items()}
+        c["facts"] = {k: _fact(k, v, f) for k, v in c["facts"].items()}
+    for b in out["buses"]:
+        b["bits"] = [f(n) for n in b["bits"]]
+        b["base"] = ""
+    out["net_roles"] = {f(n): r for n, r in out["net_roles"].items()}
+    return out
+
+
+def _users(intent: dict[str, Any]) -> dict[str, set[str]]:
+    """Net name to the ids of the claims that name it."""
+    out: dict[str, set[str]] = {}
+    for c in intent["claims"]:
+        one = {"claims": [c], "buses": [], "net_roles": {}}
+        seen: set[str] = set()
+
+        def note(n: str, seen: set[str] = seen) -> str:
+            seen.add(n)
+            return n
+
+        translate(one, note)
+        for n in seen:
+            out.setdefault(n, set()).add(c["id"])
+    for b in intent["buses"]:
+        for n in b["bits"]:
+            out.setdefault(n, set())
+    for n in intent["net_roles"]:
+        out.setdefault(n, set())
+    return out
+
+
+def _shown(intent: dict[str, Any], users: dict[str, set[str]]) -> set[str]:
+    """Nets whose name (or, for ``base[i]``, base name) occurs in the rendered hint text."""
+    from loki.intent.text import render_claims
+
+    doc = render_claims(intent)
+    word = re.compile(r"[\w\[\]]+")
+    toks = set(word.findall(doc))
+    return {n for n in users if n in toks or n.split("[")[0] in toks
+            or re.search(r"(?<![\w])" + re.escape(n.split("[")[0]) + r"\[", doc)}
 
 
 def permutation(text: str, intent: dict[str, Any], seed: str) -> dict[str, str]:
-    """A seeded map wire -> other wire of the same class; no wire maps to itself unless its class
-    has a single member."""
+    """A seeded map from each net a claim names to another wire. First choice: a wire no claim
+    names whose driving line carries no true ``// loki`` tag (the wrong tags land on unrelated
+    cells, in any class); a net with a driving line gets a target with one, so the number of tagged
+    lines stays near the linked one. When those pools run dry (claims cover most of a small
+    netlist): a net the hint text never prints gets a reused untagged wire (fewer tags on W);
+    any other net gets a distinct wire on a tagged line whose true tags exclude every claim that
+    names the net, if there is one. The clock maps to itself."""
     rng = random.Random(seed)
+    lines = driver_lines(text)
+    true_tags: dict[int, set[str]] = {}
+    for c in intent["claims"]:
+        for idx in marks({"claims": [c]}, lines):
+            true_tags.setdefault(idx, set()).add(c["id"])
+    decl = declarations(text)
+    clocks = {w for p, w in _PIN.findall(text) if p == "C"}
+    users = _users(intent)
+    shown = _shown(intent, users)
+    base = [w for w in sorted(decl) if w not in clocks and w not in users]
+    fresh = [w for w in base if w in lines and lines[w] not in true_tags]
+    plain = [w for w in base if w not in lines]
+    rest = [w for w in base if w in lines and lines[w] in true_tags]
+    named = [w for w in sorted(users) if w not in clocks and w in decl]
+    rng.shuffle(named)
+    for pool in (fresh, plain, rest):
+        rng.shuffle(pool)
+    spare = sorted(w for w in base if w in lines and lines[w] not in true_tags)
     out: dict[str, str] = {}
-    for members in _classes(text, intent).values():
-        if len(members) < 2:
+    for n in sorted(users):
+        if n in clocks:
             continue
-        shuffled = list(members)
-        for _ in range(20):
-            rng.shuffle(shuffled)
-            if all(a != b for a, b in zip(members, shuffled, strict=True)):
-                break
-        else:
-            shuffled = members[1:] + members[:1]
-        out.update(zip(members, shuffled, strict=True))
+        order = (fresh, plain) if n in lines else (plain, fresh)
+        pick = next((pool.pop() for pool in order if pool), None)
+        if pick is None and n not in shown and spare:
+            pick = spare[len(out) % len(spare)]
+        for pool in (rest, named):
+            if pick is None and pool:
+                tags = [true_tags.get(lines.get(w, -1), set()) & users[n] for w in pool]
+                ok = [i for i, w in enumerate(pool) if w != n and not tags[i]]
+                other = [i for i, w in enumerate(pool) if w != n]
+                if ok or other:
+                    pick = pool.pop((ok or other)[0])
+        if pick is not None and pick in named:
+            named.remove(pick)
+        if pick is not None:
+            out[n] = pick
     return out
 
 
-def _walk(obj: Any, mapping: dict[str, str]) -> Any:
-    if isinstance(obj, str):
-        return mapping.get(obj, obj)
-    if isinstance(obj, list):
-        return [_walk(x, mapping) for x in obj]
-    if isinstance(obj, dict):
-        return {k: _walk(v, mapping) for k, v in obj.items()}
-    return obj
+_TAG_ID = re.compile(r"(?:// loki |; )(h\d+) ")
 
 
-def wrong_content(text: str, intent: dict[str, Any], seed: str) -> dict[str, Any]:
-    """The intent with every wire name moved by ``permutation`` (claim ids, kinds, p kept)."""
-    mapping = permutation(text, intent, seed)
-    out = copy.deepcopy(intent)
-    for key in ("claims", "buses"):
-        out[key] = _walk(out[key], mapping)
-    out["net_roles"] = {mapping.get(n, n): r for n, r in out["net_roles"].items()}
-    return out
+def _tag_pairs(text: str) -> tuple[set[int], set[tuple[int, str]]]:
+    lines: set[int] = set()
+    pairs: set[tuple[int, str]] = set()
+    for i, x in enumerate(text.split("\n")):
+        if "// loki" in x:
+            lines.add(i)
+            pairs |= {(i, h) for h in _TAG_ID.findall(x)}
+    return lines, pairs
+
+
+def overlap(linked: str, wrong: str) -> dict[str, float | int]:
+    """Overlap of two annotated netlists: tagged lines, and (line, claim id) tags, with the share
+    of each side that the other has."""
+    la, pa = _tag_pairs(linked)
+    lb, pb = _tag_pairs(wrong)
+    ln, pn = len(la & lb), len(pa & pb)
+    return {"linked_lines": len(la), "wrong_lines": len(lb), "both_lines": ln,
+            "line_of_linked": ln / len(la) if la else 0.0,
+            "line_of_wrong": ln / len(lb) if lb else 0.0,
+            "linked_tags": len(pa), "wrong_tags": len(pb), "both_tags": pn,
+            "tag_of_linked": pn / len(pa) if pa else 0.0,
+            "tag_of_wrong": pn / len(pb) if pb else 0.0}
+
+
+def _mover(mapping: dict[str, str]) -> Any:
+    return lambda n: mapping.get(n, n)
+
+
+def wrong_content(text: str, intent: dict[str, Any], seed: str, tries: int = 40) -> dict[str, Any]:
+    """The intent with every net name moved by ``permutation`` (claim ids, kinds, p kept). Of the
+    ``tries`` permutations ``seed:0`` ... ``seed:tries-1`` the one whose annotated netlist shares
+    the fewest (line, claim id) tags with the true one (worst of the two shares; lowest k on a
+    tie) is used, so the choice is a function of ``seed`` alone."""
+    linked = annotate(text, intent)
+    best: tuple[float, int, dict[str, Any]] | None = None
+    for k in range(tries):
+        mapping = permutation(text, intent, f"{seed}:{k}")
+        cand = translate(intent, _mover(mapping))
+        o = overlap(linked, annotate(text, cand))
+        score = max(o["tag_of_linked"], o["tag_of_wrong"])
+        if best is None or score < best[0]:
+            best = (score, k, cand)
+    assert best is not None
+    return best[2]

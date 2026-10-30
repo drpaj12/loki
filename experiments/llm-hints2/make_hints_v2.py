@@ -144,6 +144,15 @@ def hint_text(intent: dict[str, Any]) -> str:
     return str(text_mod.render_claims(intent))
 
 
+def rewrite_one(problem: str, root: Path) -> None:
+    """Rebuild the four text files of one problem from its saved ``intent.json`` (no Loki run)."""
+    work = root / problem
+    text = (common.dataset_dir() / f"{problem}_netlist.v").read_text(encoding="utf-8")
+    intent = json.loads((work / "intent.json").read_text(encoding="utf-8"))
+    rows = json.loads((work / "verify.json").read_text(encoding="utf-8"))
+    write_files(work, problem, text, intent, rows)
+
+
 def make_one(problem: str, odin: Path, root: Path, table: Path | None) -> dict[str, Any]:
     work = root / problem
     (work / "f3").mkdir(parents=True, exist_ok=True)
@@ -162,6 +171,12 @@ def make_one(problem: str, odin: Path, root: Path, table: Path | None) -> dict[s
                                       encoding="utf-8")
     (work / "verify.json").write_text(json.dumps(rows, sort_keys=True, indent=1) + "\n",
                                       encoding="utf-8")
+    return write_files(work, problem, text, intent, rows)
+
+
+
+def write_files(work: Path, problem: str, text: str, intent: dict[str, Any],
+                rows: list[dict[str, Any]], dropped: int = 0) -> dict[str, Any]:
     block = hint_text(intent)
     wrong = netlink.wrong_content(text, intent, f"hints2-w:{problem}")
     files = {"hints.md": block, "netlist_linked.v": netlink.annotate(text, intent),
@@ -186,11 +201,17 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--selection", type=Path, default=HERE / "selection.csv")
     ap.add_argument("--problems", nargs="+", default=None)
     ap.add_argument("--table", type=Path, default=None)
+    ap.add_argument("--rewrite", action="store_true",
+                    help="only rebuild the text files from the saved intent.json files")
     ap.add_argument("--out", type=Path, default=hintscfg.RUN / "hints2")
     args = ap.parse_args(argv)
     odin = Path(os.environ.get("ODIN3_ROOT", str(common.workspace() / "odin3")))
     make_hints.enable_odin(odin)
     args.out.mkdir(parents=True, exist_ok=True)
+    if args.rewrite:
+        for p in args.problems or read_problems(args.selection):
+            rewrite_one(p, args.out)
+        return 0
     rows, fails = [], []
     for p in args.problems or read_problems(args.selection):
         try:
