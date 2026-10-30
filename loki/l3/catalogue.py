@@ -40,6 +40,7 @@ def load(directory: Path = CATALOGUE_DIR) -> dict[str, Entry]:
 def load_tuning(directory: Path = CATALOGUE_DIR) -> dict[str, Any]:
     path = directory / "tuning.json"
     if not path.is_file():
-        return {"max_depth": 6, "min_p": 0.0, "regfile_k": 4, "regfile_k2": 16}
+        return {"max_depth": 6, "min_p": 0.0, "regfile_k": 4, "regfile_k2": 16,
+                "wire_depth": 6}
     out: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     return out

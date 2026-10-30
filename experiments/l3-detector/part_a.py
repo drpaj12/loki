@@ -89,7 +89,8 @@ def best(rows: list[dict[str, Any]], base: dict[str, Any], key: str, grid: tuple
 
 def tune() -> int:
     rows = load("TUNE")
-    cfg: dict[str, Any] = {"max_depth": 6, "min_p": 0.0, "regfile_k": 4, "regfile_k2": 16}
+    cfg: dict[str, Any] = {**catalogue.load_tuning(), "max_depth": 6, "min_p": 0.0,
+                           "regfile_k": 4, "regfile_k2": 16}
     cfg["min_p"] = best(rows, cfg, "min_p", GRID_P, lib.ENTRIES)
     cfg["regfile_k"] = best(rows, cfg, "regfile_k", GRID_K, ("regfile", "register"))
     cfg["regfile_k2"] = best(rows, cfg, "regfile_k2", GRID_K2, ("regfile", "register"))
