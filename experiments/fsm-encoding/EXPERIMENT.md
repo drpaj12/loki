@@ -151,3 +151,45 @@ this corpus instead. No PR is opened from this branch. Check made in stage 1: th
 feature (+4.61) never fired, in 0 of 600 stage-1 FSM runs (every report says `not-applicable` on
 gate and LUT netlists). A draft detector (kinds `fsm_onehot`, `fsm_binary`, a one-hot table and
 unit tests) was started in the working tree and is not committed.
+
+## Amendment 2026-10-30 (before the v2 runs): stages 2-4 replaced by "v2 measurement"
+
+The controller paused stages 2-4 (no detector change). Replacement: measure the v2 FSM claims of
+`loki re --intent` (`loki/intent`, merged in loki #62) on the same corpus, the same 600 builds
+(200 designs x 3 arms x 2 floors, build outputs reused, no Odin III change), the same truth, and the
+same scorer extended for v2. Branch `exp/fsm2-onehot` (from `exp/fsm-encoding`, merged with
+`origin/main`).
+
+Peter's hypothesis, 2026-10-30, verbatim: "FSM guesses by Loki are simply is this a feedback path
+... so the feedback path is a level 1 guess of FSM - then the question of what is between the
+feedback path ... if the FSM is one-hot encoded as it might be when targetting an FPGA, still
+there's how the one-hotness of STATE bits is turned on by other STATE bits."
+Testable form: "Reading how state bits turn each other on lets Loki recover one-hot FSMs about as
+well as binary ones."
+
+Run: `loki.re.main <netlist> --floor <f> --calib none --detectors <stage 1 list> --seed 1 --intent
+--intent-calib calib/intent-f3.json` (the shipped table, fitted before this experiment, constant
+p = 0.95 for `fsm`; used for both floors; no refit on this population). Outputs in
+`work/fsmenc-out/v2`.
+
+Scoring (script `score_v2.py`):
+- A v2 FSM claim is a claim of `kind == "fsm"`, `source == "seq"` in `intent.json`, counted when its
+  status is not rejected and `p >= 0.5`. It matches the truth when the Jaccard index of its state
+  nets `facts.q` with the truth state nets (`key.json` nets named `state[i]`) is >= 0.5.
+- Recall (positives with a counted matching claim), precision (matching counted claims over all
+  counted FSM claims, positives and negatives), encoding accuracy (`params.encoding` one-hot /
+  binary / other against the truth encoding, among matched designs, Wilson CI), states exact
+  (`params.states` equals the reachable-state count), transitions exact (the claim's transition
+  graph is isomorphic to the truth transition graph, with the claim's `start` state mapped to S0;
+  count-only agreement of distinct (src, dst) pairs also reported).
+- Stage 1 numbers are rescored with the same code path for the paired comparison (stage 1 `fsm`
+  hypotheses with the stage 1 rule, unchanged).
+
+Rule: paired by design. d = v2 - stage 1 recall per positive design in each of the 6 cells
+(arm x floor), values in {-1, 0, 1}; 95 % percentile bootstrap CI over designs (10000 resamples,
+seed 20261030), two-sided bootstrap p, Holm over the 6 tests. A cell where v2 is better needs Holm
+p < 0.05 and a CI above 0; the pooled precision of v2 must not fall more than 0.05 below stage 1
+in that cell. Hypothesis test: for v2, per floor and pooled over floors, the paired difference
+recall(one-hot) - recall(binary) over the same 100 designs, bootstrap CI as above. "About as well" =
+the CI lies inside +-0.10: SUPPORTED. Otherwise NOT SUPPORTED. Failed outcomes are reported in the
+results section, not hidden.
