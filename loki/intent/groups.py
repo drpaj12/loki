@@ -103,13 +103,17 @@ def _components(members: list[int], deps: dict[int, frozenset[int]]) -> list[fro
     return out
 
 
-def sequential_groups(graph: FnGraph) -> list[Group]:
+def sequential_groups(graph: FnGraph, claimed: frozenset[int] = frozenset()) -> list[Group]:
     """Candidate groups of every clock: weakly connected components, then the loop-plus-feeders
-    groups, largest first (ties by smallest cell id). A group is at most ``GROUP_MAX`` cells."""
+    groups, largest first (ties by smallest cell id). A group is at most ``GROUP_MAX`` cells.
+
+    Flip-flops in ``claimed`` are left out and their reads ignored, so a digit steered by a digit
+    that is already explained keeps its own low bit (a feeder reads nothing outside the group)."""
     support = Support(graph)
     found: dict[frozenset[int], Group] = {}
     for ffs in ff_cells(graph).values():
         deps = ff_deps(graph, ffs, support)
+        deps = {c: d - claimed for c, d in deps.items() if c not in claimed}
         members = sorted(deps)
         loops = _loops(members, deps)
         for comp in _components(members, deps):

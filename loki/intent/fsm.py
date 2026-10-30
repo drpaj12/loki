@@ -13,7 +13,7 @@ from collections import deque
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from loki.intent.boolmin import Product, products
+from loki.intent.boolmin import MAX_VARS, Product, products
 from loki.re.fngraph import FnGraph
 from loki.re.seqtable import d_nets
 from loki.re.sim import cone, simulate
@@ -161,8 +161,12 @@ def _explore(
     return rows, [n for n in free]
 
 
-def _transitions(rows: dict[int, list[int]], free: list[int]) -> tuple[list[int], list[Transition]]:
+def _transitions(
+    rows: dict[int, list[int]], free: list[int]
+) -> tuple[list[int], list[Transition]] | None:
     keep = _relevant(rows, len(free))
+    if len(keep) > MAX_VARS:
+        return None
     nets = [free[j] for j in keep]
     out: list[Transition] = []
     for src in sorted(rows):
@@ -184,7 +188,8 @@ def cone_of(graph: FnGraph, q: Sequence[int]) -> _Cone | None:
 
 def read_fsm(graph: FnGraph, q: Sequence[int], seed: str = "fsm") -> Fsm | None:
     """The state machine of the flip-flops driving ``q`` (LSB first), or None when it cannot be
-    read: too many control nets, more than ``STATES_MAX`` reachable states, or one state."""
+    read: too many control nets (more than ``CONTROLS_MAX``, or more than ``MAX_VARS`` that matter
+    for a transition), more than ``STATES_MAX`` reachable states, or one state."""
     cn = cone_of(graph, q)
     if cn is None:
         return None
@@ -198,7 +203,10 @@ def read_fsm(graph: FnGraph, q: Sequence[int], seed: str = "fsm") -> Fsm | None:
     rows, free = got
     if len(rows) < 2:
         return None
-    nets, trans = _transitions(rows, free)
+    got_t = _transitions(rows, free)
+    if got_t is None:
+        return None
+    nets, trans = got_t
     states = tuple(sorted(rows))
     return Fsm(tuple(q), tuple(nets), reset, start, states, encoding_of(states, len(q)),
                tuple(t for t in trans))

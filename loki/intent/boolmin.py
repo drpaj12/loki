@@ -11,7 +11,7 @@ Literal = tuple[int, int]
 Product = tuple[Literal, ...]
 Cube = tuple[int, int]  # (care mask, value)
 
-MAX_VARS = 12
+MAX_VARS = 8
 
 
 def _merge(a: Cube, b: Cube) -> Cube | None:
