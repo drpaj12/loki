@@ -86,4 +86,38 @@ or at the weekly meter reading 85 percent (the controller's rule at run time).
 
 ## Amendments
 
-(none yet)
+- 2026-10-30 (before any model call): preparation, committed after the plan commit 999c4cf.
+  What was built and how it differs from the plan text above:
+  1. Claims v2 are a new layer, `loki/intent/` (Part A of the brief), read by `loki re --intent`
+     as `intent.json`; the L1 loop and its scoring are not changed. Sequential claims (counter,
+     shift register, LFSR, multi-mode register, state machine) come from the flip-flop groups of
+     the final graph; each is checked against the original netlist (`loki.intent.verify`, 512
+     random vectors, independent of Loki's graph) and dropped if it fails (0 of 58 failed, 1
+     could not be checked). Overlay claims (comparison, adder, bus, ...) are shown only when
+     their probability is at least 0.9 under `calib/f3.json`; one- and two-gate comparisons and
+     the `datapath_unit` container are left out.
+  2. Probabilities. Overlay claims print `p_comp` of a run with `calib/f3.json`. Sequential claims
+     print the posterior mean of Beta(1,1) after the checks, per kind (`calib/intent-f3.json`).
+     The fit is in-sample: the 73 other llm-full problems (Q1, Q2) contain no sequential logic,
+     so the 57 checked claims all come from the 64 problems of this run (counter 11, FSM 18,
+     shift register 26, LFSR 1, register 1); the checks use netlist semantics only, never the
+     reference RTL or any model result. A kind with one claim has p=0.67. Roles carry the
+     probability of the claim whose sink a control net is; data roles carry none.
+  3. Arm B1' uses the frozen v1 hint blocks (`hints_v1/`, regenerated at 414e159): they rebuild the
+     llm-full arm B user messages for 64 of 64 problems (sha256 equal). Arm W moves every wire
+     name of every claim inside its class (primary input, state output, other wire; the clock
+     is never used) by a seeded permutation per problem; the comments in the netlist move with
+     them.
+  4. Prompt: the system message is the llm-full `re` message (md5 checked). The user message
+     ends with a format instruction (`Notes:` of at most 10 lines, then [BEGIN] ... [DONE]; hint
+     arms add the last line `CLAIMS-USED:`), and hint arms carry a paragraph that explains
+     claim, p, proved and candidate (a v1 version for B1', which has uncalibrated
+     confidences). `promptv2.py` has the exact text. 28 of the 64 problems have no v2 claim
+     (small combinational or dff-only designs): their B2 and W prompts say so.
+  5. Build result: 64 problems x 4 arms = 256 prompts, 768 calls, 33 batches (11 per draw, the
+     last of each draw has 16 calls). Leak gate: 0 hits on the system message, the 256 user
+     messages and the 768 call files. Largest user message 68644 bytes (B1p, Prob118, about
+     21.5k tokens), arm means A2 7.0 kB, B1p 17.1 kB, B2 9.5 kB, W 9.5 kB. Token estimate
+     (prompt bytes / 3.2 plus the mean pilot reply per arm): input 2,583,393, output 95,424.
+     Dry run (`dryrun_result.json`): 72 fake replies score as expected, 0 timeouts, the
+     CLAIMS-USED fields and the analysis run.
