@@ -238,3 +238,40 @@ Scripts: `run_re.py` (`FSMENC_INTENT`), `score_v2.py`. Run data: `work/fsmenc-ou
 ### Amendment (controller, 2026-10-30, after review, no new data)
 
 Verdict mapping: a failed precision guard falsifies the "without losing precision" half of FSM2a, so FSM2a is DISMISSED (it was written INCONCLUSIVE). FSM2b is SUPPORTED by the equivalence rule (CI inside +-0.10) and is entered as POSSIBLY GOOD in the register; the test is recall only, so a detector that called every register an FSM would also pass it. The fsm p is the constant 0.95 on both floors, so the p >= 0.5 count rule counts every non-rejected claim and no ECE is reported. Per-design counts are equal in 600 of 600 f2/f3 pairs (separate runs on different netlists; the sequential analysis reads the next-state function). "Other" for binary FSMs means the reachable codes are not 0..n-1.
+
+## Amendment 2026-10-30 (Q-L3, before any detector change): can Loki tell a real FSM from a memory word?
+
+Plain English. v2 claims an FSM on 22 of the 100 negative designs, and 446 of the 577 counted claims
+sit on the 20 `regfile` designs: every memory word register feeds back to itself through its
+write-enable mux and is called an FSM. This amendment asks whether a rule on the next-state function
+can reject memory words and keep the real FSMs.
+
+Purpose: Loki L Q1.1 / L Q3.3 (recover FSMs selectively). Measure: FSM claim precision (pooled over
+claims, and per design) at kept recall, on the same 1200 builds. Branch `exp/fsm-vs-memory`.
+
+Hypothesis (the controller's proposal, to be confirmed by Peter): "An FSM's next state depends on its
+own state bits through logic other than a hold/load mux; a memory word's next state is either its old
+value or a data input selected by an address decode. A rule that separates these keeps recall >= 0.95
+and raises claim precision to >= 0.80."
+
+Held-out split (fixed here, by the numeric suffix of the design name; deterministic, no data seen):
+- TUNE = even suffix: 50 `r4_fsm_*` positives (000, 002, ..., 098) and, for each of the five
+  negative families, suffixes 70, 72, ..., 88 (10 each, 50 negatives).
+- TEST = odd suffix: 50 positives (001, ..., 099) and suffixes 71, 73, ..., 89 (50 negatives).
+Diagnosis and every threshold or feature choice use TUNE only. TEST designs' claims are not
+inspected before the final scoring run; the rule is frozen (committed) before that run.
+
+Rule under test (written before diagnosis; a diagnosed refinement is a dated entry below, tune-only):
+a candidate `fsm` claim is dropped when its next-state function is a hold/load structure: every
+state-bit next value is its own old value or a value that does not depend on the group's state bits,
+chosen by a select over the other nets (a flip-flop with enable, a memory word). The claim is kept
+when some transition depends on the state bits through other logic (the next state is a function of
+the current state).
+
+Measure and verdict. Per arm x floor (6 cells) on TEST: recall (positives with a counted matching
+claim), pooled claim precision (matching counted claims over all counted FSM claims), design
+precision, and false claims per negative family. Paired by design against v2 on the TEST positives:
+d = new - v2 recall in {-1, 0, 1}, 95 % percentile bootstrap CI (10000, seed 20261030), Holm over
+the 6 cells. Hypothesis SUPPORTED when, pooled over the 6 cells on TEST, recall >= 0.95 and pooled
+claim precision >= 0.80; per cell the same two numbers are reported. Otherwise NOT SUPPORTED; the
+number is reported either way. The TUNE numbers are reported separately and are not evidence.
