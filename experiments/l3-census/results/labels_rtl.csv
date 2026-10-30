@@ -44,7 +44,7 @@ veval,ve_Prob042_vector4,ok,0,0,0,0,0,0,0,0,0,1
 veval,ve_Prob043_vector5,ok,0,0,0,0,0,0,0,0,0,1
 veval,ve_Prob044_vectorgates,ok,0,0,0,0,0,0,0,0,0,1
 veval,ve_Prob045_edgedetect2,ok,0,0,0,0,0,0,0,0,1,0
-veval,ve_Prob046_dff8p,ok,0,0,0,0,0,0,0,0,1,0
+veval,ve_Prob046_dff8p,manual,0,0,0,0,0,0,0,0,1,0
 veval,ve_Prob047_dff8ar,ok,0,0,0,0,0,0,0,0,1,0
 veval,ve_Prob048_m2014_q4c,ok,0,0,0,0,0,0,0,0,1,0
 veval,ve_Prob049_m2014_q4b,ok,0,0,0,0,0,0,0,0,1,0
@@ -76,7 +76,7 @@ veval,ve_Prob074_ece241_2014_q4,ok,0,0,0,0,0,0,0,0,1,0
 veval,ve_Prob075_counter_2bc,ok,0,1,0,0,1,0,0,0,0,0
 veval,ve_Prob076_always_case,ok,0,0,0,0,0,0,0,0,0,1
 veval,ve_Prob077_wire_decl,ok,0,0,0,0,0,0,0,0,0,1
-veval,ve_Prob078_dualedge,ok,0,0,0,0,0,0,0,0,1,0
+veval,ve_Prob078_dualedge,manual,0,0,0,0,0,0,0,0,1,0
 veval,ve_Prob079_fsm3onehot,ok,0,0,0,0,0,0,0,0,0,1
 veval,ve_Prob080_timer,ok,0,1,0,0,1,0,0,0,0,0
 veval,ve_Prob081_7458,ok,0,0,0,0,0,0,0,0,0,1
@@ -143,7 +143,7 @@ veval,ve_Prob141_count_clock,ok,0,6,0,0,6,0,0,1,0,0
 veval,ve_Prob142_lemmings2,ok,0,0,0,0,0,0,0,0,1,0
 veval,ve_Prob143_fsm_onehot,ok,0,0,0,0,0,0,0,0,0,1
 veval,ve_Prob144_conwaylife,ok,0,0,1,0,0,0,0,0,0,0
-veval,ve_Prob145_circuit8,ok,0,0,0,0,0,0,0,0,1,0
+veval,ve_Prob145_circuit8,manual,0,0,0,0,0,0,0,0,1,0
 veval,ve_Prob146_fsm_serialdata,ok,1,0,1,0,0,0,1,0,0,0
 veval,ve_Prob147_circuit10,ok,0,0,0,0,0,0,0,0,1,0
 veval,ve_Prob148_2013_q2afsm,ok,1,0,0,0,0,0,0,0,0,0

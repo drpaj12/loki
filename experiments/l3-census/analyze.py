@@ -120,6 +120,9 @@ def measure(cell: str, d: str, net: Path, ij: Path, lab_row: dict[str, Any]) -> 
     g = bg.Blif(net)
     out: dict[str, Any] = {k: v for k, v in g.counts().items() if not k.startswith("hard:")}
     out["chain"] = round(chain_depth(cell, d), 3)
+    seq = any(lab_row[p] not in ("", "0") for p in lab.PATTERNS if p not in ("glue",))
+    # Yosys async-reset flip-flops come back as .subckt, not .latch: Loki sees no flip-flop
+    out["ffsub"] = int(cell.startswith("Y-") and seq and out["latches"] == 0 and out["hard"] > 0)
     if not ij.is_file():
         return out
     claims = json.loads(ij.read_text(encoding="utf-8"))["claims"]
@@ -158,7 +161,7 @@ def tables(labels: dict[str, dict[str, Any]], rows: list[dict[str, Any]]) -> Non
     enc: Counter[tuple[str, str, str]] = Counter()
     for p in lab.PATTERNS:
         for cell in lib.CELLS:
-            rs = [r for r in rows if r["cell"] == cell and f"hit_{p}" in r]
+            rs = [r for r in rows if r["cell"] == cell and f"hit_{p}" in r and not r.get("ffsub")]
             if not rs:
                 continue
             comp = [r for r in rs if f"depth_{p}" in r]
@@ -191,10 +194,27 @@ def main() -> int:
     labels = load_labels()
     rows = design_rows(labels)
     cols = ["corpus", "design", "cell", "built", "re", "names", "latches", "hard", "chain",
-            "claims", "fsm_enc"]
+            "claims", "fsm_enc", "ffsub"]
     cols += [f"{k}_{p}" for p in lab.PATTERNS for k in ("hit", "depth", "alt")]
     write("per_design.csv", cols, rows)
+    write("excluded_ffsub.csv", ["corpus", "design", "cell"], [r for r in rows if r.get("ffsub")])
     tables(labels, rows)
+    pc: dict[tuple[str, str], Counter[str]] = defaultdict(Counter)
+    for r in rows:
+        if r.get("claims") and not r.get("ffsub"):
+            for p in lab.PATTERNS:
+                if f"hit_{p}" in r:
+                    pc[(p, r["cell"])].update(json.loads(r["claims"]))
+    write("pattern_claims.csv", ["pattern", "cell", "claim_kind", "claims"],
+          [{"pattern": p, "cell": c, "claim_kind": k, "claims": n}
+           for (p, c), cnt in sorted(pc.items()) for k, n in sorted(cnt.items())])
+    cov = []
+    for cell in lib.CELLS:
+        rs = [r for r in rows if r["cell"] == cell]
+        cov.append({"cell": cell, "designs": len(rs), "built": sum(r["built"] for r in rs),
+                    "re_done": sum(r["re"] for r in rs),
+                    "ffsub_excluded": sum(r.get("ffsub", 0) for r in rs)})
+    write("coverage.csv", ["cell", "designs", "built", "re_done", "ffsub_excluded"], cov)
     print(len(rows), "rows")
     return 0
 

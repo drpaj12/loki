@@ -1,8 +1,8 @@
 """Write ``labels_rtl.csv``: RTL-side pattern counts per design: ``python -B label.py``.
 
 Reads OUT/build/O-gate/<design>/f3/words.json (word-level IR of the HDL) and the source.
-Designs with no words.json: ``status`` = ``manual`` when listed in results/manual_labels.csv
-(read from the source, with the reason), else ``no-words``.
+Designs listed in results/manual_labels.csv take ``status`` = ``manual`` (read from the source,
+with the reason; they override the words.json labels); a design with neither is ``no-words``.
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ def main() -> int:
     for r in lib.manifest():
         wf = lib.OUT / "build" / "O-gate" / r["design"] / "f3" / "words.json"
         row = {"corpus": r["corpus"], "design": r["design"]}
-        if not wf.is_file() and r["design"] in man:
+        if r["design"] in man:
             rows.append({**row, "status": "manual", **man[r["design"]]})
             continue
         if not wf.is_file():
