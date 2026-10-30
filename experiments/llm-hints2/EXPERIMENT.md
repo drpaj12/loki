@@ -211,7 +211,8 @@ interval [+0.052, +0.151], and B2 minus B1p is +0.073 [+0.031, +0.115]. Pass@3 i
 and B2 (W 0.875): the v2 hints make single draws more consistent, they do not raise the best-of-3
 ceiling. When a B2 call names a claim, it passes: FSM claims used in 57 B2 calls, 57 pass; counter 24
 of 24. In W (wrong claims) FSM claims used in 33 calls, 27 pass, against 24 calls where an FSM claim
-was offered and not used, 19 pass; so using a wrong FSM hint went with a lower pass rate.
+was offered and not used, 19 pass (0.82 against 0.79: no difference). A used wrong FSM hint passed less
+often than a used right one (27/33 against 57/57), but on different problems: not a paired test.
 
 What this does and does not show. It does not show, under the pre-stated rule, that v2 hints help.
 It also does not show they do not: the test could not have said yes on this ceiling. The pass@1
