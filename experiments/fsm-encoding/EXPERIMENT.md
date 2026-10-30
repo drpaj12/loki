@@ -143,3 +143,11 @@ with `p_comp >= 0.5`; defaults calibration; truth as above):
 Encoding accuracy: n/a (the current detector makes no encoding call). Per-design rows:
 `results/stage1/per_design.csv`. Scripts: `fsmlib.py`, `build_arms.py`, `run_re.py`,
 `score_fsm.py`. Run data: `work/fsmenc-out` (outside the repo).
+
+## Stage 2-4 paused 2026-10-30 by the controller
+
+Stage 2-4 paused 2026-10-30 by the controller: loki/intent (PR #62) FSM claims to be measured on
+this corpus instead. No PR is opened from this branch. Check made in stage 1: the `fsm_detect`
+feature (+4.61) never fired, in 0 of 600 stage-1 FSM runs (every report says `not-applicable` on
+gate and LUT netlists). A draft detector (kinds `fsm_onehot`, `fsm_binary`, a one-hot table and
+unit tests) was started in the working tree and is not committed.
