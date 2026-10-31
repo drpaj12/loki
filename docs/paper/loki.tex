@@ -2280,6 +2280,19 @@ found 41 to 50\% of the time and the wires between parts 12 to 18\% (38 to 61\% 
 0.70, so the combined benchmarks do not yet show that the composite idea works; they show which single claims must be
 repaired first. The Odin~III and Yosys cells behave alike.
 
+
+\paragraph{Loki L3: graphlet signatures and a library of every width.}
+Asked whether a partition's graphlet signature can say that it is a given pattern when exact matching cannot (the plan is in
+\code{experiments/graphlets/EXPERIMENT.md}), we built a library of 700 generated circuits (counters, shift registers, LFSRs, registers, timers,
+register files, state machines and glue, every width from 1 to 32; register files at four depths) in the five cells, all synthesised (3500 of 3500),
+and took their undirected (73 orbits) and directed (129 orbits) graphlet signatures with the Odin~III \code{graphlets} pass; signatures of widths above 32
+are made on demand and cached (tested at 33, 48 and 64 bits, 165 of 165 builds). The signature of a whole single design is a weak identifier: on 243 held-out
+single-pattern designs it does not reach precision and recall 0.80 for any pattern in any cell, and the rule detector of v0 stays better for counters, state
+machines and glue; a signature-or-rule hybrid recovers 39 of 60 register files (the rule alone, 6) with extra false alarms. Directed graphlets were more
+precise in one of 25 tests (state machines on Yosys gates) after Holm correction. Library circuits with a width left out are classified correctly 0.77
+(undirected) and 0.80 (directed) of the time when only the flip-flop count is used and the nearest size stands in, and 0.95 to 1.00 when all other widths are searched.
+Cones around state-register groups and the 82 composites are not yet tested, so the partition question stays open.
+
 \section{Conclusion}
 \label{sec:conclusion}
 

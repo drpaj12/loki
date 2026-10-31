@@ -1,0 +1,5 @@
+mode,tag,threshold,tune_accuracy,tune_n
+undirected,all,0.05,0.33,1277
+undirected,ff,0.05,0.425,1277
+directed,all,0.05,0.368,1279
+directed,ff,0.05,0.444,1279

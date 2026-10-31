@@ -1,9 +1,10 @@
 """Signatures from the Odin III ``graphlets`` pass: ``python -B sigs.py [JOBS]``.
 
 For every library netlist (precomputed and live entries) and mode (undirected size 5, directed)
-runs ``Design.graphlets(exclude_global=True)`` (Odin III's global rule: a net that reaches a clock pin
-or has >= 16 readers), writes the group JSON to $GLET_OUT/sig/<mode>/<cell>/<name>.json (orbit totals
-and GDD, integers) and stores the orbit totals in the database. Typed mode: the pass has none.
+runs ``Design.graphlets(exclude_global=True)`` (Odin III's global rule: a net that reaches a
+clock pin or has >= 16 readers), writes the group JSON to $GLET_OUT/sig/<mode>/<cell>/<name>.json
+(orbit totals and GDD, integers) and stores the orbit totals in the database. The pass has no
+typed mode.
 """
 
 from __future__ import annotations
@@ -23,12 +24,13 @@ VTR_LIB = live.ODIN / "lib" / "vtr.o3lib"
 MODES = {"undirected": False, "directed": True}
 
 
-def signature(netlist: Path, mode: str) -> dict[str, Any]:
+def signature(netlist: Path, mode: str, max_work: float | None = None) -> dict[str, Any]:
     """The first group of the pass JSON for one netlist (orbit_totals, gdd, nodes, edges, ...)."""
     import odin3
 
     with odin3.Design.read_blif(netlist, techlibs=[VTR_LIB]) as design:
-        res = design.graphlets(exclude_global=True, directed=MODES[mode])
+        res = design.graphlets(exclude_global=True, directed=MODES[mode],
+                               **({"max_work": int(max_work)} if max_work else {}))
     group: dict[str, Any] = res["groups"][0]
     group["mode"] = res["mode"]
     return group

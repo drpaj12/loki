@@ -164,7 +164,7 @@ library circuits, not on partitions of composites; Part 2 must redo it per parti
 4. Items 2 to 5 of the brief: size handling comparison, TUNE-only calibration file, matching on the L3
    v0 TEST benchmarks, report with reliability plot, paper paragraph, PR, wait CI, do not merge.
 
-## Blocker found 2026-10-31 (Odin III pass, for the controller)
+## Blocker found 2026-10-31 (fixed by odin3 #305, 20ffe2b3) (Odin III pass, for the controller)
 
 The `graphlets` pass of odin3 0a44260b drops every cell whose type has a `const_value` hook:
 `node_eligible` in `src/passes/graphlets/gl_net.c` returns `def->const_value == NULL`, and `$sop`
@@ -180,3 +180,65 @@ directed + typed variant is not available; the global-net rule is Odin's (clock 
 No signatures were computed (they would be wrong). Resume at "Next step" item 1 once fixed; the
 signer is then `Design.read_blif(netlist, techlibs=[lib/vtr.o3lib]).graphlets(exclude_global=True,
 directed=...)`, groups[0] orbit_totals and gdd, stored through `db.put_signature`.
+
+## Results, 2026-10-31 (Odin III graphlets pass at 20ffe2b3; plain English first)
+
+Plain English: describing a whole small design by its graphlet signature is not enough to say what
+kind of circuit it is. It cannot beat the rule detector of L3 v0 on counters, state machines or glue,
+and it does not reach the 0.80 bar for any pattern. Directed graphlets helped in one case of 25. Where a
+library circuit of the right kind exists at another width, the nearest-size match finds the kind about
+four times in five. The partition question (cones around state registers, the 82 composites) is not
+answered: it is the next step.
+
+CAD-style counts first.
+- Library: 700 instances x 5 cells = 3500 netlists, signatures in 2 modes (undirected size 5 with 73
+  orbits, directed with 129 orbits) = 7000 pass runs, 0 failures; stored in the database (`sigs.py`).
+  Global-signal rule is Odin III's (net reaches a clock pin or has >= 16 readers), simpler than Loki's
+  `signals.py`. Typed mode: the pass has none, so directed + typed was not run.
+- Python similarity (`simil.py`: GDD agreement, cosine of log(1+totals)) equals `odin3.graphlet_compare`
+  to 5 decimals on 6 pairs (undirected and directed).
+- Live path at 33/48/64: 165 of 165 built and signed (both modes).
+- L3 v0 single designs with exactly one pattern label: 243 TEST (counter 14, fsm 41, glue 99, regfile 12,
+  register 74, shift 3; no lfsr or timer single exists), 253 TUNE. Signature jobs: 5 failures, all
+  Yosys netlists of one design (`ve_Prob021_mux256to1v`, work cap 3e8 sets), excluded from the
+  comparison for every variant.
+- Calibration (TUNE only): per mode and library-restriction a binned likelihood file in pass format
+  (`results/calibration_<mode>_<restriction>.json`), prior from TUNE pairs (best entry of each of 8
+  patterns per design: 1 same, 7 different); threshold fit on TUNE accuracy (0.05 in all four, so the
+  posterior never rejected: TUNE accuracy 0.33 undirected / 0.37 directed over all widths, 0.43 / 0.44 with
+  the flip-flop count known). Reliability on TEST (`results/match_reliability.csv`): the posterior is
+  ordered but poorly calibrated (undirected, count known: posterior 0.0-0.1 observed 0.09, 0.2-0.3
+  observed 0.27, 0.8-0.9 observed 0.73; no pairs in the other bins).
+- Per pattern x cell x variant TP/FP/FN, precision, recall, bootstrap lower bounds, label:
+  `results/match_table.csv` (variants: rule, undirected/directed x all widths / flip-flop count known,
+  hybrid = rule OR signature). Pooled over the five cells, TP/FP/FN: counter rule 70/0/0, undirected
+  (count known) 54/176/16, directed 57/150/13; fsm rule 192/19/5, undirected 58/60/139, directed 54/37/143;
+  regfile rule 6/6/54, undirected 36/116/24, directed 38/104/22, hybrid-directed 42/109/18; register rule
+  287/37/66, directed 108/166/245; shift rule 10/71/5, undirected 7/108/8; glue rule 494/2/0, directed
+  221/29/273. Labels (40 pattern x cell rows per variant): each signature-only variant has 0 WORKING, 25 NOT WORKING,
+  15 INCONCLUSIVE (fewer than 5 positives); the rule has 14 WORKING, 8 NOT WORKING, 18 INCONCLUSIVE;
+  the hybrid is WORKING only for glue (4 or 5 cells), where the rule already was.
+- Directed more precise: 1 of 25 tests after Holm (fsm, Y-gate: precision 0.50 -> 0.78, recall 0.22 ->
+  0.49, Holm p 0.0125); `results/match_directed_vs_undirected.csv`.
+- Missing library width (held-out widths 5, 11, 19, 27; 88 instances x 5 cells x 2 modes): nearest-size
+  match finds the pattern 339/440 undirected and 352/440 directed when the flip-flop count has no entry; 0.95 to
+  1.00 per pattern when every other width is searched (undirected register 0.78).
+- Width inference: see "Part 1 results"; to be rerun per partition.
+
+Verdicts: GL1 (signatures find what the claim chain misses) INCONCLUSIVE, whole-design matching
+NOT WORKING, partitions untested; GL2 (directed more precise) INCONCLUSIVE (1 of 25); GL3 measurement.
+Register rows and the paper paragraph are in docs/paper (hypotheses.md, register.tex, loki.tex,
+build/loki.pdf).
+
+Not done (stated, not hidden): cones around state-register groups and L2 partitions; the 82 TEST
+composites; rolled-out TEST sizes as partitions; the posterior reliability plot is a table, not a plot;
+width inference rerun on the last 315 library netlists (large register files).
+
+## Next step (resume here, 2026-10-31)
+
+1. Partitions: for each single/composite, take state groups from the L1 claims (counter, register,
+   shift_reg, lfsr, fsm q nets), build a cells file from the union of `cone(net)` groups (per-node ids),
+   run `graphlets --cells`, match each partition against the library (width = flip-flop count of the
+   group), score against composite truth (families per part) with the same TUNE calibration.
+2. Rerun `width_infer.py` when `re` has finished for all 3500 netlists.
+3. Reliability plot from `results/match_reliability.csv`.

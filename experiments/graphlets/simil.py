@@ -25,7 +25,8 @@ def gdd_agreement(a: dict[str, Any], b: dict[str, Any]) -> float:
         elif not na or not nb:
             continue
         else:
-            d = math.sqrt(sum((na.get(k, 0.0) - nb.get(k, 0.0)) ** 2 for k in na.keys() | nb.keys()))
+            keys = na.keys() | nb.keys()
+            d = math.sqrt(sum((na.get(k, 0.0) - nb.get(k, 0.0)) ** 2 for k in keys))
             tot += 1.0 - d / math.sqrt(2.0)
     return tot / len(a["gdd"])
 
