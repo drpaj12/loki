@@ -163,3 +163,20 @@ library circuits, not on partitions of composites; Part 2 must redo it per parti
 3. Finish `re` on the remaining library netlists (large register files), rerun `width_infer.py`.
 4. Items 2 to 5 of the brief: size handling comparison, TUNE-only calibration file, matching on the L3
    v0 TEST benchmarks, report with reliability plot, paper paragraph, PR, wait CI, do not merge.
+
+## Blocker found 2026-10-31 (Odin III pass, for the controller)
+
+The `graphlets` pass of odin3 0a44260b drops every cell whose type has a `const_value` hook:
+`node_eligible` in `src/passes/graphlets/gl_net.c` returns `def->const_value == NULL`, and `$sop`
+(a BLIF `.names`) and `$lut` both have that hook (`src/ir/cells/sop.c`, `lut.c`). Effect, checked:
+`.model t; .inputs a b; .outputs y; .names a b y; 11 1` reads as 3 nodes and 0 edges (`$port_in` x2,
+`$port_out`; the AND is missing). For the library netlists O-gate/O-lut/Y-gate/Y-lut every logic
+gate/LUT is missing (counter_up_w008 O-gate: 18 nodes, 0 edges instead of ~30 nodes); only
+flip-flops, ports and hard blocks survive (O-hard 25 edges). Signatures from the pass would therefore
+describe flip-flops and ports only. Fix wanted in Odin III (not done by Loki): exclude a node only when
+it is an actual constant (its output net has `odin3_net_const_value != ODIN3_CONST_NONE`), not by
+cell type; add a unit test with a 2-input `.names`. Also noted: the pass has no typed mode, so the
+directed + typed variant is not available; the global-net rule is Odin's (clock pin or >= 16 readers).
+No signatures were computed (they would be wrong). Resume at "Next step" item 1 once fixed; the
+signer is then `Design.read_blif(netlist, techlibs=[lib/vtr.o3lib]).graphlets(exclude_global=True,
+directed=...)`, groups[0] orbit_totals and gdd, stored through `db.put_signature`.
