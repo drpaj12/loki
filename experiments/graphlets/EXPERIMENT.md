@@ -112,3 +112,54 @@ pairs only. Matching: partitions = cones around state-register groups and L2 par
 benchmarks (singles TEST and the 82 TEST composites) and rolled-out TEST sizes; posterior threshold fit on
 TUNE. Report per pattern x cell x mode vs the L3 v0 rule detector and a hybrid (rule OR signature);
 reliability plot; register rows; paper paragraph; PDF rebuild; PR, wait CI, do not merge.
+
+## Part 1 results (2026-10-31, plain English first)
+
+We built the library of known circuits and the place to keep their signatures. The signatures
+themselves are not computed yet: the Odin III `graphlets` pass is not on odin3 main (no PR for
+feat/graphlets found on 2026-10-31), and Loki does not write it. No matching result is claimed.
+
+Counts (CAD-style first):
+- 700 RTL instances (counter 128, regfile 128, register 96, glue 96, fsm 93, shift 64, timer 64,
+  lfsr 31) x 5 cells = 3500 builds: 3500 ok, 0 failed (~0.2 s per build; Odin and Yosys).
+- LFSR taps checked by simulation for full period 2^w - 1 at every width 2..16 (unit test);
+  17..22 were checked in a one-off run; 23..32 and the live taps for 33, 48, 64 are the published
+  table values, period not simulated.
+- Live path (generate, synthesise in a cell, register with provenance `live`): counter up/updown,
+  shift serial, lfsr, register enrst, timer enable, regfile depth 8, fsm binary/onehot/gray, glue mux2
+  at widths 33, 48 and 64 in all 5 cells: 165 of 165 built ok. Signature step returns "pending" until the pass
+  exists (tested with a fake signer in test_graphlets.py).
+- Database: `$GLET_OUT/graphlet_library.sqlite` (work/glet-out, not committed), schema in `db.py`:
+  Mimir `records` columns and identity (spec section 2) holding one orbit count per row (metric
+  `graphlet_orbit_count`, bin = orbit id, arm = mode undirected / directed / directed_typed,
+  arch = cell, level gate or lut, source `loki-graphlet-pre` or `loki-graphlet-live`), plus a Loki-side
+  `entries` table (pattern, variant, width, depth, cell, provenance, rtl and netlist sha256, build
+  status, Odin III commit, Yosys version, generator hash) and `meta`. Why records and not a new table:
+  the tidy table already carries every field of the brief except pattern, variant and width, which sit
+  in `design` (`glet/<pattern>_<variant>[_dD]_wNNN`) and the entries table; provenance sits in `source`.
+  Needs recorded for the controller (Mimir not changed): registry entry for `graphlet_orbit_count`
+  with measurer `graphlet`; decide whether pattern, variant, width become first-class columns; whether
+  per-node orbit profiles (method 2b) need a second metric. 3665 entries registered (3500 precomputed,
+  165 live).
+
+Width inference (library netlists, true width by construction; `width_infer.py`, results/width_infer.csv;
+3185 of 3500 netlists analysed when this was written, the biggest register files were still running).
+Exact-match rate of the state-register width, M1 widest word claim (counter, register, lfsr, shift_reg,
+ff_en), M2 widest bus, M3 count of distinct flip-flop output nets (regfile M3 against depth x width):
+counter 0.45 / 0.77 / 0.92; shift 0.60 / 0.97 / 0.97; lfsr 0.93 / 1.00 / 0.93; register 0.45 / 0.79 /
+0.59; timer 0.23 / 0.41 / 0.86; regfile 0.73 / 0.59 / 0.78; fsm 0.07 / 0.34 / 0.36 (state bits; the tools
+recode states, so the FSM state count is not read from flip-flop count); glue has no state, M2 0.56.
+Reading: no single method is right; M3 for counter/timer, M2 for shift/lfsr/register. The honest rule
+for matching: use the width of the candidate state-register group (M3) when a pattern hypothesis is
+tested, and fall back to the nearest-size methods when widths disagree. Caveat: this is on isolated
+library circuits, not on partitions of composites; Part 2 must redo it per partition.
+
+## Next step (resume here)
+
+1. Check `gh pr list -R drpaj12/odin3 --head feat/graphlets --state all` and
+   `git -C ~/odin3-ws/odin3 fetch origin`; when the `graphlets` pass is on odin3 main, read its
+   interface (modes, output format) and implement `live.odin_signer`.
+2. Compute signatures for all 3500 library netlists (modes the pass offers) into the database; export CSV.
+3. Finish `re` on the remaining library netlists (large register files), rerun `width_infer.py`.
+4. Items 2 to 5 of the brief: size handling comparison, TUNE-only calibration file, matching on the L3
+   v0 TEST benchmarks, report with reliability plot, paper paragraph, PR, wait CI, do not merge.
