@@ -1,7 +1,8 @@
 """Partition-level signatures and library matching: ``python -B partitions.py [JOBS]``.
 
-A partition is a state group of the L1 claims (flip-flop output nets of counter, register, shift_reg,
-lfsr, fsm and ff_* claims, merged when their output sets overlap) grown to the union of the fan-in
+A partition is a state group of the L1 claims (flip-flop output nets of counter, register,
+shift_reg, lfsr, fsm and ff_* claims, merged when their output sets overlap) grown to the union
+of the fan-in
 cones of its output nets (write_dot's ``cone(NET)``, which crosses flip-flops). The pass counts the
 induced subgraph (``--cells``, halo 0, Odin III global-signal rule). Each partition is matched with
 the library of every width (all entries, or only entries whose measured flip-flop count equals the
@@ -68,9 +69,13 @@ def partitions_of(netlist: Path, qgroups: list[list[str]]) -> list[dict[str, Any
         for gi, qs in enumerate(qgroups):
             rec: dict[str, Any] = {"gi": gi, "ff": len(qs)}
             try:
-                res = d.graphlets(exclude_global=True, per_node=True,
-                                  focus=[f"cone({q})" for q in qs], max_work=int(MAX_WORK))
-                ids = sorted({n["id"] for g in res["groups"] for n in g["node_vectors"]})
+                idset: set[int] = set()
+                for k in range(0, len(qs), 8):  # the pass takes at most 8 foci per call
+                    res = d.graphlets(exclude_global=True, per_node=True,
+                                      focus=[f"cone({q})" for q in qs[k:k + 8]],
+                                      max_work=int(MAX_WORK))
+                    idset |= {n["id"] for g in res["groups"] for n in g["node_vectors"]}
+                ids = sorted(idset)
                 cells.write_text("@p\n" + "\n".join(str(i) for i in ids) + "\n", encoding="utf-8")
                 for mode, directed in sigs.MODES.items():
                     r = d.graphlets(exclude_global=True, directed=directed, cells=cells,

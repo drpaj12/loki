@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import db  # noqa: E402
 import gen  # noqa: E402
 import live  # noqa: E402
+import partitions  # noqa: E402
 
 
 class GenTests(unittest.TestCase):
@@ -37,6 +38,15 @@ class GenTests(unittest.TestCase):
     def test_unknown_lfsr_width(self) -> None:
         with self.assertRaises(ValueError):
             gen.verilog(gen.Inst("lfsr", "fib", 40))
+
+
+class PartitionTests(unittest.TestCase):
+    def test_state_groups_merge_on_overlap(self) -> None:
+        claims = [{"kind": "counter", "nets": {"q": ["a", "b", "c"]}},
+                  {"kind": "register", "nets": {"q": ["c", "d"]}},
+                  {"kind": "ff_en", "nets": {"q": ["z"]}},
+                  {"kind": "eq_const", "nets": {"q": ["y"]}}]
+        self.assertEqual(partitions.state_groups(claims), [["a", "b", "c", "d"], ["z"]])
 
 
 class DbTests(unittest.TestCase):

@@ -1,0 +1,5 @@
+mode,restrict,threshold,tune_F1,tune_F1_at_0.05,pairs,same_pairs
+undirected,all,0.15,0.539,0.535,7966,1138
+undirected,ff,0.15,0.544,0.542,5322,977
+directed,all,0.1,0.547,0.544,7966,1138
+directed,ff,0.2,0.559,0.551,5322,977
