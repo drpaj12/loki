@@ -2291,7 +2291,12 @@ single-pattern designs it does not reach precision and recall 0.80 for any patte
 machines and glue; a signature-or-rule hybrid recovers 39 of 60 register files (the rule alone, 6) with extra false alarms. Directed graphlets were more
 precise in one of 25 tests (state machines on Yosys gates) after Holm correction. Library circuits with a width left out are classified correctly 0.77
 (undirected) and 0.80 (directed) of the time when only the flip-flop count is used and the nearest size stands in, and 0.95 to 1.00 when all other widths are searched.
-Cones around state-register groups and the 82 composites are not yet tested, so the partition question stays open.
+Cutting the design into state groups (the registers the claims found, grown to the union of their input cones) and matching each cut with the library
+by its flip-flop count does better but not well enough: on single designs no pattern reaches 0.80 (one hybrid cell, counters on the hard-block target, does,
+where the rule already works); on the 82 held-out composites the signature alone finds 0.33 to 0.61 of the parts (rule 0.41 to 0.50) and, with the rule added,
+0.52 to 0.74, with more false alarms (precision 0.25 to 0.36, rule 0.35 to 0.54). Directed graphlets were more precise for state machines on the two LUT cells and
+nowhere else (2 of 25). The Bayesian posterior stays below 0.3 for almost every partition, so it does not support a confident accept. Partitions from the
+second-level clustering and the wires between parts are not yet tested.
 
 \section{Conclusion}
 \label{sec:conclusion}

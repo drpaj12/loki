@@ -242,3 +242,83 @@ width inference rerun on the last 315 library netlists (large register files).
    group), score against composite truth (families per part) with the same TUNE calibration.
 2. Rerun `width_infer.py` when `re` has finished for all 3500 netlists.
 3. Reliability plot from `results/match_reliability.csv`.
+
+## Plan for the partition round (written 2026-10-31 before the runs; branch exp/graphlets-partitions)
+
+Controller request: the core of Peter's question. Partition = state group of the L1 claims (flip-flop
+output nets of counter, register, shift_reg, lfsr, fsm and ff_* claims, merged on overlap), grown to
+the union of the fan-in cones of its outputs (`cone(NET)`; the cone crosses flip-flops, so in a
+composite it can include upstream parts: a known limit, reported), counted with `--cells` (halo 0,
+Odin III's global rule), undirected and directed, matched with the library by the group's flip-flop
+count (width known) and over all widths. Truth: L3 v0 singles (design family; glue = no state group)
+and the 82 TEST composites (part families by kind, same scoring as part_c: parts matched / truth parts,
+parts matched / detected parts). Comparators: the rule detector and the hybrid (rule OR signature).
+Calibration fix: the earlier threshold never rejected because it was fit on top-1 accuracy, where a
+rejection is always wrong on single-family designs. Now: pairs are partition x pattern on TUNE singles,
+and the threshold maximises TUNE F1 of the design-level found/not-found decisions (a rejection avoids a
+false alarm). The reliability table is reported as it is. L2 partitions (loki.analysis clustering) are
+not run: their node ids come from Loki's graph.json, not Odin III's node ids, and a mapping would have to
+be built first (recorded as a need, not done). Rule unchanged: works at precision and recall >= 0.80
+(90% bootstrap lower bounds); directed more precise = paired bootstrap, Holm.
+
+## Partition results, 2026-10-31 (plain English first)
+
+Plain English: cutting a design into its state groups (the registers the claims found, plus the logic
+cones that feed them) and matching each cut against the library does better than matching the whole
+design, but still not well enough to replace the rule detector. On single designs it never reaches
+precision and recall 0.80 for any pattern (one hybrid cell does: counters on the hard-block target,
+where the rule already works). On the 82 held-out composites the signature finds more of the parts
+than the rule does (recall up to 0.74 with the rule added, against 0.41 to 0.50) but with more false
+alarms (precision 0.25 to 0.41 against 0.35 to 0.54), and neither reaches the 0.70 bar on both. Directed
+graphlets were clearly more precise for state machines on the two LUT cells, and in no other case. The
+posterior is weakly informative: it never exceeds 0.3 for almost all partitions.
+
+CAD-style counts first.
+- 3368 design x cell jobs (singles and composites), 13777 partition rows, 0 partition
+  errors. Singles with one pattern label: 243 TEST, 253 TUNE; composites 81 or 79 per cell (TEST).
+- Calibration fix: pairs are partition x pattern on TUNE singles (7966 pairs, 1138 same, all widths; 5322
+  and 977 with the flip-flop count known); threshold now maximises TUNE F1 of found / not found and can
+  reject: 0.15, 0.15, 0.10, 0.20 (undirected all, undirected ff, directed all, directed ff); TUNE F1 0.54
+  to 0.56, which is only 0.002 to 0.008 above the threshold 0.05. Reliability on TEST
+  (`results/part_reliability.csv`, `results/reliability.svg`): the posterior is ordered (undirected, count
+  known: bin 0.0-0.1 observed 0.05, 0.1-0.2 0.19, 0.2-0.3 0.22) but has almost no mass above 0.3
+  (19 pairs of 5514), so the calibration cannot support a confident accept. The honest reading: the
+  posterior is not informative enough to act on at these partitions; the accept/reject threshold works
+  only as a weak filter.
+- Singles, TP/FP/FN pooled over five cells (variant: rule; undirected all; undirected count known; directed
+  all; directed count known; hybrid undirected; hybrid directed):
+  fsm 192/19/5, 67/73/130, 66/98/131, 88/80/109, 123/54/74, 192/109/5, 192/66/5;
+  counter 70/0/0, 39/91/31, 50/91/20, 37/104/33, 31/69/39, 70/91/0, 70/69/0;
+  shift 10/71/5, 2/70/13, 7/56/8, 5/72/10, 0/34/15, 10/110/5, 10/88/5;
+  regfile 6/6/54, 22/35/38, 21/26/39, 15/24/45, 19/25/41, 22/32/38, 22/30/38;
+  register 287/37/66, 42/21/311, 41/27/312, 66/36/287, 42/16/311, 292/58/61, 293/50/60;
+  glue 494/2/0 and 494/172/0 for every signature variant (glue = no state group found: 172 non-glue
+  designs have none, i.e. the L1 claims saw no register).
+- Labels over 40 pattern x cell rows per variant: signature only 0 WORKING, 24 NOT WORKING, 16
+  INCONCLUSIVE (each of the four variants); rule 14 / 8 / 18; hybrid undirected (count known) 1 WORKING
+  (counter on O-hard, precision 0.93, recall 1.0, the rule's own result), hybrid directed 0 WORKING.
+- Directed vs undirected (count known, 25 tests with at least 5 positives): directed more precise in 2
+  (fsm on O-lut: precision 0.33 to 0.73, recall 0.24 to 0.54; fsm on Y-lut: 0.13 to 0.64, recall 0.11 to
+  0.62; Holm p < 0.0001 both); `results/part_directed_vs_undirected.csv`.
+- Composites (TEST, part matching by kind as in part_c; parts matched / truth parts = recall, / detected =
+  precision; 90% bootstrap lower bounds in `results/part_composites.csv`):
+  rule recall 0.41 to 0.50, precision 0.35 to 0.54; undirected count known 0.33 to 0.61 recall (best Y-lut
+  0.61, lower bound 0.56) and 0.23 to 0.35 precision; hybrid undirected 0.52 to 0.74 recall (Y-lut 0.74,
+  lower bound 0.69) and 0.25 to 0.36 precision. Wires between parts are not scored (not done).
+  Limit: the cone crosses flip-flops, so a composite partition can contain upstream parts.
+- L2 partitions: not run (node ids of Loki's graph.json are not Odin III's node ids; needs a mapping).
+- Width inference rerun on 3484 of 3500 library netlists (the 16 missing are depth-16 register files on
+  Yosys gates, `loki re` time limit 300 s): exact-match rates M1/M2/M3 counter 0.44/0.78/0.89, shift
+  0.60/0.97/0.97, lfsr 0.93/1.00/0.93, register 0.45/0.79/0.59, timer 0.21/0.45/0.83, regfile
+  0.65/0.42/0.67, fsm 0.07/0.34/0.37. The partition run used M3 (the group's flip-flop count) as the width.
+
+Verdicts: GL4 (partition signatures find what the claim chain misses) INCONCLUSIVE: more parts are found
+in the composites than by the rule, below the bar, with more false alarms; GL5 (directed more precise in
+partitions) INCONCLUSIVE: 2 of 25, both state machines on LUT cells.
+
+## Next step (resume here)
+
+1. Wire scoring for composites (wires between detected partitions) and a cone that stops at other state
+   groups (so a composite part is not contaminated by upstream parts).
+2. L2 partitions: a mapping from Loki graph.json node ids to Odin III node ids, then the same match.
+3. A classifier fit on TUNE (instead of nearest entry + naive Bayes), since the posterior stays below 0.3.
