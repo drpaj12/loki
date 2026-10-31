@@ -242,3 +242,21 @@ width inference rerun on the last 315 library netlists (large register files).
    group), score against composite truth (families per part) with the same TUNE calibration.
 2. Rerun `width_infer.py` when `re` has finished for all 3500 netlists.
 3. Reliability plot from `results/match_reliability.csv`.
+
+## Plan for the partition round (written 2026-10-31 before the runs; branch exp/graphlets-partitions)
+
+Controller request: the core of Peter's question. Partition = state group of the L1 claims (flip-flop
+output nets of counter, register, shift_reg, lfsr, fsm and ff_* claims, merged on overlap), grown to
+the union of the fan-in cones of its outputs (`cone(NET)`; the cone crosses flip-flops, so in a
+composite it can include upstream parts: a known limit, reported), counted with `--cells` (halo 0,
+Odin III's global rule), undirected and directed, matched with the library by the group's flip-flop
+count (width known) and over all widths. Truth: L3 v0 singles (design family; glue = no state group)
+and the 82 TEST composites (part families by kind, same scoring as part_c: parts matched / truth parts,
+parts matched / detected parts). Comparators: the rule detector and the hybrid (rule OR signature).
+Calibration fix: the earlier threshold never rejected because it was fit on top-1 accuracy, where a
+rejection is always wrong on single-family designs. Now: pairs are partition x pattern on TUNE singles,
+and the threshold maximises TUNE F1 of the design-level found/not-found decisions (a rejection avoids a
+false alarm). The reliability table is reported as it is. L2 partitions (loki.analysis clustering) are
+not run: their node ids come from Loki's graph.json, not Odin III's node ids, and a mapping would have to
+be built first (recorded as a need, not done). Rule unchanged: works at precision and recall >= 0.80
+(90% bootstrap lower bounds); directed more precise = paired bootstrap, Holm.
