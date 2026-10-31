@@ -2301,6 +2301,18 @@ composites from 0.23--0.35 to 0.35--0.87 and lowers its recall from 0.33--0.61 t
 precision 0.17--0.46 (rule: recall 0.12--0.18, precision 0.36--0.45), so they are not yet a usable wire detector. Partitions from the second-level clustering and a
 learned classifier are not yet tested.
 
+\paragraph{Loki L3: fuzzy graphlet signatures and a learned classifier.}
+Asked how a signature suggests that a structure exists (plan in \code{experiments/graphlets-fuzzy/EXPERIMENT.md}), we described each pattern by the
+orbits that carry it in the library, then compared signatures more loosely: a distance between per-orbit count distributions, a cosine of log totals, and
+a logistic regression and a random forest on normalised orbit totals, count quantiles and the flip-flop count, on undirected, directed and
+direction-tolerant directed signatures (each orbit mixed with the orbits that differ from it by one reversed edge, at four strengths, and a collapse to undirected),
+all fitted on TUNE only. The classifiers are clearly better than the nearest-entry match: their probabilities are close to the observed rates
+(a probability of 0.6 to 0.7 is right 0.89 of the time, where the earlier posterior never exceeded 0.3), the signature alone reaches precision and recall 0.80 in
+four cells at one tolerance level (state machines on three cells, a counter on one; exploratory among 28 methods), and with the rule added the composite parts are found
+0.54 to 0.80 of the time (rule 0.41 to 0.50). The rule alone still beats every signature method on single designs, a per-pattern choice fitted on TUNE kept the rule
+for every pattern, and wires remain weak (recall up to 0.47 at precision 0.28). Exact directed beat undirected on TUNE F1 (0.759 against 0.715); loosening the direction
+did not help on TUNE.
+
 \section{Conclusion}
 \label{sec:conclusion}
 
