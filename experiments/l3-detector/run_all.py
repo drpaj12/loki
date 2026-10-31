@@ -9,7 +9,6 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
-from pathlib import Path
 
 import l3dlib as lib
 
@@ -43,7 +42,9 @@ def main(argv: list[str]) -> int:
     if stage == "odin":
         return int(importlib.import_module("build_odin").main(argv[1], ""))
     if stage == "yosys":
-        return int(importlib.import_module("build_yosys").main(argv[1]))
+        by = importlib.import_module("build_yosys")
+        by.FRONT = "flatten\n" + by.FRONT  # composites are hierarchical
+        return int(by.main(argv[1]))
     return int(importlib.import_module("run_re").main(argv[1:]))
 
 

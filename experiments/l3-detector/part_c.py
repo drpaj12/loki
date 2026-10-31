@@ -62,7 +62,11 @@ def score(row: dict[str, Any], parts: list[Part], wires: list[Wire]) -> dict[str
     via = Counter(w["via"] for w in tw)
     via_hit = Counter(w["via"] for w, h in zip(tw, hit, strict=True) if h)
     n_t = sum(truth_f.values())
-    return {"truth_parts": n_t, "det_parts": len(parts), "parts_matched": matched,
+    both = [all(f in det_f for f in tparts[w["from"]]["families"] + tparts[w["to"]]["families"])
+            for w in tw]
+    return {"cond_n": sum(both), "cond_hit": sum(1 for b, h in zip(both, hit, strict=True)
+                                                   if b and h),
+            "truth_parts": n_t, "det_parts": len(parts), "parts_matched": matched,
             "truth_wires": len(tw), "wires_hit": sum(hit), "det_wires": len(wires),
             "det_wires_good": good, "via_direct": via["direct"], "via_comb": via["comb"],
             "hit_direct": via_hit["direct"], "hit_comb": via_hit["comb"],
@@ -124,6 +128,8 @@ def evaluate() -> int:
                 "part_recall": ratio(tot["parts_matched"], tot["truth_parts"]),
                 "part_precision": ratio(tot["parts_matched"], tot["det_parts"]),
                 "wire_recall": wr, "wire_recall_lo": round(lo_r, 3),
+                "wire_recall_cond": ratio(tot["cond_hit"], tot["cond_n"]),
+                "cond_wires": tot["cond_n"],
                 "wire_precision": ratio(tot["det_wires_good"], tot["det_wires"]),
                 "wire_precision_lo": round(lo_p, 3),
                 "recall_direct": ratio(tot["hit_direct"], tot["via_direct"]),
@@ -135,7 +141,8 @@ def evaluate() -> int:
                 "label": "WORKING" if wr >= 0.70 and lo_r >= 0.70 else (
                     "INCONCLUSIVE" if wr >= 0.70 else "NOT WORKING")})
     cols = ["split", "cell", "composites", "part_recall", "part_precision", "wire_recall",
-            "wire_recall_lo", "wire_precision", "wire_precision_lo", "recall_direct",
+            "wire_recall_lo", "wire_recall_cond", "cond_wires", "wire_precision",
+            "wire_precision_lo", "recall_direct",
             "recall_comb", "truth_wires", "wires_hit", "det_wires", "det_wires_good", "exact",
             "exact_rate", "miss_part", "miss_wiring", "label"]
     lib.write_csv(lib.RES / "partC_table.csv", cols, out)
