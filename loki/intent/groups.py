@@ -68,7 +68,7 @@ def _feeders(loop: frozenset[int], deps: dict[int, frozenset[int]]) -> frozenset
     grew = True
     while grew:
         grew = False
-        upstream = {f for c in group for f in deps[c] if f not in group}
+        upstream = {f for c in group for f in deps[c] if f not in group and f in deps}
         for f in sorted(upstream):
             reads = deps[f]
             if reads and reads <= group | {f}:

@@ -2254,7 +2254,7 @@ claims, its netlist footprint per synthesis tool and per target technology, and 
 rebuild the RTL, test against the netlist, refine) whose stages follow the loop described in a project note for a published
 software reverse-engineering system (inventory and parsing, evidence linked to exact file and line, explanation and
 proof, reconstruction and testing); we describe that system only from that note and make no comparison of results.
-The specification is \code{docs/specs/2026-10-30-l3-patterns-design.md}; no detector is built.
+The specification is \code{docs/specs/2026-10-30-l3-patterns-design.md}; a first detector (v0) is described below.
 
 A first census (hypothesis register row P3C, a measurement) counts the seed patterns in 519 designs (the 156 VerilogEval
 references, 360 round-4 designs, three VTR designs), labelled from the register-transfer side, and synthesises each with
@@ -2267,6 +2267,18 @@ claim in 7 of 9 Yosys netlists and 2 of 11 Odin~III netlists, and the Yosys gate
 state machines to one-hot, so the encoding call does not differ. The motivating fancy timer yields no state-machine,
 counter or shift-register claim in any Odin~III cell, and the Gate-Breaker Yosys script turns it into constant outputs,
 which is the gap an L3 composite is meant to explain. No two claims of a composite were joined by a register-input path.
+
+A first detector (v0; hypothesis register rows L3A and L3C, measurements with a stated rule) reads the level-one claims and
+the netlist through a JSON catalogue with one signature per target; on the hard-block target a counter is a hard-adder
+claim whose sum bits loop through flip-flops back to the adder with a one-bit or constant operand. On 252 held-out single
+designs it works for state machines (precision 0.85 to 0.95, recall 0.95), counters (no false alarm; recall 0.86 to 0.90 on
+gates and LUTs, 21 of 21 on the hard-block target) and glue logic; it does not work for shift registers (precision 0.14 to
+0.17), timers (recall at most 0.17) or register files, and the LFSR has one held-out design. Most misses are a missing
+level-one claim, not a wrong composition. We then built 182 composite benchmarks by wiring 27 VerilogEval references
+(named by their problem numbers, for example Q035\_146) with a known wiring; on the 82 held-out composites the parts are
+found 41 to 50\% of the time and the wires between parts 12 to 18\% (38 to 61\% when both ends were found), below the bar of
+0.70, so the combined benchmarks do not yet show that the composite idea works; they show which single claims must be
+repaired first. The Odin~III and Yosys cells behave alike.
 
 \section{Conclusion}
 \label{sec:conclusion}

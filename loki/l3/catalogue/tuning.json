@@ -1,0 +1,7 @@
+{
+ "max_depth": 2,
+ "min_p": 0.0,
+ "regfile_k": 2,
+ "regfile_k2": 16,
+ "wire_depth": 4
+}

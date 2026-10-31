@@ -1,0 +1,57 @@
+{
+ "composition": {
+  "parts": [],
+  "wires": []
+ },
+ "detector": {
+  "gate": [
+   {
+    "absent": [
+     "fsm",
+     "counter",
+     "shift_reg",
+     "lfsr",
+     "register",
+     "ff_en",
+     "ff_srst"
+    ],
+    "no_latches": true
+   }
+  ],
+  "lut": [
+   {
+    "absent": [
+     "fsm",
+     "counter",
+     "shift_reg",
+     "lfsr",
+     "register",
+     "ff_en",
+     "ff_srst"
+    ],
+    "no_latches": true
+   }
+  ],
+  "lut+hard": [
+   {
+    "absent": [
+     "fsm",
+     "counter",
+     "shift_reg",
+     "lfsr",
+     "register",
+     "ff_en",
+     "ff_srst"
+    ],
+    "no_latches": true
+   }
+  ]
+ },
+ "footprint": "filled from the census, see experiments/l3-census/EXPERIMENT.md",
+ "id": "glue",
+ "name": "Glue logic (no pattern: keep as gates)",
+ "provenance": "Odin III: per-pass construct chain; Yosys: inferred from the pass script (spec 5)",
+ "purpose": "L Q2.2 (netlist patterns for RTL idioms); measure: precision and recall per pattern",
+ "schema": 1,
+ "version": 1
+}
