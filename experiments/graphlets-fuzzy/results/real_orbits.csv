@@ -1,0 +1,451 @@
+mode,cell,pattern,versus,orbit,arcs,mean_share,sd_share,std_diff,width_slope,instances
+undirected,O-gate,fsm,glue,29,,0.0236,0.0134,2.49,0.21,93
+undirected,O-gate,fsm,glue,28,,0.0118,0.0067,2.49,0.18,93
+undirected,O-gate,fsm,glue,30,,0.0118,0.0067,2.49,0.18,93
+undirected,O-gate,fsm,other,31,,0.0005,0.0004,1.75,0.03,93
+undirected,O-gate,fsm,other,32,,0.0005,0.0004,1.75,0.03,93
+undirected,O-gate,fsm,other,33,,0.0002,0.0002,1.75,0.02,93
+undirected,O-gate,counter,glue,37,,0.01,0.007,1.81,1.34,128
+undirected,O-gate,counter,glue,38,,0.005,0.0035,1.81,1.27,128
+undirected,O-gate,counter,glue,35,,0.005,0.0035,1.81,1.27,128
+undirected,O-gate,counter,other,37,,0.01,0.007,1.86,1.34,128
+undirected,O-gate,counter,other,38,,0.005,0.0035,1.86,1.27,128
+undirected,O-gate,counter,other,35,,0.005,0.0035,1.86,1.27,128
+undirected,O-gate,shift,glue,34,,0.0023,0.004,-1.6,-1.1,64
+undirected,O-gate,shift,glue,15,,0.1224,0.0218,0.64,0.54,64
+undirected,O-gate,shift,glue,16,,0.1224,0.0218,0.64,0.54,64
+undirected,O-gate,shift,other,29,,0.0,0.0,-0.94,0.0,64
+undirected,O-gate,shift,other,28,,0.0,0.0,-0.94,0.0,64
+undirected,O-gate,shift,other,30,,0.0,0.0,-0.94,0.0,64
+undirected,O-gate,lfsr,glue,34,,0.0055,0.0027,-1.26,-0.14,31
+undirected,O-gate,lfsr,glue,15,,0.127,0.0177,0.82,0.25,31
+undirected,O-gate,lfsr,glue,16,,0.127,0.0177,0.82,0.25,31
+undirected,O-gate,lfsr,other,29,,0.0,0.0,-0.9,0.0,31
+undirected,O-gate,lfsr,other,28,,0.0,0.0,-0.9,0.0,31
+undirected,O-gate,lfsr,other,30,,0.0,0.0,-0.9,0.0,31
+undirected,O-gate,timer,glue,5,,0.0613,0.0161,-2.3,1.15,64
+undirected,O-gate,timer,glue,4,,0.0613,0.0161,-2.3,1.15,64
+undirected,O-gate,timer,glue,1,,0.0283,0.0171,-1.79,1.08,64
+undirected,O-gate,timer,other,19,,0.1509,0.0216,1.17,1.37,64
+undirected,O-gate,timer,other,20,,0.0755,0.0108,1.17,1.37,64
+undirected,O-gate,timer,other,18,,0.0755,0.0108,1.17,1.37,64
+undirected,O-gate,regfile,glue,29,,0.0108,0.0073,2.09,0.35,128
+undirected,O-gate,regfile,glue,28,,0.0054,0.0037,2.09,0.35,128
+undirected,O-gate,regfile,glue,30,,0.0054,0.0037,2.09,0.35,128
+undirected,O-gate,regfile,other,34,,0.0014,0.0019,-0.9,-0.96,128
+undirected,O-gate,regfile,other,37,,0.0,0.0,-0.79,0.0,128
+undirected,O-gate,regfile,other,35,,0.0,0.0,-0.79,0.0,128
+undirected,O-gate,register,glue,6,,0.015,0.0158,-1.57,-0.43,96
+undirected,O-gate,register,glue,7,,0.005,0.0053,-1.57,-0.29,96
+undirected,O-gate,register,glue,34,,0.0058,0.0091,-0.97,-0.18,96
+undirected,O-gate,register,other,15,,0.0809,0.0278,-1.63,0.3,96
+undirected,O-gate,register,other,16,,0.0809,0.0278,-1.63,0.3,96
+undirected,O-gate,register,other,17,,0.0405,0.0139,-1.63,0.27,96
+undirected,O-gate,glue,other,34,,0.0157,0.0111,1.25,0.27,96
+undirected,O-gate,glue,other,5,,0.1114,0.0263,1.01,0.75,96
+undirected,O-gate,glue,other,4,,0.1114,0.0263,1.01,0.75,96
+undirected,O-lut,fsm,glue,5,,0.094,0.0488,1.89,0.06,93
+undirected,O-lut,fsm,glue,4,,0.094,0.0488,1.89,0.06,93
+undirected,O-lut,fsm,glue,6,,0.0325,0.0344,-1.78,-1.82,93
+undirected,O-lut,fsm,other,19,,0.0591,0.0626,-0.95,-1.54,93
+undirected,O-lut,fsm,other,20,,0.0296,0.0313,-0.95,-1.47,93
+undirected,O-lut,fsm,other,18,,0.0296,0.0313,-0.95,-1.47,93
+undirected,O-lut,counter,glue,37,,0.0451,0.0148,3.83,2.2,128
+undirected,O-lut,counter,glue,38,,0.0225,0.0074,3.83,2.11,128
+undirected,O-lut,counter,glue,35,,0.0225,0.0074,3.83,2.11,128
+undirected,O-lut,counter,other,37,,0.0451,0.0148,1.59,2.2,128
+undirected,O-lut,counter,other,38,,0.0225,0.0074,1.59,2.11,128
+undirected,O-lut,counter,other,35,,0.0225,0.0074,1.59,2.11,128
+undirected,O-lut,shift,glue,5,,0.0867,0.03,2.4,0.71,64
+undirected,O-lut,shift,glue,4,,0.0867,0.03,2.4,0.71,64
+undirected,O-lut,shift,glue,15,,0.0993,0.0306,1.76,0.94,64
+undirected,O-lut,shift,other,34,,0.0,0.0,-0.7,0.0,64
+undirected,O-lut,shift,other,29,,0.0,0.0,-0.69,0.0,64
+undirected,O-lut,shift,other,30,,0.0,0.0,-0.69,0.0,64
+undirected,O-lut,lfsr,glue,5,,0.0839,0.0247,2.56,0.52,31
+undirected,O-lut,lfsr,glue,4,,0.0839,0.0247,2.56,0.52,31
+undirected,O-lut,lfsr,glue,15,,0.1107,0.0322,2.03,0.75,31
+undirected,O-lut,lfsr,other,15,,0.1107,0.0322,0.82,0.75,31
+undirected,O-lut,lfsr,other,16,,0.1107,0.0322,0.82,0.75,31
+undirected,O-lut,lfsr,other,17,,0.0553,0.0161,0.82,0.72,31
+undirected,O-lut,timer,glue,37,,0.0317,0.0143,2.71,1.59,64
+undirected,O-lut,timer,glue,38,,0.0158,0.0072,2.71,1.51,64
+undirected,O-lut,timer,glue,35,,0.0158,0.0072,2.71,1.51,64
+undirected,O-lut,timer,other,34,,0.0063,0.0041,1.57,1.59,64
+undirected,O-lut,timer,other,29,,0.0039,0.0035,1.14,1.02,64
+undirected,O-lut,timer,other,30,,0.0019,0.0018,1.14,0.9,64
+undirected,O-lut,regfile,glue,15,,0.1052,0.0176,2.19,0.2,128
+undirected,O-lut,regfile,glue,16,,0.1052,0.0176,2.19,0.2,128
+undirected,O-lut,regfile,glue,17,,0.0526,0.0088,2.19,0.2,128
+undirected,O-lut,regfile,other,37,,0.0057,0.0111,-1.03,-2.52,128
+undirected,O-lut,regfile,other,38,,0.0029,0.0056,-1.03,-2.23,128
+undirected,O-lut,regfile,other,35,,0.0029,0.0056,-1.03,-2.23,128
+undirected,O-lut,register,glue,6,,0.0162,0.0267,-2.08,-1.04,96
+undirected,O-lut,register,glue,7,,0.0054,0.0089,-2.08,-0.74,96
+undirected,O-lut,register,glue,0,,0.3332,0.2205,1.18,0.85,96
+undirected,O-lut,register,other,15,,0.0213,0.0352,-2.11,-1.04,96
+undirected,O-lut,register,other,16,,0.0213,0.0352,-2.11,-1.04,96
+undirected,O-lut,register,other,17,,0.0106,0.0176,-2.11,-0.88,96
+undirected,O-lut,glue,other,6,,0.1518,0.088,1.78,0.86,96
+undirected,O-lut,glue,other,7,,0.0506,0.0293,1.78,0.83,96
+undirected,O-lut,glue,other,4,,0.0212,0.0243,-1.39,0.24,96
+undirected,O-hard,fsm,glue,5,,0.094,0.0488,1.89,0.06,93
+undirected,O-hard,fsm,glue,4,,0.094,0.0488,1.89,0.06,93
+undirected,O-hard,fsm,glue,6,,0.0325,0.0344,-1.78,-1.82,93
+undirected,O-hard,fsm,other,49,,0.0203,0.0234,1.03,-2.29,93
+undirected,O-hard,fsm,other,50,,0.0135,0.0156,1.03,-2.12,93
+undirected,O-hard,fsm,other,29,,0.0,0.0003,-0.9,0.08,93
+undirected,O-hard,counter,glue,29,,0.0322,0.011,4.11,1.13,128
+undirected,O-hard,counter,glue,28,,0.0161,0.0055,4.11,1.05,128
+undirected,O-hard,counter,glue,30,,0.0161,0.0055,4.11,1.05,128
+undirected,O-hard,counter,other,29,,0.0322,0.011,3.48,1.13,128
+undirected,O-hard,counter,other,28,,0.0161,0.0055,3.48,1.05,128
+undirected,O-hard,counter,other,30,,0.0161,0.0055,3.48,1.05,128
+undirected,O-hard,shift,glue,5,,0.0867,0.03,2.4,0.71,64
+undirected,O-hard,shift,glue,4,,0.0867,0.03,2.4,0.71,64
+undirected,O-hard,shift,glue,15,,0.0993,0.0306,1.76,0.94,64
+undirected,O-hard,shift,other,29,,0.0,0.0,-0.87,0.0,64
+undirected,O-hard,shift,other,28,,0.0,0.0,-0.87,0.0,64
+undirected,O-hard,shift,other,30,,0.0,0.0,-0.87,0.0,64
+undirected,O-hard,lfsr,glue,5,,0.0839,0.0247,2.56,0.52,31
+undirected,O-hard,lfsr,glue,4,,0.0839,0.0247,2.56,0.52,31
+undirected,O-hard,lfsr,glue,15,,0.1107,0.0322,2.03,0.75,31
+undirected,O-hard,lfsr,other,29,,0.0,0.0,-0.84,0.0,31
+undirected,O-hard,lfsr,other,28,,0.0,0.0,-0.84,0.0,31
+undirected,O-hard,lfsr,other,30,,0.0,0.0,-0.84,0.0,31
+undirected,O-hard,timer,glue,6,,0.0316,0.0115,-1.91,0.41,64
+undirected,O-hard,timer,glue,7,,0.0105,0.0038,-1.91,0.41,64
+undirected,O-hard,timer,glue,29,,0.013,0.0096,1.89,0.01,64
+undirected,O-hard,timer,other,34,,0.0036,0.0027,1.41,0.49,64
+undirected,O-hard,timer,other,1,,0.0262,0.0156,-1.02,0.63,64
+undirected,O-hard,timer,other,2,,0.0131,0.0078,-1.02,0.63,64
+undirected,O-hard,regfile,glue,15,,0.1052,0.0176,2.19,0.2,128
+undirected,O-hard,regfile,glue,16,,0.1052,0.0176,2.19,0.2,128
+undirected,O-hard,regfile,glue,17,,0.0526,0.0088,2.19,0.2,128
+undirected,O-hard,regfile,other,29,,0.0,0.0,-0.95,0.0,128
+undirected,O-hard,regfile,other,28,,0.0,0.0,-0.95,0.0,128
+undirected,O-hard,regfile,other,30,,0.0,0.0,-0.95,0.0,128
+undirected,O-hard,register,glue,6,,0.0162,0.0267,-2.08,-1.04,96
+undirected,O-hard,register,glue,7,,0.0054,0.0089,-2.08,-0.74,96
+undirected,O-hard,register,glue,0,,0.3332,0.2205,1.18,0.85,96
+undirected,O-hard,register,other,15,,0.0213,0.0352,-2.34,-1.04,96
+undirected,O-hard,register,other,16,,0.0213,0.0352,-2.34,-1.04,96
+undirected,O-hard,register,other,17,,0.0106,0.0176,-2.34,-0.88,96
+undirected,O-hard,glue,other,6,,0.1518,0.088,1.84,0.86,96
+undirected,O-hard,glue,other,7,,0.0506,0.0293,1.84,0.83,96
+undirected,O-hard,glue,other,4,,0.0212,0.0243,-1.66,0.24,96
+undirected,Y-gate,fsm,glue,34,,0.003,0.0012,3.34,1.06,93
+undirected,Y-gate,fsm,glue,1,,0.0473,0.0103,3.15,0.77,93
+undirected,Y-gate,fsm,glue,2,,0.0236,0.0052,3.15,0.77,93
+undirected,Y-gate,fsm,other,34,,0.003,0.0012,3.29,1.06,93
+undirected,Y-gate,fsm,other,1,,0.0473,0.0103,2.26,0.77,93
+undirected,Y-gate,fsm,other,2,,0.0236,0.0052,2.26,0.77,93
+undirected,Y-gate,counter,glue,15,,0.0819,0.0309,1.9,1.63,128
+undirected,Y-gate,counter,glue,16,,0.0819,0.0309,1.9,1.63,128
+undirected,Y-gate,counter,glue,17,,0.0409,0.0155,1.9,1.63,128
+undirected,Y-gate,counter,other,8,,0.0003,0.0002,1.28,1.23,128
+undirected,Y-gate,counter,other,37,,0.0019,0.0013,1.17,1.49,128
+undirected,Y-gate,counter,other,35,,0.001,0.0006,1.17,1.38,128
+undirected,Y-gate,shift,glue,6,,0.0577,0.0111,0.98,2.11,64
+undirected,Y-gate,shift,glue,7,,0.0192,0.0037,0.98,2.1,64
+undirected,Y-gate,shift,glue,15,,0.055,0.037,0.94,1.42,64
+undirected,Y-gate,shift,other,34,,0.0,0.0,-0.77,0.0,64
+undirected,Y-gate,shift,other,37,,0.0002,0.0009,-0.58,-0.27,64
+undirected,Y-gate,shift,other,35,,0.0001,0.0004,-0.58,-0.22,64
+undirected,Y-gate,lfsr,glue,19,,0.1295,0.0146,2.07,1.4,31
+undirected,Y-gate,lfsr,glue,20,,0.0648,0.0073,2.07,1.4,31
+undirected,Y-gate,lfsr,glue,18,,0.0648,0.0073,2.07,1.4,31
+undirected,Y-gate,lfsr,other,19,,0.1295,0.0146,1.0,1.4,31
+undirected,Y-gate,lfsr,other,20,,0.0648,0.0073,1.0,1.4,31
+undirected,Y-gate,lfsr,other,18,,0.0648,0.0073,1.0,1.4,31
+undirected,Y-gate,timer,glue,6,,0.0554,0.0116,0.82,2.01,64
+undirected,Y-gate,timer,glue,7,,0.0185,0.0039,0.82,2.0,64
+undirected,Y-gate,timer,glue,15,,0.0454,0.0344,0.69,1.27,64
+undirected,Y-gate,timer,other,34,,0.0001,0.0002,-0.68,-0.6,64
+undirected,Y-gate,timer,other,1,,0.0159,0.0138,-0.31,1.24,64
+undirected,Y-gate,timer,other,2,,0.0079,0.0069,-0.31,1.24,64
+undirected,Y-gate,regfile,glue,37,,0.0006,0.0012,-0.57,-0.76,128
+undirected,Y-gate,regfile,glue,38,,0.0003,0.0006,-0.57,-0.71,128
+undirected,Y-gate,regfile,glue,35,,0.0003,0.0006,-0.57,-0.71,128
+undirected,Y-gate,regfile,other,6,,0.0332,0.0173,-1.79,2.08,128
+undirected,Y-gate,regfile,other,7,,0.0111,0.0058,-1.79,2.08,128
+undirected,Y-gate,regfile,other,22,,0.5868,0.2023,1.47,3.15,128
+undirected,Y-gate,register,glue,6,,0.0549,0.0141,0.74,2.56,96
+undirected,Y-gate,register,glue,7,,0.0183,0.0047,0.74,2.54,96
+undirected,Y-gate,register,glue,37,,0.0005,0.0018,-0.57,-0.57,96
+undirected,Y-gate,register,other,15,,0.0302,0.0318,-0.81,1.62,96
+undirected,Y-gate,register,other,16,,0.0302,0.0318,-0.81,1.62,96
+undirected,Y-gate,register,other,17,,0.0151,0.0159,-0.81,1.61,96
+undirected,Y-gate,glue,other,15,,0.0229,0.031,-0.89,1.99,96
+undirected,Y-gate,glue,other,16,,0.0229,0.031,-0.89,1.99,96
+undirected,Y-gate,glue,other,17,,0.0114,0.0155,-0.89,1.99,96
+undirected,Y-lut,fsm,glue,15,,0.0952,0.0482,2.74,0.16,93
+undirected,Y-lut,fsm,glue,16,,0.0952,0.0482,2.74,0.16,93
+undirected,Y-lut,fsm,glue,17,,0.0476,0.0241,2.74,0.15,93
+undirected,Y-lut,fsm,other,5,,0.0936,0.0492,1.72,0.08,93
+undirected,Y-lut,fsm,other,4,,0.0936,0.0492,1.72,0.08,93
+undirected,Y-lut,fsm,other,22,,0.0434,0.0544,-1.36,-2.27,93
+undirected,Y-lut,counter,glue,15,,0.0643,0.0237,3.71,3.13,128
+undirected,Y-lut,counter,glue,16,,0.0643,0.0237,3.71,3.13,128
+undirected,Y-lut,counter,glue,17,,0.0322,0.0118,3.71,3.03,128
+undirected,Y-lut,counter,other,34,,0.008,0.0053,1.53,2.78,128
+undirected,Y-lut,counter,other,37,,0.0448,0.0242,1.19,2.51,128
+undirected,Y-lut,counter,other,35,,0.0224,0.0121,1.19,2.42,128
+undirected,Y-lut,shift,glue,19,,0.1437,0.0424,4.3,2.96,64
+undirected,Y-lut,shift,glue,20,,0.0718,0.0212,4.3,2.93,64
+undirected,Y-lut,shift,glue,18,,0.0718,0.0212,4.3,2.93,64
+undirected,Y-lut,shift,other,34,,0.0,0.0,-0.76,0.0,64
+undirected,Y-lut,shift,other,19,,0.1437,0.0424,0.69,2.96,64
+undirected,Y-lut,shift,other,18,,0.0718,0.0212,0.69,2.93,64
+undirected,Y-lut,lfsr,glue,19,,0.1475,0.0511,3.73,3.72,31
+undirected,Y-lut,lfsr,glue,20,,0.0738,0.0256,3.73,3.57,31
+undirected,Y-lut,lfsr,glue,18,,0.0738,0.0256,3.73,3.57,31
+undirected,Y-lut,lfsr,other,34,,0.0,0.0,-0.73,0.0,31
+undirected,Y-lut,lfsr,other,49,,0.0033,0.0093,-0.69,-0.22,31
+undirected,Y-lut,lfsr,other,50,,0.0022,0.0062,-0.69,-0.2,31
+undirected,Y-lut,timer,glue,15,,0.0717,0.0159,6.07,2.13,64
+undirected,Y-lut,timer,glue,16,,0.0717,0.0159,6.07,2.13,64
+undirected,Y-lut,timer,glue,17,,0.0358,0.008,6.07,2.11,64
+undirected,Y-lut,timer,other,29,,0.0041,0.0035,1.37,1.68,64
+undirected,Y-lut,timer,other,28,,0.0021,0.0018,1.37,1.52,64
+undirected,Y-lut,timer,other,30,,0.0021,0.0018,1.37,1.52,64
+undirected,Y-lut,regfile,glue,6,,0.0359,0.0166,-2.31,2.2,128
+undirected,Y-lut,regfile,glue,7,,0.012,0.0055,-2.31,2.2,128
+undirected,Y-lut,regfile,glue,19,,0.0998,0.0549,2.3,2.33,128
+undirected,Y-lut,regfile,other,22,,0.4266,0.2529,1.24,3.22,128
+undirected,Y-lut,regfile,other,23,,0.1066,0.0632,1.24,3.21,128
+undirected,Y-lut,regfile,other,37,,0.0034,0.0085,-1.22,-2.07,128
+undirected,Y-lut,register,glue,19,,0.0769,0.0587,1.63,1.96,96
+undirected,Y-lut,register,glue,20,,0.0384,0.0293,1.63,1.94,96
+undirected,Y-lut,register,glue,18,,0.0384,0.0293,1.63,1.94,96
+undirected,Y-lut,register,other,6,,0.081,0.0395,1.31,2.87,96
+undirected,Y-lut,register,other,7,,0.027,0.0132,1.31,2.76,96
+undirected,Y-lut,register,other,37,,0.0062,0.0112,-0.94,-0.84,96
+undirected,Y-lut,glue,other,19,,0.0072,0.0148,-2.28,0.93,96
+undirected,Y-lut,glue,other,20,,0.0036,0.0074,-2.28,0.82,96
+undirected,Y-lut,glue,other,18,,0.0036,0.0074,-2.28,0.82,96
+directed,O-gate,fsm,glue,19,G8[1>0 2>0 0>3],0.0094,0.0085,-3.45,-0.73,93
+directed,O-gate,fsm,glue,18,G8[1>0 2>0 0>3],0.0047,0.0042,-3.45,-0.66,93
+directed,O-gate,fsm,glue,20,G8[1>0 2>0 0>3],0.0047,0.0042,-3.45,-0.66,93
+directed,O-gate,fsm,other,63,G20[0>1 2>0 1>2 3>0],0.0104,0.0062,1.51,0.53,93
+directed,O-gate,fsm,other,66,G20[0>1 2>0 1>2 3>0],0.0104,0.0062,1.51,0.53,93
+directed,O-gate,fsm,other,65,G20[0>1 2>0 1>2 3>0],0.0104,0.0062,1.51,0.53,93
+directed,O-gate,counter,glue,17,G7[1>0 0>2 0>3],0.0328,0.0078,4.28,1.35,128
+directed,O-gate,counter,glue,15,G7[1>0 0>2 0>3],0.0164,0.0039,4.28,1.27,128
+directed,O-gate,counter,glue,16,G7[1>0 0>2 0>3],0.0164,0.0039,4.28,1.27,128
+directed,O-gate,counter,other,72,G22[0>2 1>2 0>3 1>3],0.0034,0.0018,2.39,1.18,128
+directed,O-gate,counter,other,71,G22[0>2 1>2 0>3 1>3],0.0034,0.0018,2.39,1.18,128
+directed,O-gate,counter,other,19,G8[1>0 2>0 0>3],0.0224,0.0052,1.45,1.21,128
+directed,O-gate,shift,glue,8,G3[1>0 2>0],0.0119,0.0096,-2.98,-0.26,64
+directed,O-gate,shift,glue,19,G8[1>0 2>0 0>3],0.0119,0.0096,-2.98,-0.26,64
+directed,O-gate,shift,glue,18,G8[1>0 2>0 0>3],0.006,0.0048,-2.98,-0.15,64
+directed,O-gate,shift,other,63,G20[0>1 2>0 1>2 3>0],0.0,0.0,-1.02,0.0,64
+directed,O-gate,shift,other,66,G20[0>1 2>0 1>2 3>0],0.0,0.0,-1.02,0.0,64
+directed,O-gate,shift,other,65,G20[0>1 2>0 1>2 3>0],0.0,0.0,-1.02,0.0,64
+directed,O-gate,lfsr,glue,8,G3[1>0 2>0],0.0097,0.0052,-4.01,-0.16,31
+directed,O-gate,lfsr,glue,7,G3[1>0 2>0],0.0049,0.0026,-4.01,-0.15,31
+directed,O-gate,lfsr,glue,19,G8[1>0 2>0 0>3],0.0102,0.0051,-3.95,-0.12,31
+directed,O-gate,lfsr,other,8,G3[1>0 2>0],0.0097,0.0052,-1.21,-0.16,31
+directed,O-gate,lfsr,other,7,G3[1>0 2>0],0.0049,0.0026,-1.21,-0.15,31
+directed,O-gate,lfsr,other,38,G13[0>2 1>2 3>0],0.0104,0.0049,-1.15,0.03,31
+directed,O-gate,timer,glue,17,G7[1>0 0>2 0>3],0.0308,0.0078,3.98,1.28,64
+directed,O-gate,timer,glue,15,G7[1>0 0>2 0>3],0.0154,0.0039,3.98,1.23,64
+directed,O-gate,timer,glue,16,G7[1>0 0>2 0>3],0.0154,0.0039,3.98,1.23,64
+directed,O-gate,timer,other,19,G8[1>0 2>0 0>3],0.0234,0.0059,1.35,1.01,64
+directed,O-gate,timer,other,18,G8[1>0 2>0 0>3],0.0117,0.0029,1.35,0.99,64
+directed,O-gate,timer,other,20,G8[1>0 2>0 0>3],0.0117,0.0029,1.35,0.99,64
+directed,O-gate,regfile,glue,19,G8[1>0 2>0 0>3],0.0128,0.0048,-3.65,0.2,128
+directed,O-gate,regfile,glue,18,G8[1>0 2>0 0>3],0.0064,0.0024,-3.65,0.2,128
+directed,O-gate,regfile,glue,20,G8[1>0 2>0 0>3],0.0064,0.0024,-3.65,0.2,128
+directed,O-gate,regfile,other,72,G22[0>2 1>2 0>3 1>3],0.0,0.0,-0.89,0.0,128
+directed,O-gate,regfile,other,71,G22[0>2 1>2 0>3 1>3],0.0,0.0,-0.89,0.0,128
+directed,O-gate,regfile,other,29,G11[2>0 1>2 0>3],0.0365,0.0144,-0.87,0.48,128
+directed,O-gate,register,glue,19,G8[1>0 2>0 0>3],0.0065,0.008,-3.86,-0.16,96
+directed,O-gate,register,glue,18,G8[1>0 2>0 0>3],0.0032,0.004,-3.86,-0.09,96
+directed,O-gate,register,glue,20,G8[1>0 2>0 0>3],0.0032,0.004,-3.86,-0.09,96
+directed,O-gate,register,other,17,G7[1>0 0>2 0>3],0.0073,0.0082,-1.29,-0.06,96
+directed,O-gate,register,other,15,G7[1>0 0>2 0>3],0.0036,0.0041,-1.29,-0.02,96
+directed,O-gate,register,other,16,G7[1>0 0>2 0>3],0.0036,0.0041,-1.29,-0.02,96
+directed,O-gate,glue,other,19,G8[1>0 2>0 0>3],0.0405,0.0095,2.8,0.83,96
+directed,O-gate,glue,other,18,G8[1>0 2>0 0>3],0.0202,0.0048,2.8,0.8,96
+directed,O-gate,glue,other,20,G8[1>0 2>0 0>3],0.0202,0.0048,2.8,0.8,96
+directed,O-lut,fsm,glue,3,G1[0>1 0>2],0.0444,0.0071,3.51,0.14,93
+directed,O-lut,fsm,glue,2,G1[0>1 0>2],0.0222,0.0036,3.51,0.12,93
+directed,O-lut,fsm,glue,19,G8[1>0 2>0 0>3],0.0129,0.0172,-3.21,-1.83,93
+directed,O-lut,fsm,other,17,G7[1>0 0>2 0>3],0.0021,0.0043,-1.09,0.27,93
+directed,O-lut,fsm,other,15,G7[1>0 0>2 0>3],0.001,0.0022,-1.09,0.22,93
+directed,O-lut,fsm,other,16,G7[1>0 0>2 0>3],0.001,0.0022,-1.09,0.22,93
+directed,O-lut,counter,glue,72,G22[0>2 1>2 0>3 1>3],0.0239,0.0077,4.13,1.63,128
+directed,O-lut,counter,glue,71,G22[0>2 1>2 0>3 1>3],0.0239,0.0077,4.13,1.63,128
+directed,O-lut,counter,glue,17,G7[1>0 0>2 0>3],0.0308,0.0132,3.31,2.07,128
+directed,O-lut,counter,other,73,G23[2>0 1>2 0>3 1>3],0.0051,0.0023,1.37,1.27,128
+directed,O-lut,counter,other,74,G23[2>0 1>2 0>3 1>3],0.0051,0.0023,1.37,1.27,128
+directed,O-lut,counter,other,75,G23[2>0 1>2 0>3 1>3],0.0051,0.0023,1.37,1.27,128
+directed,O-lut,shift,glue,8,G3[1>0 2>0],0.0223,0.0216,-2.75,-0.35,64
+directed,O-lut,shift,glue,7,G3[1>0 2>0],0.0112,0.0108,-2.75,-0.23,64
+directed,O-lut,shift,glue,19,G8[1>0 2>0 0>3],0.0223,0.0216,-2.73,-0.35,64
+directed,O-lut,shift,other,29,G11[2>0 1>2 0>3],0.0528,0.0276,1.35,0.91,64
+directed,O-lut,shift,other,30,G11[2>0 1>2 0>3],0.0528,0.0276,1.35,0.91,64
+directed,O-lut,shift,other,31,G11[2>0 1>2 0>3],0.0528,0.0276,1.35,0.91,64
+directed,O-lut,lfsr,glue,3,G1[0>1 0>2],0.0531,0.0034,4.73,0.38,31
+directed,O-lut,lfsr,glue,2,G1[0>1 0>2],0.0266,0.0017,4.73,0.36,31
+directed,O-lut,lfsr,glue,19,G8[1>0 2>0 0>3],0.0099,0.0088,-3.56,-0.57,31
+directed,O-lut,lfsr,other,8,G3[1>0 2>0],0.0117,0.0108,-1.32,-0.52,31
+directed,O-lut,lfsr,other,7,G3[1>0 2>0],0.0059,0.0054,-1.32,-0.46,31
+directed,O-lut,lfsr,other,3,G1[0>1 0>2],0.0531,0.0034,1.31,0.38,31
+directed,O-lut,timer,glue,17,G7[1>0 0>2 0>3],0.0326,0.0149,3.09,1.83,64
+directed,O-lut,timer,glue,15,G7[1>0 0>2 0>3],0.0163,0.0075,3.09,1.73,64
+directed,O-lut,timer,glue,16,G7[1>0 0>2 0>3],0.0163,0.0075,3.09,1.73,64
+directed,O-lut,timer,other,3,G1[0>1 0>2],0.0233,0.0045,-1.5,1.19,64
+directed,O-lut,timer,other,2,G1[0>1 0>2],0.0117,0.0022,-1.5,1.13,64
+directed,O-lut,timer,other,19,G8[1>0 2>0 0>3],0.039,0.0108,1.4,1.23,64
+directed,O-lut,regfile,glue,3,G1[0>1 0>2],0.0409,0.0086,3.03,0.5,128
+directed,O-lut,regfile,glue,2,G1[0>1 0>2],0.0205,0.0043,3.03,0.5,128
+directed,O-lut,regfile,glue,19,G8[1>0 2>0 0>3],0.0248,0.0104,-2.97,0.38,128
+directed,O-lut,regfile,other,17,G7[1>0 0>2 0>3],0.0003,0.0034,-1.35,-0.15,128
+directed,O-lut,regfile,other,15,G7[1>0 0>2 0>3],0.0002,0.0017,-1.35,-0.13,128
+directed,O-lut,regfile,other,16,G7[1>0 0>2 0>3],0.0002,0.0017,-1.35,-0.13,128
+directed,O-lut,register,glue,19,G8[1>0 2>0 0>3],0.0058,0.0113,-3.65,-0.73,96
+directed,O-lut,register,glue,18,G8[1>0 2>0 0>3],0.0029,0.0057,-3.65,-0.55,96
+directed,O-lut,register,glue,20,G8[1>0 2>0 0>3],0.0029,0.0057,-3.65,-0.55,96
+directed,O-lut,register,other,36,G13[0>2 1>2 3>0],0.0,0.0,-1.81,0.0,96
+directed,O-lut,register,other,37,G13[0>2 1>2 3>0],0.0,0.0,-1.81,0.0,96
+directed,O-lut,register,other,38,G13[0>2 1>2 3>0],0.0,0.0,-1.81,0.0,96
+directed,O-lut,glue,other,19,G8[1>0 2>0 0>3],0.1041,0.0363,2.91,0.89,96
+directed,O-lut,glue,other,18,G8[1>0 2>0 0>3],0.052,0.0182,2.91,0.86,96
+directed,O-lut,glue,other,20,G8[1>0 2>0 0>3],0.052,0.0182,2.91,0.86,96
+directed,O-hard,fsm,glue,3,G1[0>1 0>2],0.0444,0.0071,3.51,0.14,93
+directed,O-hard,fsm,glue,2,G1[0>1 0>2],0.0222,0.0036,3.51,0.12,93
+directed,O-hard,fsm,glue,19,G8[1>0 2>0 0>3],0.0129,0.0172,-3.21,-1.83,93
+directed,O-hard,fsm,other,72,G22[0>2 1>2 0>3 1>3],0.0203,0.0231,0.99,-1.98,93
+directed,O-hard,fsm,other,71,G22[0>2 1>2 0>3 1>3],0.0203,0.0231,0.99,-1.98,93
+directed,O-hard,fsm,other,63,G20[0>1 2>0 1>2 3>0],0.0,0.0001,-0.92,0.04,93
+directed,O-hard,counter,glue,63,G20[0>1 2>0 1>2 3>0],0.0112,0.004,3.95,0.6,128
+directed,O-hard,counter,glue,66,G20[0>1 2>0 1>2 3>0],0.0112,0.004,3.95,0.6,128
+directed,O-hard,counter,glue,65,G20[0>1 2>0 1>2 3>0],0.0112,0.004,3.95,0.6,128
+directed,O-hard,counter,other,63,G20[0>1 2>0 1>2 3>0],0.0112,0.004,3.02,0.6,128
+directed,O-hard,counter,other,66,G20[0>1 2>0 1>2 3>0],0.0112,0.004,3.02,0.6,128
+directed,O-hard,counter,other,65,G20[0>1 2>0 1>2 3>0],0.0112,0.004,3.02,0.6,128
+directed,O-hard,shift,glue,8,G3[1>0 2>0],0.0223,0.0216,-2.75,-0.35,64
+directed,O-hard,shift,glue,7,G3[1>0 2>0],0.0112,0.0108,-2.75,-0.23,64
+directed,O-hard,shift,glue,19,G8[1>0 2>0 0>3],0.0223,0.0216,-2.73,-0.35,64
+directed,O-hard,shift,other,29,G11[2>0 1>2 0>3],0.0528,0.0276,1.25,0.91,64
+directed,O-hard,shift,other,30,G11[2>0 1>2 0>3],0.0528,0.0276,1.25,0.91,64
+directed,O-hard,shift,other,31,G11[2>0 1>2 0>3],0.0528,0.0276,1.25,0.91,64
+directed,O-hard,lfsr,glue,3,G1[0>1 0>2],0.0531,0.0034,4.73,0.38,31
+directed,O-hard,lfsr,glue,2,G1[0>1 0>2],0.0266,0.0017,4.73,0.36,31
+directed,O-hard,lfsr,glue,19,G8[1>0 2>0 0>3],0.0099,0.0088,-3.56,-0.57,31
+directed,O-hard,lfsr,other,17,G7[1>0 0>2 0>3],0.0352,0.0176,1.64,0.85,31
+directed,O-hard,lfsr,other,15,G7[1>0 0>2 0>3],0.0176,0.0088,1.64,0.81,31
+directed,O-hard,lfsr,other,16,G7[1>0 0>2 0>3],0.0176,0.0088,1.64,0.81,31
+directed,O-hard,timer,glue,19,G8[1>0 2>0 0>3],0.0284,0.0051,-2.92,0.58,64
+directed,O-hard,timer,glue,18,G8[1>0 2>0 0>3],0.0142,0.0026,-2.92,0.57,64
+directed,O-hard,timer,glue,20,G8[1>0 2>0 0>3],0.0142,0.0026,-2.92,0.57,64
+directed,O-hard,timer,other,3,G1[0>1 0>2],0.0233,0.0034,-1.73,0.5,64
+directed,O-hard,timer,other,2,G1[0>1 0>2],0.0116,0.0017,-1.73,0.49,64
+directed,O-hard,timer,other,38,G13[0>2 1>2 3>0],0.0358,0.013,1.59,0.94,64
+directed,O-hard,regfile,glue,3,G1[0>1 0>2],0.0409,0.0086,3.03,0.5,128
+directed,O-hard,regfile,glue,2,G1[0>1 0>2],0.0205,0.0043,3.03,0.5,128
+directed,O-hard,regfile,glue,19,G8[1>0 2>0 0>3],0.0248,0.0104,-2.97,0.38,128
+directed,O-hard,regfile,other,25,G10[0>2 1>2 0>3],0.0622,0.016,1.19,0.33,128
+directed,O-hard,regfile,other,26,G10[0>2 1>2 0>3],0.0622,0.016,1.19,0.33,128
+directed,O-hard,regfile,other,27,G10[0>2 1>2 0>3],0.0622,0.016,1.19,0.33,128
+directed,O-hard,register,glue,19,G8[1>0 2>0 0>3],0.0058,0.0113,-3.65,-0.73,96
+directed,O-hard,register,glue,18,G8[1>0 2>0 0>3],0.0029,0.0057,-3.65,-0.55,96
+directed,O-hard,register,glue,20,G8[1>0 2>0 0>3],0.0029,0.0057,-3.65,-0.55,96
+directed,O-hard,register,other,36,G13[0>2 1>2 3>0],0.0,0.0,-1.7,0.0,96
+directed,O-hard,register,other,37,G13[0>2 1>2 3>0],0.0,0.0,-1.7,0.0,96
+directed,O-hard,register,other,38,G13[0>2 1>2 3>0],0.0,0.0,-1.7,0.0,96
+directed,O-hard,glue,other,19,G8[1>0 2>0 0>3],0.1041,0.0363,3.13,0.89,96
+directed,O-hard,glue,other,18,G8[1>0 2>0 0>3],0.052,0.0182,3.13,0.86,96
+directed,O-hard,glue,other,20,G8[1>0 2>0 0>3],0.052,0.0182,3.13,0.86,96
+directed,Y-gate,fsm,glue,17,G7[1>0 0>2 0>3],0.0717,0.0065,11.02,0.8,93
+directed,Y-gate,fsm,glue,15,G7[1>0 0>2 0>3],0.0359,0.0033,11.02,0.8,93
+directed,Y-gate,fsm,glue,16,G7[1>0 0>2 0>3],0.0359,0.0033,11.02,0.8,93
+directed,Y-gate,fsm,other,17,G7[1>0 0>2 0>3],0.0717,0.0065,3.12,0.8,93
+directed,Y-gate,fsm,other,15,G7[1>0 0>2 0>3],0.0359,0.0033,3.12,0.8,93
+directed,Y-gate,fsm,other,16,G7[1>0 0>2 0>3],0.0359,0.0033,3.12,0.8,93
+directed,Y-gate,counter,glue,17,G7[1>0 0>2 0>3],0.0457,0.0139,3.99,1.36,128
+directed,Y-gate,counter,glue,15,G7[1>0 0>2 0>3],0.0229,0.007,3.99,1.35,128
+directed,Y-gate,counter,glue,16,G7[1>0 0>2 0>3],0.0229,0.007,3.99,1.35,128
+directed,Y-gate,counter,other,72,G22[0>2 1>2 0>3 1>3],0.0008,0.0004,1.54,1.1,128
+directed,Y-gate,counter,other,71,G22[0>2 1>2 0>3 1>3],0.0008,0.0004,1.54,1.1,128
+directed,Y-gate,counter,other,25,G10[0>2 1>2 0>3],0.0159,0.0062,1.15,1.14,128
+directed,Y-gate,shift,glue,17,G7[1>0 0>2 0>3],0.0226,0.0134,1.88,1.11,64
+directed,Y-gate,shift,glue,15,G7[1>0 0>2 0>3],0.0113,0.0067,1.88,1.1,64
+directed,Y-gate,shift,glue,16,G7[1>0 0>2 0>3],0.0113,0.0067,1.88,1.1,64
+directed,Y-gate,shift,other,8,G3[1>0 2>0],0.0182,0.0119,1.08,1.62,64
+directed,Y-gate,shift,other,7,G3[1>0 2>0],0.0091,0.0059,1.08,1.59,64
+directed,Y-gate,shift,other,38,G13[0>2 1>2 3>0],0.0175,0.0123,1.02,1.76,64
+directed,Y-gate,lfsr,glue,14,G6[0>1 0>2 0>3],0.0613,0.056,-4.12,0.23,31
+directed,Y-gate,lfsr,glue,13,G6[0>1 0>2 0>3],0.0204,0.0187,-4.12,0.23,31
+directed,Y-gate,lfsr,glue,38,G13[0>2 1>2 3>0],0.0252,0.0086,3.56,1.75,31
+directed,Y-gate,lfsr,other,8,G3[1>0 2>0],0.0255,0.0081,2.31,1.68,31
+directed,Y-gate,lfsr,other,7,G3[1>0 2>0],0.0128,0.004,2.31,1.66,31
+directed,Y-gate,lfsr,other,38,G13[0>2 1>2 3>0],0.0252,0.0086,2.25,1.75,31
+directed,Y-gate,timer,glue,17,G7[1>0 0>2 0>3],0.0327,0.0124,3.06,1.21,64
+directed,Y-gate,timer,glue,15,G7[1>0 0>2 0>3],0.0163,0.0062,3.06,1.21,64
+directed,Y-gate,timer,glue,16,G7[1>0 0>2 0>3],0.0163,0.0062,3.06,1.21,64
+directed,Y-gate,timer,other,36,G13[0>2 1>2 3>0],0.0035,0.0016,-0.93,1.09,64
+directed,Y-gate,timer,other,37,G13[0>2 1>2 3>0],0.0035,0.0016,-0.93,1.09,64
+directed,Y-gate,timer,other,38,G13[0>2 1>2 3>0],0.0035,0.0016,-0.93,1.09,64
+directed,Y-gate,regfile,glue,17,G7[1>0 0>2 0>3],0.0176,0.0169,1.14,0.73,128
+directed,Y-gate,regfile,glue,15,G7[1>0 0>2 0>3],0.0088,0.0084,1.14,0.73,128
+directed,Y-gate,regfile,glue,16,G7[1>0 0>2 0>3],0.0088,0.0084,1.14,0.73,128
+directed,Y-gate,regfile,other,14,G6[0>1 0>2 0>3],0.5372,0.1711,1.65,2.17,128
+directed,Y-gate,regfile,other,13,G6[0>1 0>2 0>3],0.1791,0.057,1.65,2.17,128
+directed,Y-gate,regfile,other,8,G3[1>0 2>0],0.0022,0.002,-1.45,0.91,128
+directed,Y-gate,register,glue,36,G13[0>2 1>2 3>0],0.0079,0.0027,1.97,1.78,96
+directed,Y-gate,register,glue,37,G13[0>2 1>2 3>0],0.0079,0.0027,1.97,1.78,96
+directed,Y-gate,register,glue,38,G13[0>2 1>2 3>0],0.0079,0.0027,1.97,1.78,96
+directed,Y-gate,register,other,17,G7[1>0 0>2 0>3],0.0109,0.0113,-1.5,0.92,96
+directed,Y-gate,register,other,15,G7[1>0 0>2 0>3],0.0054,0.0056,-1.5,0.89,96
+directed,Y-gate,register,other,16,G7[1>0 0>2 0>3],0.0054,0.0056,-1.5,0.89,96
+directed,Y-gate,glue,other,17,G7[1>0 0>2 0>3],0.0031,0.0059,-1.76,0.84,96
+directed,Y-gate,glue,other,15,G7[1>0 0>2 0>3],0.0015,0.003,-1.76,0.82,96
+directed,Y-gate,glue,other,16,G7[1>0 0>2 0>3],0.0015,0.003,-1.76,0.82,96
+directed,Y-lut,fsm,glue,25,G10[0>2 1>2 0>3],0.0539,0.0124,6.1,0.04,93
+directed,Y-lut,fsm,glue,26,G10[0>2 1>2 0>3],0.0539,0.0124,6.1,0.04,93
+directed,Y-lut,fsm,glue,27,G10[0>2 1>2 0>3],0.0539,0.0124,6.1,0.04,93
+directed,Y-lut,fsm,other,3,G1[0>1 0>2],0.044,0.0065,1.42,0.2,93
+directed,Y-lut,fsm,other,2,G1[0>1 0>2],0.022,0.0032,1.42,0.18,93
+directed,Y-lut,fsm,other,5,G2[1>0 0>2],0.0302,0.0186,1.26,0.54,93
+directed,Y-lut,counter,glue,25,G10[0>2 1>2 0>3],0.0603,0.009,9.36,2.17,128
+directed,Y-lut,counter,glue,26,G10[0>2 1>2 0>3],0.0603,0.009,9.36,2.17,128
+directed,Y-lut,counter,glue,27,G10[0>2 1>2 0>3],0.0603,0.009,9.36,2.17,128
+directed,Y-lut,counter,other,17,G7[1>0 0>2 0>3],0.0189,0.0066,1.87,2.08,128
+directed,Y-lut,counter,other,15,G7[1>0 0>2 0>3],0.0095,0.0033,1.87,1.97,128
+directed,Y-lut,counter,other,16,G7[1>0 0>2 0>3],0.0095,0.0033,1.87,1.97,128
+directed,Y-lut,shift,glue,25,G10[0>2 1>2 0>3],0.0402,0.0106,5.33,1.93,64
+directed,Y-lut,shift,glue,26,G10[0>2 1>2 0>3],0.0402,0.0106,5.33,1.93,64
+directed,Y-lut,shift,glue,27,G10[0>2 1>2 0>3],0.0402,0.0106,5.33,1.93,64
+directed,Y-lut,shift,other,34,G12[1>0 2>0 3>0],0.2096,0.1502,0.91,2.74,64
+directed,Y-lut,shift,other,33,G12[1>0 2>0 3>0],0.0699,0.0501,0.91,2.6,64
+directed,Y-lut,shift,other,75,G23[2>0 1>2 0>3 1>3],0.0045,0.0043,0.53,0.87,64
+directed,Y-lut,lfsr,glue,25,G10[0>2 1>2 0>3],0.0447,0.01,6.25,1.82,31
+directed,Y-lut,lfsr,glue,26,G10[0>2 1>2 0>3],0.0447,0.01,6.25,1.82,31
+directed,Y-lut,lfsr,glue,27,G10[0>2 1>2 0>3],0.0447,0.01,6.25,1.82,31
+directed,Y-lut,lfsr,other,34,G12[1>0 2>0 3>0],0.2706,0.1714,1.24,3.16,31
+directed,Y-lut,lfsr,other,33,G12[1>0 2>0 3>0],0.0902,0.0571,1.24,3.08,31
+directed,Y-lut,lfsr,other,24,G9[0>1 1>2 0>3],0.0092,0.0109,-1.18,-0.51,31
+directed,Y-lut,timer,glue,25,G10[0>2 1>2 0>3],0.0443,0.0123,5.06,1.65,64
+directed,Y-lut,timer,glue,26,G10[0>2 1>2 0>3],0.0443,0.0123,5.06,1.65,64
+directed,Y-lut,timer,glue,27,G10[0>2 1>2 0>3],0.0443,0.0123,5.06,1.65,64
+directed,Y-lut,timer,other,17,G7[1>0 0>2 0>3],0.0212,0.0105,1.57,1.71,64
+directed,Y-lut,timer,other,15,G7[1>0 0>2 0>3],0.0106,0.0053,1.57,1.61,64
+directed,Y-lut,timer,other,16,G7[1>0 0>2 0>3],0.0106,0.0053,1.57,1.61,64
+directed,Y-lut,regfile,glue,25,G10[0>2 1>2 0>3],0.0302,0.0187,2.27,1.26,128
+directed,Y-lut,regfile,glue,26,G10[0>2 1>2 0>3],0.0302,0.0187,2.27,1.26,128
+directed,Y-lut,regfile,glue,27,G10[0>2 1>2 0>3],0.0302,0.0187,2.27,1.26,128
+directed,Y-lut,regfile,other,14,G6[0>1 0>2 0>3],0.3878,0.2465,1.52,1.39,128
+directed,Y-lut,regfile,other,13,G6[0>1 0>2 0>3],0.1293,0.0822,1.52,1.48,128
+directed,Y-lut,regfile,other,17,G7[1>0 0>2 0>3],0.0001,0.0003,-1.26,-0.05,128
+directed,Y-lut,register,glue,25,G10[0>2 1>2 0>3],0.0328,0.0248,1.86,1.17,96
+directed,Y-lut,register,glue,26,G10[0>2 1>2 0>3],0.0328,0.0248,1.86,1.17,96
+directed,Y-lut,register,glue,27,G10[0>2 1>2 0>3],0.0328,0.0248,1.86,1.17,96
+directed,Y-lut,register,other,17,G7[1>0 0>2 0>3],0.0,0.0,-1.2,0.0,96
+directed,Y-lut,register,other,15,G7[1>0 0>2 0>3],0.0,0.0,-1.2,0.0,96
+directed,Y-lut,register,other,16,G7[1>0 0>2 0>3],0.0,0.0,-1.2,0.0,96
+directed,Y-lut,glue,other,25,G10[0>2 1>2 0>3],0.0002,0.0008,-3.18,0.12,96
+directed,Y-lut,glue,other,26,G10[0>2 1>2 0>3],0.0002,0.0008,-3.18,0.12,96
+directed,Y-lut,glue,other,27,G10[0>2 1>2 0>3],0.0002,0.0008,-3.18,0.12,96

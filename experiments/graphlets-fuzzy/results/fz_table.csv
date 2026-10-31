@@ -1,0 +1,2321 @@
+variant,pattern,cell,designs,TP,FP,FN,precision,precision_lo,recall,recall_lo,label
+clf-lr:dir,counter,O-gate,243,6,8,8,0.429,0.2,0.429,0.2,NOT WORKING
+clf-lr:dir,counter,O-hard,243,9,1,5,0.9,0.714,0.643,0.417,NOT WORKING
+clf-lr:dir,counter,O-lut,243,13,1,1,0.929,0.8,0.929,0.786,INCONCLUSIVE
+clf-lr:dir,counter,Y-gate,229,10,3,4,0.769,0.562,0.714,0.5,NOT WORKING
+clf-lr:dir,counter,Y-lut,231,11,2,3,0.846,0.667,0.786,0.6,NOT WORKING
+clf-lr:dir,fsm,O-gate,243,33,4,8,0.892,0.8,0.805,0.7,INCONCLUSIVE
+clf-lr:dir,fsm,O-hard,243,37,5,4,0.881,0.795,0.902,0.82,INCONCLUSIVE
+clf-lr:dir,fsm,O-lut,243,37,7,4,0.841,0.738,0.902,0.82,INCONCLUSIVE
+clf-lr:dir,fsm,Y-gate,229,32,7,5,0.821,0.714,0.865,0.767,INCONCLUSIVE
+clf-lr:dir,fsm,Y-lut,231,34,6,3,0.85,0.75,0.919,0.833,INCONCLUSIVE
+clf-lr:dir,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-lr:dir,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-lr:dir,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-lr:dir,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-lr:dir,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,lfsr,O-lut,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,regfile,O-gate,243,5,8,7,0.385,0.154,0.417,0.182,NOT WORKING
+clf-lr:dir,regfile,O-hard,243,7,6,5,0.538,0.286,0.583,0.333,NOT WORKING
+clf-lr:dir,regfile,O-lut,243,9,5,3,0.643,0.4,0.75,0.538,NOT WORKING
+clf-lr:dir,regfile,Y-gate,229,5,4,7,0.556,0.25,0.417,0.176,NOT WORKING
+clf-lr:dir,regfile,Y-lut,231,8,2,4,0.8,0.556,0.667,0.429,NOT WORKING
+clf-lr:dir,register,O-gate,243,26,6,48,0.812,0.69,0.351,0.261,NOT WORKING
+clf-lr:dir,register,O-hard,243,45,2,29,0.957,0.906,0.608,0.514,NOT WORKING
+clf-lr:dir,register,O-lut,243,37,1,37,0.974,0.927,0.5,0.405,NOT WORKING
+clf-lr:dir,register,Y-gate,229,12,5,53,0.706,0.524,0.185,0.108,NOT WORKING
+clf-lr:dir,register,Y-lut,231,36,7,30,0.837,0.737,0.545,0.443,NOT WORKING
+clf-lr:dir,shift,O-gate,243,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir,shift,O-hard,243,1,4,2,0.2,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir,shift,O-lut,243,1,1,2,0.5,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir,shift,Y-gate,229,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir,shift,Y-lut,231,1,1,2,0.5,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir,timer,O-gate,243,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,counter,O-gate,243,7,5,7,0.583,0.333,0.5,0.25,NOT WORKING
+clf-lr:dir_a0.25,counter,O-hard,243,9,0,5,1.0,1.0,0.643,0.417,NOT WORKING
+clf-lr:dir_a0.25,counter,O-lut,243,10,0,4,1.0,1.0,0.714,0.5,NOT WORKING
+clf-lr:dir_a0.25,counter,Y-gate,229,9,1,5,0.9,0.714,0.643,0.417,NOT WORKING
+clf-lr:dir_a0.25,counter,Y-lut,231,12,1,2,0.923,0.778,0.857,0.682,INCONCLUSIVE
+clf-lr:dir_a0.25,fsm,O-gate,243,35,6,6,0.854,0.756,0.854,0.758,INCONCLUSIVE
+clf-lr:dir_a0.25,fsm,O-hard,243,37,4,4,0.902,0.821,0.902,0.82,WORKING
+clf-lr:dir_a0.25,fsm,O-lut,243,37,5,4,0.881,0.791,0.902,0.82,INCONCLUSIVE
+clf-lr:dir_a0.25,fsm,Y-gate,229,34,8,3,0.81,0.705,0.919,0.841,INCONCLUSIVE
+clf-lr:dir_a0.25,fsm,Y-lut,231,33,7,4,0.825,0.72,0.892,0.8,INCONCLUSIVE
+clf-lr:dir_a0.25,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-lr:dir_a0.25,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-lr:dir_a0.25,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-lr:dir_a0.25,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-lr:dir_a0.25,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,lfsr,O-lut,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,regfile,O-gate,243,5,8,7,0.385,0.154,0.417,0.182,NOT WORKING
+clf-lr:dir_a0.25,regfile,O-hard,243,7,5,5,0.583,0.333,0.583,0.333,NOT WORKING
+clf-lr:dir_a0.25,regfile,O-lut,243,8,4,4,0.667,0.429,0.667,0.421,NOT WORKING
+clf-lr:dir_a0.25,regfile,Y-gate,229,3,3,9,0.5,0.143,0.25,0.062,NOT WORKING
+clf-lr:dir_a0.25,regfile,Y-lut,231,8,2,4,0.8,0.556,0.667,0.429,NOT WORKING
+clf-lr:dir_a0.25,register,O-gate,243,23,4,51,0.852,0.731,0.311,0.222,NOT WORKING
+clf-lr:dir_a0.25,register,O-hard,243,46,2,28,0.958,0.909,0.622,0.529,NOT WORKING
+clf-lr:dir_a0.25,register,O-lut,243,39,3,35,0.929,0.857,0.527,0.431,NOT WORKING
+clf-lr:dir_a0.25,register,Y-gate,229,12,6,53,0.667,0.474,0.185,0.108,NOT WORKING
+clf-lr:dir_a0.25,register,Y-lut,231,32,6,34,0.842,0.735,0.485,0.382,NOT WORKING
+clf-lr:dir_a0.25,shift,O-gate,243,1,2,2,0.333,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a0.25,shift,O-hard,243,1,6,2,0.143,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a0.25,shift,O-lut,243,1,3,2,0.25,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a0.25,shift,Y-gate,229,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir_a0.25,shift,Y-lut,231,1,2,2,0.333,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a0.25,timer,O-gate,243,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,timer,O-hard,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,timer,O-lut,243,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.25,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,counter,O-gate,243,7,4,7,0.636,0.375,0.5,0.25,NOT WORKING
+clf-lr:dir_a0.5,counter,O-hard,243,9,0,5,1.0,1.0,0.643,0.417,NOT WORKING
+clf-lr:dir_a0.5,counter,O-lut,243,9,0,5,1.0,1.0,0.643,0.417,NOT WORKING
+clf-lr:dir_a0.5,counter,Y-gate,229,8,1,6,0.889,0.667,0.571,0.35,NOT WORKING
+clf-lr:dir_a0.5,counter,Y-lut,231,11,1,3,0.917,0.75,0.786,0.588,NOT WORKING
+clf-lr:dir_a0.5,fsm,O-gate,243,33,9,8,0.786,0.667,0.805,0.7,NOT WORKING
+clf-lr:dir_a0.5,fsm,O-hard,243,37,6,4,0.86,0.771,0.902,0.821,INCONCLUSIVE
+clf-lr:dir_a0.5,fsm,O-lut,243,38,7,3,0.844,0.75,0.927,0.851,INCONCLUSIVE
+clf-lr:dir_a0.5,fsm,Y-gate,229,34,9,3,0.791,0.68,0.919,0.841,NOT WORKING
+clf-lr:dir_a0.5,fsm,Y-lut,231,33,5,4,0.868,0.767,0.892,0.8,INCONCLUSIVE
+clf-lr:dir_a0.5,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-lr:dir_a0.5,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-lr:dir_a0.5,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-lr:dir_a0.5,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-lr:dir_a0.5,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,regfile,O-gate,243,5,7,7,0.417,0.167,0.417,0.167,NOT WORKING
+clf-lr:dir_a0.5,regfile,O-hard,243,7,4,5,0.636,0.364,0.583,0.333,NOT WORKING
+clf-lr:dir_a0.5,regfile,O-lut,243,9,3,3,0.75,0.5,0.75,0.538,NOT WORKING
+clf-lr:dir_a0.5,regfile,Y-gate,229,3,4,9,0.429,0.111,0.25,0.062,NOT WORKING
+clf-lr:dir_a0.5,regfile,Y-lut,231,9,2,3,0.818,0.6,0.75,0.533,NOT WORKING
+clf-lr:dir_a0.5,register,O-gate,243,23,4,51,0.852,0.731,0.311,0.222,NOT WORKING
+clf-lr:dir_a0.5,register,O-hard,243,45,1,29,0.978,0.938,0.608,0.515,NOT WORKING
+clf-lr:dir_a0.5,register,O-lut,243,38,2,36,0.95,0.886,0.514,0.418,NOT WORKING
+clf-lr:dir_a0.5,register,Y-gate,229,13,5,52,0.722,0.545,0.2,0.121,NOT WORKING
+clf-lr:dir_a0.5,register,Y-lut,231,28,9,38,0.757,0.639,0.424,0.319,NOT WORKING
+clf-lr:dir_a0.5,shift,O-gate,243,1,1,2,0.5,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a0.5,shift,O-hard,243,1,5,2,0.167,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a0.5,shift,O-lut,243,1,4,2,0.2,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a0.5,shift,Y-gate,229,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir_a0.5,shift,Y-lut,231,1,5,2,0.167,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a0.5,timer,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,timer,O-hard,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a0.5,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,counter,O-gate,243,5,5,9,0.5,0.222,0.357,0.143,NOT WORKING
+clf-lr:dir_a1,counter,O-hard,243,9,0,5,1.0,1.0,0.643,0.417,NOT WORKING
+clf-lr:dir_a1,counter,O-lut,243,9,1,5,0.9,0.714,0.643,0.417,NOT WORKING
+clf-lr:dir_a1,counter,Y-gate,229,6,1,8,0.857,0.6,0.429,0.214,NOT WORKING
+clf-lr:dir_a1,counter,Y-lut,231,11,1,3,0.917,0.75,0.786,0.588,NOT WORKING
+clf-lr:dir_a1,fsm,O-gate,243,33,9,8,0.786,0.674,0.805,0.7,NOT WORKING
+clf-lr:dir_a1,fsm,O-hard,243,36,3,5,0.923,0.85,0.878,0.789,INCONCLUSIVE
+clf-lr:dir_a1,fsm,O-lut,243,37,6,4,0.86,0.767,0.902,0.821,INCONCLUSIVE
+clf-lr:dir_a1,fsm,Y-gate,229,34,9,3,0.791,0.68,0.919,0.841,NOT WORKING
+clf-lr:dir_a1,fsm,Y-lut,231,32,5,5,0.865,0.762,0.865,0.771,INCONCLUSIVE
+clf-lr:dir_a1,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-lr:dir_a1,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-lr:dir_a1,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-lr:dir_a1,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-lr:dir_a1,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,regfile,O-gate,243,5,5,7,0.5,0.222,0.417,0.167,NOT WORKING
+clf-lr:dir_a1,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+clf-lr:dir_a1,regfile,O-lut,243,9,3,3,0.75,0.5,0.75,0.538,NOT WORKING
+clf-lr:dir_a1,regfile,Y-gate,229,4,3,8,0.571,0.25,0.333,0.111,NOT WORKING
+clf-lr:dir_a1,regfile,Y-lut,231,9,3,3,0.75,0.5,0.75,0.533,NOT WORKING
+clf-lr:dir_a1,register,O-gate,243,21,5,53,0.808,0.667,0.284,0.2,NOT WORKING
+clf-lr:dir_a1,register,O-hard,243,41,1,33,0.976,0.93,0.554,0.461,NOT WORKING
+clf-lr:dir_a1,register,O-lut,243,35,3,39,0.921,0.841,0.473,0.377,NOT WORKING
+clf-lr:dir_a1,register,Y-gate,229,14,5,51,0.737,0.562,0.215,0.134,NOT WORKING
+clf-lr:dir_a1,register,Y-lut,231,27,8,39,0.771,0.647,0.409,0.306,NOT WORKING
+clf-lr:dir_a1,shift,O-gate,243,1,1,2,0.5,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a1,shift,O-hard,243,1,8,2,0.111,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a1,shift,O-lut,243,1,5,2,0.167,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a1,shift,Y-gate,229,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir_a1,shift,Y-lut,231,1,3,2,0.25,0.0,0.333,0.0,INCONCLUSIVE
+clf-lr:dir_a1,timer,O-gate,243,0,10,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,timer,O-lut,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_a1,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,counter,O-gate,243,5,11,9,0.312,0.118,0.357,0.133,NOT WORKING
+clf-lr:dir_col,counter,O-hard,243,9,4,5,0.692,0.5,0.643,0.417,NOT WORKING
+clf-lr:dir_col,counter,O-lut,243,12,7,2,0.632,0.438,0.857,0.667,NOT WORKING
+clf-lr:dir_col,counter,Y-gate,229,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+clf-lr:dir_col,counter,Y-lut,231,11,3,3,0.786,0.583,0.786,0.583,NOT WORKING
+clf-lr:dir_col,fsm,O-gate,243,24,6,17,0.8,0.667,0.585,0.457,NOT WORKING
+clf-lr:dir_col,fsm,O-hard,243,30,4,11,0.882,0.784,0.732,0.614,NOT WORKING
+clf-lr:dir_col,fsm,O-lut,243,30,3,11,0.909,0.824,0.732,0.609,NOT WORKING
+clf-lr:dir_col,fsm,Y-gate,229,35,21,2,0.625,0.517,0.946,0.875,NOT WORKING
+clf-lr:dir_col,fsm,Y-lut,231,28,4,9,0.875,0.778,0.757,0.632,NOT WORKING
+clf-lr:dir_col,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-lr:dir_col,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-lr:dir_col,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-lr:dir_col,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-lr:dir_col,lfsr,O-gate,243,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,lfsr,O-hard,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,lfsr,O-lut,243,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,lfsr,Y-gate,229,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,regfile,O-gate,243,6,4,6,0.6,0.333,0.5,0.267,NOT WORKING
+clf-lr:dir_col,regfile,O-hard,243,5,3,7,0.625,0.286,0.417,0.167,NOT WORKING
+clf-lr:dir_col,regfile,O-lut,243,5,1,7,0.833,0.5,0.417,0.167,NOT WORKING
+clf-lr:dir_col,regfile,Y-gate,229,3,5,9,0.375,0.1,0.25,0.062,NOT WORKING
+clf-lr:dir_col,regfile,Y-lut,231,2,1,10,0.667,0.0,0.167,0.0,NOT WORKING
+clf-lr:dir_col,register,O-gate,243,22,3,52,0.88,0.765,0.297,0.214,NOT WORKING
+clf-lr:dir_col,register,O-hard,243,34,1,40,0.971,0.917,0.459,0.362,NOT WORKING
+clf-lr:dir_col,register,O-lut,243,35,3,39,0.921,0.842,0.473,0.377,NOT WORKING
+clf-lr:dir_col,register,Y-gate,229,12,4,53,0.75,0.562,0.185,0.109,NOT WORKING
+clf-lr:dir_col,register,Y-lut,231,28,7,38,0.8,0.684,0.424,0.323,NOT WORKING
+clf-lr:dir_col,shift,O-gate,243,0,3,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir_col,shift,O-hard,243,0,12,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir_col,shift,O-lut,243,0,9,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir_col,shift,Y-gate,229,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir_col,shift,Y-lut,231,0,6,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:dir_col,timer,O-gate,243,0,9,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,timer,O-hard,243,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,timer,O-lut,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:dir_col,timer,Y-lut,231,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,counter,O-gate,243,7,7,7,0.5,0.273,0.5,0.263,NOT WORKING
+clf-lr:und,counter,O-hard,243,9,0,5,1.0,1.0,0.643,0.421,NOT WORKING
+clf-lr:und,counter,O-lut,243,9,3,5,0.75,0.5,0.643,0.421,NOT WORKING
+clf-lr:und,counter,Y-gate,229,1,2,13,0.333,0.0,0.071,0.0,NOT WORKING
+clf-lr:und,counter,Y-lut,231,11,1,3,0.917,0.769,0.786,0.6,NOT WORKING
+clf-lr:und,fsm,O-gate,243,25,7,16,0.781,0.654,0.61,0.487,NOT WORKING
+clf-lr:und,fsm,O-hard,243,35,4,6,0.897,0.811,0.854,0.75,INCONCLUSIVE
+clf-lr:und,fsm,O-lut,243,32,7,9,0.821,0.711,0.78,0.667,NOT WORKING
+clf-lr:und,fsm,Y-gate,229,33,15,4,0.688,0.575,0.892,0.805,NOT WORKING
+clf-lr:und,fsm,Y-lut,231,32,6,5,0.842,0.733,0.865,0.767,INCONCLUSIVE
+clf-lr:und,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-lr:und,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-lr:und,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-lr:und,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-lr:und,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-lr:und,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,lfsr,O-hard,243,0,11,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,lfsr,O-lut,243,0,11,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,lfsr,Y-gate,229,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,lfsr,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,regfile,O-gate,243,5,9,7,0.357,0.143,0.417,0.182,NOT WORKING
+clf-lr:und,regfile,O-hard,243,5,4,7,0.556,0.25,0.417,0.176,NOT WORKING
+clf-lr:und,regfile,O-lut,243,6,3,6,0.667,0.375,0.5,0.25,NOT WORKING
+clf-lr:und,regfile,Y-gate,229,2,4,10,0.333,0.0,0.167,0.0,NOT WORKING
+clf-lr:und,regfile,Y-lut,231,7,7,5,0.5,0.267,0.583,0.333,NOT WORKING
+clf-lr:und,register,O-gate,243,22,4,52,0.846,0.724,0.297,0.208,NOT WORKING
+clf-lr:und,register,O-hard,243,32,2,42,0.941,0.865,0.432,0.333,NOT WORKING
+clf-lr:und,register,O-lut,243,25,8,49,0.758,0.63,0.338,0.25,NOT WORKING
+clf-lr:und,register,Y-gate,229,13,5,52,0.722,0.538,0.2,0.121,NOT WORKING
+clf-lr:und,register,Y-lut,231,22,5,44,0.815,0.684,0.333,0.237,NOT WORKING
+clf-lr:und,shift,O-gate,243,0,4,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:und,shift,O-hard,243,0,12,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:und,shift,O-lut,243,0,9,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-lr:und,shift,Y-gate,229,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-lr:und,shift,Y-lut,231,2,4,1,0.333,0.0,0.667,0.0,INCONCLUSIVE
+clf-lr:und,timer,O-gate,243,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,timer,O-hard,243,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,timer,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-lr:und,timer,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,counter,O-gate,243,10,7,4,0.588,0.391,0.714,0.5,NOT WORKING
+clf-rf:dir,counter,O-hard,243,12,3,2,0.8,0.636,0.857,0.688,INCONCLUSIVE
+clf-rf:dir,counter,O-lut,243,14,4,0,0.778,0.6,1.0,1.0,NOT WORKING
+clf-rf:dir,counter,Y-gate,229,13,0,1,1.0,1.0,0.929,0.789,INCONCLUSIVE
+clf-rf:dir,counter,Y-lut,231,14,2,0,0.875,0.714,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,fsm,O-gate,243,35,8,6,0.814,0.71,0.854,0.761,INCONCLUSIVE
+clf-rf:dir,fsm,O-hard,243,38,6,3,0.864,0.775,0.927,0.857,INCONCLUSIVE
+clf-rf:dir,fsm,O-lut,243,38,6,3,0.864,0.775,0.927,0.857,INCONCLUSIVE
+clf-rf:dir,fsm,Y-gate,229,36,8,1,0.818,0.717,0.973,0.923,INCONCLUSIVE
+clf-rf:dir,fsm,Y-lut,231,36,5,1,0.878,0.794,0.973,0.921,INCONCLUSIVE
+clf-rf:dir,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-rf:dir,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-rf:dir,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-rf:dir,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-rf:dir,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,regfile,O-gate,243,5,2,7,0.714,0.4,0.417,0.182,NOT WORKING
+clf-rf:dir,regfile,O-hard,243,8,3,4,0.727,0.462,0.667,0.417,NOT WORKING
+clf-rf:dir,regfile,O-lut,243,8,3,4,0.727,0.5,0.667,0.417,NOT WORKING
+clf-rf:dir,regfile,Y-gate,229,5,2,7,0.714,0.4,0.417,0.167,NOT WORKING
+clf-rf:dir,regfile,Y-lut,231,7,2,5,0.778,0.5,0.583,0.333,NOT WORKING
+clf-rf:dir,register,O-gate,243,31,8,43,0.795,0.684,0.419,0.324,NOT WORKING
+clf-rf:dir,register,O-hard,243,48,6,26,0.889,0.817,0.649,0.556,NOT WORKING
+clf-rf:dir,register,O-lut,243,42,5,32,0.894,0.818,0.568,0.471,NOT WORKING
+clf-rf:dir,register,Y-gate,229,14,4,51,0.778,0.611,0.215,0.134,NOT WORKING
+clf-rf:dir,register,Y-lut,231,35,8,31,0.814,0.714,0.53,0.429,NOT WORKING
+clf-rf:dir,shift,O-gate,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir,shift,O-hard,243,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir,shift,O-lut,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir,shift,Y-gate,229,1,0,2,1.0,1.0,0.333,0.0,INCONCLUSIVE
+clf-rf:dir,shift,Y-lut,231,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir,timer,O-gate,243,0,8,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,timer,O-lut,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,counter,O-gate,243,10,5,4,0.667,0.462,0.714,0.5,NOT WORKING
+clf-rf:dir_a0.25,counter,O-hard,243,12,1,2,0.923,0.8,0.857,0.688,INCONCLUSIVE
+clf-rf:dir_a0.25,counter,O-lut,243,13,0,1,1.0,1.0,0.929,0.8,WORKING
+clf-rf:dir_a0.25,counter,Y-gate,229,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+clf-rf:dir_a0.25,counter,Y-lut,231,13,2,1,0.867,0.7,0.929,0.8,INCONCLUSIVE
+clf-rf:dir_a0.25,fsm,O-gate,243,36,6,5,0.857,0.762,0.878,0.794,INCONCLUSIVE
+clf-rf:dir_a0.25,fsm,O-hard,243,39,4,2,0.907,0.829,0.951,0.892,WORKING
+clf-rf:dir_a0.25,fsm,O-lut,243,39,5,2,0.886,0.805,0.951,0.892,WORKING
+clf-rf:dir_a0.25,fsm,Y-gate,229,36,8,1,0.818,0.717,0.973,0.923,INCONCLUSIVE
+clf-rf:dir_a0.25,fsm,Y-lut,231,36,5,1,0.878,0.789,0.973,0.921,INCONCLUSIVE
+clf-rf:dir_a0.25,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-rf:dir_a0.25,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-rf:dir_a0.25,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-rf:dir_a0.25,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-rf:dir_a0.25,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,regfile,O-gate,243,6,4,6,0.6,0.333,0.5,0.25,NOT WORKING
+clf-rf:dir_a0.25,regfile,O-hard,243,9,3,3,0.75,0.5,0.75,0.5,NOT WORKING
+clf-rf:dir_a0.25,regfile,O-lut,243,7,2,5,0.778,0.5,0.583,0.333,NOT WORKING
+clf-rf:dir_a0.25,regfile,Y-gate,229,7,1,5,0.875,0.667,0.583,0.333,NOT WORKING
+clf-rf:dir_a0.25,regfile,Y-lut,231,7,4,5,0.636,0.375,0.583,0.333,NOT WORKING
+clf-rf:dir_a0.25,register,O-gate,243,30,8,44,0.789,0.676,0.405,0.309,NOT WORKING
+clf-rf:dir_a0.25,register,O-hard,243,48,7,26,0.873,0.796,0.649,0.556,NOT WORKING
+clf-rf:dir_a0.25,register,O-lut,243,43,10,31,0.811,0.72,0.581,0.487,NOT WORKING
+clf-rf:dir_a0.25,register,Y-gate,229,14,3,51,0.824,0.667,0.215,0.134,NOT WORKING
+clf-rf:dir_a0.25,register,Y-lut,231,34,10,32,0.773,0.667,0.515,0.414,NOT WORKING
+clf-rf:dir_a0.25,shift,O-gate,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a0.25,shift,O-hard,243,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a0.25,shift,O-lut,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a0.25,shift,Y-gate,229,1,0,2,1.0,1.0,0.333,0.0,INCONCLUSIVE
+clf-rf:dir_a0.25,shift,Y-lut,231,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a0.25,timer,O-gate,243,0,8,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.25,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,counter,O-gate,243,10,4,4,0.714,0.5,0.714,0.5,NOT WORKING
+clf-rf:dir_a0.5,counter,O-hard,243,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+clf-rf:dir_a0.5,counter,O-lut,243,13,0,1,1.0,1.0,0.929,0.8,WORKING
+clf-rf:dir_a0.5,counter,Y-gate,229,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+clf-rf:dir_a0.5,counter,Y-lut,231,14,3,0,0.824,0.647,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,fsm,O-gate,243,33,7,8,0.825,0.719,0.805,0.703,INCONCLUSIVE
+clf-rf:dir_a0.5,fsm,O-hard,243,39,5,2,0.886,0.8,0.951,0.892,WORKING
+clf-rf:dir_a0.5,fsm,O-lut,243,39,3,2,0.929,0.86,0.951,0.892,WORKING
+clf-rf:dir_a0.5,fsm,Y-gate,229,36,8,1,0.818,0.717,0.973,0.923,INCONCLUSIVE
+clf-rf:dir_a0.5,fsm,Y-lut,231,36,4,1,0.9,0.818,0.973,0.921,WORKING
+clf-rf:dir_a0.5,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-rf:dir_a0.5,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-rf:dir_a0.5,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-rf:dir_a0.5,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-rf:dir_a0.5,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,regfile,O-gate,243,7,5,5,0.583,0.333,0.583,0.333,NOT WORKING
+clf-rf:dir_a0.5,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+clf-rf:dir_a0.5,regfile,O-lut,243,7,2,5,0.778,0.5,0.583,0.333,NOT WORKING
+clf-rf:dir_a0.5,regfile,Y-gate,229,7,1,5,0.875,0.667,0.583,0.333,NOT WORKING
+clf-rf:dir_a0.5,regfile,Y-lut,231,7,4,5,0.636,0.375,0.583,0.333,NOT WORKING
+clf-rf:dir_a0.5,register,O-gate,243,30,5,44,0.857,0.75,0.405,0.309,NOT WORKING
+clf-rf:dir_a0.5,register,O-hard,243,48,8,26,0.857,0.778,0.649,0.556,NOT WORKING
+clf-rf:dir_a0.5,register,O-lut,243,44,15,30,0.746,0.655,0.595,0.5,NOT WORKING
+clf-rf:dir_a0.5,register,Y-gate,229,14,3,51,0.824,0.667,0.215,0.134,NOT WORKING
+clf-rf:dir_a0.5,register,Y-lut,231,32,10,34,0.762,0.65,0.485,0.384,NOT WORKING
+clf-rf:dir_a0.5,shift,O-gate,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a0.5,shift,O-hard,243,0,2,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a0.5,shift,O-lut,243,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a0.5,shift,Y-gate,229,1,0,2,1.0,1.0,0.333,0.0,INCONCLUSIVE
+clf-rf:dir_a0.5,shift,Y-lut,231,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a0.5,timer,O-gate,243,0,11,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a0.5,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,counter,O-gate,243,11,5,3,0.688,0.5,0.786,0.583,NOT WORKING
+clf-rf:dir_a1,counter,O-hard,243,12,1,2,0.923,0.8,0.857,0.688,INCONCLUSIVE
+clf-rf:dir_a1,counter,O-lut,243,13,0,1,1.0,1.0,0.929,0.8,WORKING
+clf-rf:dir_a1,counter,Y-gate,229,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+clf-rf:dir_a1,counter,Y-lut,231,13,4,1,0.765,0.583,0.929,0.8,NOT WORKING
+clf-rf:dir_a1,fsm,O-gate,243,34,6,7,0.85,0.75,0.829,0.731,INCONCLUSIVE
+clf-rf:dir_a1,fsm,O-hard,243,38,2,3,0.95,0.889,0.927,0.857,WORKING
+clf-rf:dir_a1,fsm,O-lut,243,38,4,3,0.905,0.825,0.927,0.857,WORKING
+clf-rf:dir_a1,fsm,Y-gate,229,36,7,1,0.837,0.738,0.973,0.923,INCONCLUSIVE
+clf-rf:dir_a1,fsm,Y-lut,231,36,5,1,0.878,0.786,0.973,0.921,INCONCLUSIVE
+clf-rf:dir_a1,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-rf:dir_a1,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-rf:dir_a1,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-rf:dir_a1,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-rf:dir_a1,lfsr,O-gate,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,regfile,O-gate,243,6,6,6,0.5,0.25,0.5,0.25,NOT WORKING
+clf-rf:dir_a1,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+clf-rf:dir_a1,regfile,O-lut,243,7,2,5,0.778,0.5,0.583,0.333,NOT WORKING
+clf-rf:dir_a1,regfile,Y-gate,229,7,0,5,1.0,1.0,0.583,0.333,NOT WORKING
+clf-rf:dir_a1,regfile,Y-lut,231,7,4,5,0.636,0.375,0.583,0.333,NOT WORKING
+clf-rf:dir_a1,register,O-gate,243,29,6,45,0.829,0.719,0.392,0.295,NOT WORKING
+clf-rf:dir_a1,register,O-hard,243,48,8,26,0.857,0.778,0.649,0.556,NOT WORKING
+clf-rf:dir_a1,register,O-lut,243,43,10,31,0.811,0.72,0.581,0.487,NOT WORKING
+clf-rf:dir_a1,register,Y-gate,229,15,3,50,0.833,0.688,0.231,0.147,NOT WORKING
+clf-rf:dir_a1,register,Y-lut,231,32,8,34,0.8,0.692,0.485,0.384,NOT WORKING
+clf-rf:dir_a1,shift,O-gate,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a1,shift,O-hard,243,0,3,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a1,shift,O-lut,243,0,2,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a1,shift,Y-gate,229,1,0,2,1.0,1.0,0.333,0.0,INCONCLUSIVE
+clf-rf:dir_a1,shift,Y-lut,231,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_a1,timer,O-gate,243,0,9,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_a1,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,counter,O-gate,243,9,6,5,0.6,0.375,0.643,0.412,NOT WORKING
+clf-rf:dir_col,counter,O-hard,243,10,2,4,0.833,0.625,0.714,0.5,NOT WORKING
+clf-rf:dir_col,counter,O-lut,243,12,2,2,0.857,0.684,0.857,0.688,INCONCLUSIVE
+clf-rf:dir_col,counter,Y-gate,229,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+clf-rf:dir_col,counter,Y-lut,231,13,3,1,0.812,0.643,0.929,0.8,INCONCLUSIVE
+clf-rf:dir_col,fsm,O-gate,243,33,4,8,0.892,0.805,0.805,0.703,INCONCLUSIVE
+clf-rf:dir_col,fsm,O-hard,243,38,5,3,0.884,0.796,0.927,0.855,INCONCLUSIVE
+clf-rf:dir_col,fsm,O-lut,243,38,6,3,0.864,0.774,0.927,0.855,INCONCLUSIVE
+clf-rf:dir_col,fsm,Y-gate,229,36,6,1,0.857,0.762,0.973,0.923,INCONCLUSIVE
+clf-rf:dir_col,fsm,Y-lut,231,33,5,4,0.868,0.771,0.892,0.8,INCONCLUSIVE
+clf-rf:dir_col,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-rf:dir_col,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-rf:dir_col,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-rf:dir_col,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-rf:dir_col,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,lfsr,O-hard,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,lfsr,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,lfsr,Y-gate,229,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,lfsr,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,regfile,O-gate,243,5,8,7,0.385,0.167,0.417,0.182,NOT WORKING
+clf-rf:dir_col,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+clf-rf:dir_col,regfile,O-lut,243,7,2,5,0.778,0.5,0.583,0.333,NOT WORKING
+clf-rf:dir_col,regfile,Y-gate,229,7,1,5,0.875,0.667,0.583,0.333,NOT WORKING
+clf-rf:dir_col,regfile,Y-lut,231,6,5,6,0.545,0.286,0.5,0.25,NOT WORKING
+clf-rf:dir_col,register,O-gate,243,26,7,48,0.788,0.667,0.351,0.257,NOT WORKING
+clf-rf:dir_col,register,O-hard,243,49,2,25,0.961,0.912,0.662,0.57,NOT WORKING
+clf-rf:dir_col,register,O-lut,243,43,5,31,0.896,0.821,0.581,0.486,NOT WORKING
+clf-rf:dir_col,register,Y-gate,229,14,3,51,0.824,0.667,0.215,0.134,NOT WORKING
+clf-rf:dir_col,register,Y-lut,231,26,9,40,0.743,0.615,0.394,0.293,NOT WORKING
+clf-rf:dir_col,shift,O-gate,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_col,shift,O-hard,243,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_col,shift,O-lut,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_col,shift,Y-gate,229,1,2,2,0.333,0.0,0.333,0.0,INCONCLUSIVE
+clf-rf:dir_col,shift,Y-lut,231,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:dir_col,timer,O-gate,243,0,11,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:dir_col,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,counter,O-gate,243,10,8,4,0.556,0.364,0.714,0.5,NOT WORKING
+clf-rf:und,counter,O-hard,243,11,5,3,0.688,0.471,0.786,0.588,NOT WORKING
+clf-rf:und,counter,O-lut,243,11,5,3,0.688,0.478,0.786,0.6,NOT WORKING
+clf-rf:und,counter,Y-gate,229,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+clf-rf:und,counter,Y-lut,231,11,6,3,0.647,0.438,0.786,0.6,NOT WORKING
+clf-rf:und,fsm,O-gate,243,31,9,10,0.775,0.667,0.756,0.65,NOT WORKING
+clf-rf:und,fsm,O-hard,243,37,5,4,0.881,0.791,0.902,0.821,INCONCLUSIVE
+clf-rf:und,fsm,O-lut,243,38,8,3,0.826,0.727,0.927,0.854,INCONCLUSIVE
+clf-rf:und,fsm,Y-gate,229,36,7,1,0.837,0.739,0.973,0.923,INCONCLUSIVE
+clf-rf:und,fsm,Y-lut,231,35,8,2,0.814,0.709,0.946,0.878,INCONCLUSIVE
+clf-rf:und,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+clf-rf:und,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+clf-rf:und,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+clf-rf:und,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+clf-rf:und,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+clf-rf:und,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,lfsr,O-hard,243,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,lfsr,Y-gate,229,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,regfile,O-gate,243,5,11,7,0.312,0.125,0.417,0.182,NOT WORKING
+clf-rf:und,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+clf-rf:und,regfile,O-lut,243,8,2,4,0.8,0.556,0.667,0.429,NOT WORKING
+clf-rf:und,regfile,Y-gate,229,6,1,6,0.857,0.6,0.5,0.25,NOT WORKING
+clf-rf:und,regfile,Y-lut,231,7,4,5,0.636,0.375,0.583,0.333,NOT WORKING
+clf-rf:und,register,O-gate,243,24,6,50,0.8,0.677,0.324,0.234,NOT WORKING
+clf-rf:und,register,O-hard,243,45,6,29,0.882,0.804,0.608,0.515,NOT WORKING
+clf-rf:und,register,O-lut,243,39,10,35,0.796,0.7,0.527,0.43,NOT WORKING
+clf-rf:und,register,Y-gate,229,15,6,50,0.714,0.542,0.231,0.147,NOT WORKING
+clf-rf:und,register,Y-lut,231,29,7,37,0.806,0.692,0.439,0.338,NOT WORKING
+clf-rf:und,shift,O-gate,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+clf-rf:und,shift,O-hard,243,2,2,1,0.5,0.0,0.667,0.0,INCONCLUSIVE
+clf-rf:und,shift,O-lut,243,2,3,1,0.4,0.0,0.667,0.0,INCONCLUSIVE
+clf-rf:und,shift,Y-gate,229,0,1,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+clf-rf:und,shift,Y-lut,231,2,3,1,0.4,0.0,0.667,0.0,INCONCLUSIVE
+clf-rf:und,timer,O-gate,243,0,12,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,timer,O-lut,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+clf-rf:und,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,counter,O-gate,243,14,8,0,0.636,0.467,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir,counter,O-hard,243,14,1,0,0.933,0.8,1.0,1.0,WORKING
+hybrid:clf-lr:dir,counter,O-lut,243,14,1,0,0.933,0.8,1.0,1.0,WORKING
+hybrid:clf-lr:dir,counter,Y-gate,229,14,3,0,0.824,0.667,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,counter,Y-lut,231,14,2,0,0.875,0.727,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,fsm,O-gate,243,40,10,1,0.8,0.702,0.976,0.932,INCONCLUSIVE
+hybrid:clf-lr:dir,fsm,O-hard,243,40,8,1,0.833,0.741,0.976,0.932,INCONCLUSIVE
+hybrid:clf-lr:dir,fsm,O-lut,243,40,12,1,0.769,0.667,0.976,0.932,NOT WORKING
+hybrid:clf-lr:dir,fsm,Y-gate,229,36,8,1,0.818,0.717,0.973,0.923,INCONCLUSIVE
+hybrid:clf-lr:dir,fsm,Y-lut,231,36,8,1,0.818,0.714,0.973,0.921,INCONCLUSIVE
+hybrid:clf-lr:dir,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,lfsr,O-lut,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,regfile,O-gate,243,5,10,7,0.333,0.133,0.417,0.182,NOT WORKING
+hybrid:clf-lr:dir,regfile,O-hard,243,7,6,5,0.538,0.286,0.583,0.333,NOT WORKING
+hybrid:clf-lr:dir,regfile,O-lut,243,9,6,3,0.6,0.375,0.75,0.538,NOT WORKING
+hybrid:clf-lr:dir,regfile,Y-gate,229,5,5,7,0.5,0.231,0.417,0.176,NOT WORKING
+hybrid:clf-lr:dir,regfile,Y-lut,231,9,3,3,0.75,0.5,0.75,0.5,NOT WORKING
+hybrid:clf-lr:dir,register,O-gate,243,69,13,5,0.841,0.77,0.932,0.881,INCONCLUSIVE
+hybrid:clf-lr:dir,register,O-hard,243,69,9,5,0.885,0.823,0.932,0.88,WORKING
+hybrid:clf-lr:dir,register,O-lut,243,67,9,7,0.882,0.818,0.905,0.847,WORKING
+hybrid:clf-lr:dir,register,Y-gate,229,61,14,4,0.813,0.735,0.938,0.889,INCONCLUSIVE
+hybrid:clf-lr:dir,register,Y-lut,231,66,11,0,0.857,0.787,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,shift,O-gate,243,2,16,1,0.111,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir,shift,O-hard,243,2,19,1,0.095,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir,shift,O-lut,243,2,16,1,0.111,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir,shift,Y-lut,231,2,13,1,0.133,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir,timer,O-gate,243,0,10,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,counter,O-gate,243,14,5,0,0.737,0.562,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.25,counter,O-hard,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a0.25,counter,O-lut,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a0.25,counter,Y-gate,229,14,1,0,0.933,0.8,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a0.25,counter,Y-lut,231,14,1,0,0.933,0.8,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a0.25,fsm,O-gate,243,40,12,1,0.769,0.667,0.976,0.932,NOT WORKING
+hybrid:clf-lr:dir_a0.25,fsm,O-hard,243,40,7,1,0.851,0.762,0.976,0.932,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,fsm,O-lut,243,40,10,1,0.8,0.702,0.976,0.932,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,fsm,Y-gate,229,36,9,1,0.8,0.694,0.973,0.923,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,fsm,Y-lut,231,36,9,1,0.8,0.698,0.973,0.921,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.25,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.25,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.25,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.25,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,lfsr,O-lut,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,regfile,O-gate,243,5,10,7,0.333,0.133,0.417,0.182,NOT WORKING
+hybrid:clf-lr:dir_a0.25,regfile,O-hard,243,7,5,5,0.583,0.333,0.583,0.333,NOT WORKING
+hybrid:clf-lr:dir_a0.25,regfile,O-lut,243,8,5,4,0.615,0.385,0.667,0.421,NOT WORKING
+hybrid:clf-lr:dir_a0.25,regfile,Y-gate,229,3,4,9,0.429,0.111,0.25,0.062,NOT WORKING
+hybrid:clf-lr:dir_a0.25,regfile,Y-lut,231,9,3,3,0.75,0.5,0.75,0.5,NOT WORKING
+hybrid:clf-lr:dir_a0.25,register,O-gate,243,67,11,7,0.859,0.789,0.905,0.845,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,register,O-hard,243,69,9,5,0.885,0.823,0.932,0.882,WORKING
+hybrid:clf-lr:dir_a0.25,register,O-lut,243,69,11,5,0.863,0.794,0.932,0.882,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,register,Y-gate,229,61,15,4,0.803,0.724,0.938,0.889,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,register,Y-lut,231,64,10,2,0.865,0.795,0.97,0.933,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,shift,O-gate,243,2,16,1,0.111,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,shift,O-hard,243,2,20,1,0.091,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,shift,O-lut,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,shift,Y-lut,231,2,13,1,0.133,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,timer,O-gate,243,0,10,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,timer,O-hard,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,timer,O-lut,243,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.25,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,counter,O-gate,243,14,4,0,0.778,0.609,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.5,counter,O-hard,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a0.5,counter,O-lut,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a0.5,counter,Y-gate,229,14,1,0,0.933,0.8,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a0.5,counter,Y-lut,231,14,1,0,0.933,0.81,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a0.5,fsm,O-gate,243,40,14,1,0.741,0.635,0.976,0.932,NOT WORKING
+hybrid:clf-lr:dir_a0.5,fsm,O-hard,243,41,9,0,0.82,0.731,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,fsm,O-lut,243,41,12,0,0.774,0.674,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.5,fsm,Y-gate,229,36,10,1,0.783,0.674,0.973,0.923,NOT WORKING
+hybrid:clf-lr:dir_a0.5,fsm,Y-lut,231,36,7,1,0.837,0.735,0.973,0.921,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.5,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.5,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.5,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a0.5,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,regfile,O-gate,243,5,9,7,0.357,0.143,0.417,0.167,NOT WORKING
+hybrid:clf-lr:dir_a0.5,regfile,O-hard,243,7,4,5,0.636,0.364,0.583,0.333,NOT WORKING
+hybrid:clf-lr:dir_a0.5,regfile,O-lut,243,9,4,3,0.692,0.455,0.75,0.538,NOT WORKING
+hybrid:clf-lr:dir_a0.5,regfile,Y-gate,229,3,5,9,0.375,0.091,0.25,0.062,NOT WORKING
+hybrid:clf-lr:dir_a0.5,regfile,Y-lut,231,10,3,2,0.769,0.556,0.833,0.625,NOT WORKING
+hybrid:clf-lr:dir_a0.5,register,O-gate,243,67,11,7,0.859,0.789,0.905,0.847,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,register,O-hard,243,69,8,5,0.896,0.835,0.932,0.882,WORKING
+hybrid:clf-lr:dir_a0.5,register,O-lut,243,67,10,7,0.87,0.8,0.905,0.851,WORKING
+hybrid:clf-lr:dir_a0.5,register,Y-gate,229,62,14,3,0.816,0.737,0.954,0.91,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,register,Y-lut,231,62,13,4,0.827,0.753,0.939,0.889,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,shift,O-gate,243,2,16,1,0.111,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,shift,O-hard,243,2,20,1,0.091,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,shift,O-lut,243,2,18,1,0.1,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,shift,Y-lut,231,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,timer,O-gate,243,0,9,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,timer,O-hard,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a0.5,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,counter,O-gate,243,14,5,0,0.737,0.565,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a1,counter,O-hard,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a1,counter,O-lut,243,14,1,0,0.933,0.812,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a1,counter,Y-gate,229,14,1,0,0.933,0.8,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a1,counter,Y-lut,231,14,1,0,0.933,0.81,1.0,1.0,WORKING
+hybrid:clf-lr:dir_a1,fsm,O-gate,243,40,14,1,0.741,0.636,0.976,0.932,NOT WORKING
+hybrid:clf-lr:dir_a1,fsm,O-hard,243,41,6,0,0.872,0.792,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,fsm,O-lut,243,41,11,0,0.788,0.691,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a1,fsm,Y-gate,229,36,10,1,0.783,0.674,0.973,0.923,NOT WORKING
+hybrid:clf-lr:dir_a1,fsm,Y-lut,231,36,7,1,0.837,0.735,0.973,0.921,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a1,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a1,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a1,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_a1,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,regfile,O-gate,243,5,6,7,0.455,0.2,0.417,0.167,NOT WORKING
+hybrid:clf-lr:dir_a1,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+hybrid:clf-lr:dir_a1,regfile,O-lut,243,9,4,3,0.692,0.455,0.75,0.538,NOT WORKING
+hybrid:clf-lr:dir_a1,regfile,Y-gate,229,4,4,8,0.5,0.2,0.333,0.111,NOT WORKING
+hybrid:clf-lr:dir_a1,regfile,Y-lut,231,10,4,2,0.714,0.5,0.833,0.625,NOT WORKING
+hybrid:clf-lr:dir_a1,register,O-gate,243,66,12,8,0.846,0.774,0.892,0.829,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,register,O-hard,243,67,8,7,0.893,0.829,0.905,0.846,WORKING
+hybrid:clf-lr:dir_a1,register,O-lut,243,65,11,9,0.855,0.782,0.878,0.817,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,register,Y-gate,229,63,14,2,0.818,0.74,0.969,0.929,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,register,Y-lut,231,60,13,6,0.822,0.745,0.909,0.848,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,shift,O-gate,243,2,16,1,0.111,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,shift,O-hard,243,2,21,1,0.087,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,shift,O-lut,243,2,18,1,0.1,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,timer,O-gate,243,0,13,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,timer,O-lut,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_a1,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,counter,O-gate,243,14,11,0,0.56,0.407,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_col,counter,O-hard,243,14,4,0,0.778,0.615,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_col,counter,O-lut,243,14,7,0,0.667,0.5,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_col,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-lr:dir_col,counter,Y-lut,231,14,3,0,0.824,0.65,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,fsm,O-gate,243,40,12,1,0.769,0.667,0.976,0.932,NOT WORKING
+hybrid:clf-lr:dir_col,fsm,O-hard,243,41,7,0,0.854,0.766,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,fsm,O-lut,243,41,8,0,0.837,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,fsm,Y-gate,229,36,22,1,0.621,0.516,0.973,0.923,NOT WORKING
+hybrid:clf-lr:dir_col,fsm,Y-lut,231,36,5,1,0.878,0.789,0.973,0.921,INCONCLUSIVE
+hybrid:clf-lr:dir_col,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_col,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_col,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_col,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-lr:dir_col,lfsr,O-gate,243,0,9,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,lfsr,O-hard,243,0,9,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,lfsr,O-lut,243,0,10,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,lfsr,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,lfsr,Y-lut,231,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,regfile,O-gate,243,6,6,6,0.5,0.25,0.5,0.267,NOT WORKING
+hybrid:clf-lr:dir_col,regfile,O-hard,243,5,3,7,0.625,0.286,0.417,0.167,NOT WORKING
+hybrid:clf-lr:dir_col,regfile,O-lut,243,5,2,7,0.714,0.4,0.417,0.167,NOT WORKING
+hybrid:clf-lr:dir_col,regfile,Y-gate,229,3,6,9,0.333,0.091,0.25,0.062,NOT WORKING
+hybrid:clf-lr:dir_col,regfile,Y-lut,231,6,2,6,0.75,0.5,0.5,0.25,NOT WORKING
+hybrid:clf-lr:dir_col,register,O-gate,243,67,9,7,0.882,0.816,0.905,0.845,WORKING
+hybrid:clf-lr:dir_col,register,O-hard,243,67,8,7,0.893,0.831,0.905,0.846,WORKING
+hybrid:clf-lr:dir_col,register,O-lut,243,67,11,7,0.859,0.787,0.905,0.847,INCONCLUSIVE
+hybrid:clf-lr:dir_col,register,Y-gate,229,61,13,4,0.824,0.743,0.938,0.887,INCONCLUSIVE
+hybrid:clf-lr:dir_col,register,Y-lut,231,60,12,6,0.833,0.758,0.909,0.85,INCONCLUSIVE
+hybrid:clf-lr:dir_col,shift,O-gate,243,2,18,1,0.1,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,shift,O-hard,243,2,23,1,0.08,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,shift,O-lut,243,2,22,1,0.083,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,shift,Y-lut,231,2,14,1,0.125,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,timer,O-gate,243,0,13,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,timer,O-hard,243,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,timer,O-lut,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:dir_col,timer,Y-lut,231,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,counter,O-gate,243,14,7,0,0.667,0.5,1.0,1.0,NOT WORKING
+hybrid:clf-lr:und,counter,O-hard,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-lr:und,counter,O-lut,243,14,3,0,0.824,0.667,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,counter,Y-gate,229,14,2,0,0.875,0.714,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,counter,Y-lut,231,14,1,0,0.933,0.812,1.0,1.0,WORKING
+hybrid:clf-lr:und,fsm,O-gate,243,40,14,1,0.741,0.639,0.976,0.932,NOT WORKING
+hybrid:clf-lr:und,fsm,O-hard,243,41,7,0,0.854,0.769,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,fsm,O-lut,243,41,12,0,0.774,0.673,1.0,1.0,NOT WORKING
+hybrid:clf-lr:und,fsm,Y-gate,229,36,16,1,0.692,0.583,0.973,0.923,NOT WORKING
+hybrid:clf-lr:und,fsm,Y-lut,231,36,7,1,0.837,0.733,0.973,0.921,INCONCLUSIVE
+hybrid:clf-lr:und,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-lr:und,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-lr:und,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-lr:und,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-lr:und,lfsr,O-gate,243,0,8,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,lfsr,O-hard,243,0,15,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,lfsr,O-lut,243,0,14,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,lfsr,Y-gate,229,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,lfsr,Y-lut,231,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,regfile,O-gate,243,5,11,7,0.312,0.125,0.417,0.182,NOT WORKING
+hybrid:clf-lr:und,regfile,O-hard,243,5,4,7,0.556,0.25,0.417,0.176,NOT WORKING
+hybrid:clf-lr:und,regfile,O-lut,243,6,4,6,0.6,0.333,0.5,0.25,NOT WORKING
+hybrid:clf-lr:und,regfile,Y-gate,229,2,5,10,0.286,0.0,0.167,0.0,NOT WORKING
+hybrid:clf-lr:und,regfile,Y-lut,231,8,8,4,0.5,0.286,0.667,0.429,NOT WORKING
+hybrid:clf-lr:und,register,O-gate,243,69,10,5,0.873,0.81,0.932,0.875,WORKING
+hybrid:clf-lr:und,register,O-hard,243,64,8,10,0.889,0.822,0.865,0.794,INCONCLUSIVE
+hybrid:clf-lr:und,register,O-lut,243,63,15,11,0.808,0.735,0.851,0.779,INCONCLUSIVE
+hybrid:clf-lr:und,register,Y-gate,229,63,14,2,0.818,0.738,0.969,0.929,INCONCLUSIVE
+hybrid:clf-lr:und,register,Y-lut,231,61,10,5,0.859,0.785,0.924,0.868,INCONCLUSIVE
+hybrid:clf-lr:und,shift,O-gate,243,2,19,1,0.095,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:und,shift,O-hard,243,2,27,1,0.069,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:und,shift,O-lut,243,2,23,1,0.08,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:und,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:und,shift,Y-lut,231,2,16,1,0.111,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-lr:und,timer,O-gate,243,0,11,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,timer,O-hard,243,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,timer,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-lr:und,timer,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,counter,O-gate,243,14,7,0,0.667,0.5,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir,counter,O-hard,243,14,3,0,0.824,0.667,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,counter,O-lut,243,14,4,0,0.778,0.6,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-rf:dir,counter,Y-lut,231,14,2,0,0.875,0.714,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,fsm,O-gate,243,40,14,1,0.741,0.633,0.976,0.932,NOT WORKING
+hybrid:clf-rf:dir,fsm,O-hard,243,40,9,1,0.816,0.721,0.976,0.932,INCONCLUSIVE
+hybrid:clf-rf:dir,fsm,O-lut,243,40,10,1,0.8,0.7,0.976,0.932,INCONCLUSIVE
+hybrid:clf-rf:dir,fsm,Y-gate,229,36,8,1,0.818,0.717,0.973,0.923,INCONCLUSIVE
+hybrid:clf-rf:dir,fsm,Y-lut,231,36,7,1,0.837,0.741,0.973,0.921,INCONCLUSIVE
+hybrid:clf-rf:dir,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,regfile,O-gate,243,5,4,7,0.556,0.273,0.417,0.182,NOT WORKING
+hybrid:clf-rf:dir,regfile,O-hard,243,8,3,4,0.727,0.462,0.667,0.417,NOT WORKING
+hybrid:clf-rf:dir,regfile,O-lut,243,8,4,4,0.667,0.417,0.667,0.417,NOT WORKING
+hybrid:clf-rf:dir,regfile,Y-gate,229,5,3,7,0.625,0.333,0.417,0.167,NOT WORKING
+hybrid:clf-rf:dir,regfile,Y-lut,231,8,3,4,0.727,0.5,0.667,0.429,NOT WORKING
+hybrid:clf-rf:dir,register,O-gate,243,71,15,3,0.826,0.756,0.959,0.919,INCONCLUSIVE
+hybrid:clf-rf:dir,register,O-hard,243,71,12,3,0.855,0.789,0.959,0.917,INCONCLUSIVE
+hybrid:clf-rf:dir,register,O-lut,243,70,12,4,0.854,0.787,0.946,0.9,INCONCLUSIVE
+hybrid:clf-rf:dir,register,Y-gate,229,62,13,3,0.827,0.747,0.954,0.91,INCONCLUSIVE
+hybrid:clf-rf:dir,register,Y-lut,231,65,12,1,0.844,0.77,0.985,0.956,INCONCLUSIVE
+hybrid:clf-rf:dir,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir,shift,O-hard,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir,shift,O-lut,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir,timer,O-gate,243,0,13,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,timer,O-lut,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,counter,O-gate,243,14,5,0,0.737,0.56,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.25,counter,O-hard,243,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:clf-rf:dir_a0.25,counter,O-lut,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-rf:dir_a0.25,counter,Y-gate,229,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:clf-rf:dir_a0.25,counter,Y-lut,231,14,2,0,0.875,0.714,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,fsm,O-gate,243,40,12,1,0.769,0.667,0.976,0.932,NOT WORKING
+hybrid:clf-rf:dir_a0.25,fsm,O-hard,243,40,7,1,0.851,0.761,0.976,0.932,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,fsm,O-lut,243,40,9,1,0.816,0.721,0.976,0.932,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,fsm,Y-gate,229,36,8,1,0.818,0.717,0.973,0.923,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,fsm,Y-lut,231,36,7,1,0.837,0.738,0.973,0.921,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.25,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.25,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.25,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.25,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,regfile,O-gate,243,6,6,6,0.5,0.25,0.5,0.25,NOT WORKING
+hybrid:clf-rf:dir_a0.25,regfile,O-hard,243,9,3,3,0.75,0.5,0.75,0.5,NOT WORKING
+hybrid:clf-rf:dir_a0.25,regfile,O-lut,243,7,3,5,0.7,0.429,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_a0.25,regfile,Y-gate,229,7,2,5,0.778,0.5,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_a0.25,regfile,Y-lut,231,8,5,4,0.615,0.375,0.667,0.429,NOT WORKING
+hybrid:clf-rf:dir_a0.25,register,O-gate,243,70,15,4,0.824,0.753,0.946,0.896,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,register,O-hard,243,71,12,3,0.855,0.787,0.959,0.917,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,register,O-lut,243,71,15,3,0.826,0.756,0.959,0.917,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,register,Y-gate,229,62,12,3,0.838,0.761,0.954,0.91,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,register,Y-lut,231,64,14,2,0.821,0.744,0.97,0.933,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,shift,O-hard,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,shift,O-lut,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,timer,O-gate,243,0,13,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.25,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,counter,O-gate,243,14,4,0,0.778,0.6,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.5,counter,O-hard,243,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:clf-rf:dir_a0.5,counter,O-lut,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-rf:dir_a0.5,counter,Y-gate,229,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:clf-rf:dir_a0.5,counter,Y-lut,231,14,3,0,0.824,0.647,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,fsm,O-gate,243,40,12,1,0.769,0.667,0.976,0.932,NOT WORKING
+hybrid:clf-rf:dir_a0.5,fsm,O-hard,243,40,8,1,0.833,0.74,0.976,0.932,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,fsm,O-lut,243,40,8,1,0.833,0.743,0.976,0.932,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,fsm,Y-gate,229,36,8,1,0.818,0.717,0.973,0.923,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,fsm,Y-lut,231,36,6,1,0.857,0.762,0.973,0.921,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.5,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.5,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.5,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a0.5,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,regfile,O-gate,243,7,7,5,0.5,0.278,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_a0.5,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_a0.5,regfile,O-lut,243,7,3,5,0.7,0.429,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_a0.5,regfile,Y-gate,229,7,2,5,0.778,0.5,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_a0.5,regfile,Y-lut,231,8,5,4,0.615,0.375,0.667,0.429,NOT WORKING
+hybrid:clf-rf:dir_a0.5,register,O-gate,243,70,12,4,0.854,0.787,0.946,0.896,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,register,O-hard,243,71,13,3,0.845,0.778,0.959,0.917,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,register,O-lut,243,72,20,2,0.783,0.711,0.973,0.939,NOT WORKING
+hybrid:clf-rf:dir_a0.5,register,Y-gate,229,62,12,3,0.838,0.761,0.954,0.91,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,register,Y-lut,231,64,14,2,0.821,0.745,0.97,0.931,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,shift,O-hard,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,shift,O-lut,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,timer,O-gate,243,0,16,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a0.5,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,counter,O-gate,243,14,5,0,0.737,0.556,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a1,counter,O-hard,243,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:clf-rf:dir_a1,counter,O-lut,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:clf-rf:dir_a1,counter,Y-gate,229,14,1,0,0.933,0.81,1.0,1.0,WORKING
+hybrid:clf-rf:dir_a1,counter,Y-lut,231,14,4,0,0.778,0.6,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a1,fsm,O-gate,243,40,12,1,0.769,0.667,0.976,0.932,NOT WORKING
+hybrid:clf-rf:dir_a1,fsm,O-hard,243,40,5,1,0.889,0.81,0.976,0.932,WORKING
+hybrid:clf-rf:dir_a1,fsm,O-lut,243,40,8,1,0.833,0.743,0.976,0.932,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,fsm,Y-gate,229,36,8,1,0.818,0.717,0.973,0.923,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,fsm,Y-lut,231,36,7,1,0.837,0.738,0.973,0.921,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a1,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a1,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a1,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_a1,lfsr,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,regfile,O-gate,243,6,8,6,0.429,0.2,0.5,0.25,NOT WORKING
+hybrid:clf-rf:dir_a1,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_a1,regfile,O-lut,243,7,3,5,0.7,0.429,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_a1,regfile,Y-gate,229,7,1,5,0.875,0.667,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_a1,regfile,Y-lut,231,8,5,4,0.615,0.375,0.667,0.429,NOT WORKING
+hybrid:clf-rf:dir_a1,register,O-gate,243,69,13,5,0.841,0.772,0.932,0.882,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,register,O-hard,243,71,13,3,0.845,0.778,0.959,0.917,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,register,O-lut,243,71,15,3,0.826,0.756,0.959,0.917,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,register,Y-gate,229,63,12,2,0.84,0.762,0.969,0.929,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,register,Y-lut,231,64,12,2,0.842,0.767,0.97,0.931,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,shift,O-hard,243,2,18,1,0.1,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,shift,O-lut,243,2,16,1,0.111,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,timer,O-gate,243,0,14,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,timer,O-lut,243,0,2,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_a1,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,counter,O-gate,243,14,6,0,0.7,0.524,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_col,counter,O-hard,243,14,2,0,0.875,0.722,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,counter,O-lut,243,14,2,0,0.875,0.714,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,counter,Y-gate,229,14,1,0,0.933,0.81,1.0,1.0,WORKING
+hybrid:clf-rf:dir_col,counter,Y-lut,231,14,3,0,0.824,0.652,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,fsm,O-gate,243,40,11,1,0.784,0.684,0.976,0.932,NOT WORKING
+hybrid:clf-rf:dir_col,fsm,O-hard,243,41,8,0,0.837,0.745,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,fsm,O-lut,243,41,10,0,0.804,0.709,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,fsm,Y-gate,229,36,7,1,0.837,0.737,0.973,0.923,INCONCLUSIVE
+hybrid:clf-rf:dir_col,fsm,Y-lut,231,36,7,1,0.837,0.738,0.973,0.921,INCONCLUSIVE
+hybrid:clf-rf:dir_col,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_col,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_col,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_col,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-rf:dir_col,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,lfsr,O-hard,243,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,lfsr,O-lut,243,0,6,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,lfsr,Y-gate,229,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,lfsr,Y-lut,231,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,regfile,O-gate,243,5,10,7,0.333,0.143,0.417,0.182,NOT WORKING
+hybrid:clf-rf:dir_col,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_col,regfile,O-lut,243,7,3,5,0.7,0.429,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_col,regfile,Y-gate,229,7,2,5,0.778,0.5,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_col,regfile,Y-lut,231,7,6,5,0.538,0.3,0.583,0.333,NOT WORKING
+hybrid:clf-rf:dir_col,register,O-gate,243,69,14,5,0.831,0.759,0.932,0.882,INCONCLUSIVE
+hybrid:clf-rf:dir_col,register,O-hard,243,72,8,2,0.9,0.838,0.973,0.937,WORKING
+hybrid:clf-rf:dir_col,register,O-lut,243,72,11,2,0.867,0.8,0.973,0.938,WORKING
+hybrid:clf-rf:dir_col,register,Y-gate,229,63,12,2,0.84,0.762,0.969,0.929,INCONCLUSIVE
+hybrid:clf-rf:dir_col,register,Y-lut,231,62,13,4,0.827,0.75,0.939,0.889,INCONCLUSIVE
+hybrid:clf-rf:dir_col,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,shift,O-hard,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,shift,O-lut,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,shift,Y-gate,229,2,14,1,0.125,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,timer,O-gate,243,0,16,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,timer,O-hard,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:dir_col,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,counter,O-gate,243,14,8,0,0.636,0.474,1.0,1.0,NOT WORKING
+hybrid:clf-rf:und,counter,O-hard,243,14,5,0,0.737,0.556,1.0,1.0,NOT WORKING
+hybrid:clf-rf:und,counter,O-lut,243,14,5,0,0.737,0.556,1.0,1.0,NOT WORKING
+hybrid:clf-rf:und,counter,Y-gate,229,14,1,0,0.933,0.8,1.0,1.0,WORKING
+hybrid:clf-rf:und,counter,Y-lut,231,14,6,0,0.7,0.522,1.0,1.0,NOT WORKING
+hybrid:clf-rf:und,fsm,O-gate,243,40,14,1,0.741,0.638,0.976,0.932,NOT WORKING
+hybrid:clf-rf:und,fsm,O-hard,243,41,8,0,0.837,0.746,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,fsm,O-lut,243,41,13,0,0.759,0.66,1.0,1.0,NOT WORKING
+hybrid:clf-rf:und,fsm,Y-gate,229,36,8,1,0.818,0.714,0.973,0.923,INCONCLUSIVE
+hybrid:clf-rf:und,fsm,Y-lut,231,36,10,1,0.783,0.68,0.973,0.921,NOT WORKING
+hybrid:clf-rf:und,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:clf-rf:und,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:clf-rf:und,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:clf-rf:und,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:clf-rf:und,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,lfsr,O-hard,243,0,7,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,lfsr,O-lut,243,0,8,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,lfsr,Y-gate,229,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,regfile,O-gate,243,5,13,7,0.278,0.105,0.417,0.182,NOT WORKING
+hybrid:clf-rf:und,regfile,O-hard,243,7,3,5,0.7,0.4,0.583,0.333,NOT WORKING
+hybrid:clf-rf:und,regfile,O-lut,243,8,3,4,0.727,0.5,0.667,0.429,NOT WORKING
+hybrid:clf-rf:und,regfile,Y-gate,229,6,2,6,0.75,0.5,0.5,0.25,NOT WORKING
+hybrid:clf-rf:und,regfile,Y-lut,231,8,5,4,0.615,0.375,0.667,0.429,NOT WORKING
+hybrid:clf-rf:und,register,O-gate,243,69,13,5,0.841,0.773,0.932,0.882,INCONCLUSIVE
+hybrid:clf-rf:und,register,O-hard,243,69,11,5,0.863,0.793,0.932,0.88,INCONCLUSIVE
+hybrid:clf-rf:und,register,O-lut,243,70,16,4,0.814,0.744,0.946,0.901,INCONCLUSIVE
+hybrid:clf-rf:und,register,Y-gate,229,63,15,2,0.808,0.727,0.969,0.929,INCONCLUSIVE
+hybrid:clf-rf:und,register,Y-lut,231,63,11,3,0.851,0.779,0.955,0.908,INCONCLUSIVE
+hybrid:clf-rf:und,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:und,shift,O-hard,243,2,19,1,0.095,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:und,shift,O-lut,243,2,18,1,0.1,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:und,shift,Y-gate,229,2,13,1,0.133,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:und,shift,Y-lut,231,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:clf-rf:und,timer,O-gate,243,0,17,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,timer,O-lut,243,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:clf-rf:und,timer,Y-lut,231,0,1,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,counter,O-gate,243,14,48,0,0.226,0.143,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:all,counter,O-hard,243,14,9,0,0.609,0.438,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:all,counter,O-lut,243,14,42,0,0.25,0.16,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:all,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-cos:dir:all,counter,Y-lut,231,14,40,0,0.259,0.163,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:all,fsm,O-gate,243,40,16,1,0.714,0.611,0.976,0.932,NOT WORKING
+hybrid:nn-cos:dir:all,fsm,O-hard,243,40,19,1,0.678,0.579,0.976,0.932,NOT WORKING
+hybrid:nn-cos:dir:all,fsm,O-lut,243,40,8,1,0.833,0.739,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir:all,fsm,Y-gate,229,36,27,1,0.571,0.466,0.973,0.923,NOT WORKING
+hybrid:nn-cos:dir:all,fsm,Y-lut,231,36,12,1,0.75,0.647,0.973,0.921,NOT WORKING
+hybrid:nn-cos:dir:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:all,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,regfile,O-gate,243,3,12,9,0.2,0.048,0.25,0.05,NOT WORKING
+hybrid:nn-cos:dir:all,regfile,O-hard,243,6,14,6,0.3,0.133,0.5,0.25,NOT WORKING
+hybrid:nn-cos:dir:all,regfile,O-lut,243,6,14,6,0.3,0.133,0.5,0.25,NOT WORKING
+hybrid:nn-cos:dir:all,regfile,Y-gate,229,0,4,12,0.0,0.0,0.0,0.0,NOT WORKING
+hybrid:nn-cos:dir:all,regfile,Y-lut,231,8,28,4,0.222,0.114,0.667,0.429,NOT WORKING
+hybrid:nn-cos:dir:all,register,O-gate,243,63,10,11,0.863,0.794,0.851,0.779,INCONCLUSIVE
+hybrid:nn-cos:dir:all,register,O-hard,243,67,26,7,0.72,0.644,0.905,0.846,NOT WORKING
+hybrid:nn-cos:dir:all,register,O-lut,243,67,17,7,0.798,0.723,0.905,0.847,NOT WORKING
+hybrid:nn-cos:dir:all,register,Y-gate,229,62,12,3,0.838,0.757,0.954,0.908,INCONCLUSIVE
+hybrid:nn-cos:dir:all,register,Y-lut,231,59,9,7,0.868,0.796,0.894,0.833,INCONCLUSIVE
+hybrid:nn-cos:dir:all,shift,O-gate,243,3,29,0,0.094,0.026,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,shift,O-hard,243,2,36,1,0.053,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,shift,O-lut,243,2,30,1,0.062,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,shift,Y-lut,231,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,counter,O-gate,243,14,36,0,0.28,0.182,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:ff,counter,O-hard,243,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:nn-cos:dir:ff,counter,O-lut,243,14,17,0,0.452,0.306,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:ff,counter,Y-gate,229,14,2,0,0.875,0.722,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,counter,Y-lut,231,14,4,0,0.778,0.6,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:ff,fsm,O-gate,243,40,10,1,0.8,0.702,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,fsm,O-hard,243,40,8,1,0.833,0.741,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,fsm,O-lut,243,40,5,1,0.889,0.806,0.976,0.932,WORKING
+hybrid:nn-cos:dir:ff,fsm,Y-gate,229,36,7,1,0.837,0.733,0.973,0.923,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,fsm,Y-lut,231,36,6,1,0.857,0.761,0.973,0.921,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir:ff,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,regfile,O-gate,243,4,3,8,0.571,0.25,0.333,0.1,NOT WORKING
+hybrid:nn-cos:dir:ff,regfile,O-hard,243,9,33,3,0.214,0.111,0.75,0.533,NOT WORKING
+hybrid:nn-cos:dir:ff,regfile,O-lut,243,8,11,4,0.421,0.227,0.667,0.417,NOT WORKING
+hybrid:nn-cos:dir:ff,regfile,Y-gate,229,2,1,10,0.667,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir:ff,regfile,Y-lut,231,6,22,6,0.214,0.091,0.5,0.25,NOT WORKING
+hybrid:nn-cos:dir:ff,register,O-gate,243,62,8,12,0.886,0.814,0.838,0.764,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,register,O-hard,243,61,9,13,0.871,0.803,0.824,0.75,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,register,O-lut,243,63,24,11,0.724,0.645,0.851,0.78,NOT WORKING
+hybrid:nn-cos:dir:ff,register,Y-gate,229,58,9,7,0.866,0.794,0.892,0.827,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,register,Y-lut,231,58,13,8,0.817,0.741,0.879,0.81,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,shift,O-gate,243,2,41,1,0.047,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,shift,O-hard,243,2,34,1,0.056,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,shift,O-lut,243,2,26,1,0.071,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,shift,Y-gate,229,2,43,1,0.044,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,shift,Y-lut,231,2,22,1,0.083,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,counter,O-gate,243,14,42,0,0.25,0.158,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,counter,O-hard,243,14,10,0,0.583,0.417,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,counter,O-lut,243,14,20,0,0.412,0.28,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,counter,Y-gate,229,14,1,0,0.933,0.812,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a0.25:all,counter,Y-lut,231,14,19,0,0.424,0.279,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,fsm,O-gate,243,40,8,1,0.833,0.737,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,fsm,O-hard,243,41,4,0,0.911,0.838,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a0.25:all,fsm,O-lut,243,41,7,0,0.854,0.765,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,fsm,Y-gate,229,36,4,1,0.9,0.811,0.973,0.923,WORKING
+hybrid:nn-cos:dir_a0.25:all,fsm,Y-lut,231,36,11,1,0.766,0.66,0.973,0.921,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,regfile,O-gate,243,2,7,10,0.222,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,regfile,O-hard,243,6,13,6,0.316,0.133,0.5,0.25,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,regfile,O-lut,243,5,3,7,0.625,0.333,0.417,0.182,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,regfile,Y-gate,229,0,1,12,0.0,0.0,0.0,0.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,regfile,Y-lut,231,7,8,5,0.467,0.25,0.583,0.333,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,register,O-gate,243,64,8,10,0.889,0.82,0.865,0.797,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,register,O-hard,243,64,10,10,0.865,0.794,0.865,0.797,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,register,O-lut,243,64,15,10,0.81,0.733,0.865,0.794,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,register,Y-gate,229,63,12,2,0.84,0.761,0.969,0.929,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,register,Y-lut,231,59,17,7,0.776,0.693,0.894,0.829,NOT WORKING
+hybrid:nn-cos:dir_a0.25:all,shift,O-gate,243,3,25,0,0.107,0.029,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,shift,O-hard,243,2,47,1,0.041,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,shift,O-lut,243,2,39,1,0.049,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,shift,Y-gate,229,2,21,1,0.087,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,shift,Y-lut,231,2,23,1,0.08,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,counter,O-gate,243,14,38,0,0.269,0.172,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,counter,O-hard,243,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a0.25:ff,counter,O-lut,243,14,14,0,0.5,0.343,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a0.25:ff,counter,Y-lut,231,14,12,0,0.538,0.379,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,fsm,O-gate,243,40,12,1,0.769,0.667,0.976,0.932,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,fsm,O-hard,243,40,8,1,0.833,0.744,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,fsm,O-lut,243,40,6,1,0.87,0.782,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,fsm,Y-gate,229,36,2,1,0.947,0.875,0.973,0.923,WORKING
+hybrid:nn-cos:dir_a0.25:ff,fsm,Y-lut,231,36,5,1,0.878,0.788,0.973,0.921,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,regfile,O-gate,243,3,8,9,0.273,0.059,0.25,0.053,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,regfile,O-hard,243,9,57,3,0.136,0.069,0.75,0.5,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,regfile,O-lut,243,3,10,9,0.231,0.059,0.25,0.059,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,regfile,Y-gate,229,2,1,10,0.667,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,regfile,Y-lut,231,8,26,4,0.235,0.118,0.667,0.429,NOT WORKING
+hybrid:nn-cos:dir_a0.25:ff,register,O-gate,243,60,8,14,0.882,0.81,0.811,0.73,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,register,O-hard,243,60,8,14,0.882,0.812,0.811,0.733,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,register,O-lut,243,63,15,11,0.808,0.73,0.851,0.776,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,register,Y-gate,229,56,9,9,0.862,0.786,0.862,0.791,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,register,Y-lut,231,57,8,9,0.877,0.806,0.864,0.79,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,shift,O-gate,243,2,28,1,0.067,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,shift,O-hard,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,shift,O-lut,243,2,34,1,0.056,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,shift,Y-gate,229,2,29,1,0.065,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,shift,Y-lut,231,2,21,1,0.087,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.25:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,counter,O-gate,243,14,43,0,0.246,0.155,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,counter,O-hard,243,14,12,0,0.538,0.375,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,counter,O-lut,243,14,13,0,0.519,0.364,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,counter,Y-gate,229,14,5,0,0.737,0.565,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,counter,Y-lut,231,14,24,0,0.368,0.237,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,fsm,O-gate,243,40,9,1,0.816,0.718,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,fsm,O-hard,243,41,5,0,0.891,0.816,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a0.5:all,fsm,O-lut,243,41,19,0,0.683,0.58,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,fsm,Y-gate,229,36,3,1,0.923,0.846,0.973,0.923,WORKING
+hybrid:nn-cos:dir_a0.5:all,fsm,Y-lut,231,36,13,1,0.735,0.628,0.973,0.921,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,regfile,O-gate,243,2,13,10,0.133,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,regfile,O-hard,243,6,12,6,0.333,0.143,0.5,0.25,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,regfile,O-lut,243,5,3,7,0.625,0.333,0.417,0.182,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,regfile,Y-gate,229,4,2,8,0.667,0.333,0.333,0.111,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,regfile,Y-lut,231,7,9,5,0.438,0.231,0.583,0.333,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,register,O-gate,243,65,12,9,0.844,0.77,0.878,0.813,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,register,O-hard,243,64,18,10,0.78,0.704,0.865,0.8,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,register,O-lut,243,65,15,9,0.812,0.736,0.878,0.811,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,register,Y-gate,229,63,34,2,0.649,0.568,0.969,0.929,NOT WORKING
+hybrid:nn-cos:dir_a0.5:all,register,Y-lut,231,58,8,8,0.879,0.809,0.879,0.813,WORKING
+hybrid:nn-cos:dir_a0.5:all,shift,O-gate,243,3,32,0,0.086,0.024,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,shift,O-hard,243,2,47,1,0.041,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,shift,O-lut,243,2,41,1,0.047,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,shift,Y-gate,229,2,42,1,0.045,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,shift,Y-lut,231,2,28,1,0.067,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,counter,O-gate,243,14,26,0,0.35,0.231,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,counter,O-hard,243,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a0.5:ff,counter,O-lut,243,14,10,0,0.583,0.417,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a0.5:ff,counter,Y-lut,231,14,4,0,0.778,0.6,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,fsm,O-gate,243,40,10,1,0.8,0.702,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,fsm,O-hard,243,40,7,1,0.851,0.76,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,fsm,O-lut,243,40,6,1,0.87,0.782,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,fsm,Y-gate,229,36,3,1,0.923,0.842,0.973,0.923,WORKING
+hybrid:nn-cos:dir_a0.5:ff,fsm,Y-lut,231,36,3,1,0.923,0.844,0.973,0.921,WORKING
+hybrid:nn-cos:dir_a0.5:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,regfile,O-gate,243,2,6,10,0.25,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,regfile,O-hard,243,9,37,3,0.196,0.104,0.75,0.5,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,regfile,O-lut,243,3,10,9,0.231,0.059,0.25,0.059,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,regfile,Y-gate,229,2,1,10,0.667,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,regfile,Y-lut,231,8,25,4,0.242,0.122,0.667,0.429,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,register,O-gate,243,60,8,14,0.882,0.81,0.811,0.73,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,register,O-hard,243,59,8,15,0.881,0.81,0.797,0.718,NOT WORKING
+hybrid:nn-cos:dir_a0.5:ff,register,O-lut,243,63,13,11,0.829,0.757,0.851,0.776,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,register,Y-gate,229,56,9,9,0.862,0.786,0.862,0.791,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,register,Y-lut,231,57,8,9,0.877,0.806,0.864,0.79,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,shift,O-gate,243,2,16,1,0.111,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,shift,O-hard,243,2,19,1,0.095,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,shift,O-lut,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,shift,Y-gate,229,2,22,1,0.083,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a0.5:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,counter,O-gate,243,14,41,0,0.255,0.161,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:all,counter,O-hard,243,14,8,0,0.636,0.467,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:all,counter,O-lut,243,14,11,0,0.56,0.4,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:all,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a1:all,counter,Y-lut,231,14,6,0,0.7,0.5,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:all,fsm,O-gate,243,40,9,1,0.816,0.718,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,fsm,O-hard,243,41,5,0,0.891,0.816,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a1:all,fsm,O-lut,243,41,25,0,0.621,0.523,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:all,fsm,Y-gate,229,36,2,1,0.947,0.875,0.973,0.923,WORKING
+hybrid:nn-cos:dir_a1:all,fsm,Y-lut,231,36,29,1,0.554,0.452,0.973,0.921,NOT WORKING
+hybrid:nn-cos:dir_a1:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:all,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,regfile,O-gate,243,3,15,9,0.167,0.042,0.25,0.059,NOT WORKING
+hybrid:nn-cos:dir_a1:all,regfile,O-hard,243,5,10,7,0.333,0.125,0.417,0.182,NOT WORKING
+hybrid:nn-cos:dir_a1:all,regfile,O-lut,243,5,5,7,0.5,0.222,0.417,0.182,NOT WORKING
+hybrid:nn-cos:dir_a1:all,regfile,Y-gate,229,5,7,7,0.417,0.182,0.417,0.176,NOT WORKING
+hybrid:nn-cos:dir_a1:all,regfile,Y-lut,231,7,7,5,0.5,0.273,0.583,0.333,NOT WORKING
+hybrid:nn-cos:dir_a1:all,register,O-gate,243,65,10,9,0.867,0.8,0.878,0.813,WORKING
+hybrid:nn-cos:dir_a1:all,register,O-hard,243,65,12,9,0.844,0.773,0.878,0.813,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,register,O-lut,243,64,15,10,0.81,0.734,0.865,0.795,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,register,Y-gate,229,63,27,2,0.7,0.617,0.969,0.929,NOT WORKING
+hybrid:nn-cos:dir_a1:all,register,Y-lut,231,57,8,9,0.877,0.806,0.864,0.79,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,shift,O-gate,243,3,31,0,0.088,0.025,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,shift,O-hard,243,2,47,1,0.041,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,shift,O-lut,243,2,41,1,0.047,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,shift,Y-gate,229,2,53,1,0.036,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,shift,Y-lut,231,2,28,1,0.067,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,counter,O-gate,243,14,25,0,0.359,0.238,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,counter,O-hard,243,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a1:ff,counter,O-lut,243,14,10,0,0.583,0.417,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-cos:dir_a1:ff,counter,Y-lut,231,14,2,0,0.875,0.714,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,fsm,O-gate,243,40,10,1,0.8,0.702,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,fsm,O-hard,243,40,10,1,0.8,0.704,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,fsm,O-lut,243,40,7,1,0.851,0.762,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,fsm,Y-gate,229,36,3,1,0.923,0.842,0.973,0.923,WORKING
+hybrid:nn-cos:dir_a1:ff,fsm,Y-lut,231,36,3,1,0.923,0.844,0.973,0.921,WORKING
+hybrid:nn-cos:dir_a1:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,regfile,O-gate,243,2,6,10,0.25,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,regfile,O-hard,243,7,29,5,0.194,0.088,0.583,0.333,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,regfile,O-lut,243,3,8,9,0.273,0.067,0.25,0.059,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,regfile,Y-gate,229,3,1,9,0.75,0.333,0.25,0.062,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,regfile,Y-lut,231,7,24,5,0.226,0.103,0.583,0.333,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,register,O-gate,243,60,8,14,0.882,0.81,0.811,0.73,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,register,O-hard,243,59,7,15,0.894,0.826,0.797,0.718,NOT WORKING
+hybrid:nn-cos:dir_a1:ff,register,O-lut,243,63,13,11,0.829,0.757,0.851,0.776,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,register,Y-gate,229,56,9,9,0.862,0.786,0.862,0.791,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,register,Y-lut,231,57,8,9,0.877,0.806,0.864,0.79,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,shift,O-gate,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,shift,O-hard,243,2,22,1,0.083,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,shift,O-lut,243,2,20,1,0.091,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,shift,Y-gate,229,2,23,1,0.08,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_a1:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,counter,O-gate,243,14,6,0,0.7,0.526,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,counter,O-hard,243,14,10,0,0.583,0.417,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,counter,O-lut,243,14,4,0,0.778,0.611,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-cos:dir_col:all,counter,Y-lut,231,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-cos:dir_col:all,fsm,O-gate,243,40,8,1,0.833,0.737,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,fsm,O-hard,243,41,4,0,0.911,0.838,1.0,1.0,WORKING
+hybrid:nn-cos:dir_col:all,fsm,O-lut,243,41,8,0,0.837,0.739,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,fsm,Y-gate,229,36,2,1,0.947,0.875,0.973,0.923,WORKING
+hybrid:nn-cos:dir_col:all,fsm,Y-lut,231,36,15,1,0.706,0.596,0.973,0.921,NOT WORKING
+hybrid:nn-cos:dir_col:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,regfile,O-gate,243,2,4,10,0.333,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,regfile,O-hard,243,1,10,11,0.091,0.0,0.083,0.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,regfile,O-lut,243,1,5,11,0.167,0.0,0.083,0.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,regfile,Y-gate,229,0,1,12,0.0,0.0,0.0,0.0,NOT WORKING
+hybrid:nn-cos:dir_col:all,regfile,Y-lut,231,4,1,8,0.8,0.5,0.333,0.111,NOT WORKING
+hybrid:nn-cos:dir_col:all,register,O-gate,243,65,10,9,0.867,0.8,0.878,0.813,WORKING
+hybrid:nn-cos:dir_col:all,register,O-hard,243,63,7,11,0.9,0.833,0.851,0.78,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,register,O-lut,243,63,13,11,0.829,0.757,0.851,0.776,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,register,Y-gate,229,61,10,4,0.859,0.781,0.938,0.887,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,register,Y-lut,231,58,8,8,0.879,0.809,0.879,0.81,WORKING
+hybrid:nn-cos:dir_col:all,shift,O-gate,243,3,25,0,0.107,0.03,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,shift,O-hard,243,2,24,1,0.077,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,shift,O-lut,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,shift,Y-lut,231,2,18,1,0.1,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,counter,O-gate,243,14,26,0,0.35,0.235,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:ff,counter,O-hard,243,14,2,0,0.875,0.733,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,counter,O-lut,243,14,1,0,0.933,0.8,1.0,1.0,WORKING
+hybrid:nn-cos:dir_col:ff,counter,Y-gate,229,14,1,0,0.933,0.812,1.0,1.0,WORKING
+hybrid:nn-cos:dir_col:ff,counter,Y-lut,231,14,5,0,0.737,0.565,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:ff,fsm,O-gate,243,40,8,1,0.833,0.739,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,fsm,O-hard,243,40,8,1,0.833,0.738,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,fsm,O-lut,243,40,9,1,0.816,0.723,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,fsm,Y-gate,229,36,2,1,0.947,0.875,0.973,0.923,WORKING
+hybrid:nn-cos:dir_col:ff,fsm,Y-lut,231,36,5,1,0.878,0.788,0.973,0.921,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:dir_col:ff,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,regfile,O-gate,243,2,10,10,0.167,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir_col:ff,regfile,O-hard,243,5,30,7,0.143,0.05,0.417,0.167,NOT WORKING
+hybrid:nn-cos:dir_col:ff,regfile,O-lut,243,2,6,10,0.25,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:dir_col:ff,regfile,Y-gate,229,3,1,9,0.75,0.333,0.25,0.062,NOT WORKING
+hybrid:nn-cos:dir_col:ff,regfile,Y-lut,231,6,18,6,0.25,0.107,0.5,0.25,NOT WORKING
+hybrid:nn-cos:dir_col:ff,register,O-gate,243,60,8,14,0.882,0.81,0.811,0.73,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,register,O-hard,243,59,8,15,0.881,0.81,0.797,0.718,NOT WORKING
+hybrid:nn-cos:dir_col:ff,register,O-lut,243,63,13,11,0.829,0.757,0.851,0.776,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,register,Y-gate,229,56,9,9,0.862,0.786,0.862,0.791,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,register,Y-lut,231,57,6,9,0.905,0.839,0.864,0.79,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,shift,O-hard,243,2,24,1,0.077,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,shift,O-lut,243,2,35,1,0.054,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,shift,Y-gate,229,2,28,1,0.067,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,shift,Y-lut,231,2,18,1,0.1,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:dir_col:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,counter,O-gate,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-cos:und:all,counter,O-hard,243,14,14,0,0.5,0.346,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:all,counter,O-lut,243,14,18,0,0.438,0.296,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:all,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-cos:und:all,counter,Y-lut,231,14,16,0,0.467,0.312,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:all,fsm,O-gate,243,40,7,1,0.851,0.762,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:und:all,fsm,O-hard,243,40,4,1,0.909,0.833,0.976,0.932,WORKING
+hybrid:nn-cos:und:all,fsm,O-lut,243,40,10,1,0.8,0.702,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:und:all,fsm,Y-gate,229,36,7,1,0.837,0.735,0.973,0.923,INCONCLUSIVE
+hybrid:nn-cos:und:all,fsm,Y-lut,231,36,9,1,0.8,0.698,0.973,0.921,INCONCLUSIVE
+hybrid:nn-cos:und:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:all,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,regfile,O-gate,243,2,3,10,0.4,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-cos:und:all,regfile,O-hard,243,1,8,11,0.111,0.0,0.083,0.0,NOT WORKING
+hybrid:nn-cos:und:all,regfile,O-lut,243,1,1,11,0.5,0.0,0.083,0.0,NOT WORKING
+hybrid:nn-cos:und:all,regfile,Y-gate,229,0,1,12,0.0,0.0,0.0,0.0,NOT WORKING
+hybrid:nn-cos:und:all,regfile,Y-lut,231,6,3,6,0.667,0.4,0.5,0.25,NOT WORKING
+hybrid:nn-cos:und:all,register,O-gate,243,66,12,8,0.846,0.773,0.892,0.828,INCONCLUSIVE
+hybrid:nn-cos:und:all,register,O-hard,243,63,11,11,0.851,0.779,0.851,0.781,INCONCLUSIVE
+hybrid:nn-cos:und:all,register,O-lut,243,63,13,11,0.829,0.757,0.851,0.776,INCONCLUSIVE
+hybrid:nn-cos:und:all,register,Y-gate,229,59,9,6,0.868,0.797,0.908,0.847,INCONCLUSIVE
+hybrid:nn-cos:und:all,register,Y-lut,231,57,6,9,0.905,0.839,0.864,0.79,INCONCLUSIVE
+hybrid:nn-cos:und:all,shift,O-gate,243,2,16,1,0.111,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,shift,O-hard,243,2,19,1,0.095,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,shift,O-lut,243,2,22,1,0.083,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,counter,O-gate,243,14,24,0,0.368,0.244,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:ff,counter,O-hard,243,14,2,0,0.875,0.733,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,counter,O-lut,243,14,25,0,0.359,0.238,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:ff,counter,Y-gate,229,14,14,0,0.5,0.346,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:ff,counter,Y-lut,231,14,21,0,0.4,0.267,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:ff,fsm,O-gate,243,40,14,1,0.741,0.639,0.976,0.932,NOT WORKING
+hybrid:nn-cos:und:ff,fsm,O-hard,243,40,10,1,0.8,0.7,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:und:ff,fsm,O-lut,243,40,8,1,0.833,0.74,0.976,0.932,INCONCLUSIVE
+hybrid:nn-cos:und:ff,fsm,Y-gate,229,36,2,1,0.947,0.875,0.973,0.923,WORKING
+hybrid:nn-cos:und:ff,fsm,Y-lut,231,36,2,1,0.947,0.872,0.973,0.921,WORKING
+hybrid:nn-cos:und:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-cos:und:ff,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,regfile,O-gate,243,4,12,8,0.25,0.077,0.333,0.1,NOT WORKING
+hybrid:nn-cos:und:ff,regfile,O-hard,243,5,23,7,0.179,0.059,0.417,0.167,NOT WORKING
+hybrid:nn-cos:und:ff,regfile,O-lut,243,4,10,8,0.286,0.083,0.333,0.111,NOT WORKING
+hybrid:nn-cos:und:ff,regfile,Y-gate,229,3,3,9,0.5,0.143,0.25,0.062,NOT WORKING
+hybrid:nn-cos:und:ff,regfile,Y-lut,231,8,24,4,0.25,0.125,0.667,0.429,NOT WORKING
+hybrid:nn-cos:und:ff,register,O-gate,243,60,8,14,0.882,0.81,0.811,0.73,INCONCLUSIVE
+hybrid:nn-cos:und:ff,register,O-hard,243,60,8,14,0.882,0.812,0.811,0.733,INCONCLUSIVE
+hybrid:nn-cos:und:ff,register,O-lut,243,66,22,8,0.75,0.674,0.892,0.829,NOT WORKING
+hybrid:nn-cos:und:ff,register,Y-gate,229,56,9,9,0.862,0.786,0.862,0.791,INCONCLUSIVE
+hybrid:nn-cos:und:ff,register,Y-lut,231,58,10,8,0.853,0.778,0.879,0.81,INCONCLUSIVE
+hybrid:nn-cos:und:ff,shift,O-gate,243,2,31,1,0.061,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,shift,O-hard,243,2,41,1,0.047,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,shift,O-lut,243,2,31,1,0.061,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,shift,Y-gate,229,2,53,1,0.036,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,shift,Y-lut,231,2,32,1,0.059,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-cos:und:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,counter,O-gate,243,14,20,0,0.412,0.276,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:all,counter,O-hard,243,14,5,0,0.737,0.562,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:all,counter,O-lut,243,14,8,0,0.636,0.455,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:all,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-emd:dir:all,counter,Y-lut,231,14,12,0,0.538,0.368,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:all,fsm,O-gate,243,40,13,1,0.755,0.652,0.976,0.932,NOT WORKING
+hybrid:nn-emd:dir:all,fsm,O-hard,243,40,21,1,0.656,0.556,0.976,0.932,NOT WORKING
+hybrid:nn-emd:dir:all,fsm,O-lut,243,40,13,1,0.755,0.654,0.976,0.932,NOT WORKING
+hybrid:nn-emd:dir:all,fsm,Y-gate,229,36,15,1,0.706,0.589,0.973,0.923,NOT WORKING
+hybrid:nn-emd:dir:all,fsm,Y-lut,231,36,7,1,0.837,0.738,0.973,0.921,INCONCLUSIVE
+hybrid:nn-emd:dir:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:all,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,regfile,O-gate,243,2,15,10,0.118,0.0,0.167,0.0,NOT WORKING
+hybrid:nn-emd:dir:all,regfile,O-hard,243,7,10,5,0.412,0.211,0.583,0.333,NOT WORKING
+hybrid:nn-emd:dir:all,regfile,O-lut,243,8,10,4,0.444,0.238,0.667,0.421,NOT WORKING
+hybrid:nn-emd:dir:all,regfile,Y-gate,229,0,1,12,0.0,0.0,0.0,0.0,NOT WORKING
+hybrid:nn-emd:dir:all,regfile,Y-lut,231,11,14,1,0.44,0.28,0.917,0.75,NOT WORKING
+hybrid:nn-emd:dir:all,register,O-gate,243,62,10,12,0.861,0.791,0.838,0.765,INCONCLUSIVE
+hybrid:nn-emd:dir:all,register,O-hard,243,63,18,11,0.778,0.697,0.851,0.781,NOT WORKING
+hybrid:nn-emd:dir:all,register,O-lut,243,65,16,9,0.802,0.728,0.878,0.812,INCONCLUSIVE
+hybrid:nn-emd:dir:all,register,Y-gate,229,62,14,3,0.816,0.738,0.954,0.908,INCONCLUSIVE
+hybrid:nn-emd:dir:all,register,Y-lut,231,59,7,7,0.894,0.829,0.894,0.829,WORKING
+hybrid:nn-emd:dir:all,shift,O-gate,243,2,41,1,0.047,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,shift,O-hard,243,2,30,1,0.062,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,shift,O-lut,243,2,28,1,0.067,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,shift,Y-lut,231,2,19,1,0.095,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,counter,O-gate,243,14,20,0,0.412,0.281,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:ff,counter,O-hard,243,14,3,0,0.824,0.667,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,counter,O-lut,243,14,10,0,0.583,0.409,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:ff,counter,Y-gate,229,14,1,0,0.933,0.818,1.0,1.0,WORKING
+hybrid:nn-emd:dir:ff,counter,Y-lut,231,14,7,0,0.667,0.5,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:ff,fsm,O-gate,243,40,13,1,0.755,0.651,0.976,0.932,NOT WORKING
+hybrid:nn-emd:dir:ff,fsm,O-hard,243,40,5,1,0.889,0.811,0.976,0.932,WORKING
+hybrid:nn-emd:dir:ff,fsm,O-lut,243,40,11,1,0.784,0.69,0.976,0.932,NOT WORKING
+hybrid:nn-emd:dir:ff,fsm,Y-gate,229,36,11,1,0.766,0.655,0.973,0.923,NOT WORKING
+hybrid:nn-emd:dir:ff,fsm,Y-lut,231,36,4,1,0.9,0.812,0.973,0.921,WORKING
+hybrid:nn-emd:dir:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-emd:dir:ff,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,regfile,O-gate,243,3,8,9,0.273,0.071,0.25,0.059,NOT WORKING
+hybrid:nn-emd:dir:ff,regfile,O-hard,243,3,23,9,0.115,0.031,0.25,0.059,NOT WORKING
+hybrid:nn-emd:dir:ff,regfile,O-lut,243,3,17,9,0.15,0.037,0.25,0.059,NOT WORKING
+hybrid:nn-emd:dir:ff,regfile,Y-gate,229,1,1,11,0.5,0.0,0.083,0.0,NOT WORKING
+hybrid:nn-emd:dir:ff,regfile,Y-lut,231,8,20,4,0.286,0.148,0.667,0.438,NOT WORKING
+hybrid:nn-emd:dir:ff,register,O-gate,243,61,8,13,0.884,0.813,0.824,0.747,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,register,O-hard,243,65,10,9,0.867,0.8,0.878,0.815,WORKING
+hybrid:nn-emd:dir:ff,register,O-lut,243,62,18,12,0.775,0.697,0.838,0.761,NOT WORKING
+hybrid:nn-emd:dir:ff,register,Y-gate,229,55,9,10,0.859,0.781,0.846,0.771,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,register,Y-lut,231,57,17,9,0.77,0.688,0.864,0.79,NOT WORKING
+hybrid:nn-emd:dir:ff,shift,O-gate,243,3,19,0,0.136,0.037,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,shift,O-hard,243,2,25,1,0.074,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,shift,O-lut,243,2,25,1,0.074,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,shift,Y-gate,229,2,29,1,0.065,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,shift,Y-lut,231,2,27,1,0.069,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:dir:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,counter,O-gate,243,14,24,0,0.368,0.25,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:all,counter,O-hard,243,14,9,0,0.609,0.44,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:all,counter,O-lut,243,14,20,0,0.412,0.276,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:all,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-emd:und:all,counter,Y-lut,231,14,24,0,0.368,0.237,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:all,fsm,O-gate,243,40,14,1,0.741,0.638,0.976,0.932,NOT WORKING
+hybrid:nn-emd:und:all,fsm,O-hard,243,40,7,1,0.851,0.763,0.976,0.932,INCONCLUSIVE
+hybrid:nn-emd:und:all,fsm,O-lut,243,40,10,1,0.8,0.705,0.976,0.932,INCONCLUSIVE
+hybrid:nn-emd:und:all,fsm,Y-gate,229,36,3,1,0.923,0.844,0.973,0.923,WORKING
+hybrid:nn-emd:und:all,fsm,Y-lut,231,36,10,1,0.783,0.68,0.973,0.921,NOT WORKING
+hybrid:nn-emd:und:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:all,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,regfile,O-gate,243,5,20,7,0.2,0.074,0.417,0.176,NOT WORKING
+hybrid:nn-emd:und:all,regfile,O-hard,243,7,24,5,0.226,0.1,0.583,0.333,NOT WORKING
+hybrid:nn-emd:und:all,regfile,O-lut,243,5,16,7,0.238,0.091,0.417,0.167,NOT WORKING
+hybrid:nn-emd:und:all,regfile,Y-gate,229,0,8,12,0.0,0.0,0.0,0.0,NOT WORKING
+hybrid:nn-emd:und:all,regfile,Y-lut,231,7,15,5,0.318,0.158,0.583,0.333,NOT WORKING
+hybrid:nn-emd:und:all,register,O-gate,243,62,12,12,0.838,0.761,0.838,0.762,INCONCLUSIVE
+hybrid:nn-emd:und:all,register,O-hard,243,61,13,13,0.824,0.75,0.824,0.745,INCONCLUSIVE
+hybrid:nn-emd:und:all,register,O-lut,243,60,15,14,0.8,0.721,0.811,0.73,INCONCLUSIVE
+hybrid:nn-emd:und:all,register,Y-gate,229,62,18,3,0.775,0.697,0.954,0.908,NOT WORKING
+hybrid:nn-emd:und:all,register,Y-lut,231,57,13,9,0.814,0.736,0.864,0.79,INCONCLUSIVE
+hybrid:nn-emd:und:all,shift,O-gate,243,2,23,1,0.08,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,shift,O-hard,243,2,23,1,0.08,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,shift,O-lut,243,2,25,1,0.074,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,shift,Y-lut,231,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,counter,O-gate,243,14,26,0,0.35,0.231,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:ff,counter,O-hard,243,14,4,0,0.778,0.615,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:ff,counter,O-lut,243,14,27,0,0.341,0.22,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:ff,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+hybrid:nn-emd:und:ff,counter,Y-lut,231,14,17,0,0.452,0.304,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:ff,fsm,O-gate,243,40,14,1,0.741,0.638,0.976,0.932,NOT WORKING
+hybrid:nn-emd:und:ff,fsm,O-hard,243,40,5,1,0.889,0.811,0.976,0.932,WORKING
+hybrid:nn-emd:und:ff,fsm,O-lut,243,40,12,1,0.769,0.673,0.976,0.932,NOT WORKING
+hybrid:nn-emd:und:ff,fsm,Y-gate,229,36,12,1,0.75,0.638,0.973,0.923,NOT WORKING
+hybrid:nn-emd:und:ff,fsm,Y-lut,231,36,5,1,0.878,0.781,0.973,0.921,INCONCLUSIVE
+hybrid:nn-emd:und:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+hybrid:nn-emd:und:ff,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,regfile,O-gate,243,4,11,8,0.267,0.083,0.333,0.111,NOT WORKING
+hybrid:nn-emd:und:ff,regfile,O-hard,243,4,26,8,0.133,0.037,0.333,0.118,NOT WORKING
+hybrid:nn-emd:und:ff,regfile,O-lut,243,5,16,7,0.238,0.095,0.417,0.188,NOT WORKING
+hybrid:nn-emd:und:ff,regfile,Y-gate,229,3,25,9,0.107,0.0,0.25,0.0,NOT WORKING
+hybrid:nn-emd:und:ff,regfile,Y-lut,231,7,21,5,0.25,0.12,0.583,0.333,NOT WORKING
+hybrid:nn-emd:und:ff,register,O-gate,243,62,11,12,0.849,0.776,0.838,0.761,INCONCLUSIVE
+hybrid:nn-emd:und:ff,register,O-hard,243,62,11,12,0.849,0.775,0.838,0.764,INCONCLUSIVE
+hybrid:nn-emd:und:ff,register,O-lut,243,60,13,14,0.822,0.746,0.811,0.73,INCONCLUSIVE
+hybrid:nn-emd:und:ff,register,Y-gate,229,55,9,10,0.859,0.781,0.846,0.771,INCONCLUSIVE
+hybrid:nn-emd:und:ff,register,Y-lut,231,58,9,8,0.866,0.793,0.879,0.812,INCONCLUSIVE
+hybrid:nn-emd:und:ff,shift,O-gate,243,3,21,0,0.125,0.034,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,shift,O-hard,243,2,39,1,0.049,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,shift,O-lut,243,2,19,1,0.095,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,shift,Y-gate,229,2,24,1,0.077,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,shift,Y-lut,231,2,25,1,0.074,0.0,0.667,0.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+hybrid:nn-emd:und:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,counter,O-gate,243,9,48,5,0.158,0.086,0.643,0.429,NOT WORKING
+nn-cos:dir:all,counter,O-hard,243,11,9,3,0.55,0.364,0.786,0.588,NOT WORKING
+nn-cos:dir:all,counter,O-lut,243,14,42,0,0.25,0.16,1.0,1.0,NOT WORKING
+nn-cos:dir:all,counter,Y-gate,229,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir:all,counter,Y-lut,231,14,40,0,0.259,0.163,1.0,1.0,NOT WORKING
+nn-cos:dir:all,fsm,O-gate,243,6,10,35,0.375,0.167,0.146,0.061,NOT WORKING
+nn-cos:dir:all,fsm,O-hard,243,19,16,22,0.543,0.4,0.463,0.333,NOT WORKING
+nn-cos:dir:all,fsm,O-lut,243,3,3,38,0.5,0.143,0.073,0.02,NOT WORKING
+nn-cos:dir:all,fsm,Y-gate,229,36,27,1,0.571,0.466,0.973,0.923,NOT WORKING
+nn-cos:dir:all,fsm,Y-lut,231,0,10,37,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir:all,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,regfile,O-gate,243,3,10,9,0.231,0.053,0.25,0.05,NOT WORKING
+nn-cos:dir:all,regfile,O-hard,243,6,13,6,0.316,0.143,0.5,0.25,NOT WORKING
+nn-cos:dir:all,regfile,O-lut,243,6,13,6,0.316,0.143,0.5,0.25,NOT WORKING
+nn-cos:dir:all,regfile,Y-gate,229,0,3,12,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir:all,regfile,Y-lut,231,7,27,5,0.206,0.094,0.583,0.333,NOT WORKING
+nn-cos:dir:all,register,O-gate,243,9,2,65,0.818,0.583,0.122,0.062,NOT WORKING
+nn-cos:dir:all,register,O-hard,243,17,19,57,0.472,0.343,0.23,0.151,NOT WORKING
+nn-cos:dir:all,register,O-lut,243,17,9,57,0.654,0.5,0.23,0.149,NOT WORKING
+nn-cos:dir:all,register,Y-gate,229,11,3,54,0.786,0.583,0.169,0.096,NOT WORKING
+nn-cos:dir:all,register,Y-lut,231,6,4,60,0.6,0.333,0.091,0.034,NOT WORKING
+nn-cos:dir:all,shift,O-gate,243,2,19,1,0.095,0.0,0.667,0.0,INCONCLUSIVE
+nn-cos:dir:all,shift,O-hard,243,1,26,2,0.037,0.0,0.333,0.0,INCONCLUSIVE
+nn-cos:dir:all,shift,O-lut,243,0,22,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir:all,shift,Y-gate,229,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir:all,shift,Y-lut,231,0,4,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir:all,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,counter,O-gate,243,11,36,3,0.234,0.14,0.786,0.6,NOT WORKING
+nn-cos:dir:ff,counter,O-hard,243,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+nn-cos:dir:ff,counter,O-lut,243,12,17,2,0.414,0.269,0.857,0.688,NOT WORKING
+nn-cos:dir:ff,counter,Y-gate,229,2,2,12,0.5,0.0,0.143,0.0,NOT WORKING
+nn-cos:dir:ff,counter,Y-lut,231,11,4,3,0.733,0.533,0.786,0.583,NOT WORKING
+nn-cos:dir:ff,fsm,O-gate,243,11,3,30,0.786,0.6,0.268,0.159,NOT WORKING
+nn-cos:dir:ff,fsm,O-hard,243,29,8,12,0.784,0.667,0.707,0.587,NOT WORKING
+nn-cos:dir:ff,fsm,O-lut,243,15,0,26,1.0,1.0,0.366,0.242,NOT WORKING
+nn-cos:dir:ff,fsm,Y-gate,229,2,5,35,0.286,0.0,0.054,0.0,NOT WORKING
+nn-cos:dir:ff,fsm,Y-lut,231,9,4,28,0.692,0.455,0.243,0.129,NOT WORKING
+nn-cos:dir:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir:ff,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,regfile,O-gate,243,4,1,8,0.8,0.5,0.333,0.1,NOT WORKING
+nn-cos:dir:ff,regfile,O-hard,243,9,33,3,0.214,0.111,0.75,0.533,NOT WORKING
+nn-cos:dir:ff,regfile,O-lut,243,8,10,4,0.444,0.238,0.667,0.417,NOT WORKING
+nn-cos:dir:ff,regfile,Y-gate,229,2,0,10,1.0,1.0,0.167,0.0,NOT WORKING
+nn-cos:dir:ff,regfile,Y-lut,231,5,21,7,0.192,0.074,0.417,0.182,NOT WORKING
+nn-cos:dir:ff,register,O-gate,243,7,0,67,1.0,1.0,0.095,0.041,NOT WORKING
+nn-cos:dir:ff,register,O-hard,243,2,3,72,0.4,0.0,0.027,0.0,NOT WORKING
+nn-cos:dir:ff,register,O-lut,243,12,17,62,0.414,0.269,0.162,0.093,NOT WORKING
+nn-cos:dir:ff,register,Y-gate,229,7,0,58,1.0,1.0,0.108,0.049,NOT WORKING
+nn-cos:dir:ff,register,Y-lut,231,6,8,60,0.429,0.211,0.091,0.034,NOT WORKING
+nn-cos:dir:ff,shift,O-gate,243,2,34,1,0.056,0.0,0.667,0.0,INCONCLUSIVE
+nn-cos:dir:ff,shift,O-hard,243,0,23,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir:ff,shift,O-lut,243,0,17,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir:ff,shift,Y-gate,229,2,35,1,0.054,0.0,0.667,0.0,INCONCLUSIVE
+nn-cos:dir:ff,shift,Y-lut,231,0,16,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir:ff,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,counter,O-gate,243,9,42,5,0.176,0.098,0.643,0.429,NOT WORKING
+nn-cos:dir_a0.25:all,counter,O-hard,243,11,10,3,0.524,0.348,0.786,0.588,NOT WORKING
+nn-cos:dir_a0.25:all,counter,O-lut,243,7,20,7,0.259,0.125,0.5,0.273,NOT WORKING
+nn-cos:dir_a0.25:all,counter,Y-gate,229,0,1,14,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a0.25:all,counter,Y-lut,231,3,19,11,0.136,0.036,0.214,0.056,NOT WORKING
+nn-cos:dir_a0.25:all,fsm,O-gate,243,0,1,41,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a0.25:all,fsm,O-hard,243,15,1,26,0.938,0.824,0.366,0.239,NOT WORKING
+nn-cos:dir_a0.25:all,fsm,O-lut,243,19,2,22,0.905,0.789,0.463,0.333,NOT WORKING
+nn-cos:dir_a0.25:all,fsm,Y-gate,229,0,2,37,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a0.25:all,fsm,Y-lut,231,18,10,19,0.643,0.5,0.486,0.346,NOT WORKING
+nn-cos:dir_a0.25:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.25:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.25:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.25:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.25:all,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,regfile,O-gate,243,2,5,10,0.286,0.0,0.167,0.0,NOT WORKING
+nn-cos:dir_a0.25:all,regfile,O-hard,243,6,12,6,0.333,0.143,0.5,0.25,NOT WORKING
+nn-cos:dir_a0.25:all,regfile,O-lut,243,5,2,7,0.714,0.375,0.417,0.182,NOT WORKING
+nn-cos:dir_a0.25:all,regfile,Y-gate,229,0,0,12,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a0.25:all,regfile,Y-lut,231,6,7,6,0.462,0.222,0.5,0.25,NOT WORKING
+nn-cos:dir_a0.25:all,register,O-gate,243,14,0,60,1.0,1.0,0.189,0.114,NOT WORKING
+nn-cos:dir_a0.25:all,register,O-hard,243,15,3,59,0.833,0.682,0.203,0.13,NOT WORKING
+nn-cos:dir_a0.25:all,register,O-lut,243,14,7,60,0.667,0.5,0.189,0.116,NOT WORKING
+nn-cos:dir_a0.25:all,register,Y-gate,229,12,3,53,0.8,0.615,0.185,0.11,NOT WORKING
+nn-cos:dir_a0.25:all,register,Y-lut,231,6,12,60,0.333,0.154,0.091,0.034,NOT WORKING
+nn-cos:dir_a0.25:all,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,shift,O-hard,243,0,38,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,shift,O-lut,243,0,30,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,shift,Y-gate,229,0,10,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,shift,Y-lut,231,0,12,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,counter,O-gate,243,11,38,3,0.224,0.134,0.786,0.6,NOT WORKING
+nn-cos:dir_a0.25:ff,counter,O-hard,243,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+nn-cos:dir_a0.25:ff,counter,O-lut,243,9,14,5,0.391,0.227,0.643,0.421,NOT WORKING
+nn-cos:dir_a0.25:ff,counter,Y-gate,229,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a0.25:ff,counter,Y-lut,231,7,12,7,0.368,0.19,0.5,0.278,NOT WORKING
+nn-cos:dir_a0.25:ff,fsm,O-gate,243,15,5,26,0.75,0.583,0.366,0.244,NOT WORKING
+nn-cos:dir_a0.25:ff,fsm,O-hard,243,19,8,22,0.704,0.552,0.463,0.333,NOT WORKING
+nn-cos:dir_a0.25:ff,fsm,O-lut,243,10,1,31,0.909,0.75,0.244,0.136,NOT WORKING
+nn-cos:dir_a0.25:ff,fsm,Y-gate,229,0,0,37,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a0.25:ff,fsm,Y-lut,231,8,3,29,0.727,0.5,0.216,0.105,NOT WORKING
+nn-cos:dir_a0.25:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.25:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.25:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.25:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.25:ff,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,regfile,O-gate,243,3,6,9,0.333,0.067,0.25,0.053,NOT WORKING
+nn-cos:dir_a0.25:ff,regfile,O-hard,243,9,57,3,0.136,0.069,0.75,0.5,NOT WORKING
+nn-cos:dir_a0.25:ff,regfile,O-lut,243,3,9,9,0.25,0.062,0.25,0.059,NOT WORKING
+nn-cos:dir_a0.25:ff,regfile,Y-gate,229,2,0,10,1.0,1.0,0.167,0.0,NOT WORKING
+nn-cos:dir_a0.25:ff,regfile,Y-lut,231,5,25,7,0.167,0.062,0.417,0.182,NOT WORKING
+nn-cos:dir_a0.25:ff,register,O-gate,243,3,0,71,1.0,1.0,0.041,0.0,NOT WORKING
+nn-cos:dir_a0.25:ff,register,O-hard,243,2,1,72,0.667,0.0,0.027,0.0,NOT WORKING
+nn-cos:dir_a0.25:ff,register,O-lut,243,10,8,64,0.556,0.364,0.135,0.071,NOT WORKING
+nn-cos:dir_a0.25:ff,register,Y-gate,229,5,0,60,1.0,1.0,0.077,0.028,NOT WORKING
+nn-cos:dir_a0.25:ff,register,Y-lut,231,4,3,62,0.571,0.25,0.061,0.015,NOT WORKING
+nn-cos:dir_a0.25:ff,shift,O-gate,243,0,16,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,shift,O-hard,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,shift,O-lut,243,0,24,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,shift,Y-gate,229,0,23,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,shift,Y-lut,231,0,10,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.25:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,counter,O-gate,243,9,43,5,0.173,0.095,0.643,0.429,NOT WORKING
+nn-cos:dir_a0.5:all,counter,O-hard,243,11,12,3,0.478,0.312,0.786,0.588,NOT WORKING
+nn-cos:dir_a0.5:all,counter,O-lut,243,5,13,9,0.278,0.105,0.357,0.143,NOT WORKING
+nn-cos:dir_a0.5:all,counter,Y-gate,229,2,5,12,0.286,0.0,0.143,0.0,NOT WORKING
+nn-cos:dir_a0.5:all,counter,Y-lut,231,13,24,1,0.351,0.222,0.929,0.8,NOT WORKING
+nn-cos:dir_a0.5:all,fsm,O-gate,243,6,2,35,0.75,0.5,0.146,0.059,NOT WORKING
+nn-cos:dir_a0.5:all,fsm,O-hard,243,26,2,15,0.929,0.844,0.634,0.511,NOT WORKING
+nn-cos:dir_a0.5:all,fsm,O-lut,243,39,16,2,0.709,0.603,0.951,0.889,NOT WORKING
+nn-cos:dir_a0.5:all,fsm,Y-gate,229,1,1,36,0.5,0.0,0.027,0.0,NOT WORKING
+nn-cos:dir_a0.5:all,fsm,Y-lut,231,23,12,14,0.657,0.524,0.622,0.489,NOT WORKING
+nn-cos:dir_a0.5:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.5:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.5:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.5:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.5:all,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,regfile,O-gate,243,2,11,10,0.154,0.0,0.167,0.0,NOT WORKING
+nn-cos:dir_a0.5:all,regfile,O-hard,243,6,11,6,0.353,0.154,0.5,0.25,NOT WORKING
+nn-cos:dir_a0.5:all,regfile,O-lut,243,5,2,7,0.714,0.375,0.417,0.182,NOT WORKING
+nn-cos:dir_a0.5:all,regfile,Y-gate,229,4,1,8,0.8,0.5,0.333,0.111,NOT WORKING
+nn-cos:dir_a0.5:all,regfile,Y-lut,231,6,9,6,0.4,0.19,0.5,0.25,NOT WORKING
+nn-cos:dir_a0.5:all,register,O-gate,243,16,4,58,0.8,0.643,0.216,0.138,NOT WORKING
+nn-cos:dir_a0.5:all,register,O-hard,243,13,11,61,0.542,0.381,0.176,0.107,NOT WORKING
+nn-cos:dir_a0.5:all,register,O-lut,243,15,7,59,0.682,0.524,0.203,0.125,NOT WORKING
+nn-cos:dir_a0.5:all,register,Y-gate,229,12,25,53,0.324,0.206,0.185,0.11,NOT WORKING
+nn-cos:dir_a0.5:all,register,Y-lut,231,5,3,61,0.625,0.333,0.076,0.029,NOT WORKING
+nn-cos:dir_a0.5:all,shift,O-gate,243,2,22,1,0.083,0.0,0.667,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,shift,O-hard,243,0,39,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,shift,O-lut,243,0,32,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,shift,Y-gate,229,0,32,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,shift,Y-lut,231,0,21,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,counter,O-gate,243,11,26,3,0.297,0.184,0.786,0.6,NOT WORKING
+nn-cos:dir_a0.5:ff,counter,O-hard,243,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+nn-cos:dir_a0.5:ff,counter,O-lut,243,3,10,11,0.231,0.059,0.214,0.056,NOT WORKING
+nn-cos:dir_a0.5:ff,counter,Y-gate,229,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a0.5:ff,counter,Y-lut,231,3,4,11,0.429,0.0,0.214,0.0,NOT WORKING
+nn-cos:dir_a0.5:ff,fsm,O-gate,243,14,3,27,0.824,0.667,0.341,0.219,NOT WORKING
+nn-cos:dir_a0.5:ff,fsm,O-hard,243,19,7,22,0.731,0.577,0.463,0.333,NOT WORKING
+nn-cos:dir_a0.5:ff,fsm,O-lut,243,10,1,31,0.909,0.75,0.244,0.136,NOT WORKING
+nn-cos:dir_a0.5:ff,fsm,Y-gate,229,0,1,37,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a0.5:ff,fsm,Y-lut,231,8,1,29,0.889,0.667,0.216,0.105,NOT WORKING
+nn-cos:dir_a0.5:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.5:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.5:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.5:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir_a0.5:ff,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,regfile,O-gate,243,2,4,10,0.333,0.0,0.167,0.0,NOT WORKING
+nn-cos:dir_a0.5:ff,regfile,O-hard,243,9,37,3,0.196,0.104,0.75,0.5,NOT WORKING
+nn-cos:dir_a0.5:ff,regfile,O-lut,243,3,9,9,0.25,0.062,0.25,0.059,NOT WORKING
+nn-cos:dir_a0.5:ff,regfile,Y-gate,229,2,0,10,1.0,1.0,0.167,0.0,NOT WORKING
+nn-cos:dir_a0.5:ff,regfile,Y-lut,231,5,24,7,0.172,0.065,0.417,0.182,NOT WORKING
+nn-cos:dir_a0.5:ff,register,O-gate,243,2,0,72,1.0,1.0,0.027,0.0,NOT WORKING
+nn-cos:dir_a0.5:ff,register,O-hard,243,1,1,73,0.5,0.0,0.014,0.0,NOT WORKING
+nn-cos:dir_a0.5:ff,register,O-lut,243,9,5,65,0.643,0.412,0.122,0.062,NOT WORKING
+nn-cos:dir_a0.5:ff,register,Y-gate,229,4,0,61,1.0,1.0,0.062,0.015,NOT WORKING
+nn-cos:dir_a0.5:ff,register,Y-lut,231,3,3,63,0.5,0.125,0.045,0.013,NOT WORKING
+nn-cos:dir_a0.5:ff,shift,O-gate,243,0,4,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,shift,O-hard,243,0,2,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,shift,O-lut,243,0,6,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,shift,Y-gate,229,0,14,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,shift,Y-lut,231,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a0.5:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,counter,O-gate,243,9,41,5,0.18,0.1,0.643,0.429,NOT WORKING
+nn-cos:dir_a1:all,counter,O-hard,243,11,8,3,0.579,0.391,0.786,0.588,NOT WORKING
+nn-cos:dir_a1:all,counter,O-lut,243,3,11,11,0.214,0.056,0.214,0.05,NOT WORKING
+nn-cos:dir_a1:all,counter,Y-gate,229,2,0,12,1.0,1.0,0.143,0.0,NOT WORKING
+nn-cos:dir_a1:all,counter,Y-lut,231,1,6,13,0.143,0.0,0.071,0.0,NOT WORKING
+nn-cos:dir_a1:all,fsm,O-gate,243,6,2,35,0.75,0.462,0.146,0.064,NOT WORKING
+nn-cos:dir_a1:all,fsm,O-hard,243,37,2,4,0.949,0.889,0.902,0.818,WORKING
+nn-cos:dir_a1:all,fsm,O-lut,243,39,22,2,0.639,0.537,0.951,0.889,NOT WORKING
+nn-cos:dir_a1:all,fsm,Y-gate,229,1,0,36,1.0,1.0,0.027,0.0,NOT WORKING
+nn-cos:dir_a1:all,fsm,Y-lut,231,36,28,1,0.562,0.459,0.973,0.921,NOT WORKING
+nn-cos:dir_a1:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir_a1:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir_a1:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir_a1:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir_a1:all,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,regfile,O-gate,243,3,13,9,0.188,0.048,0.25,0.059,NOT WORKING
+nn-cos:dir_a1:all,regfile,O-hard,243,5,9,7,0.357,0.133,0.417,0.182,NOT WORKING
+nn-cos:dir_a1:all,regfile,O-lut,243,5,5,7,0.5,0.222,0.417,0.182,NOT WORKING
+nn-cos:dir_a1:all,regfile,Y-gate,229,5,6,7,0.455,0.2,0.417,0.176,NOT WORKING
+nn-cos:dir_a1:all,regfile,Y-lut,231,6,7,6,0.462,0.231,0.5,0.25,NOT WORKING
+nn-cos:dir_a1:all,register,O-gate,243,16,3,58,0.842,0.684,0.216,0.138,NOT WORKING
+nn-cos:dir_a1:all,register,O-hard,243,14,6,60,0.7,0.529,0.189,0.119,NOT WORKING
+nn-cos:dir_a1:all,register,O-lut,243,14,7,60,0.667,0.5,0.189,0.114,NOT WORKING
+nn-cos:dir_a1:all,register,Y-gate,229,12,18,53,0.4,0.259,0.185,0.11,NOT WORKING
+nn-cos:dir_a1:all,register,Y-lut,231,4,3,62,0.571,0.25,0.061,0.016,NOT WORKING
+nn-cos:dir_a1:all,shift,O-gate,243,2,21,1,0.087,0.0,0.667,0.0,INCONCLUSIVE
+nn-cos:dir_a1:all,shift,O-hard,243,0,39,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a1:all,shift,O-lut,243,0,32,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a1:all,shift,Y-gate,229,0,43,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a1:all,shift,Y-lut,231,0,22,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a1:all,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,counter,O-gate,243,11,25,3,0.306,0.189,0.786,0.6,NOT WORKING
+nn-cos:dir_a1:ff,counter,O-hard,243,10,1,4,0.909,0.75,0.714,0.5,NOT WORKING
+nn-cos:dir_a1:ff,counter,O-lut,243,3,10,11,0.231,0.059,0.214,0.056,NOT WORKING
+nn-cos:dir_a1:ff,counter,Y-gate,229,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a1:ff,counter,Y-lut,231,0,2,14,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a1:ff,fsm,O-gate,243,13,3,28,0.812,0.636,0.317,0.196,NOT WORKING
+nn-cos:dir_a1:ff,fsm,O-hard,243,20,10,21,0.667,0.522,0.488,0.359,NOT WORKING
+nn-cos:dir_a1:ff,fsm,O-lut,243,9,2,32,0.818,0.6,0.22,0.114,NOT WORKING
+nn-cos:dir_a1:ff,fsm,Y-gate,229,0,1,37,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_a1:ff,fsm,Y-lut,231,8,1,29,0.889,0.667,0.216,0.105,NOT WORKING
+nn-cos:dir_a1:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir_a1:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir_a1:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir_a1:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir_a1:ff,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,regfile,O-gate,243,2,4,10,0.333,0.0,0.167,0.0,NOT WORKING
+nn-cos:dir_a1:ff,regfile,O-hard,243,7,29,5,0.194,0.088,0.583,0.333,NOT WORKING
+nn-cos:dir_a1:ff,regfile,O-lut,243,3,7,9,0.3,0.071,0.25,0.059,NOT WORKING
+nn-cos:dir_a1:ff,regfile,Y-gate,229,3,0,9,1.0,1.0,0.25,0.062,NOT WORKING
+nn-cos:dir_a1:ff,regfile,Y-lut,231,4,23,8,0.148,0.042,0.333,0.111,NOT WORKING
+nn-cos:dir_a1:ff,register,O-gate,243,2,0,72,1.0,1.0,0.027,0.0,NOT WORKING
+nn-cos:dir_a1:ff,register,O-hard,243,1,0,73,1.0,1.0,0.014,0.0,NOT WORKING
+nn-cos:dir_a1:ff,register,O-lut,243,9,5,65,0.643,0.412,0.122,0.062,NOT WORKING
+nn-cos:dir_a1:ff,register,Y-gate,229,2,0,63,1.0,1.0,0.031,0.0,NOT WORKING
+nn-cos:dir_a1:ff,register,Y-lut,231,3,3,63,0.5,0.125,0.045,0.013,NOT WORKING
+nn-cos:dir_a1:ff,shift,O-gate,243,0,3,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,shift,O-hard,243,0,9,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,shift,O-lut,243,0,7,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,shift,Y-gate,229,0,14,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,shift,Y-lut,231,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_a1:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,counter,O-gate,243,3,6,11,0.333,0.083,0.214,0.056,NOT WORKING
+nn-cos:dir_col:all,counter,O-hard,243,11,10,3,0.524,0.333,0.786,0.588,NOT WORKING
+nn-cos:dir_col:all,counter,O-lut,243,2,4,12,0.333,0.0,0.143,0.0,NOT WORKING
+nn-cos:dir_col:all,counter,Y-gate,229,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:all,counter,Y-lut,231,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:all,fsm,O-gate,243,1,1,40,0.5,0.0,0.024,0.0,NOT WORKING
+nn-cos:dir_col:all,fsm,O-hard,243,12,1,29,0.923,0.778,0.293,0.182,NOT WORKING
+nn-cos:dir_col:all,fsm,O-lut,243,7,3,34,0.7,0.429,0.171,0.077,NOT WORKING
+nn-cos:dir_col:all,fsm,Y-gate,229,0,0,37,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:all,fsm,Y-lut,231,17,15,20,0.531,0.387,0.459,0.333,NOT WORKING
+nn-cos:dir_col:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir_col:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir_col:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir_col:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir_col:all,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,regfile,O-gate,243,2,2,10,0.5,0.0,0.167,0.0,NOT WORKING
+nn-cos:dir_col:all,regfile,O-hard,243,0,9,12,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:all,regfile,O-lut,243,0,5,12,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:all,regfile,Y-gate,229,0,0,12,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:all,regfile,Y-lut,231,0,0,12,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:all,register,O-gate,243,16,2,58,0.889,0.75,0.216,0.138,NOT WORKING
+nn-cos:dir_col:all,register,O-hard,243,9,0,65,1.0,1.0,0.122,0.062,NOT WORKING
+nn-cos:dir_col:all,register,O-lut,243,12,5,62,0.706,0.5,0.162,0.092,NOT WORKING
+nn-cos:dir_col:all,register,Y-gate,229,10,1,55,0.909,0.75,0.154,0.085,NOT WORKING
+nn-cos:dir_col:all,register,Y-lut,231,5,3,61,0.625,0.333,0.076,0.028,NOT WORKING
+nn-cos:dir_col:all,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+nn-cos:dir_col:all,shift,O-hard,243,0,11,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_col:all,shift,O-lut,243,0,2,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_col:all,shift,Y-gate,229,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_col:all,shift,Y-lut,231,0,7,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_col:all,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,counter,O-gate,243,11,26,3,0.297,0.184,0.786,0.6,NOT WORKING
+nn-cos:dir_col:ff,counter,O-hard,243,10,2,4,0.833,0.636,0.714,0.5,NOT WORKING
+nn-cos:dir_col:ff,counter,O-lut,243,0,1,14,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:ff,counter,Y-gate,229,0,1,14,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:ff,counter,Y-lut,231,0,5,14,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:ff,fsm,O-gate,243,3,1,38,0.75,0.333,0.073,0.017,NOT WORKING
+nn-cos:dir_col:ff,fsm,O-hard,243,18,8,23,0.692,0.538,0.439,0.314,NOT WORKING
+nn-cos:dir_col:ff,fsm,O-lut,243,1,4,40,0.2,0.0,0.024,0.0,NOT WORKING
+nn-cos:dir_col:ff,fsm,Y-gate,229,0,0,37,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:ff,fsm,Y-lut,231,0,3,37,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:dir_col:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:dir_col:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:dir_col:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:dir_col:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:dir_col:ff,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,regfile,O-gate,243,2,8,10,0.2,0.0,0.167,0.0,NOT WORKING
+nn-cos:dir_col:ff,regfile,O-hard,243,4,30,8,0.118,0.03,0.333,0.111,NOT WORKING
+nn-cos:dir_col:ff,regfile,O-lut,243,1,5,11,0.167,0.0,0.083,0.0,NOT WORKING
+nn-cos:dir_col:ff,regfile,Y-gate,229,3,0,9,1.0,1.0,0.25,0.062,NOT WORKING
+nn-cos:dir_col:ff,regfile,Y-lut,231,3,17,9,0.15,0.04,0.25,0.062,NOT WORKING
+nn-cos:dir_col:ff,register,O-gate,243,2,0,72,1.0,1.0,0.027,0.0,NOT WORKING
+nn-cos:dir_col:ff,register,O-hard,243,1,1,73,0.5,0.0,0.014,0.0,NOT WORKING
+nn-cos:dir_col:ff,register,O-lut,243,9,5,65,0.643,0.412,0.122,0.062,NOT WORKING
+nn-cos:dir_col:ff,register,Y-gate,229,4,0,61,1.0,1.0,0.062,0.015,NOT WORKING
+nn-cos:dir_col:ff,register,Y-lut,231,3,1,63,0.75,0.333,0.045,0.013,NOT WORKING
+nn-cos:dir_col:ff,shift,O-gate,243,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_col:ff,shift,O-hard,243,0,13,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_col:ff,shift,O-lut,243,0,28,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_col:ff,shift,Y-gate,229,0,21,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_col:ff,shift,Y-lut,231,0,6,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:dir_col:ff,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:dir_col:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,counter,O-gate,243,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:und:all,counter,O-hard,243,11,14,3,0.44,0.28,0.786,0.588,NOT WORKING
+nn-cos:und:all,counter,O-lut,243,5,18,9,0.217,0.087,0.357,0.143,NOT WORKING
+nn-cos:und:all,counter,Y-gate,229,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:und:all,counter,Y-lut,231,1,16,13,0.059,0.0,0.071,0.0,NOT WORKING
+nn-cos:und:all,fsm,O-gate,243,0,0,41,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:und:all,fsm,O-hard,243,5,1,36,0.833,0.5,0.122,0.043,NOT WORKING
+nn-cos:und:all,fsm,O-lut,243,7,5,34,0.583,0.333,0.171,0.079,NOT WORKING
+nn-cos:und:all,fsm,Y-gate,229,2,5,35,0.286,0.0,0.054,0.0,NOT WORKING
+nn-cos:und:all,fsm,Y-lut,231,5,7,32,0.417,0.182,0.135,0.051,NOT WORKING
+nn-cos:und:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:und:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:und:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:und:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:und:all,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,regfile,O-gate,243,2,1,10,0.667,0.0,0.167,0.0,NOT WORKING
+nn-cos:und:all,regfile,O-hard,243,0,7,12,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:und:all,regfile,O-lut,243,0,1,12,0.0,0.0,0.0,0.0,NOT WORKING
+nn-cos:und:all,regfile,Y-gate,229,0,0,12,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:und:all,regfile,Y-lut,231,5,2,7,0.714,0.4,0.417,0.167,NOT WORKING
+nn-cos:und:all,register,O-gate,243,17,4,57,0.81,0.65,0.23,0.151,NOT WORKING
+nn-cos:und:all,register,O-hard,243,18,4,56,0.818,0.667,0.243,0.165,NOT WORKING
+nn-cos:und:all,register,O-lut,243,13,5,61,0.722,0.538,0.176,0.103,NOT WORKING
+nn-cos:und:all,register,Y-gate,229,8,0,57,1.0,1.0,0.123,0.061,NOT WORKING
+nn-cos:und:all,register,Y-lut,231,3,1,63,0.75,0.333,0.045,0.013,NOT WORKING
+nn-cos:und:all,shift,O-gate,243,0,4,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:und:all,shift,O-hard,243,0,2,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:und:all,shift,O-lut,243,0,8,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:und:all,shift,Y-gate,229,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+nn-cos:und:all,shift,Y-lut,231,1,1,2,0.5,0.0,0.333,0.0,INCONCLUSIVE
+nn-cos:und:all,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,counter,O-gate,243,11,24,3,0.314,0.194,0.786,0.6,NOT WORKING
+nn-cos:und:ff,counter,O-hard,243,10,2,4,0.833,0.636,0.714,0.5,NOT WORKING
+nn-cos:und:ff,counter,O-lut,243,8,25,6,0.242,0.13,0.571,0.357,NOT WORKING
+nn-cos:und:ff,counter,Y-gate,229,4,14,10,0.222,0.071,0.286,0.1,NOT WORKING
+nn-cos:und:ff,counter,Y-lut,231,7,21,7,0.25,0.125,0.5,0.267,NOT WORKING
+nn-cos:und:ff,fsm,O-gate,243,13,7,28,0.65,0.474,0.317,0.196,NOT WORKING
+nn-cos:und:ff,fsm,O-hard,243,13,10,28,0.565,0.385,0.317,0.195,NOT WORKING
+nn-cos:und:ff,fsm,O-lut,243,4,3,37,0.571,0.25,0.098,0.026,NOT WORKING
+nn-cos:und:ff,fsm,Y-gate,229,0,0,37,1.0,1.0,0.0,0.0,NOT WORKING
+nn-cos:und:ff,fsm,Y-lut,231,6,0,31,1.0,1.0,0.162,0.061,NOT WORKING
+nn-cos:und:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-cos:und:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-cos:und:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-cos:und:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-cos:und:ff,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,regfile,O-gate,243,4,10,8,0.286,0.091,0.333,0.1,NOT WORKING
+nn-cos:und:ff,regfile,O-hard,243,5,23,7,0.179,0.059,0.417,0.167,NOT WORKING
+nn-cos:und:ff,regfile,O-lut,243,4,9,8,0.308,0.091,0.333,0.111,NOT WORKING
+nn-cos:und:ff,regfile,Y-gate,229,3,2,9,0.6,0.2,0.25,0.062,NOT WORKING
+nn-cos:und:ff,regfile,Y-lut,231,5,23,7,0.179,0.069,0.417,0.182,NOT WORKING
+nn-cos:und:ff,register,O-gate,243,3,0,71,1.0,1.0,0.041,0.0,NOT WORKING
+nn-cos:und:ff,register,O-hard,243,5,3,69,0.625,0.333,0.068,0.026,NOT WORKING
+nn-cos:und:ff,register,O-lut,243,13,16,61,0.448,0.296,0.176,0.104,NOT WORKING
+nn-cos:und:ff,register,Y-gate,229,4,0,61,1.0,1.0,0.062,0.015,NOT WORKING
+nn-cos:und:ff,register,Y-lut,231,5,5,61,0.5,0.231,0.076,0.028,NOT WORKING
+nn-cos:und:ff,shift,O-gate,243,0,17,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:und:ff,shift,O-hard,243,0,30,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:und:ff,shift,O-lut,243,0,20,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:und:ff,shift,Y-gate,229,2,47,1,0.041,0.0,0.667,0.0,INCONCLUSIVE
+nn-cos:und:ff,shift,Y-lut,231,0,23,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-cos:und:ff,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-cos:und:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,counter,O-gate,243,11,20,3,0.355,0.222,0.786,0.6,NOT WORKING
+nn-emd:dir:all,counter,O-hard,243,8,5,6,0.615,0.385,0.571,0.357,NOT WORKING
+nn-emd:dir:all,counter,O-lut,243,13,8,1,0.619,0.435,0.929,0.8,NOT WORKING
+nn-emd:dir:all,counter,Y-gate,229,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-emd:dir:all,counter,Y-lut,231,14,12,0,0.538,0.368,1.0,1.0,NOT WORKING
+nn-emd:dir:all,fsm,O-gate,243,16,6,25,0.727,0.571,0.39,0.263,NOT WORKING
+nn-emd:dir:all,fsm,O-hard,243,29,20,12,0.592,0.477,0.707,0.585,NOT WORKING
+nn-emd:dir:all,fsm,O-lut,243,36,10,5,0.783,0.682,0.878,0.786,NOT WORKING
+nn-emd:dir:all,fsm,Y-gate,229,30,14,7,0.682,0.561,0.811,0.698,NOT WORKING
+nn-emd:dir:all,fsm,Y-lut,231,35,5,2,0.875,0.784,0.946,0.879,INCONCLUSIVE
+nn-emd:dir:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-emd:dir:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-emd:dir:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-emd:dir:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-emd:dir:all,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,regfile,O-gate,243,2,13,10,0.133,0.0,0.167,0.0,NOT WORKING
+nn-emd:dir:all,regfile,O-hard,243,7,9,5,0.438,0.222,0.583,0.333,NOT WORKING
+nn-emd:dir:all,regfile,O-lut,243,8,9,4,0.471,0.25,0.667,0.421,NOT WORKING
+nn-emd:dir:all,regfile,Y-gate,229,0,0,12,1.0,1.0,0.0,0.0,NOT WORKING
+nn-emd:dir:all,regfile,Y-lut,231,11,13,1,0.458,0.294,0.917,0.75,NOT WORKING
+nn-emd:dir:all,register,O-gate,243,11,4,63,0.733,0.533,0.149,0.086,NOT WORKING
+nn-emd:dir:all,register,O-hard,243,22,13,52,0.629,0.5,0.297,0.217,NOT WORKING
+nn-emd:dir:all,register,O-lut,243,22,10,52,0.688,0.556,0.297,0.215,NOT WORKING
+nn-emd:dir:all,register,Y-gate,229,11,7,54,0.611,0.417,0.169,0.096,NOT WORKING
+nn-emd:dir:all,register,Y-lut,231,14,2,52,0.875,0.714,0.212,0.129,NOT WORKING
+nn-emd:dir:all,shift,O-gate,243,1,30,2,0.032,0.0,0.333,0.0,INCONCLUSIVE
+nn-emd:dir:all,shift,O-hard,243,1,19,2,0.05,0.0,0.333,0.0,INCONCLUSIVE
+nn-emd:dir:all,shift,O-lut,243,0,15,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-emd:dir:all,shift,Y-gate,229,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+nn-emd:dir:all,shift,Y-lut,231,0,7,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-emd:dir:all,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,counter,O-gate,243,8,20,6,0.286,0.156,0.571,0.357,NOT WORKING
+nn-emd:dir:ff,counter,O-hard,243,9,3,5,0.75,0.533,0.643,0.412,NOT WORKING
+nn-emd:dir:ff,counter,O-lut,243,7,10,7,0.412,0.214,0.5,0.286,NOT WORKING
+nn-emd:dir:ff,counter,Y-gate,229,0,1,14,0.0,0.0,0.0,0.0,NOT WORKING
+nn-emd:dir:ff,counter,Y-lut,231,14,7,0,0.667,0.5,1.0,1.0,NOT WORKING
+nn-emd:dir:ff,fsm,O-gate,243,18,6,23,0.75,0.6,0.439,0.31,NOT WORKING
+nn-emd:dir:ff,fsm,O-hard,243,33,2,8,0.943,0.871,0.805,0.694,INCONCLUSIVE
+nn-emd:dir:ff,fsm,O-lut,243,35,6,6,0.854,0.763,0.854,0.757,INCONCLUSIVE
+nn-emd:dir:ff,fsm,Y-gate,229,6,9,31,0.4,0.182,0.162,0.064,NOT WORKING
+nn-emd:dir:ff,fsm,Y-lut,231,17,2,20,0.895,0.765,0.459,0.333,NOT WORKING
+nn-emd:dir:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-emd:dir:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-emd:dir:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-emd:dir:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-emd:dir:ff,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,regfile,O-gate,243,3,6,9,0.333,0.091,0.25,0.059,NOT WORKING
+nn-emd:dir:ff,regfile,O-hard,243,2,23,10,0.08,0.0,0.167,0.0,NOT WORKING
+nn-emd:dir:ff,regfile,O-lut,243,2,16,10,0.111,0.0,0.167,0.0,NOT WORKING
+nn-emd:dir:ff,regfile,Y-gate,229,1,0,11,1.0,1.0,0.083,0.0,NOT WORKING
+nn-emd:dir:ff,regfile,Y-lut,231,5,19,7,0.208,0.08,0.417,0.182,NOT WORKING
+nn-emd:dir:ff,register,O-gate,243,6,0,68,1.0,1.0,0.081,0.03,NOT WORKING
+nn-emd:dir:ff,register,O-hard,243,16,4,58,0.8,0.652,0.216,0.143,NOT WORKING
+nn-emd:dir:ff,register,O-lut,243,15,11,59,0.577,0.419,0.203,0.127,NOT WORKING
+nn-emd:dir:ff,register,Y-gate,229,0,0,65,1.0,1.0,0.0,0.0,NOT WORKING
+nn-emd:dir:ff,register,Y-lut,231,10,12,56,0.455,0.286,0.152,0.082,NOT WORKING
+nn-emd:dir:ff,shift,O-gate,243,2,10,1,0.167,0.0,0.667,0.0,INCONCLUSIVE
+nn-emd:dir:ff,shift,O-hard,243,0,14,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-emd:dir:ff,shift,O-lut,243,1,18,2,0.053,0.0,0.333,0.0,INCONCLUSIVE
+nn-emd:dir:ff,shift,Y-gate,229,1,24,2,0.04,0.0,0.333,0.0,INCONCLUSIVE
+nn-emd:dir:ff,shift,Y-lut,231,1,23,2,0.042,0.0,0.333,0.0,INCONCLUSIVE
+nn-emd:dir:ff,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:dir:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,counter,O-gate,243,10,24,4,0.294,0.174,0.714,0.5,NOT WORKING
+nn-emd:und:all,counter,O-hard,243,11,9,3,0.55,0.364,0.786,0.588,NOT WORKING
+nn-emd:und:all,counter,O-lut,243,13,20,1,0.394,0.257,0.929,0.8,NOT WORKING
+nn-emd:und:all,counter,Y-gate,229,0,0,14,1.0,1.0,0.0,0.0,NOT WORKING
+nn-emd:und:all,counter,Y-lut,231,13,24,1,0.351,0.225,0.929,0.8,NOT WORKING
+nn-emd:und:all,fsm,O-gate,243,23,8,18,0.742,0.606,0.561,0.431,NOT WORKING
+nn-emd:und:all,fsm,O-hard,243,37,4,4,0.902,0.818,0.902,0.821,WORKING
+nn-emd:und:all,fsm,O-lut,243,27,5,14,0.844,0.731,0.659,0.537,NOT WORKING
+nn-emd:und:all,fsm,Y-gate,229,2,1,35,0.667,0.0,0.054,0.0,NOT WORKING
+nn-emd:und:all,fsm,Y-lut,231,19,10,18,0.655,0.514,0.514,0.378,NOT WORKING
+nn-emd:und:all,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-emd:und:all,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-emd:und:all,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-emd:und:all,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-emd:und:all,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,regfile,O-gate,243,5,18,7,0.217,0.08,0.417,0.176,NOT WORKING
+nn-emd:und:all,regfile,O-hard,243,7,23,5,0.233,0.103,0.583,0.333,NOT WORKING
+nn-emd:und:all,regfile,O-lut,243,4,16,8,0.2,0.059,0.333,0.111,NOT WORKING
+nn-emd:und:all,regfile,Y-gate,229,0,7,12,0.0,0.0,0.0,0.0,NOT WORKING
+nn-emd:und:all,regfile,Y-lut,231,6,14,6,0.3,0.133,0.5,0.25,NOT WORKING
+nn-emd:und:all,register,O-gate,243,9,5,65,0.643,0.4,0.122,0.06,NOT WORKING
+nn-emd:und:all,register,O-hard,243,21,7,53,0.75,0.606,0.284,0.2,NOT WORKING
+nn-emd:und:all,register,O-lut,243,8,7,66,0.533,0.316,0.108,0.053,NOT WORKING
+nn-emd:und:all,register,Y-gate,229,11,11,54,0.5,0.333,0.169,0.096,NOT WORKING
+nn-emd:und:all,register,Y-lut,231,9,9,57,0.5,0.308,0.136,0.07,NOT WORKING
+nn-emd:und:all,shift,O-gate,243,0,8,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-emd:und:all,shift,O-hard,243,1,14,2,0.067,0.0,0.333,0.0,INCONCLUSIVE
+nn-emd:und:all,shift,O-lut,243,1,15,2,0.062,0.0,0.333,0.0,INCONCLUSIVE
+nn-emd:und:all,shift,Y-gate,229,0,0,3,1.0,1.0,0.0,0.0,INCONCLUSIVE
+nn-emd:und:all,shift,Y-lut,231,0,6,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-emd:und:all,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:all,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,counter,O-gate,243,8,26,6,0.235,0.122,0.571,0.357,NOT WORKING
+nn-emd:und:ff,counter,O-hard,243,10,4,4,0.714,0.5,0.714,0.5,NOT WORKING
+nn-emd:und:ff,counter,O-lut,243,9,27,5,0.25,0.135,0.643,0.417,NOT WORKING
+nn-emd:und:ff,counter,Y-gate,229,2,0,12,1.0,1.0,0.143,0.0,NOT WORKING
+nn-emd:und:ff,counter,Y-lut,231,9,17,5,0.346,0.192,0.643,0.421,NOT WORKING
+nn-emd:und:ff,fsm,O-gate,243,21,7,20,0.75,0.613,0.512,0.385,NOT WORKING
+nn-emd:und:ff,fsm,O-hard,243,30,2,11,0.938,0.857,0.732,0.618,NOT WORKING
+nn-emd:und:ff,fsm,O-lut,243,31,7,10,0.816,0.705,0.756,0.641,NOT WORKING
+nn-emd:und:ff,fsm,Y-gate,229,9,10,28,0.474,0.286,0.243,0.133,NOT WORKING
+nn-emd:und:ff,fsm,Y-lut,231,18,3,19,0.857,0.714,0.486,0.356,NOT WORKING
+nn-emd:und:ff,glue,O-gate,243,99,39,0,0.717,0.653,1.0,1.0,NOT WORKING
+nn-emd:und:ff,glue,O-hard,243,99,23,0,0.811,0.75,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,glue,O-lut,243,99,25,0,0.798,0.738,1.0,1.0,NOT WORKING
+nn-emd:und:ff,glue,Y-gate,229,98,55,0,0.641,0.577,1.0,1.0,NOT WORKING
+nn-emd:und:ff,glue,Y-lut,231,99,30,0,0.767,0.701,1.0,1.0,NOT WORKING
+nn-emd:und:ff,lfsr,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,lfsr,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,lfsr,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,lfsr,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,lfsr,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,regfile,O-gate,243,4,9,8,0.308,0.1,0.333,0.111,NOT WORKING
+nn-emd:und:ff,regfile,O-hard,243,4,25,8,0.138,0.04,0.333,0.118,NOT WORKING
+nn-emd:und:ff,regfile,O-lut,243,5,15,7,0.25,0.105,0.417,0.188,NOT WORKING
+nn-emd:und:ff,regfile,Y-gate,229,3,24,9,0.111,0.0,0.25,0.0,NOT WORKING
+nn-emd:und:ff,regfile,Y-lut,231,4,20,8,0.167,0.048,0.333,0.111,NOT WORKING
+nn-emd:und:ff,register,O-gate,243,8,3,66,0.727,0.5,0.108,0.052,NOT WORKING
+nn-emd:und:ff,register,O-hard,243,20,6,54,0.769,0.621,0.27,0.188,NOT WORKING
+nn-emd:und:ff,register,O-lut,243,8,6,66,0.571,0.357,0.108,0.053,NOT WORKING
+nn-emd:und:ff,register,Y-gate,229,0,0,65,1.0,1.0,0.0,0.0,NOT WORKING
+nn-emd:und:ff,register,Y-lut,231,15,4,51,0.789,0.625,0.227,0.145,NOT WORKING
+nn-emd:und:ff,shift,O-gate,243,1,7,2,0.125,0.0,0.333,0.0,INCONCLUSIVE
+nn-emd:und:ff,shift,O-hard,243,0,28,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-emd:und:ff,shift,O-lut,243,0,8,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-emd:und:ff,shift,Y-gate,229,1,12,2,0.077,0.0,0.333,0.0,INCONCLUSIVE
+nn-emd:und:ff,shift,Y-lut,231,0,20,3,0.0,0.0,0.0,0.0,INCONCLUSIVE
+nn-emd:und:ff,timer,O-gate,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,timer,Y-gate,229,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+nn-emd:und:ff,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,counter,O-gate,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+pp:clf-rf:dir,counter,O-hard,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+pp:clf-rf:dir,counter,O-lut,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+pp:clf-rf:dir,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+pp:clf-rf:dir,counter,Y-lut,231,14,0,0,1.0,1.0,1.0,1.0,WORKING
+pp:clf-rf:dir,fsm,O-gate,243,40,7,1,0.851,0.762,0.976,0.932,INCONCLUSIVE
+pp:clf-rf:dir,fsm,O-hard,243,40,3,1,0.93,0.864,0.976,0.932,WORKING
+pp:clf-rf:dir,fsm,O-lut,243,40,5,1,0.889,0.806,0.976,0.932,WORKING
+pp:clf-rf:dir,fsm,Y-gate,229,36,2,1,0.947,0.875,0.973,0.923,WORKING
+pp:clf-rf:dir,fsm,Y-lut,231,36,2,1,0.947,0.872,0.973,0.921,WORKING
+pp:clf-rf:dir,glue,O-gate,243,99,0,0,1.0,1.0,1.0,1.0,WORKING
+pp:clf-rf:dir,glue,O-hard,243,99,0,0,1.0,1.0,1.0,1.0,WORKING
+pp:clf-rf:dir,glue,O-lut,243,99,0,0,1.0,1.0,1.0,1.0,WORKING
+pp:clf-rf:dir,glue,Y-gate,229,98,1,0,0.99,0.97,1.0,1.0,WORKING
+pp:clf-rf:dir,glue,Y-lut,231,99,1,0,0.99,0.97,1.0,1.0,WORKING
+pp:clf-rf:dir,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,regfile,O-gate,243,0,2,12,0.0,0.0,0.0,0.0,NOT WORKING
+pp:clf-rf:dir,regfile,O-hard,243,1,1,11,0.5,0.0,0.083,0.0,NOT WORKING
+pp:clf-rf:dir,regfile,O-lut,243,1,1,11,0.5,0.0,0.083,0.0,NOT WORKING
+pp:clf-rf:dir,regfile,Y-gate,229,0,1,12,0.0,0.0,0.0,0.0,NOT WORKING
+pp:clf-rf:dir,regfile,Y-lut,231,4,1,8,0.8,0.5,0.333,0.111,NOT WORKING
+pp:clf-rf:dir,register,O-gate,243,58,8,16,0.879,0.806,0.784,0.702,NOT WORKING
+pp:clf-rf:dir,register,O-hard,243,59,7,15,0.894,0.826,0.797,0.718,NOT WORKING
+pp:clf-rf:dir,register,O-lut,243,59,8,15,0.881,0.81,0.797,0.716,NOT WORKING
+pp:clf-rf:dir,register,Y-gate,229,55,9,10,0.859,0.781,0.846,0.771,INCONCLUSIVE
+pp:clf-rf:dir,register,Y-lut,231,56,5,10,0.918,0.853,0.848,0.774,INCONCLUSIVE
+pp:clf-rf:dir,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+pp:clf-rf:dir,shift,O-hard,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+pp:clf-rf:dir,shift,O-lut,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+pp:clf-rf:dir,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+pp:clf-rf:dir,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+pp:clf-rf:dir,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+pp:clf-rf:dir,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+rule,counter,O-gate,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+rule,counter,O-hard,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+rule,counter,O-lut,243,14,0,0,1.0,1.0,1.0,1.0,WORKING
+rule,counter,Y-gate,229,14,0,0,1.0,1.0,1.0,1.0,WORKING
+rule,counter,Y-lut,231,14,0,0,1.0,1.0,1.0,1.0,WORKING
+rule,fsm,O-gate,243,40,7,1,0.851,0.762,0.976,0.932,INCONCLUSIVE
+rule,fsm,O-hard,243,40,3,1,0.93,0.864,0.976,0.932,WORKING
+rule,fsm,O-lut,243,40,5,1,0.889,0.806,0.976,0.932,WORKING
+rule,fsm,Y-gate,229,36,2,1,0.947,0.875,0.973,0.923,WORKING
+rule,fsm,Y-lut,231,36,2,1,0.947,0.872,0.973,0.921,WORKING
+rule,glue,O-gate,243,99,0,0,1.0,1.0,1.0,1.0,WORKING
+rule,glue,O-hard,243,99,0,0,1.0,1.0,1.0,1.0,WORKING
+rule,glue,O-lut,243,99,0,0,1.0,1.0,1.0,1.0,WORKING
+rule,glue,Y-gate,229,98,1,0,0.99,0.97,1.0,1.0,WORKING
+rule,glue,Y-lut,231,99,1,0,0.99,0.97,1.0,1.0,WORKING
+rule,lfsr,O-gate,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+rule,lfsr,O-hard,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+rule,lfsr,O-lut,243,0,4,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+rule,lfsr,Y-gate,229,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+rule,lfsr,Y-lut,231,0,3,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+rule,regfile,O-gate,243,0,2,12,0.0,0.0,0.0,0.0,NOT WORKING
+rule,regfile,O-hard,243,1,1,11,0.5,0.0,0.083,0.0,NOT WORKING
+rule,regfile,O-lut,243,1,1,11,0.5,0.0,0.083,0.0,NOT WORKING
+rule,regfile,Y-gate,229,0,1,12,0.0,0.0,0.0,0.0,NOT WORKING
+rule,regfile,Y-lut,231,4,1,8,0.8,0.5,0.333,0.111,NOT WORKING
+rule,register,O-gate,243,58,8,16,0.879,0.806,0.784,0.702,NOT WORKING
+rule,register,O-hard,243,59,7,15,0.894,0.826,0.797,0.718,NOT WORKING
+rule,register,O-lut,243,59,8,15,0.881,0.81,0.797,0.716,NOT WORKING
+rule,register,Y-gate,229,55,9,10,0.859,0.781,0.846,0.771,INCONCLUSIVE
+rule,register,Y-lut,231,56,5,10,0.918,0.853,0.848,0.774,INCONCLUSIVE
+rule,shift,O-gate,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+rule,shift,O-hard,243,2,17,1,0.105,0.0,0.667,0.0,INCONCLUSIVE
+rule,shift,O-lut,243,2,15,1,0.118,0.0,0.667,0.0,INCONCLUSIVE
+rule,shift,Y-gate,229,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+rule,shift,Y-lut,231,2,12,1,0.143,0.0,0.667,0.0,INCONCLUSIVE
+rule,timer,O-gate,243,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+rule,timer,O-hard,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+rule,timer,O-lut,243,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE
+rule,timer,Y-gate,229,0,5,0,0.0,0.0,1.0,1.0,INCONCLUSIVE
+rule,timer,Y-lut,231,0,0,0,1.0,1.0,1.0,1.0,INCONCLUSIVE

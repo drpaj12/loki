@@ -1,0 +1,9 @@
+pattern,use_signature_with_rule,method
+fsm,0,clf-rf:dir
+counter,0,clf-rf:dir
+shift,0,clf-rf:dir
+lfsr,0,clf-rf:dir
+timer,0,clf-rf:dir
+regfile,0,clf-rf:dir
+register,0,clf-rf:dir
+glue,0,clf-rf:dir
