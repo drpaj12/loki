@@ -217,10 +217,7 @@ def main() -> int:
         truth = r["design"].split("_")[0]
         for tag in ("all", "ff"):
             best = r[tag] or r["all"]  # no entry with this flip-flop count: nearest size (all)
-            if not best:
-                ok = 0
-            else:
-                ok = int(max(best, key=lambda q: best[q][0] + best[q][1]) == truth)
+            ok = int(bool(best) and max(best, key=lambda q: best[q][0] + best[q][1]) == truth)
             h = hold[(r["mode"], tag, truth, r["cell"])]
             h[0] += 1
             h[1] += ok
