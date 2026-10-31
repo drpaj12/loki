@@ -49,6 +49,17 @@ class PartitionTests(unittest.TestCase):
         self.assertEqual(partitions.state_groups(claims), [["a", "b", "c", "d"], ["z"]])
 
 
+class ConeTests(unittest.TestCase):
+    def test_bounded_cone_stops_at_other_group(self) -> None:
+        # a -> (cell g1) -> D of b ; b's own D comes from cell g0 on input x and a's output
+        nl = partitions.Netlist(".model m\n.inputs x\n.names a x d_b\n11 1\n"
+                                ".latch d_a a re clk 3\n.latch d_b b re clk 3\n.end\n")
+        nets, links = partitions.bounded_cone(nl, ["b"], {"a": 0, "b": 1})
+        self.assertEqual(links, {0: 1})
+        self.assertNotIn("d_a", nets)
+        self.assertIn("x", nets)
+
+
 class DbTests(unittest.TestCase):
     def test_round_trip_and_export(self) -> None:
         with tempfile.TemporaryDirectory() as td:

@@ -27,6 +27,8 @@ import live  # noqa: E402
 import match_run as mr  # noqa: E402
 import sigs  # noqa: E402
 
+from loki.l3.netlist import Netlist  # noqa: E402
+
 STATE_KINDS = ("counter", "register", "shift_reg", "lfsr", "fsm", "ff_en", "ff_srst", "ff_sen",
                "ff_arst", "ff")
 MAX_WORK = 3e8
@@ -57,7 +59,42 @@ def state_groups(claims: list[dict[str, Any]]) -> list[list[str]]:
     return sorted((sorted(g) for g in groups.values()), key=lambda g: g[0])
 
 
-def partitions_of(netlist: Path, qgroups: list[list[str]]) -> list[dict[str, Any]]:
+def bounded_cone(nl: Netlist, qs: list[str], other_q: dict[str, int]
+                 ) -> tuple[set[str], dict[int, int]]:
+    """Nets of the cone of one state group that stops at the flip-flop outputs of other state
+    groups (``other_q``: net -> group index) and at primary inputs. Returns (member nets whose
+    driver node belongs to the partition, {other group: fewest combinational cells crossed from
+    that group's output to this group's flip-flop inputs})."""
+    producer: dict[str, int] = {}
+    for i, (_ins, outs) in enumerate(nl.cells):
+        for o in outs:
+            producer[o] = i
+    latch_d = {q: d for d, q in nl.latches}
+    own = set(qs)
+    seen: dict[str, int] = {}  # net -> combinational cells crossed since the flip-flop input
+    links: dict[int, int] = {}
+    frontier = [(q, 0) for q in qs]
+    while frontier:
+        net, depth = frontier.pop()
+        if net in seen and seen[net] <= depth:
+            continue
+        if net in other_q and net not in own:
+            links[other_q[net]] = min(links.get(other_q[net], depth), depth)
+            continue
+        seen[net] = depth
+        if net in latch_d:  # an own flip-flop, or an unclaimed one (glue): walk through to its D
+            frontier.append((latch_d[net], 0 if net in own else depth + 1))
+            continue
+        i = producer.get(net)
+        if i is None:
+            continue  # primary input (kept as a member: its port node)
+        for n in nl.cells[i][0]:
+            frontier.append((n, depth + 1))
+    return set(seen), links
+
+
+def partitions_of(netlist: Path, qgroups: list[list[str]], bounded: bool = False
+                  ) -> list[dict[str, Any]]:
     """Per group: node ids (cone union), then the two signatures (both modes) of that subgraph."""
     import odin3
 
@@ -65,12 +102,24 @@ def partitions_of(netlist: Path, qgroups: list[list[str]]) -> list[dict[str, Any
     tmp = OUT / "tmp"
     tmp.mkdir(exist_ok=True)
     cells = tmp / f"cells_{os.getpid()}.txt"
+    nl = Netlist.read(netlist)
+    other = {q: gi for gi, g in enumerate(qgroups) for q in g}
     with odin3.Design.read_blif(netlist, techlibs=[sigs.VTR_LIB]) as d:
+        mod = d.top()
         for gi, qs in enumerate(qgroups):
             rec: dict[str, Any] = {"gi": gi, "ff": len(qs)}
             try:
                 idset: set[int] = set()
-                for k in range(0, len(qs), 8):  # the pass takes at most 8 foci per call
+                if bounded:
+                    nets, links = bounded_cone(nl, qs, other)
+                    rec["links"] = [[g, k] for g, k in sorted(links.items())]
+                    for n in nets:
+                        net = mod.net(n)
+                        pin = net.driver() if net is not None else None
+                        if pin is not None:
+                            idset.add(pin.node().id)
+                # the pass takes at most 8 foci per call
+                for k in range(0, 0 if bounded else len(qs), 8):
                     res = d.graphlets(exclude_global=True, per_node=True,
                                       focus=[f"cone({q})" for q in qs[k:k + 8]],
                                       max_work=int(MAX_WORK))
@@ -89,6 +138,9 @@ def partitions_of(netlist: Path, qgroups: list[list[str]]) -> list[dict[str, Any
     return out
 
 
+BOUNDED = os.environ.get("GLET_BOUNDED", "") == "1"
+
+
 def one(job: tuple[str, str, str, str, str]) -> list[dict[str, Any]]:
     kind, name, cell, net, intent = job
     if not mr._LIB:
@@ -96,10 +148,11 @@ def one(job: tuple[str, str, str, str, str]) -> list[dict[str, Any]]:
     claims = json.loads(Path(intent).read_text(encoding="utf-8"))["claims"]
     qgroups = state_groups(claims)
     rows: list[dict[str, Any]] = []
-    for rec in partitions_of(Path(net), qgroups):
+    for rec in partitions_of(Path(net), qgroups, BOUNDED):
         for mode in sigs.MODES:
             row: dict[str, Any] = {"set": kind, "design": name, "cell": cell, "mode": mode,
-                                   "gi": rec["gi"], "ff": rec["ff"], "n_groups": len(qgroups)}
+                                   "gi": rec["gi"], "ff": rec["ff"], "n_groups": len(qgroups),
+                                   "links": rec.get("links", [])}
             if "error" in rec or mode not in rec:
                 row["error"] = rec.get("error", "")
                 rows.append(row)
@@ -145,7 +198,7 @@ def main(argv: list[str]) -> int:
     todo = jobs()
     with ProcessPoolExecutor(n) as pool:
         res = list(pool.map(one, todo, chunksize=2))
-    p = OUT / "match" / "part_scores.jsonl"
+    p = OUT / "match" / ("part_scores_bounded.jsonl" if BOUNDED else "part_scores.jsonl")
     with p.open("w", encoding="utf-8") as fh:
         for rows in res:
             for r in rows:
