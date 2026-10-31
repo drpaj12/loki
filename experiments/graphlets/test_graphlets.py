@@ -63,7 +63,10 @@ class DbTests(unittest.TestCase):
             live.build_one = lambda i, c: "ok"  # type: ignore[assignment]
             try:
                 res = live.live_entry(con, inst, "O-gate", lambda p, m: {0: 1.0})
-                none = live.live_entry(con, inst, "O-lut")
+                def missing(p: Path, m: str) -> dict[int, float]:
+                    raise live.PassMissing("no pass")
+
+                none = live.live_entry(con, inst, "O-lut", missing)
             finally:
                 live.build_one = orig  # type: ignore[assignment]
             self.assertEqual(res["signature"], "stored")

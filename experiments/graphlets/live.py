@@ -40,7 +40,18 @@ class PassMissing(RuntimeError):
 
 
 def odin_signer(netlist: Path, mode: str) -> dict[int, float]:
-    raise PassMissing("Odin III graphlets pass not on odin3 main; signatures wait for it")
+    """Orbit totals of the netlist from the Odin III ``graphlets`` pass (mode: see sigs.MODES)."""
+    try:
+        import sigs
+    except ImportError as exc:  # pragma: no cover
+        raise PassMissing(str(exc)) from exc
+    try:
+        grp = sigs.signature(netlist, mode)
+    except Exception as exc:
+        if "graphlets" in str(exc) and "unknown" in str(exc):
+            raise PassMissing(str(exc)) from exc
+        raise
+    return {o: float(v) for o, v in enumerate(grp["orbit_totals"])}
 
 
 def _run(cmd: list[str]) -> str:
@@ -99,7 +110,7 @@ def build_one(inst: gen.Inst, cell: str) -> str:
 
 
 def live_entry(con: object, inst: gen.Inst, cell: str, signer: Signer = odin_signer,
-               modes: tuple[str, ...] = ("undirected",)) -> dict[str, str]:
+               modes: tuple[str, ...] = ("undirected", "directed")) -> dict[str, str]:
     """Live path: build at the inferred width, cache entry (+ signature if the pass exists)."""
     import sqlite3
     assert isinstance(con, sqlite3.Connection)
