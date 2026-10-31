@@ -322,3 +322,70 @@ partitions) INCONCLUSIVE: 2 of 25, both state machines on LUT cells.
    groups (so a composite part is not contaminated by upstream parts).
 2. L2 partitions: a mapping from Loki graph.json node ids to Odin III node ids, then the same match.
 3. A classifier fit on TUNE (instead of nearest entry + naive Bayes), since the posterior stays below 0.3.
+
+## Bounded cones and composite wires, 2026-10-31 (one focused round; plan written before the runs)
+
+Plan (written before the bounded run): (a) a partition holds one state group, its glue and its
+primary-input ports, but not other state groups: the walk back from the group's flip-flop inputs stops at the
+flip-flop outputs of the other claim-found groups and at primary inputs (unclaimed flip-flops are walked
+through as glue); rerun matching (both modes, count known and all widths) on the 243 TEST singles and the 82
+TEST composites, keep the TUNE-fit calibration, report the change against PR #69 side by side. (b) Wires: a
+wire is found when two matched (accepted, kind fsm / counter / shift) partitions are connected by a net from
+one group's outputs into the other's cone; via = direct if the net reaches a flip-flop input with no cell
+between, else comb; scored against truth.json as in part_c (family pairs; conditional recall when both ends
+were found). L2 mapping and a classifier are parked. Code: `partitions.py` (GLET_BOUNDED=1), `part_eval.py`
+(PART_PREFIX=cone, PART_SCORES=part_scores_bounded.jsonl); results `results/cone_*.csv`.
+
+Plain English: stopping the cone at the neighbouring registers removes the upstream parts from a
+partition, and precision goes up a lot (signature alone, count known, on the composites: 0.23 to 0.35
+before, 0.35 to 0.87 now), at the price of recall (0.33 to 0.61 before, 0.21 to 0.42 now). Added to the rule, the
+signature now beats the rule on composite parts: recall 0.46 to 0.65 against 0.41 to 0.50 in all five cells,
+precision 0.32 to 0.57 against 0.35 to 0.54 (not lower in three cells, lower in O-gate). Wires between parts
+are found far less often than parts (recall at most 0.33, with precision 0.08 to 0.30 when all widths are
+searched); the signature does not give a usable wire detector yet.
+
+CAD-style counts first. Same 3368 jobs, 13777 partition rows, 0 errors; calibration refit on TUNE (threshold
+0.10, 0.25, 0.15, 0.25 for undirected all / count known, directed all / count known; TUNE F1 0.544 to 0.561).
+Reliability (`results/cone_reliability.csv`): still almost no mass above 0.4 (226 of 5514 pairs reach
+0.5 to 0.9; observed same 0.53 in the 0.5-0.6 bin on 218 pairs, 4 pairs in each of the bins above 0.7): ordered but not
+calibrated at the top.
+
+Singles (243 TEST), TP/FP/FN pooled over five cells, #69 -> bounded (count known):
+fsm undirected 66/98/131 -> 45/21/152, directed 123/54/74 -> 92/26/105; counter undirected 50/91/20 ->
+38/62/32, directed 31/69/39 -> 40/67/30; shift 7/56/8 -> 6/38/9; regfile 21/26/39 -> 22/20/38; register
+41/27/312 -> 43/17/310; hybrid undirected fsm 192/109/5 -> 192/35/5, counter 70/91/0 -> 70/62/0, shift
+10/110/5 -> 10/100/5 (rule: fsm 192/19/5, counter 70/0/0, shift 10/71/5). Labels (40 rows each): signature
+alone still 0 WORKING (24 NOT WORKING, 16 INCONCLUSIVE); hybrid undirected 4 WORKING (fsm O-hard and Y-lut,
+counter O-hard, register Y-lut: precision 0.88, recall 0.88, a cell where the rule is INCONCLUSIVE), hybrid
+directed 2. Directed more precise in 2 of 25 (counter on Y-lut: precision 0.36 -> 0.68, recall 0.57 -> 0.93;
+register on O-gate: 0.17 -> 0.78, recall 0.03 -> 0.10; Holm 0.0125 and 0.036), not the two state-machine
+cases of #69.
+
+82 TEST composites, parts, #69 -> bounded (precision / recall; rule 0.443 / 0.410, 0.460 / 0.438, 0.351 /
+0.495, 0.539 / 0.407, 0.534 / 0.443 for O-gate, O-lut, O-hard, Y-gate, Y-lut):
+undirected count known 0.267/0.329 -> 0.345/0.324, 0.342/0.524 -> 0.725/0.376, 0.231/0.443 -> 0.868/0.219,
+0.231/0.363 -> 0.558/0.211, 0.351/0.610 -> 0.779/0.419; hybrid undirected 0.286/0.524 -> 0.321/0.514,
+0.320/0.690 -> 0.480/0.581, 0.251/0.719 -> 0.386/0.595, 0.268/0.534 -> 0.517/0.456, 0.361/0.738 ->
+0.568/0.652 (bounded hybrid lower bounds: recall 0.45, 0.51, 0.53, 0.39, 0.60; precision 0.26, 0.37, 0.31,
+0.40, 0.46). All widths, undirected: precision 0.22 to 0.47, recall 0.44 to 0.66 (O-gate 0.221/0.486, O-lut
+0.379/0.486, O-hard 0.429/0.500, Y-gate 0.466/0.441, Y-lut 0.376/0.662).
+
+Wires (`results/cone_wires.csv`; truth wires 157 / 157 / 157 / 150 / 157): rule recall 0.159, 0.172, 0.115,
+0.153, 0.178 (precision 0.37, 0.38, 0.36, 0.40, 0.45). Signature, count known, undirected: recall 0.076,
+0.115, 0.038, 0.040, 0.127; precision 0.08, 0.48, 0.71, 0.11, 0.55 (few detected wires: 728, 82, 7, 79, 55).
+All widths, undirected: recall 0.236, 0.223, 0.217, 0.140, 0.331 (lower bound above the rule's point
+estimate in O-gate, O-hard, Y-lut) with precision 0.17, 0.17, 0.46, 0.30, 0.22 (2387, 886, 662, 340,
+1085 detected). Recall given both ends found 0.29 to 0.69; direct wires are no easier than comb wires.
+Limit: a link needs the two groups to be claim-found and accepted; most missed wires have a missing end.
+
+Verdicts: GL6 (bounded cones) INCONCLUSIVE: precision up, recall down for the signature; the hybrid beats the
+rule on parts in recall (5 of 5 cells) without a clear loss of precision in 3 cells, but no cell reaches the
+bar. GL7 (signature wires) INCONCLUSIVE: more wires than the rule at low precision.
+
+## Next step (resume here)
+
+Parked by the controller for later rounds: (1) L2 partitions (node-id mapping from Loki graph.json to Odin III
+ids, then the same match); (2) a classifier fit on TUNE instead of nearest entry + naive Bayes (the posterior
+stays below 0.3 for most partitions). Open from this round: the hybrid helps composites but a rule OR
+signature union also adds false alarms for state machines in single designs; a per-pattern choice of when to
+use the signature (fit on TUNE) is the cheapest follow-up.

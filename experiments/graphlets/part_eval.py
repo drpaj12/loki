@@ -10,6 +10,7 @@ Composites: kind-level part matching as in l3-detector/part_c.py (fsm, counter, 
 from __future__ import annotations
 
 import json
+import os
 import random
 import sys
 from collections import Counter, defaultdict
@@ -24,6 +25,8 @@ import live  # noqa: E402
 import match_eval as me  # noqa: E402
 
 RES = HERE / "results"
+PREFIX = os.environ.get("PART_PREFIX", "part")
+SCORES = os.environ.get("PART_SCORES", "part_scores.jsonl")
 ENT = tuple(e for e in l3dlib.ENTRIES if e != "glue")
 FAMILY = {"fsm": "fsm", "counter": "counter", "timer": "counter", "shift": "shift",
           "lfsr": "shift"}
@@ -31,7 +34,7 @@ FAMS = ("fsm", "counter", "shift")
 
 
 def read_rows() -> list[dict[str, Any]]:
-    p = live.OUT / "match" / "part_scores.jsonl"
+    p = live.OUT / "match" / SCORES
     return [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines()]
 
 
@@ -87,7 +90,7 @@ def main() -> int:
                     for p in ENT:
                         if p in r[tag]:
                             cal.add(r[tag][p][0], r[tag][p][1], p == fam[d])
-            (RES / f"part_calibration_{mode}_{tag}.json").write_text(
+            (RES / f"{PREFIX}_calibration_{mode}_{tag}.json").write_text(
                 json.dumps(cal.file(mode), sort_keys=True), encoding="utf-8")
 
             def f1(thr: float, cal: me.Calib = cal, tune: list[tuple[str, str]] = tune,
@@ -119,13 +122,13 @@ def main() -> int:
                                 b = min(9, int(pv * 10))
                                 rel.append({"mode": mode, "restrict": tag, "bin": b,
                                             "same": int(p == fam[d])})
-    l3dlib.write_csv(RES / "part_threshold.csv", list(thr_rows[0]), thr_rows)
+    l3dlib.write_csv(RES / f"{PREFIX}_threshold.csv", list(thr_rows[0]), thr_rows)
     agg: dict[tuple[str, str, int], list[int]] = defaultdict(lambda: [0, 0])
     for x in rel:
         a = agg[(x["mode"], x["restrict"], x["bin"])]
         a[0] += 1
         a[1] += x["same"]
-    l3dlib.write_csv(RES / "part_reliability.csv",
+    l3dlib.write_csv(RES / f"{PREFIX}_reliability.csv",
                      ["mode", "restrict", "posterior_bin", "pairs", "observed_same"],
                      [{"mode": k[0], "restrict": k[1],
                        "posterior_bin": f"{k[2] / 10:.1f}-{(k[2] + 1) / 10:.1f}",
@@ -161,7 +164,7 @@ def main() -> int:
                     "FN": fn, "precision": round(pr, 3), "precision_lo": round(lp, 3),
                     "recall": round(rc, 3), "recall_lo": round(lr, 3),
                     "label": l3dlib.label(pr, rc, lp, lr, tp + fn)})
-    l3dlib.write_csv(RES / "part_table.csv", list(tab[0]), tab)
+    l3dlib.write_csv(RES / f"{PREFIX}_table.csv", list(tab[0]), tab)
     tests = []
     rng = random.Random(7)
     for p in l3dlib.ENTRIES:
@@ -191,7 +194,7 @@ def main() -> int:
         t["p_holm"] = round(run, 4)
         t["directed_more_precise"] = int(t["p_holm"] < 0.05 and t["prec_dir"] > t["prec_und"])
     if tests:
-        l3dlib.write_csv(RES / "part_directed_vs_undirected.csv", list(tests[0]), tests)
+        l3dlib.write_csv(RES / f"{PREFIX}_directed_vs_undirected.csv", list(tests[0]), tests)
     comp_eval(by, cals)
     print(len(tab), "single rows;", len(tests), "directed tests;", errors, "partition errors")
     return 0
@@ -224,8 +227,10 @@ def comp_eval(by: dict[tuple[str, str, str, str], list[dict[str, Any]]],
                     sf[FAMILY[p]] += 1
             rec[f"{mode}/{tag}"] = score(sf)
             rec[f"hybrid-{mode}/{tag}"] = score(Counter({k: max(rf[k], sf[k]) for k in FAMS}))
+        wires_of_comp(rec, r, by, cals, tf)
         out.append(rec)
-    keys = ["rule"] + [k for k in out[0] if "/" in k]
+    wire_table(out)
+    keys = ["rule"] + [k for k in out[0] if "/" in k and not k.startswith("wires:")]
     tab = []
     for cell in live.CELLS:
         sub = [o for o in out if o["cell"] == cell]
@@ -237,7 +242,80 @@ def comp_eval(by: dict[tuple[str, str, str, str], list[dict[str, Any]]],
             tab.append({"variant": k, "cell": cell, "composites": len(sub), "TP": tp, "FP": fp,
                         "FN": fn, "part_precision": round(pr, 3), "part_precision_lo": round(lp, 3),
                         "part_recall": round(rc, 3), "part_recall_lo": round(lr, 3)})
-    l3dlib.write_csv(RES / "part_composites.csv", list(tab[0]), tab)
+    l3dlib.write_csv(RES / f"{PREFIX}_composites.csv", list(tab[0]), tab)
+
+
+
+def wires_of_comp(rec: dict[str, Any], r: dict[str, Any],
+                  by: dict[tuple[str, str, str, str], list[dict[str, Any]]],
+                  cals: dict[tuple[str, str], tuple[me.Calib, float]], tf: Counter[str]) -> None:
+    """Part-to-part links of the signature partitions scored against truth.json wires."""
+    tparts, tw = r["truth"]["parts"], r["truth"]["wires"]
+    tpairs = {(a, b) for w in tw for a in tparts[w["from"]]["families"]
+              for b in tparts[w["to"]]["families"]}
+    for (mode, tag), (cal, thr) in cals.items():
+        rows = by.get(("comp", rec["name"], rec["cell"], mode), [])
+        fam_of = {}
+        for row in rows:
+            p = accepted(cal, row, tag, thr)
+            if p in FAMILY:
+                fam_of[row["gi"]] = FAMILY[p]
+        det = {(a, row["gi"]): "direct" if k == 0 else "comb"
+               for row in rows if row["gi"] in fam_of
+               for a, k in row.get("links", []) if a in fam_of}
+        pairs = {(fam_of[a], fam_of[b]) for a, b in det}
+        hit = [any((a, b) in pairs for a in tparts[w["from"]]["families"]
+                   for b in tparts[w["to"]]["families"]) for w in tw]
+        good = sum(1 for a, b in det if (fam_of[a], fam_of[b]) in tpairs)
+        found = set(fam_of.values())
+        both = [all(f in found for f in tparts[w["from"]]["families"] + tparts[w["to"]]["families"])
+                for w in tw]
+        rec[f"wires:{mode}/{tag}"] = {
+            "truth": len(tw), "hit": sum(hit), "det": len(det), "good": good,
+            "cond_n": sum(both), "cond_hit": sum(1 for b, h in zip(both, hit, strict=True)
+                                                if b and h),
+            "direct": sum(1 for w in tw if w["via"] == "direct"),
+            "direct_hit": sum(1 for w, h in zip(tw, hit, strict=True)
+                              if h and w["via"] == "direct"),
+            "comb": sum(1 for w in tw if w["via"] != "direct"),
+            "comb_hit": sum(1 for w, h in zip(tw, hit, strict=True)
+                            if h and w["via"] != "direct")}
+
+
+def wire_table(out: list[dict[str, Any]]) -> None:
+    rule = {(x["name"], x["cell"]): x for x in l3dlib.read_csv(l3dlib.RES / "partC_composite.csv")}
+    keys = [k for k in out[0] if k.startswith("wires:")]
+    tab = []
+    for cell in live.CELLS:
+        sub = [o for o in out if o["cell"] == cell]
+        rr = [rule[(o["name"], cell)] for o in sub if (o["name"], cell) in rule]
+        variants: dict[str, list[dict[str, int]]] = {"rule": [
+            {"truth": int(x["truth_wires"]), "hit": int(x["wires_hit"]), "det": int(x["det_wires"]),
+             "good": int(x["det_wires_good"]), "cond_n": 0, "cond_hit": 0,
+             "direct": int(x["via_direct"]), "direct_hit": int(x["hit_direct"]),
+             "comb": int(x["via_comb"]), "comb_hit": int(x["hit_comb"])} for x in rr]}
+        for k in keys:
+            variants[k[6:]] = [o[k] for o in sub]
+        for v, items in variants.items():
+            t = sum(i["truth"] for i in items)
+            h = sum(i["hit"] for i in items)
+            d = sum(i["det"] for i in items)
+            g = sum(i["good"] for i in items)
+            _, lr = l3dlib.bootstrap([(i["hit"], 0, i["truth"] - i["hit"]) for i in items])
+            lp, _ = l3dlib.bootstrap([(i["good"], i["det"] - i["good"], 0) for i in items])
+            cn = sum(i["cond_n"] for i in items)
+            tab.append({"variant": v, "cell": cell, "composites": len(items), "truth_wires": t,
+                        "wires_hit": h, "wire_recall": round(h / t, 3) if t else 1.0,
+                        "wire_recall_lo": round(lr, 3), "det_wires": d, "det_good": g,
+                        "wire_precision": round(g / d, 3) if d else 1.0,
+                        "wire_precision_lo": round(lp, 3),
+                        "recall_given_ends": (round(sum(i["cond_hit"] for i in items) / cn, 3)
+                                              if cn else ""),
+                        "recall_direct": round(sum(i["direct_hit"] for i in items) /
+                                               max(1, sum(i["direct"] for i in items)), 3),
+                        "recall_comb": round(sum(i["comb_hit"] for i in items) /
+                                             max(1, sum(i["comb"] for i in items)), 3)})
+    l3dlib.write_csv(RES / f"{PREFIX}_wires.csv", list(tab[0]), tab)
 
 
 if __name__ == "__main__":
