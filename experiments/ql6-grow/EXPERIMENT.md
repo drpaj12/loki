@@ -158,6 +158,141 @@ shift and counter, 8 for memory) are guesses, not tuned; Bayes factor on the non
 tempering; block cap 600 cells; priors from the VerilogEval census (a mix of ratios is not the TEST mix);
 right block as in #72.
 
-## Results
+## Results, 2026-11-01 (plain English first)
 
-Not run yet.
+Plain English: growing blocks from anchors one cell at a time, as specified, did not find the right
+block more often than the cone detectors of #70; it found it much less often. The blocks the grower builds
+are correct as far as they go (they stay inside the true block), but they stop early: the median final block
+has 11 cells where the median true block has 35, because the Bayes factor rule (add a cell only when it
+raises the odds of "known construct" against "glue") stops as soon as the evidence wobbles. A post hoc
+look at the same growth paths with the stop removed shows the growth order is good: for 56 percent of the
+constructs (units up to 400 cells) some prefix of some grown block is the right block, against 39 percent for
+the D70 cones. The stop rule, and the weak likelihood under it (the posterior picks the right kind for about
+half of held-out pieces), is the failure, not the idea of growing from anchors. The hypothesis that the posterior
+sharpens as the block grows is half true: entropy falls from 1.55 bits (pieces of 4 to 7 cells) to 0.96
+bits (32 cells and more), but the argmax is not more often right, so the sharper guess is not a better one.
+Small pieces give a small, real lift in the top-3 guess over guessing the three most frequent kinds.
+
+CAD-style counts first (TEST only; `results/*.csv`).
+
+Step 0, anchor survival (`results/census.csv`; share of answer-key constructs with provenance whose
+matching anchor class survives, anchor class cells at least half inside the true block; "any" = an anchor of
+any class). Detector as finally used (see Deviations 1).
+
+| kind | O-gate | O-lut | O-hard (k6 hard map) | Y-gate | Y-lut | all |
+|---|---|---|---|---|---|---|
+| fsm | 52/95 (0.55) | 52/95 (0.55) | 52/95 (0.55) | 32/38 (0.84) | 32/38 (0.84) | 220/361 (0.61) |
+| counter | 22/75 (0.29) | 27/75 (0.36) | 77/77 (1.00, adder chain) | 14/14 (1.00) | 14/14 (1.00) | 154/255 (0.60) |
+| shift | 12/78 (0.15) | 34/78 (0.44) | 35/78 (0.45) | 1/3 | 2/3 | 84/240 (0.35) |
+| regfile | 9/12 (0.75) | 9/12 (0.75) | 9/12 (0.75) | 9/12 (0.75) | 9/12 (0.75) | 45/60 (0.75) |
+| register | 47/74 (0.64) | 43/74 (0.58) | 42/74 (0.57) | 40/73 (0.55) | 38/73 (0.52) | 210/368 (0.57) |
+
+Any anchor inside: fsm 0.76, counter 0.85, shift 0.64, regfile 1.00, register 1.00 (all cells). Anchors of
+the matching class survive for 0.35 to 0.75 of the constructs, so the anchor step alone bounds recall at
+those shares for the matching class; any-anchor survival is higher, so a mislabelled anchor still seeds a
+block. Hard-cell (adder chain) anchors seed every counter on O-hard.
+
+Right block (`results/right_block.csv`), 1255 answer-key constructs with provenance that #72 also scored
+(712 singles minus 17 outside the #72 key, 572 composite parts on O cells, plus Y single designs): grower
+61 right (0.049), D70 466 right (0.371); grower right and D70 not 19, D70 right and grower not 424. Seeded
+(some block overlaps the true block): 1084 of 1255. Per cell, grower against D70: O-gate 0 of 330 against 110,
+O-lut 25 against 163, O-hard 35 against 153, Y-gate 0 against 0, Y-lut 1 against 40. Per kind: fsm 9
+against 132, counter 6 against 82, shift 20 against 126, regfile 0 against 21, register 26 against 105.
+Per unit (design x cell, 938 units): grower more right constructs in 13, fewer in 364, equal in 561
+(W13 / L364 / T561); geomean of (g+1)/(d+1) = 0.758 (90 percent bootstrap over designs 0.735 to 0.781):
+WORSE. Among the 864 D70 misses (absent constructs excluded) whose block D70 compared with the key,
+D70's block was right for 0.373; the grower's block is right for 0.044 (0.030 to 0.059). QL6a: DISMISSED
+(the grower is worse; the strict label is WORSE).
+
+Failure modes (`results/failure_modes.csv`, bases as stated): (1) anchor gone: a block overlaps the true
+block for 1105 of 1284 scored constructs. (3) shared logic: median cell precision of the best block 1.0
+(blocks stay inside the construct), so fusing neighbours is not the problem here. (4) local optima: 1044 of
+the 1105 seeded constructs end with the best block under 80 percent coverage; the lookahead fired 367 times
+over 2128 blocks; median final block 11 cells against a median true block of 35. (5) mixed provenance
+(`results/mixed_provenance.csv`): cells with a mixed (`*`) label are 4.1 percent on O-gate, 0.2 percent on
+O-lut, 0.3 percent on O-hard, so LUT packing is not the ceiling on this key. (6) composites: 238 touching pairs
+of blocks with at least 8 cells each; the union reads as a single counter for 155 of them (the most common
+pairs counter+counter 64, fsm+register 39, counter+register 32), so no pair was read as a composite by its
+union posterior. (7) unknown cohesive: 300 blocks (138 on Y-gate, 56 Y-lut, 106 on O cells), by the plurality kind
+of their cells fsm 82, register 58, shift 47, counter 21, regfile 16 (75 on Y composites have no key);
+they are not new patterns shown to exist, only places where the six kinds do not fit.
+
+Recall and precision per kind (`results/pr_by_kind.csv`; claim = final block of at least 4 cells with a
+non-glue argmax; TP when it is the right block of a construct of that kind): 1286 claims, 39 TP, precision 0.030;
+recall 39 of 1284 constructs (0.030). By kind (recall): shift 19 of 240 (0.079, precision 0.083), register
+11 of 368, fsm 7 of 361, counter 2 of 255, regfile 0 of 60. With max posterior at least 0.5: 22 TP of 818
+claims. Of the 61 right blocks, the argmax kind is the true kind for 39 and the true kind is in the top 3
+for 55 (`results/confusion.csv`).
+
+Calibration (`results/reliability.csv`, `results/reliability.svg`): expected calibration error of the
+max posterior 0.178 at the final blocks and 0.317 over all trajectory steps. The posterior is overconfident
+at the top: final blocks with max posterior 0.8 to 0.9 are right 0.38 of the time, 0.9 to 1.0 right 0.73.
+Held-out (TUNE, other designs) argmax accuracy of the model on answer-key prefixes was 0.52 after the
+temperature fit (T = 0.15; see Deviations 4).
+
+Entropy against size (`results/entropy_size.csv`), steps of all blocks, entropy in bits over six kinds
+(maximum 2.58), argmax accuracy, top-3 contains the true kind against the prior-only top-3:
+
+| size | steps | mean entropy | argmax accuracy | top-3 | prior top-3 | lift |
+|---|---|---|---|---|---|---|
+| 1-3 | 1104 | 1.25 | 0.42 | 0.91 | 0.91 | 0.00 |
+| 4-7 | 2120 | 1.55 | 0.26 | 0.65 | 0.55 | 0.10 |
+| 8-15 | 2516 | 1.35 | 0.42 | 0.73 | 0.61 | 0.12 |
+| 16-31 | 2196 | 1.27 | 0.51 | 0.72 | 0.69 | 0.03 |
+| 32+ | 3435 | 0.96 | 0.23 | 0.68 | 0.37 | 0.32 |
+
+Per block (379 blocks with at least 6 informative steps): median Spearman correlation between log2 size
+and entropy -0.143 (90 percent bootstrap over designs -0.467 to 0.012): INCONCLUSIVE (QL6b). Argmax
+accuracy at 32+ minus at 4-7: -0.031 (-0.123 to 0.084): INCONCLUSIVE (QL6b2, "the bigger grouping says
+what it is" is not supported). Small pieces, top-3 lift at 4-7 cells: 0.102 (0.011 to 0.201): by the
+fixed rule USEFUL, reported as POSSIBLY GOOD because the lower bound is 0.011 and the lift at 1 to 3
+cells is zero (QL6c).
+
+Post hoc diagnostic, not in the fixed plan (`q6_variant.py`, `results/variant.csv`): the same grower
+with the stop removed (best candidate each step, 300 cells at most, units up to 400 cells, 1141 constructs
+that D70 also scored, D70 right for 0.385). (a) Cut at the prefix with the highest odds of known
+construct against glue: right for 0.080 (geomean against D70 0.772, 0.747 to 0.797, WORSE). (b) Oracle,
+the best prefix by Jaccard over all prefixes of all blocks (uses the key, so a ceiling): right for 0.556
+(O-gate 0.61, O-lut 0.63, O-hard 0.46, Y-gate 0.49, Y-lut 0.50; geomean against D70 1.166, 1.125 to 1.209).
+So the growth order reaches the right block for more than half of the constructs, and the stop rule
+(the weak posterior) does not know where to cut (QL6e, exploratory).
+
+Verdicts. QL6a (right block more often than D70): DISMISSED (WORSE). QL6b (entropy falls with size):
+INCONCLUSIVE. QL6b2 (the bigger grouping says what it is): INCONCLUSIVE. QL6c (small pieces give a useful
+multi-kind guess): POSSIBLY GOOD. QL6d calibration: MEASUREMENT. QL6e (growth order ceiling, post hoc):
+MEASUREMENT. Next step suggested, not run: a stop rule that does not rest on this likelihood (for example
+the structural cut at a global net, or a learned stop on the prefix features) and a likelihood trained on
+more than six kinds.
+
+Limits, stated not hidden. The likelihood is a diagonal Gaussian on 129 correlated orbit frequencies (accuracy
+about 0.5 on held-out pieces); training prefixes grow breadth-first, the grower by Bayes factor; the anchor
+thresholds are untuned guesses; six kinds only; one run, one seed-free deterministic method (no randomness
+besides the MD5 half); the oracle row uses the key; priors from the VerilogEval census do not match the TEST
+mix; the D70 comparison uses #72's records (the same constructs, 17 singles outside the #72 key dropped from
+the comparison); Y-cell composite parts have no key and are not scored.
+
+## Deviations from the plan
+
+(1) The anchor detector was changed once after the first TEST census run (shift anchors 0 percent): the
+fsm / state-group test now runs before the shift test, and a shift link is a flip-flop that reads exactly one
+other flip-flop (and possibly itself) through at most 3 cells, instead of a bare Q to D wire. Census numbers
+are of the final detector; no other detector or threshold was changed after seeing TEST numbers. (2) The
+Bayes factor in the plan ("Z(B+c) / Z(B) with Z the non-glue mixture") was changed before the TEST growth
+run to the odds of the non-glue mixture against glue (Z_known / Z_glue), because with the first form no
+frontier cell ever exceeded 1 on the designs inspected; this was decided after looking at the growth lengths
+(not at any score) of 8 TEST O-gate designs, which is a TEST peek; the designs were not used for any fit. The
+text of the method above is the final form. (3) A block with no edges has an empty signature and no evidence
+(NO_EVIDENCE = -1e6, posterior = prior); empty signatures are excluded from training. (4) The variance
+shrinkage constant was raised from 20 to 200 on the TUNE calibration half (held-out negative log likelihood
+1.35 to 1.26) before any TEST growth run. (5) Operations: the first run kept an unbounded signature cache
+and two workers passed 4 GB each; it was stopped, the cache bounded (40000 entries per unit, a miss costs one
+more pass run; the cache never changes a value), and the unfinished units rerun; a lookahead could return a
+cell another block had meanwhile taken, which stalled two O-hard composites (Q060_141, Q082_141) in an
+endless loop; fixed to look only at free cells and those two units rerun (the fix can only matter for a
+non-terminating unit, so the 1615 other units are unchanged by construction, not by rerun). Units were then
+scheduled smallest first. For about 20 seconds 7 worker processes ran instead of 4 before the extra three
+were killed. (6) The post hoc diagnostic (QL6e) and the `evs` field in the block files were added after the
+first look at the results. (7) The plan said 695 singles; this implementation has 712 single-design
+constructs (all non-glue TEST designs with a netlist); the comparison with D70 uses the 1255 constructs
+present in both. (8) The plan did not say how the label DISMISSED maps to the strict label WORSE; here
+WORSE with the CI upper bound below 1 is DISMISSED.

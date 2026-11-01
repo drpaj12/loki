@@ -95,7 +95,7 @@ class Grower:
         """Cell whose best two-cell extension has a Bayes factor above 1, or None."""
         w = self.weights(b.post)
         best: tuple[float, int] | None = None
-        for c in sorted(b.cand)[:LOOK_FRONTIER]:
+        for c in sorted(c for c in b.cand if c not in self.owner)[:LOOK_FRONTIER]:
             for c2 in self.g.neighbours(c)[:LOOK_NEIGH]:
                 if c2 in b.cells or c2 == c or c2 in self.owner:
                     continue
@@ -209,10 +209,11 @@ def run_unit(key: tuple[str, str, str, str]) -> str:
 def main(argv: list[str]) -> int:
     n_jobs = int(argv[0]) if argv else 4
     split = argv[1] if len(argv) > 1 else "TEST"
-    keys = [(u.set, u.design, u.cell, u.split) for u in qt.units(split)
-            if not NOSTOP or qt.has_labels(u)]
+    us = [u for u in qt.units(split) if not NOSTOP or qt.has_labels(u)]
+    us.sort(key=lambda u: u.net.stat().st_size)  # smallest first, largest last
+    keys = [(u.set, u.design, u.cell, u.split) for u in us]
     with ProcessPoolExecutor(n_jobs) as pool:
-        list(pool.map(run_unit, keys, chunksize=4))
+        list(pool.map(run_unit, keys, chunksize=1))
     print(len(keys), "units")
     return 0
 

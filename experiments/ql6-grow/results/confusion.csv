@@ -1,8 +1,12 @@
 construct_kind,argmax,constructs
-counter,counter,1
-fsm,fsm,3
+counter,counter,2
+counter,glue,3
+counter,register,1
+fsm,fsm,7
+fsm,shift,2
 register,counter,1
 register,fsm,2
 register,glue,12
 register,register,11
-shift,shift,3
+shift,glue,1
+shift,shift,19

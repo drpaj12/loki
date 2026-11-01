@@ -35,7 +35,7 @@ def label_better(pt: float, lo: float, hi: float) -> str:
 
 def right_block_tables(cons: list[dict[str, Any]], verdict: list[dict[str, Any]]
                        ) -> list[dict[str, Any]]:
-    sc = [r for r in cons if r["scored"]]
+    sc = [r for r in cons if r["scored"] and r["d70_known"]]  # constructs D70 also had
     out = []
     scopes: list[tuple[str, list[dict[str, Any]]]] = [("all", sc)]
     scopes += [(f"cell {c}", [r for r in sc if r["cell"] == c]) for c in l3dlib.CELLS]
@@ -178,7 +178,8 @@ def entropy_tables(steps: list[dict[str, Any]], trajs: list[dict[str, Any]], pri
 
 
 def rate_verdict(cons: list[dict[str, Any]], verdict: list[dict[str, Any]]) -> None:
-    miss = [r for r in cons if r["scored"] and not r["d70_hit"] and r["d70_class"] != "absent"]
+    miss = [r for r in cons if r["scored"] and r["d70_known"] and not r["d70_hit"]
+            and r["d70_class"] != "absent"]
     pt, lo, hi = ev.boot_ci(by_design(miss), lambda r: statistics.fmean(x["right"] for x in r))
     base = statistics.fmean(x["d70_right"] for x in miss)
     verdict.append({"id": "QL6a2", "question": "share of D70 misses whose block the grower gets "

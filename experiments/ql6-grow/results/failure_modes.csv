@@ -1,10 +1,10 @@
 mode,measure,value
-1 anchor gone,constructs with a block overlapping the true block,821 of 864
+1 anchor gone,constructs with a block overlapping the true block,1105 of 1284
 3 shared logic,median cell precision of best block (seeded constructs),1.0
-4 local optima,seeded constructs whose best block stopped with coverage < 0.8,788 of 821
-4 local optima,"lookahead steps used (blocks, total)",279
-6 composites,touching block pairs with both >= 8 cells,129
-7 no likelihood,"unknown cohesive blocks (>= 8 cells, P(glue) < 0.25, max P < 0.5)",198
-5 mixed provenance,O-gate: cells with mixed (*) label,500 of 36734 (0.014)
-5 mixed provenance,O-lut: cells with mixed (*) label,10 of 9177 (0.001)
-5 mixed provenance,O-hard: cells with mixed (*) label,14 of 10099 (0.001)
+4 local optima,seeded constructs whose best block stopped with coverage < 0.8,1044 of 1105
+4 local optima,"lookahead steps used (blocks, total)",367
+6 composites,touching block pairs with both >= 8 cells,238
+7 no likelihood,"unknown cohesive blocks (>= 8 cells, P(glue) < 0.25, max P < 0.5)",300
+5 mixed provenance,O-gate: cells with mixed (*) label,2496 of 60956 (0.041)
+5 mixed provenance,O-lut: cells with mixed (*) label,29 of 14808 (0.002)
+5 mixed provenance,O-hard: cells with mixed (*) label,48 of 16865 (0.003)

@@ -60,6 +60,8 @@ def main() -> int:
                 if hits and max(evs) > -math.inf:
                     ev_right = ev_right or hits[evs.index(max(evs))]
             d = d70.get((u.set, u.design, u.cell, c.idx, c.kind))
+            if d is None:
+                continue  # D70 did not score this construct (not in the #72 key)
             rows.append({"set": u.set, "design": u.design, "cell": u.cell, "part": c.idx,
                          "kind": c.kind, "evmax_right": int(ev_right), "oracle_right": int(oracle),
                          "d70_right": int(d is not None and d["jaccard"] != "" and

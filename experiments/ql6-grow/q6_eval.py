@@ -184,6 +184,7 @@ def _construct_row(u: qt.Unit, c: qt.Construct, blocks: list[dict[str, Any]],
     d = d70.get(key)
     row["d70_right"] = int(d is not None and d["jaccard"] not in ("", "nan") and
                            float(d["coverage"]) >= 0.8 and float(d["jaccard"]) >= 0.5)
+    row["d70_known"] = int(d is not None)
     row["d70_hit"] = int(d is not None and d["hit"] == "1")
     row["d70_class"] = d["class"] if d is not None else ""
     if not c.cells:
