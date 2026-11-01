@@ -193,7 +193,8 @@ those shares for the matching class; any-anchor survival is higher, so a mislabe
 block. Hard-cell (adder chain) anchors seed every counter on O-hard.
 
 Right block (`results/right_block.csv`), 1255 answer-key constructs with provenance that #72 also scored
-(712 singles minus 17 outside the #72 key, 572 composite parts on O cells, plus Y single designs): grower
+(695 singles and 560 composite parts on the O cells; 17 singles and 12 parts of the 1284 constructs
+scored here are outside the #72 records and are left out of this comparison): grower
 61 right (0.049), D70 466 right (0.371); grower right and D70 not 19, D70 right and grower not 424. Seeded
 (some block overlaps the true block): 1084 of 1255. Per cell, grower against D70: O-gate 0 of 330 against 110,
 O-lut 25 against 163, O-hard 35 against 153, Y-gate 0 against 0, Y-lut 1 against 40. Per kind: fsm 9
@@ -268,7 +269,7 @@ Limits, stated not hidden. The likelihood is a diagonal Gaussian on 129 correlat
 about 0.5 on held-out pieces); training prefixes grow breadth-first, the grower by Bayes factor; the anchor
 thresholds are untuned guesses; six kinds only; one run, one seed-free deterministic method (no randomness
 besides the MD5 half); the oracle row uses the key; priors from the VerilogEval census do not match the TEST
-mix; the D70 comparison uses #72's records (the same constructs, 17 singles outside the #72 key dropped from
+mix; the D70 comparison uses #72's records (the same constructs, 17 singles and 12 parts outside the #72 key dropped from
 the comparison); Y-cell composite parts have no key and are not scored.
 
 ## Deviations from the plan

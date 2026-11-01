@@ -2324,6 +2324,21 @@ measured, the true block is close to its pattern for only 39 percent and 26 perc
 the share of structure that the signature cannot see is 20 percent by the rule and up to about 70 percent if "far from the pattern" counts. Parts that Odin III
 optimised away entirely (about 9 percent of the misses) and most of the structure misses lose their source units first in the \code{opt} pass.
 
+\paragraph{Loki L3: growing blocks from anchors (Q-L6).}
+Since the partition was the largest gap, we tried growing the blocks instead of cutting cones (plan, method and verdict rules in
+\code{experiments/ql6-grow/EXPERIMENT.md}, fixed before the run). Anchors are the places where a known pattern is easy to see (a group of flip-flops that
+feed only each other, a shift chain, a triangular counter, a decoder-selected memory, a register, an adder chain). Every anchor grows at once, one neighbouring
+cell per step, as long as the Odin III directed graphlet signature of the bigger block raises the odds of a known construct against glue, and at every step the
+block keeps a probability over six construct kinds. The posterior is learned from answer-key blocks of held-out designs only. On the 1255 constructs of the
+earlier rounds that have a provenance key, the grown block is the right one for 61 (0.049), against 466 (0.371) for the bounded cones, so the hypothesis that
+growing beats cutting is dismissed as specified: the blocks are correct as far as they go (they stay inside the construct) but stop early, a median of 11
+cells against 35. Reading the same growth paths without the stop (post hoc) shows that some prefix is the right block for 0.556 of the constructs, against 0.385
+for the cones in the same units, so the growth order is good and the Bayes factor stop, resting on a likelihood that picks the right kind for about half of the
+held-out pieces, is what fails. The posterior does sharpen with size (mean entropy 1.55 bits at 4 to 7 cells, 0.96 bits at 32 cells and more) but the argmax is
+not more often right (verdict inconclusive), and pieces of 4 to 7 cells give a top-3 guess that is 0.10 better than guessing the three most frequent kinds
+(lower bound 0.011, possibly good). The anchor census bounds the approach: an anchor of the matching class survives for 0.35 (shift) to 0.75 (register file) of
+the constructs.
+
 \section{Conclusion}
 \label{sec:conclusion}
 
