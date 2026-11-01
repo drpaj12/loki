@@ -7,8 +7,8 @@ from dataclasses import dataclass
 
 RIGHT_COVERAGE = 0.8
 RIGHT_JACCARD = 0.5
-CLASSES = ("missing pattern (width)", "partition miss", "threshold miss", "structure miss")
-DETECTOR_KIND = {"missing pattern (width)": "missing detector", "partition miss": "missing detector",
+CLASSES = ("absent", "missing pattern (width)", "partition miss", "threshold miss", "structure miss")
+DETECTOR_KIND = {"absent": "not in netlist", "missing pattern (width)": "missing detector", "partition miss": "missing detector",
                  "threshold miss": "missing detector", "structure miss": "complex decoding"}
 
 
@@ -18,6 +18,7 @@ class MissFacts:
 
     jaccard: float
     coverage: float
+    true_ff: int  # flip-flops in the true block
     has_entry: bool  # the library holds the family at the true block's flip-flop count
     t_dist: float  # distance of the TRUE block to the family's pattern (NaN: not computable)
     t_wrong: float  # best wrong pattern distance for the true block (NaN: none)
@@ -29,7 +30,9 @@ def right_block(jaccard: float, coverage: float) -> bool:
 
 
 def classify(f: MissFacts) -> str:
-    """Rule order of EXPERIMENT.md: missing pattern, partition, threshold, structure."""
+    """Rule order of EXPERIMENT.md: absent, missing pattern, partition, threshold, structure."""
+    if f.true_ff == 0:
+        return "absent"
     if not f.has_entry:
         return "missing pattern (width)"
     if not right_block(f.jaccard, f.coverage):

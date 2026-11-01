@@ -34,7 +34,10 @@ Constructs (answer key):
   the whole design (every cell of the netlist): the answer key says the whole design is one construct.
 - Composite parts: the 82 TEST composites, parts with family fsm, counter or shift (as in #69 to #71; timer
   and lfsr count as counter and shift). The true block is the set of cells whose Odin III provenance label
-  (`labels.csv`, `module_path`) is the part's instance `u<idx>`; cells with a mixed label (`*`) belong to no part.
+  (`labels.csv`, `module_path`) is the part's instance `u<idx>`; a cell with a mixed (`*`) or top-level label is attributed by the source line of its first
+  provenance span (the line range of the part's module `P<problem>` in the composite file); the other cells
+  (ports, wiring of the top module) belong to no part. Ports are not cells. A part whose true block holds no
+  flip-flop is absent from the netlist (Odin III optimised it away, class 0 below).
   Only the three Odin III cells (O-gate, O-lut, O-hard) have this provenance; the two Yosys cells (Y-gate,
   Y-lut) have no labels, so composite parts on Y cells are counted as hits or misses but not classified
   ("no provenance"). Singles on Y cells are classified (the whole design needs no labels).
@@ -71,6 +74,9 @@ compared block and the true block, and whether the true block would have been ac
 Let Cv = coverage, J = Jaccard of the best-overlap compared block (a), D_true = (c) distance of the true family,
 and q90 = the 90th percentile of the (b) distance over HITS of the same detector (pooled over cells, kind-specific
 when the kind has at least 10 hits for that detector, else pooled over kinds).
+0. absent: the true block holds no flip-flop (the part, or for a single the whole design, was removed or
+   turned into constants before the netlist). No netlist detector can find it: neither a missing detector
+   nor complex decoding. Its Odin III pass is named from provenance like class 4.
 1. missing pattern: the library has no entry for the family at the block's flip-flop count (no entry for
    the true family with that count, so no distance exists). Reported as "missing pattern (width)".
 2. partition miss: not (Cv >= 0.8 and J >= 0.5). The partition did not give the right block.
