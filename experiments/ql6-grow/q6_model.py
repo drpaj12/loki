@@ -24,8 +24,9 @@ from q6_env import EXP, KINDS
 
 MIN_N = 12
 VAR_FLOOR = 1e-3
-SHRINK_N = 20.0
+SHRINK_N = 200.0
 ALL = "ALL"
+NO_EVIDENCE = -1e6
 
 
 def census_prior() -> dict[str, float]:
@@ -85,16 +86,25 @@ class Model:
         return np.array([self.fit_for(cell, k).loglik(x, size) for k in KINDS])
 
     def posterior(self, cell: str, x: np.ndarray, size: int) -> np.ndarray:
+        if not x.any():  # no edges: no signature, no evidence, the prior
+            pr = np.array([self.prior[k] for k in KINDS])
+            return pr / pr.sum()
         ll = self.T * self.logliks(cell, x, size) + np.log([self.prior[k] for k in KINDS])
         ll -= ll.max()
         p = np.exp(ll)
         return p / p.sum()
 
     def evidence(self, cell: str, x: np.ndarray, size: int, w: np.ndarray) -> float:
-        """log sum_k w_k exp(T loglik_k): the block's evidence under kind weights ``w``."""
-        ll = self.T * self.logliks(cell, x, size) + np.log(np.maximum(w, 1e-300))
+        """Log odds of "a known construct (non-glue kinds, weights ``w``)" against glue for the block:
+        log sum_k w_k exp(T loglik_k) - T loglik_glue. A block
+        without edges has an empty signature; its evidence is NO_EVIDENCE, below any real one, so
+        the first extension that produces a signature is accepted (best evidence first)."""
+        if not x.any():
+            return NO_EVIDENCE
+        raw = self.T * self.logliks(cell, x, size)
+        ll = raw + np.log(np.maximum(w, 1e-300))
         m = ll.max()
-        return float(m + math.log(np.exp(ll - m).sum()))
+        return float(m + math.log(np.exp(ll - m).sum()) - raw[KINDS.index("glue")])
 
     def to_json(self) -> dict[str, Any]:
         return {"schema": 1, "kinds": list(KINDS), "temperature": self.T, "prior": self.prior,
@@ -123,6 +133,7 @@ def entropy_bits(p: np.ndarray) -> float:
 def fit_all(samples: list[tuple[str, str, int, np.ndarray]], prior: dict[str, float]) -> Model:
     """samples: (cell, kind, size, feature)."""
     by: dict[tuple[str, str], list[int]] = {}
+    samples = [s for s in samples if s[3].any()]  # empty signatures carry no information
     for i, (c, k, _s, _x) in enumerate(samples):
         by.setdefault((c, k), []).append(i)
         by.setdefault((ALL, k), []).append(i)
@@ -146,7 +157,7 @@ def fit_temperature(model: Model, samples: list[tuple[str, str, int, np.ndarray]
     for t in (0.002, 0.005, 0.01, 0.02, 0.03, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.5, 1.0):
         model.T = t
         nll = 0.0
-        for c, k, s, x in samples:
+        for c, k, s, x in (r for r in samples if r[3].any()):
             nll -= math.log(max(model.posterior(c, x, s)[KINDS.index(k)], 1e-12))
         if nll < best_nll:
             best, best_nll = t, nll
