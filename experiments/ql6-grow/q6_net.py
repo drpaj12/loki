@@ -175,14 +175,20 @@ def _triangular(comp: list[int], deps: dict[int, set[int]]) -> bool:
     return all(a <= b for a, b in zip(sets, sets[1:], strict=False))
 
 
-def _shift_chains(g: Graph, ffs: list[int]) -> list[list[int]]:
-    """Flip-flops joined by a direct Q -> D wire (no cell between): chains of >= 3."""
+SHIFT_COMB = 3
+
+
+def _shift_chains(ffs: list[int], deps: dict[int, set[int]], ncomb: dict[int, int]
+                  ) -> list[list[int]]:
+    """Chains of >= 3 flip-flops where each reads exactly one other flip-flop (and possibly
+    itself, for a hold) through at most SHIFT_COMB cells: Q to D, with a reset or enable gate."""
     edges: dict[int, set[int]] = defaultdict(set)
     for i in ffs:
-        p = g.b.producer.get(g.b.ins[i][0])
-        if p is not None and g.b.latch[p] and p != i:
-            edges[i].add(p)
-            edges[p].add(i)
+        other = deps[i] - {i}
+        if len(other) == 1 and ncomb[i] <= SHIFT_COMB:
+            j = next(iter(other))
+            edges[i].add(j)
+            edges[j].add(i)
     return [c for c in _components(sorted(edges), edges) if len(c) >= 3]
 
 
@@ -231,25 +237,27 @@ def _memory_register(g: Graph, ffs: list[int], deps: dict[int, set[int]],
 
 
 def anchors(g: Graph) -> list[Anchor]:
-    """All anchors of a netlist. Priority when flip-flops overlap: shift, fsm, counter, memory or
+    """All anchors of a netlist. Priority when flip-flops overlap: fsm, shift, counter, memory or
     register. Hard-cell anchors are independent of the flip-flop ones."""
     ffs = [i for i in range(g.b.n) if g.b.latch[i]]
     out: list[Anchor] = []
     used: set[int] = set()
-    for c in _shift_chains(g, ffs):
-        out.append(Anchor("shift", frozenset(c)))
-        used.update(c)
     deps: dict[int, set[int]] = {}
     nets: dict[int, set[str]] = {}
+    ncomb: dict[int, int] = {}
     for i in ffs:
-        deps[i], nets[i], _ = ff_cone(g, i)
-    rest = [i for i in ffs if i not in used]
-    succ = {i: {d for d in deps[i] if d != i and d not in used} for i in rest}
-    for comp in _sccs(rest, succ):
+        deps[i], nets[i], comb = ff_cone(g, i)
+        ncomb[i] = len(comb)
+    succ = {i: {d for d in deps[i] if d != i} for i in ffs}
+    for comp in _sccs(ffs, succ):
         cs = set(comp)
         if len(comp) >= 2 and all(deps[i] <= cs for i in comp):
             out.append(Anchor("fsm", frozenset(comp)))
             used.update(comp)
+    rest = [i for i in ffs if i not in used]
+    for c in _shift_chains(rest, {i: deps[i] - used for i in rest}, ncomb):
+        out.append(Anchor("shift", frozenset(c)))
+        used.update(c)
     rest = [i for i in ffs if i not in used]
     undirected: dict[int, set[int]] = defaultdict(set)
     for i in rest:
