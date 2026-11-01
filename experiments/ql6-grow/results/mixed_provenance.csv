@@ -1,0 +1,16 @@
+cell,category,cells
+O-gate,all,36734
+O-gate,mixed (*),500
+O-gate,more than one span,28112
+O-gate,part,6158
+O-gate,top-level or single,30076
+O-hard,all,10099
+O-hard,mixed (*),14
+O-hard,more than one span,6383
+O-hard,part,2439
+O-hard,top-level or single,7646
+O-lut,all,9177
+O-lut,mixed (*),10
+O-lut,more than one span,6685
+O-lut,part,2233
+O-lut,top-level or single,6934

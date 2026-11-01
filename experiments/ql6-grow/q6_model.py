@@ -19,7 +19,6 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-
 from q6_env import EXP, KINDS
 
 MIN_N = 12
@@ -95,7 +94,7 @@ class Model:
         return p / p.sum()
 
     def evidence(self, cell: str, x: np.ndarray, size: int, w: np.ndarray) -> float:
-        """Log odds of "a known construct (non-glue kinds, weights ``w``)" against glue for the block:
+        """Log odds of "a known construct" (non-glue kinds, weights ``w``) against glue:
         log sum_k w_k exp(T loglik_k) - T loglik_glue. A block
         without edges has an empty signature; its evidence is NO_EVIDENCE, below any real one, so
         the first extension that produces a signature is accepted (best evidence first)."""

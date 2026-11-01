@@ -14,7 +14,6 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
-
 import q6_model as qm
 import q6_net as qn
 import q6_sig as qs

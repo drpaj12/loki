@@ -7,13 +7,13 @@ and writes $QL6_OUT/blocks/<set>__<design>__<cell>.json.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
-
 import q6_model as qm
 import q6_net as qn
 import q6_sig as qs
@@ -21,6 +21,10 @@ import q6_truth as qt
 from q6_env import KINDS, OUT
 
 CAP = 600
+NOSTOP = os.environ.get("QL6_NOSTOP", "") == "1"  # post hoc variant, see EXPERIMENT.md
+NOSTOP_CAP = 300
+NOSTOP_MAX_CELLS = 400  # the variant runs on units of at most this many cells
+BLOCKS = "blocks_nostop" if NOSTOP else "blocks"
 EPS = 1e-9
 LOOK_FRONTIER = 40
 LOOK_NEIGH = 6
@@ -35,6 +39,7 @@ class Block:
     cells: set[int]
     order: list[int] = field(default_factory=list)
     traj: list[list[float]] = field(default_factory=list)  # per step: size, entropy, 6 posteriors
+    evs: list[float] = field(default_factory=list)  # per step: log odds known construct vs glue
     touches: set[int] = field(default_factory=set)
     cand: dict[int, float] = field(default_factory=dict)  # cell -> log Bayes factor
     post: np.ndarray = field(default_factory=lambda: np.zeros(len(KINDS)))
@@ -70,6 +75,7 @@ class Grower:
         b.post = p
         b.ev = self.evidence(frozenset(b.cells), self.weights(p))
         b.traj.append([float(len(b.cells)), qm.entropy_bits(p), *map(float, p)])
+        b.evs.append(b.ev)
         self.score_frontier(b)
 
     def free_frontier(self, b: Block) -> list[int]:
@@ -102,8 +108,10 @@ class Grower:
         live = {c: d for c, d in b.cand.items() if c not in self.owner}
         if live:
             c, d = max(live.items(), key=lambda kv: (kv[1], -kv[0]))
-            if d > EPS:
+            if d > EPS or NOSTOP:
                 return c
+        if NOSTOP:
+            return None
         c2 = self.lookahead(b) if live and len(b.cells) < CAP else None
         if c2 is not None:
             b.looks += 1
@@ -128,14 +136,14 @@ class Grower:
             for b in self.blocks:
                 if b.done:
                     continue
-                if len(b.cells) >= CAP:
+                if len(b.cells) >= (NOSTOP_CAP if NOSTOP else CAP):
                     b.done, b.stop = True, "cap"
                     continue
-                c = self.propose(b)
-                if c is None:
+                pick = self.propose(b)
+                if pick is None:
                     b.done, b.stop = True, "no Bayes factor above 1"
                 else:
-                    props.setdefault(c, []).append(b)
+                    props.setdefault(pick, []).append(b)
             if not props:
                 break
             for c, bs in sorted(props.items()):
@@ -160,11 +168,13 @@ def unknown_cohesive(b: Block) -> bool:
 
 def run_unit(key: tuple[str, str, str, str]) -> str:
     kind, design, cell, split = key
-    dest = OUT / "blocks" / f"{kind}__{design}__{cell}.json"
+    dest = OUT / BLOCKS / f"{kind}__{design}__{cell}.json"
     if dest.is_file():
         return ""
     u = next(x for x in qt.units(split, (cell,)) if x.set == kind and x.design == design)
     g = qn.Graph.read(u.net)
+    if NOSTOP and g.b.n > NOSTOP_MAX_CELLS:
+        return ""
     anc = qn.anchors(g)
     sc = qs.SigCounter(u.net, g.b)
     model = qm.load(OUT / "model.json")
@@ -182,9 +192,11 @@ def run_unit(key: tuple[str, str, str, str]) -> str:
     rec = {"unit": [kind, design, cell], "n_cells": g.b.n, "pass_runs": sc.calls,
            "n_anchors": len(anc), "composites": comp,
            "blocks": [{"bid": b.bid, "anchor_kind": b.kind, "anchor": b.anchor,
-                       "order": b.order, "final": top3(b.post), "post": np.round(b.post, 4).tolist(),
+                       "order": b.order, "final": top3(b.post),
+                       "post": np.round(b.post, 4).tolist(),
                        "entropy": round(qm.entropy_bits(b.post), 4), "stop": b.stop,
-                       "looks": b.looks, "touches": sorted(b.touches),
+                       "looks": b.looks, "evs": np.round(b.evs, 3).tolist(),
+                       "touches": sorted(b.touches),
                        "unknown_cohesive": bool(unknown_cohesive(b)),
                        "traj": [[int(t[0]), *np.round(t[1:], 4).tolist()] for t in b.traj]}
                       for b in blocks]}
@@ -197,7 +209,8 @@ def run_unit(key: tuple[str, str, str, str]) -> str:
 def main(argv: list[str]) -> int:
     n_jobs = int(argv[0]) if argv else 4
     split = argv[1] if len(argv) > 1 else "TEST"
-    keys = [(u.set, u.design, u.cell, u.split) for u in qt.units(split)]
+    keys = [(u.set, u.design, u.cell, u.split) for u in qt.units(split)
+            if not NOSTOP or qt.has_labels(u)]
     with ProcessPoolExecutor(n_jobs) as pool:
         list(pool.map(run_unit, keys, chunksize=4))
     print(len(keys), "units")

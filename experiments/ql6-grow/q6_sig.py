@@ -3,7 +3,8 @@
 No second graphlet counter: every signature is a pass run (``cells=`` file, directed, Odin III
 global rule), about 1 ms for the block sizes used here. A block is a set of cell indices; the
 primary-input ports that feed it are added to the induced subgraph (as in ql4-misses/tsig.py).
-Results are cached per block, so the signature the grower uses is the pass's own full count.
+Results are cached per block (key: hash and size of the cell set; at most CACHE_MAX entries), so
+the signature the grower uses is the pass's own full count.
 """
 
 from __future__ import annotations
@@ -13,11 +14,11 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-
 from q6_env import OUT, sigs
 
 N_ORBITS = 129
 MAX_WORK = 300_000_000
+CACHE_MAX = 40_000
 
 
 class SigCounter:
@@ -42,7 +43,7 @@ class SigCounter:
                         self.pi[n] = pin.node().id
         self.cells_file = OUT / "tmp" / f"cells_{os.getpid()}.txt"
         self.cells_file.parent.mkdir(parents=True, exist_ok=True)
-        self.cache: dict[frozenset[int], np.ndarray] = {}
+        self.cache: dict[tuple[int, int], np.ndarray] = {}
         self.calls = 0
 
     def close(self) -> None:
@@ -56,7 +57,8 @@ class SigCounter:
 
     def orbits(self, block: frozenset[int]) -> np.ndarray:
         """Directed orbit totals (129,) of the induced subgraph of ``block`` (cached)."""
-        hit = self.cache.get(block)
+        key = (hash(block), len(block))
+        hit = self.cache.get(key)
         if hit is not None:
             return hit
         ids = self.node_ids(block)
@@ -68,7 +70,9 @@ class SigCounter:
                                          cells=self.cells_file, max_work=MAX_WORK)
             self.calls += 1
             out = np.array(res["groups"][0]["orbit_totals"], dtype=float)
-        self.cache[block] = out
+        if len(self.cache) >= CACHE_MAX:  # bounded: a cache miss only costs one more pass run
+            self.cache.clear()
+        self.cache[key] = out
         return out
 
 

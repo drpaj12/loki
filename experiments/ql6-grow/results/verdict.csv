@@ -1,0 +1,7 @@
+id,question,value,ci90_lo,ci90_hi,counts,label
+QL6a,"right block per unit vs D70, geomean (g+1)/(d+1)",0.805,0.781,0.828,W7/L253/T533 of 793 units,WORSE
+QL6a2,share of D70 misses whose block the grower gets right (D70 itself: 0.318),0.038,0.022,0.056,626 misses,reported
+QL6b2,argmax accuracy: size 32+ minus size 4-7,0.011,-0.087,0.126,8720 steps,INCONCLUSIVE
+QL6c,top-3 guess at size 4-7: lift over prior-only top-3,0.187,0.07,0.304,8720 steps,USEFUL
+QL6b,"median Spearman(log2 size, entropy) per block",-0.09,-0.292,0.085,320 blocks with >= 6 steps,INCONCLUSIVE
+QL6d,expected calibration error of the max posterior,0.137,,,all steps ECE 0.260,measurement
