@@ -1,0 +1,12 @@
+scope,constructs,evmax_right,evmax_share,oracle_right,oracle_share,d70_share
+all,1141,91,0.08,634,0.556,0.385
+cell O-gate,269,2,0.007,165,0.613,0.316
+cell O-lut,329,30,0.091,206,0.626,0.495
+cell O-hard,330,54,0.164,150,0.455,0.461
+cell Y-gate,82,0,0.0,44,0.537,0.0
+cell Y-lut,131,5,0.038,69,0.527,0.298
+kind fsm,329,21,0.064,151,0.459,0.392
+kind counter,240,7,0.029,123,0.512,0.342
+kind shift,202,25,0.124,131,0.649,0.525
+kind regfile,44,4,0.091,35,0.795,0.477
+kind register,326,34,0.104,194,0.595,0.31
