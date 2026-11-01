@@ -1,0 +1,3 @@
+detector,classified_misses,near_share,near_lo90,near_hi90,structure_share,label
+D70,864,0.801,0.771,0.831,0.199,NEAR-MISS HYPOTHESIS SUPPORTED
+D71c,506,0.792,0.753,0.83,0.208,NEAR-MISS HYPOTHESIS SUPPORTED

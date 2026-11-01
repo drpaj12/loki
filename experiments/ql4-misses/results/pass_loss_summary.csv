@@ -1,0 +1,10 @@
+class,family,dominant_loss_pass,constructs
+absent,counter,opt,3
+absent,fsm,opt,17
+absent,shift,opt,17
+structure miss,counter,opt,5
+structure miss,fsm,opt,17
+structure miss,regfile,opt,3
+structure miss,register,kept,13
+structure miss,register,opt,7
+structure miss,shift,opt,37
