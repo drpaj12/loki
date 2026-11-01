@@ -2313,6 +2313,17 @@ four cells at one tolerance level (state machines on three cells, a counter on o
 for every pattern, and wires remain weak (recall up to 0.47 at precision 0.28). Exact directed beat undirected on TUNE F1 (0.759 against 0.715); loosening the direction
 did not help on TUNE.
 
+\paragraph{Loki L3: why the signature detectors miss (Q-L4).}
+Asked why high-level things are not recovered (plan and rule in \code{experiments/ql4-misses/EXPERIMENT.md}, fixed before the run), we took every
+construct of the answer key that five signature detectors of the earlier rounds did not find (1739 constructs: 695 single designs and 1044 composite parts, five cells)
+and asked two questions of each miss: did the matcher compare the right block, and does the right block, cut out by the Odin III provenance, look like its pattern
+in directed signature distance? Most misses of the cone detectors compared the wrong block (fewer than 40 percent compared the right one), so the partition is the largest
+gap; by the rule fixed before the run, 80 percent of the misses of the bounded-cone detector and 79 percent of the random forest are near misses (wrong partition,
+no library entry of that width, or the threshold), which supports the near-miss hypothesis. That rule counts a wrong partition as near without measuring the true block;
+measured, the true block is close to its pattern for only 39 percent and 26 percent of those misses (67 to 75 percent for the three other detectors), and
+the share of structure that the signature cannot see is 20 percent by the rule and up to about 70 percent if "far from the pattern" counts. Parts that Odin III
+optimised away entirely (about 9 percent of the misses) and most of the structure misses lose their source units first in the \code{opt} pass.
+
 \section{Conclusion}
 \label{sec:conclusion}
 
