@@ -1,0 +1,104 @@
+class,family,cell,constructs,true_cells,construct_type,cells,share
+absent,counter,O-gate,3,1,$_CONSTX_,1,1.0
+absent,counter,O-hard,3,37,$sub,36,0.973
+absent,counter,O-hard,3,37,$_CONSTX_,1,0.027
+absent,counter,O-lut,3,1,$_CONSTX_,1,1.0
+absent,fsm,O-gate,18,12,$_CONST1_,6,0.5
+absent,fsm,O-gate,18,12,$_CONST0_,6,0.5
+absent,fsm,O-hard,17,9,$_CONST1_,5,0.556
+absent,fsm,O-hard,17,9,$_CONST0_,4,0.444
+absent,fsm,O-lut,17,9,$_CONST1_,5,0.556
+absent,fsm,O-lut,17,9,$_CONST0_,4,0.444
+absent,shift,O-gate,17,16,$_CONST1_,15,0.938
+absent,shift,O-gate,17,16,$_CONSTX_,1,0.062
+absent,shift,O-hard,17,16,$_CONST1_,15,0.938
+absent,shift,O-hard,17,16,$_CONSTX_,1,0.062
+absent,shift,O-lut,17,16,$_CONST1_,15,0.938
+absent,shift,O-lut,17,16,$_CONSTX_,1,0.062
+structure miss,counter,O-gate,4,155,$add,62,0.4
+structure miss,counter,O-gate,4,155,$sub,58,0.374
+structure miss,counter,O-gate,4,155,$dff,12,0.077
+structure miss,counter,O-gate,4,155,$dffe,12,0.077
+structure miss,counter,O-gate,4,155,$eq,6,0.039
+structure miss,counter,O-gate,4,155,$_CONST1_,3,0.019
+structure miss,counter,O-hard,9,274,$add,64,0.234
+structure miss,counter,O-hard,9,274,$sdffe,56,0.204
+structure miss,counter,O-hard,9,274,$dffe,50,0.182
+structure miss,counter,O-hard,9,274,$sub,36,0.131
+structure miss,counter,O-hard,9,274,$mux,34,0.124
+structure miss,counter,O-hard,9,274,$_CONST1_,18,0.066
+structure miss,counter,O-lut,5,157,$and,48,0.306
+structure miss,counter,O-lut,5,157,$dffe,40,0.255
+structure miss,counter,O-lut,5,157,$mux,15,0.096
+structure miss,counter,O-lut,5,157,$logic_and,13,0.083
+structure miss,counter,O-lut,5,157,$sdffe,12,0.076
+structure miss,counter,O-lut,5,157,$logic_not,10,0.064
+structure miss,fsm,O-gate,8,512,$add,244,0.477
+structure miss,fsm,O-gate,8,512,$dff,102,0.199
+structure miss,fsm,O-gate,8,512,$pmux,43,0.084
+structure miss,fsm,O-gate,8,512,$not,29,0.057
+structure miss,fsm,O-gate,8,512,$or,22,0.043
+structure miss,fsm,O-gate,8,512,$logic_not,18,0.035
+structure miss,fsm,O-hard,10,332,$add,78,0.235
+structure miss,fsm,O-hard,10,332,$mux,72,0.217
+structure miss,fsm,O-hard,10,332,$sdffe,72,0.217
+structure miss,fsm,O-hard,10,332,$dff,56,0.169
+structure miss,fsm,O-hard,10,332,$sub,18,0.054
+structure miss,fsm,O-hard,10,332,$_CONST1_,12,0.036
+structure miss,fsm,O-lut,17,498,$add,135,0.271
+structure miss,fsm,O-lut,17,498,$dff,108,0.217
+structure miss,fsm,O-lut,17,498,$sdffe,108,0.217
+structure miss,fsm,O-lut,17,498,$sub,93,0.187
+structure miss,fsm,O-lut,17,498,$_CONST1_,15,0.03
+structure miss,fsm,O-lut,17,498,$or,14,0.028
+structure miss,regfile,O-gate,3,502,$eq,181,0.361
+structure miss,regfile,O-gate,3,502,$dffe,87,0.173
+structure miss,regfile,O-gate,3,502,$add,69,0.137
+structure miss,regfile,O-gate,3,502,$sdffe,62,0.124
+structure miss,regfile,O-gate,3,502,$xor,37,0.074
+structure miss,regfile,O-gate,3,502,$or,28,0.056
+structure miss,regfile,O-hard,3,130,$dffe,52,0.4
+structure miss,regfile,O-hard,3,130,$add,28,0.215
+structure miss,regfile,O-hard,3,130,$sdffe,24,0.185
+structure miss,regfile,O-hard,3,130,$or,8,0.062
+structure miss,regfile,O-hard,3,130,$_CONST0_,4,0.031
+structure miss,regfile,O-hard,3,130,$and,4,0.031
+structure miss,regfile,O-lut,3,106,$dffe,40,0.377
+structure miss,regfile,O-lut,3,106,$sdffe,24,0.226
+structure miss,regfile,O-lut,3,106,$add,16,0.151
+structure miss,regfile,O-lut,3,106,$or,8,0.075
+structure miss,regfile,O-lut,3,106,$_CONST0_,4,0.038
+structure miss,regfile,O-lut,3,106,$and,4,0.038
+structure miss,register,O-gate,6,1297,$lt,656,0.506
+structure miss,register,O-gate,6,1297,$not,200,0.154
+structure miss,register,O-gate,6,1297,$add,163,0.126
+structure miss,register,O-gate,6,1297,$sdff,79,0.061
+structure miss,register,O-gate,6,1297,$or,56,0.043
+structure miss,register,O-gate,6,1297,$mux,34,0.026
+structure miss,register,O-hard,25,914,$add,202,0.221
+structure miss,register,O-hard,25,914,$dff,198,0.217
+structure miss,register,O-hard,25,914,$sub,196,0.214
+structure miss,register,O-hard,25,914,$sdff,138,0.151
+structure miss,register,O-hard,25,914,$dffe,56,0.061
+structure miss,register,O-hard,25,914,$mux,28,0.031
+structure miss,register,O-lut,20,632,$add,221,0.35
+structure miss,register,O-lut,20,632,$dff,152,0.241
+structure miss,register,O-lut,20,632,$sdff,100,0.158
+structure miss,register,O-lut,20,632,$dffe,48,0.076
+structure miss,register,O-lut,20,632,$sub,30,0.047
+structure miss,register,O-lut,20,632,$mux,28,0.044
+structure miss,shift,O-gate,10,732,$sdff,464,0.634
+structure miss,shift,O-gate,10,732,$dffe,95,0.13
+structure miss,shift,O-gate,10,732,$shiftx,90,0.123
+structure miss,shift,O-gate,10,732,$xor,77,0.105
+structure miss,shift,O-gate,10,732,$and,6,0.008
+structure miss,shift,O-hard,37,946,$sdff,580,0.613
+structure miss,shift,O-hard,37,946,$dffe,262,0.277
+structure miss,shift,O-hard,37,946,$shiftx,53,0.056
+structure miss,shift,O-hard,37,946,$and,27,0.029
+structure miss,shift,O-hard,37,946,$xor,24,0.025
+structure miss,shift,O-lut,37,902,$sdff,519,0.575
+structure miss,shift,O-lut,37,902,$dffe,277,0.307
+structure miss,shift,O-lut,37,902,$shiftx,57,0.063
+structure miss,shift,O-lut,37,902,$and,28,0.031
+structure miss,shift,O-lut,37,902,$xor,21,0.023

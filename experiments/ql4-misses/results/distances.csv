@@ -1,0 +1,101 @@
+detector,family,what,n,p10,p50,p90
+D68,fsm,hit: compared block,54,0.0122,0.0782,0.1773
+D68,fsm,miss: compared block,141,0.0446,0.1118,0.2772
+D68,fsm,"miss, right block: true block",141,0.0451,0.1139,0.2772
+D68,fsm,"miss, all with signature: true block",141,0.0451,0.1139,0.2772
+D68,counter,hit: compared block,57,0.0,0.0151,0.0607
+D68,counter,miss: compared block,13,0.032,0.1354,0.1573
+D68,counter,"miss, right block: true block",13,0.032,0.1222,0.1564
+D68,counter,"miss, all with signature: true block",13,0.032,0.1222,0.1564
+D68,shift,hit: compared block,4,0.0508,0.057,0.0968
+D68,shift,miss: compared block,10,0.0419,0.1185,0.3484
+D68,shift,"miss, right block: true block",6,0.0418,0.0997,0.1185
+D68,shift,"miss, all with signature: true block",6,0.0418,0.0997,0.1185
+D68,regfile,hit: compared block,38,0.0126,0.0542,0.1267
+D68,regfile,miss: compared block,12,0.0841,0.1253,0.1414
+D68,regfile,"miss, right block: true block",13,0.0422,0.123,0.1692
+D68,regfile,"miss, all with signature: true block",13,0.0422,0.123,0.1692
+D68,register,hit: compared block,108,0.0,0.0473,0.211
+D68,register,miss: compared block,236,0.0297,0.1468,0.4568
+D68,register,"miss, right block: true block",227,0.0389,0.1392,0.2946
+D68,register,"miss, all with signature: true block",227,0.0389,0.1392,0.2946
+D69,fsm,hit: compared block,249,0.0403,0.0928,0.3513
+D69,fsm,miss: compared block,228,0.0541,0.1098,0.2804
+D69,fsm,"miss, right block: true block",57,0.0799,0.134,0.2772
+D69,fsm,"miss, all with signature: true block",138,0.0509,0.0976,0.2575
+D69,counter,hit: compared block,150,0.0219,0.0596,0.1249
+D69,counter,miss: compared block,180,0.0591,0.1575,0.2527
+D69,counter,"miss, right block: true block",89,0.0441,0.1613,0.3159
+D69,counter,"miss, all with signature: true block",145,0.0167,0.1571,0.3128
+D69,shift,hit: compared block,99,0.0592,0.1026,0.2685
+D69,shift,miss: compared block,186,0.0736,0.1056,0.2171
+D69,shift,"miss, right block: true block",44,0.048,0.0847,0.1099
+D69,shift,"miss, all with signature: true block",124,0.0559,0.0907,0.5543
+D69,regfile,hit: compared block,19,0.0126,0.1714,0.2082
+D69,regfile,miss: compared block,25,0.0829,0.1374,0.1958
+D69,regfile,"miss, right block: true block",15,0.0139,0.123,0.1819
+D69,regfile,"miss, all with signature: true block",27,0.0305,0.1185,0.1541
+D69,register,hit: compared block,42,0.0574,0.1391,0.2136
+D69,register,miss: compared block,139,0.0829,0.1509,0.3215
+D69,register,"miss, right block: true block",76,0.0524,0.1552,0.2491
+D69,register,"miss, all with signature: true block",293,0.0323,0.1236,0.3062
+D70,fsm,hit: compared block,209,0.038,0.0755,0.1013
+D70,fsm,miss: compared block,272,0.0543,0.1054,0.2737
+D70,fsm,"miss, right block: true block",95,0.0635,0.0971,0.284
+D70,fsm,"miss, all with signature: true block",177,0.0631,0.1008,0.2674
+D70,counter,hit: compared block,195,0.0216,0.0536,0.0773
+D70,counter,miss: compared block,134,0.0615,0.1461,0.2389
+D70,counter,"miss, right block: true block",21,0.0664,0.1527,0.1857
+D70,counter,"miss, all with signature: true block",126,0.0156,0.1573,0.327
+D70,shift,hit: compared block,46,0.0541,0.0596,0.0798
+D70,shift,miss: compared block,234,0.077,0.1078,0.1596
+D70,shift,"miss, right block: true block",62,0.0809,0.0895,0.1174
+D70,shift,"miss, all with signature: true block",135,0.0592,0.0938,0.5543
+D70,regfile,hit: compared block,8,0.0106,0.0247,0.0548
+D70,regfile,miss: compared block,36,0.0941,0.178,0.2083
+D70,regfile,"miss, right block: true block",13,0.007,0.1143,0.1973
+D70,regfile,"miss, all with signature: true block",37,0.0331,0.1006,0.1371
+D70,register,hit: compared block,27,0.0563,0.0652,0.1407
+D70,register,miss: compared block,154,0.0897,0.1636,0.3184
+D70,register,"miss, right block: true block",82,0.0539,0.1553,0.2486
+D70,register,"miss, all with signature: true block",306,0.0374,0.1219,0.3055
+D71h,fsm,hit: compared block,232,0.0497,0.0822,0.186
+D71h,fsm,miss: compared block,241,0.0559,0.0841,0.1416
+D71h,fsm,"miss, right block: true block",57,0.0572,0.0967,0.251
+D71h,fsm,"miss, all with signature: true block",130,0.02,0.0778,0.1892
+D71h,counter,hit: compared block,182,0.0389,0.0801,0.1249
+D71h,counter,miss: compared block,155,0.0524,0.08,0.1432
+D71h,counter,"miss, right block: true block",26,0.0628,0.0928,0.1053
+D71h,counter,"miss, all with signature: true block",118,0.0134,0.0635,0.1929
+D71h,shift,hit: compared block,125,0.038,0.0782,0.1417
+D71h,shift,miss: compared block,156,0.0408,0.077,0.1208
+D71h,shift,"miss, right block: true block",49,0.0313,0.0452,0.115
+D71h,shift,"miss, all with signature: true block",113,0.0291,0.0452,0.115
+D71h,regfile,hit: compared block,12,0.0599,0.1016,0.1376
+D71h,regfile,miss: compared block,32,0.0104,0.0751,0.1126
+D71h,regfile,"miss, right block: true block",20,0.0179,0.0489,0.105
+D71h,regfile,"miss, all with signature: true block",34,0.0197,0.0562,0.1358
+D71h,register,hit: compared block,47,0.0288,0.0586,0.1067
+D71h,register,miss: compared block,134,0.0282,0.0701,0.1781
+D71h,register,"miss, right block: true block",78,0.0202,0.0598,0.1607
+D71h,register,"miss, all with signature: true block",287,0.0202,0.0692,0.1649
+D71c,fsm,hit: compared block,368,0.0671,0.3157,0.5894
+D71c,fsm,miss: compared block,119,0.5052,0.8347,0.941
+D71c,fsm,"miss, right block: true block",13,0.4577,0.7371,0.8251
+D71c,fsm,"miss, all with signature: true block",57,0.4659,0.8112,0.9748
+D71c,counter,hit: compared block,301,0.1134,0.421,0.6288
+D71c,counter,miss: compared block,64,0.7383,0.9649,0.9933
+D71c,counter,"miss, right block: true block",3,0.5944,0.9627,0.9627
+D71c,counter,"miss, all with signature: true block",54,0.265,0.6527,0.9947
+D71c,shift,hit: compared block,19,0.5744,0.597,0.7115
+D71c,shift,miss: compared block,364,0.8983,0.9642,0.9991
+D71c,shift,"miss, right block: true block",87,0.6331,0.8219,0.9559
+D71c,shift,"miss, all with signature: true block",227,0.7966,0.9358,0.995
+D71c,regfile,hit: compared block,33,0.0093,0.1032,0.5948
+D71c,regfile,miss: compared block,18,0.7466,0.8507,0.9324
+D71c,regfile,"miss, right block: true block",11,0.6704,0.8866,0.9422
+D71c,regfile,"miss, all with signature: true block",27,0.3832,0.749,0.9299
+D71c,register,hit: compared block,170,0.0259,0.1848,0.524
+D71c,register,miss: compared block,28,0.6757,0.8683,0.967
+D71c,register,"miss, right block: true block",13,0.6455,0.8732,0.9868
+D71c,register,"miss, all with signature: true block",183,0.1954,0.6775,0.9323

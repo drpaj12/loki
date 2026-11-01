@@ -143,6 +143,37 @@ def verdict(recs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
+def two_by_two(recs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Peter's two questions on every miss with a signature: right block? true block near?
+
+    Right block = coverage >= 0.8 and Jaccard >= 0.5. Near = the true block's distance to the family
+    is at most q90 of the hit distances (the rule's own cut). Absent constructs and the ones without
+    a library entry or a signature are left out.
+    """
+    out = []
+    for det in DETS:
+        for fam in (*FAMS, "all"):
+            sub = [r for r in recs if r["detector"] == det and not r["hit"]
+                   and (fam == "all" or r["family"] == fam)
+                   and r["class"] in CLASSIFIED]
+            c: Counter[tuple[bool, bool]] = Counter()
+            for r in sub:
+                right = r["coverage"] >= cl.RIGHT_COVERAGE and r["jaccard"] >= cl.RIGHT_JACCARD
+                near = r["t_dist"] <= r["q90"]
+                c[(right, near)] += 1
+            n = len(sub)
+            if not n:
+                continue
+            out.append({"detector": det, "family": fam, "misses": n,
+                        "wrong_block_true_near": c[(False, True)],
+                        "wrong_block_true_far": c[(False, False)],
+                        "right_block_true_near": c[(True, True)],
+                        "right_block_true_far": c[(True, False)],
+                        "true_block_near_share": round((c[(False, True)] + c[(True, True)]) / n, 3),
+                        "right_block_share": round((c[(True, True)] + c[(True, False)]) / n, 3)})
+    return out
+
+
 def plot(recs: list[dict[str, Any]]) -> None:
     """Strip plot per detector: hits' compared-block distance and misses' true-block distance."""
     pan = ("D70", "D71c")
@@ -222,6 +253,7 @@ def main() -> int:
     write("miss_classes_cell.csv", by_cell(recs))
     write("distances.csv", distances(recs))
     write("verdict.csv", verdict(recs))
+    write("miss_2x2.csv", two_by_two(recs))
     plot(recs)
     for r in counts(recs):
         if r["family"] == "all":

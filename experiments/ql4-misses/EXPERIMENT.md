@@ -120,3 +120,100 @@ reported per kind, cell and detector too. Headline format: counts and shares fir
 - Not in scope: VTR rows and round 4 families (no answer-key constructs of these kinds exist in the
   graphlet experiments' benchmark; recorded, not hidden). The VerilogEval designs are the singles and the
   composite parts (Q3/Q4 families come from them).
+
+## Results, 2026-11-01 (plain English first)
+
+Plain English: Peter's two questions have different answers. Is the block the matcher compared the right
+block? Mostly not: for the cone detectors fewer than 40 percent of the misses compared the right block,
+so the partition is the largest single gap (486 of 864 classified misses of D70, 286 of 506 of D71c), and
+even among the hits only 30 percent (D70) and 35 percent (D71c) compared the right block (a hit counts
+as soon as the right kind is claimed anywhere in the design). Is the right block close to its pattern? It
+depends on the detector and on how close is counted. By the rule fixed before the run, 80 percent of D70
+misses and 79 percent of D71c misses are "near" (wrong partition, missing width entry or threshold), so
+the near-miss hypothesis is SUPPORTED as fixed. But that rule calls every partition miss near without
+looking at the distance of the true block. Looking at that distance (post hoc, miss_2x2.csv), the true
+block is near its pattern for only 39 percent of D70 misses and 26 percent of D71c misses, and for 67 to
+75 percent of D68, D69 and D71h misses. So for the best two cone detectors the other half of the story is
+that the true block itself does not look like its pattern in directed signature terms: complex decoding,
+in Q-L4's words, accounts for 20 percent of misses by the fixed rule and up to 61 to 74 percent by the
+post hoc reading. The Odin III pass that first loses the source units of both the structure misses and
+the absent constructs is `opt` (O-lut flow). The LLM path of Q-L4 is therefore worth trying on the
+structure misses, and a better partitioner is worth building for the rest; neither claim is a proof.
+
+CAD-style counts first. Constructs (answer key): 695 single-design constructs (243 TEST designs minus
+glue, 5 cells, families fsm 197, counter 70, shift 15, regfile 60, register 353) and 1044 composite parts
+(fsm, counter, shift; 82 TEST composites, 5 cells), 1739 in all (D68 is singles only, 695).
+Reproduction check (`results/validation.csv`): hits and misses per family on the singles equal the
+published TP and FN of #68 to #71 in 25 of 25 detector x family rows.
+
+| detector | constructs | hits | misses | absent | missing pattern | partition | threshold | structure | no provenance | near share (rule) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| D68 | 695 | 261 | 434 | 2 | 32 | 0 | 288 | 112 | 0 | 0.741 |
+| D69 | 1739 | 559 | 1180 | 109 | 97 | 423 | 193 | 88 | 270 | 0.890 |
+| D70 | 1739 | 485 | 1254 | 113 | 105 | 486 | 101 | 172 | 277 | 0.801 |
+| D71h | 1739 | 640 | 1099 | 108 | 77 | 431 | 198 | 32 | 253 | 0.957 |
+| D71c | 1739 | 891 | 848 | 109 | 93 | 286 | 22 | 105 | 233 | 0.792 |
+
+"No provenance" = composite parts on the two Yosys cells (counted as misses, not classified). Near share
+= (missing pattern + partition + threshold) / classified (the four classes after absent). Per kind and per
+cell: `results/miss_classes.csv`, `results/miss_classes_cell.csv`. Examples, D70: fsm 306 misses (absent
+54, partition 82, threshold 52, structure 43); counter 185 (partition 101, structure 18); shift 385
+(absent 51, missing width 65, partition 55, structure 56); register 326 (partition 224, structure 48).
+Structure misses of D70 sit mostly on O-lut (65) and O-hard (68), few on O-gate (20). 255 misses of D70 and of D71c had no partition at all (the claim chain found no register,
+`no_partition` in records.csv).
+
+Rule verdict (`results/verdict.csv`, 90 percent bootstrap over designs): D70 near share 0.801 (0.771 to
+0.831), D71c 0.792 (0.753 to 0.830), both NEAR-MISS HYPOTHESIS SUPPORTED. Post hoc, the two questions
+crossed (`results/miss_2x2.csv`, classified misses; right block = coverage >= 0.8 and Jaccard >= 0.5; true
+block near = distance <= q90 of the detector's hits): D70 wrong block 542 (true block near 235, far 307),
+right block 322 (near 101, far 221); D71c wrong block 335 (near 107, far 228), right block 171 (near 22,
+far 149); D71h wrong block 485 (near 355), right block 253 (near 198, far 55); D69 wrong 471 (near 351),
+right 330 (near 193, far 137); D68 right block by construction, 288 near, 144 far. "Near" is relative to
+each detector's own hits, so the shares are not comparable across detectors without care.
+
+Distances (`results/distances.csv`, `results/distances.svg`; hits' compared block against misses' true
+block): D70, median distance of the hits 0.02 to 0.08 per kind (counter 0.054, fsm 0.076, shift 0.060,
+register 0.065, regfile 0.025); the true block of a right-block miss has median 0.09 to 0.16 (fsm 0.097, counter 0.153,
+shift 0.090, register 0.155), 90th percentile up to 0.28. D71c (1 - P(family)): hits median 0.10 to 0.60
+(fsm 0.316, counter 0.421, register 0.185, regfile 0.103), true block of right-block misses 0.74 to 0.96. The nearest
+wrong pattern was nearer than the family for the true block in 57 of D70's 101 threshold misses ("rank"
+flag), 246 of 288 for D68, 106 of 198 for D71h, none of D71c's 22.
+
+Odin III pass (provenance). Construct types of the true blocks of structure misses
+(`results/structure_provenance.csv`, labels of the three Odin III cells): arithmetic ($add, $sub, $lt) and
+registers with enable or reset ($sdff, $dffe, $sdffe) lead, with $eq, $mux and $not behind them. Absent
+constructs have no flip-flop in the netlist: their cells are constants (`$_CONST0_`/`$_CONST1_`) for 17
+fsm and 17 shift parts and for most of the 2 to 3 counter parts per Odin III cell (a counter part on
+O-hard keeps a subtractor); the part was optimised away. The L15 loss audit on
+the O-lut flow (`results/pass_loss.csv`, 119 constructs in 92 designs): the pass that first loses most of
+the state units of the construct's source is `opt` for all 17 absent fsm parts, 17 absent shift parts, 3
+absent counter parts, and for the structure misses of fsm (17), shift (37), counter (5), regfile (3) and
+7 of 20 register designs; the other 13 register designs keep their state units through the whole flow
+("kept": the source units are intact and the signature differs for another reason). Only O-lut is
+covered; the O-gate and O-hard flows run other pass lists.
+
+Verdicts. QL4a (fixed rule) SUPPORTED for D70 and D71c (POSSIBLY GOOD in the register). QL4b (post hoc,
+true block near for most misses) is INCONCLUSIVE: 39 percent and 26 percent for D70 and D71c against 67 to
+75 percent for D68, D69 and D71h. QL4c (missing detector vs complex decoding): by the fixed rule
+complex decoding is class 4 only, 172 of 864 (20 percent) for D70 and 105 of 506 (21 percent) for D71c;
+reading "far from the pattern" as complex gives about 61 and 74 percent.
+
+Limits, stated not hidden. (1) The true block of a single is the whole design, so a cone around the state
+group covers it only when the design is nearly all state logic; this inflates partition misses for
+singles (325 of D70's 486 partition misses are singles). (2) The true block of a composite part comes from provenance
+labels plus the source line of the first span for mixed cells; the other composites' cells (ports, top
+wiring) are in no part. (3) Y-cell composite parts are not classified. (4) q90 of the hits sets "near";
+the cut is relative to each detector. (5) D71c's distance is 1 - probability, not a graphlet distance;
+D71h's distance is the earth mover distance. (6) The verdict rule sets the denominator to classified
+misses; absent constructs (about 9 percent of all misses) are shown separately. (7) VTR rows and round 4
+families are not separate sets: the round 4 designs are inside the singles; VTR designs are outside the
+graphlet benchmark (stated in the plan).
+
+## Deviations from the plan
+
+(1) Class 0 (absent) and the source-line attribution were added to the rule after a first look at three
+composites (parts optimised away) and before the full run; they are in the plan above. (2) The post hoc
+2x2 and the distance statistics are not in the fixed rule; the verdict rule is unchanged. (3) The L15 pass
+naming covers O-lut only. (4) The counter and shift families of composites merge timer and counter,
+shift and LFSR as in #69 to #71; singles use the pattern name, which is what reproduces the published
+counts.
