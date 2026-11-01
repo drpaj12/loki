@@ -43,7 +43,8 @@ def one(job: tuple[str, str]) -> str:
         return ""
     net = l3dlib.netlist_path(l3dlib.OUT, cell, name)
     b = bl.Blif.read(net)
-    truth = json.loads((l3dlib.OUT / "composites" / name / "truth.json").read_text(encoding="utf-8"))
+    truth = json.loads((l3dlib.OUT / "composites" / name / "truth.json").read_text(
+        encoding="utf-8"))
     ranges = bl.module_ranges(l3dlib.OUT / "composites" / name / f"{name}.sv",
                               {p["idx"]: p["problem"] for p in truth["parts"]})
     parts, by_line = bl.part_blocks(b, net.parent / "labels.csv", ranges)

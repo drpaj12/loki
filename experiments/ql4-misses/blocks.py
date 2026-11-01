@@ -1,9 +1,10 @@
 """Blocks of cells: partitions the detectors compared and true blocks cut out by the answer key.
 
-A cell is the index of a BLIF logic element (``.names``, ``.latch`` or ``.subckt``). A block is a set of
-cell indices; ports are not cells. Partition blocks use the cone definitions of
+A cell is the index of a BLIF logic element (``.names``, ``.latch`` or ``.subckt``). A block is a
+set of cell indices; ports are not cells. Partition blocks use the cone definitions of
 experiments/graphlets/partitions.py (unbounded: fan-in closure through flip-flops; bounded: stops at
-other groups). True blocks come from the labels of an Odin III build (``module_path`` = ``.../u<idx>``).
+other groups). True blocks come from the labels of an Odin III build (``module_path``
+``.../u<idx>``).
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ from loki.l3.netlist import Netlist, _logical_lines, _subckt  # noqa: E402
 
 @dataclass
 class Blif:
-    """Cells in file order: ``outs[i]`` and ``ins[i]`` are net names, ``cname[i]`` the label or ''."""
+    """Cells in file order: ``outs[i]``, ``ins[i]`` are net names, ``cname[i]`` the label or ''."""
 
     ins: list[list[str]] = field(default_factory=list)
     outs: list[list[str]] = field(default_factory=list)
@@ -92,7 +93,7 @@ def bounded_block(b: Blif, nl: Netlist, groups: list[list[str]], gi: int) -> set
 
 
 def module_ranges(sv: Path, problems: dict[int, str]) -> dict[int, tuple[int, int]]:
-    """Part index -> (first, last) source line of its module ``P<problem>`` in the composite file."""
+    """Part index -> (first, last) source line of its module ``P<problem>`` in the composite."""
     spans: dict[str, tuple[int, int]] = {}
     start: dict[str, int] = {}
     for n, line in enumerate(sv.read_text(encoding="utf-8").splitlines(), start=1):

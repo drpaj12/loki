@@ -7,8 +7,10 @@ from dataclasses import dataclass
 
 RIGHT_COVERAGE = 0.8
 RIGHT_JACCARD = 0.5
-CLASSES = ("absent", "missing pattern (width)", "partition miss", "threshold miss", "structure miss")
-DETECTOR_KIND = {"absent": "not in netlist", "missing pattern (width)": "missing detector", "partition miss": "missing detector",
+CLASSES = ("absent", "missing pattern (width)", "partition miss", "threshold miss",
+           "structure miss")
+DETECTOR_KIND = {"absent": "not in netlist", "missing pattern (width)": "missing detector",
+                 "partition miss": "missing detector",
                  "threshold miss": "missing detector", "structure miss": "complex decoding"}
 
 

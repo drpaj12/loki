@@ -103,7 +103,8 @@ distances (c) are compared with hit distances per kind.
 
 ## Verdict rule for the hypothesis (fixed now)
 
-Pooled over classified misses of D70 (the bounded-cone detector, the headline of #70) and D71c, per detector:
+Classified misses are classes 1 to 4 (absent misses are counted and shown, not in the denominator,
+because nothing in the netlist could be recovered). Pooled over classified misses of D70 (the bounded-cone detector, the headline of #70) and D71c, per detector:
 NEAR-MISS HYPOTHESIS SUPPORTED when partition + threshold + missing-pattern misses are at least 60 percent of
 classified misses, CI (bootstrap over designs, 90 percent) lower bound above 50 percent; CONTRADICTED when
 structure misses are the majority with the CI lower bound above 50 percent; otherwise INCONCLUSIVE. Rates are
