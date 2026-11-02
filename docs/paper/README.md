@@ -27,11 +27,7 @@ Every number traces to the experiment records:
 - The Gate-Breaker VerilogEval replication table (`tab:veval`) is in Experiments (rows GB1, GB2 of the register).
 
 Tables marked `[TODO: ...]` are numbers not yet measured.
-- The suite tree (`IMAGE/fig_yggdrasil.tex`, with `IMAGE/odin3-tikz-styles.tex`) is a byte-identical copy of
-  the hub's `images/src/` files (Yggdrasil III hub, `drpaj12/YggdrasilIII`). `make_blind_tree.py`
-  (run in `docs/paper`) writes `IMAGE/blind/fig_yggdrasil.tex`, the same figure with the suite and tool
-  names, the three wells and the self-cited baseline replaced by placeholders, as the Odin III paper's
-  `make_blind.py` does. No build uses it yet (there is no blind build of this paper).
+- The suite tree is no longer in this paper (2026-11-02: it appears only in the Odin III paper and on GitHub); the Introduction has the Loki flow figure `IMAGE/fig_loki_flow.tex` instead, and `IMAGE/fig_loki.tex` is the pipeline figure of the Methodology. 
 
 ## Cleanup for reading (2026-11-02)
 
