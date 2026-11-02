@@ -1,0 +1,16 @@
+id,question,value,ci90_lo,ci90_hi,counts,label
+QL8a-a all,order OA against D70,1.145,1.102,1.188,W293/L127/T437 of 857 units,BETTER
+QL8a-a target gate,order OA against D70,1.341,1.288,1.396,W130/L13/T136 of 279 units,BETTER
+QL8a-a target k4,order OA against D70,1.125,1.07,1.179,W113/L54/T188 of 355 units,BETTER
+QL8a-a target k6/hardmap,order OA against D70,0.965,0.914,1.016,W50/L60/T113 of 223 units,INCONCLUSIVE
+QL8a-a set single,order OA against D70,1.182,1.132,1.237,W235/L82/T318 of 635 units,BETTER
+QL8a-a set comp,order OA against D70,1.044,0.979,1.111,W58/L45/T119 of 222 units,INCONCLUSIVE
+QL8a-b all,order OA against E74-END,0.999,0.994,1.004,W12/L13/T832 of 857 units,INCONCLUSIVE
+QL8a-b target gate,order OA against E74-END,0.99,0.98,0.998,W0/L4/T275 of 279 units,WORSE
+QL8a-b target k4,order OA against E74-END,1.006,1.0,1.013,W6/L2/T347 of 355 units,INCONCLUSIVE
+QL8a-b target k6/hardmap,order OA against E74-END,0.999,0.986,1.013,W6/L7/T210 of 223 units,INCONCLUSIVE
+QL8a-b set single,order OA against E74-END,1.0,1.0,1.0,W0/L0/T635 of 635 units,INCONCLUSIVE
+QL8a-b set comp,order OA against E74-END,0.996,0.975,1.016,W12/L13/T197 of 222 units,INCONCLUSIVE
+QL8a-c,hypothesis (order OA),0.027,,,"12 of 449 formerly ORDER; k6 INCONCLUSIVE, comp INCONCLUSIVE",INCONCLUSIVE
+QL8a-a PT all,"per-target best {'gate': 'OB', 'k4': 'OA', 'k6/hardmap': 'OA'} vs D70",1.161,1.117,1.205,W310/L124/T423 of 857 units,BETTER
+QL8a-b PT all,per-target best vs E74-END,1.013,1.006,1.021,W31/L13/T813 of 857 units,BETTER

@@ -2366,6 +2366,16 @@ machines and shift registers do not. The posterior is better calibrated on all g
 right blocks alone. Given the answer-key block, the kind is guessed with macro F1 0.487 against 0.419 and recall below 0.41, so most of the remaining error is the kind
 guess itself and not the block, and no model here has learned what a wrong block looks like.
 
+\paragraph{Loki L3: a growth order that respects structure (Q-L8a).}
+Most of what is missing after the stop is solved lies in the growth order: 449 of 1141 constructs have no right prefix on any block. We tried three orders that choose the
+next cell by wiring and keep the weak likelihood only for ties (attachment strength, a feedback and sibling-net frontier, input cones first; plan, split and verdict rules in
+\code{experiments/ql8a-order/EXPERIMENT.md}, fixed before the test run). The order was chosen on 82 designs outside the test set. The attachment order recovers the right block for
+0.526 of the constructs against 0.528 for the earlier order grown to the end and 0.385 for the cone detector; it gives a right prefix to 12 of the 449 (2.7 percent) and loses 14
+of the 602 that were right, and k6 and hard-map netlists (0.965 against the cones) and composite parts (1.044) stay inconclusive. The sibling-net frontier helps single designs
+(0.625 against 0.597) and gate netlists (0.624 against 0.587) and hurts composite parts (0.393 against 0.441). The hypothesis is not supported. What remains is mostly constructs cut across
+several blocks (251 of the failures), then constructs never fully reached (103) and constructs swallowed by a block that grows past them (95): a problem of joining blocks, not of the order
+inside one.
+
 \section{Conclusion}
 \label{sec:conclusion}
 
