@@ -66,7 +66,7 @@ counter). Per block B with n cells:
 
 - H, 129 values: Hellinger-scaled orbit shares sqrt(o_i / sum o) (the #73 feature, kept).
 - D, 129 values: log(1 + o_i / n), the orbit instances per cell.
-- S, scalars (about 24): log2 n; flip-flop share; hard-cell share; adder share; hard cells by model count (memory,
+- S, scalars (19): log2 n; flip-flop share; hard-cell share; adder share; hard cells by model count (memory,
   multiplier, adder) as shares; mean LUT inputs of the logic cells; internal edges per cell (cell-to-cell driver
   to reader links through non-global nets); boundary: conductance phi = cut / volume (as q7_feat.Geometry), fan-in
   and fan-out of the frontier per cell, distinct primary inputs read per cell; feedback: nontrivial strongly
@@ -155,3 +155,21 @@ both decided on CAL and VAL numbers only:
    none. The grown paths of the FIT designs are in-sample for the #73 likelihood that ordered them, so their
    wrong blocks are somewhat less wrong than those of unseen designs; stated, not corrected. M4 is a fourth
    comparison; the choice rule (highest VAL macro F1) is unchanged and runs over M1 to M4.
+
+## Fitting and choosing (FIT, CAL, VAL only; written before the TEST run)
+
+Sizes: FIT 9596 prefix samples (as #73) plus 1286 grown blocks of 769 FIT units for M4; CAL 383 units, 524 blocks,
+415 constructs; VAL 320 units, 440 blocks, 328 constructs. Temperatures from the CAL right blocks. VAL
+(`results/tuning.csv`; B73 reproduces #74's posterior to 5e-5):
+
+| model | T | macro F1 grown | macro F1 true | ECE grown | ECE true | top-3 right |
+|---|---|---|---|---|---|---|
+| B73 (= B73-T) | 0.15 | 0.326 | 0.550 | 0.166 | 0.133 | 0.921 |
+| M1 naive Bayes | 0.1 | 0.319 | 0.565 | 0.189 | 0.098 | 0.945 |
+| M2 full Gaussian | 0.2 | 0.375 | 0.601 | 0.141 | 0.078 | 0.909 |
+| M3 mixture | 0.1 | 0.266 | 0.478 | 0.121 | 0.081 | 0.945 |
+| M4 M2 + wrong blocks | 0.2 | 0.356 | 0.508 | 0.156 | 0.169 | 0.896 |
+
+Chosen: M2 (`results/chosen.json`). Reading before the TEST run: the VAL gain of M2 over B73 is +0.049 macro F1
+(90 percent CI -0.001 to +0.075, same bootstrap), below the +0.10 of QL8c-b, so QL8c-b is expected to be
+CONTRADICTED on TEST unless TEST differs from VAL; the TEST verdicts are fixed by the rules above, not by this reading.
