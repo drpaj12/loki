@@ -65,8 +65,8 @@ of 0.392. Structures that synthesis erased recover weakly, clustering does not f
 designer's hierarchy, and a split step, a word-first detector and Loki's hints to a language model
 did not help; a model with the netlist does far better than without it.
 
-Every claim is a hypothesis with one experiment and one verdict. Of 99 register rows, 13 are
-USEFUL, 12 POSSIBLY GOOD, 19 DISMISSED, 32 INCONCLUSIVE and 23 are measurements. Round-by-round
+Every claim is a hypothesis with one experiment and one verdict. Of 104 register rows, 14 are
+USEFUL, 12 POSSIBLY GOOD, 19 DISMISSED, 34 INCONCLUSIVE and 25 are measurements. Round-by-round
 records are in the appendix. No area, speed or power is measured.
 \end{abstract}
 
@@ -1501,6 +1501,42 @@ All & W & 64 & 0.828 & 0.875 & 55/64 \\
 
 \hev{Conclusion.} The hints help in some quartiles: \verdict{INCONCLUSIVE}. The per-quartile Loki-only results are a \verdict{MEASUREMENT} [Q1, Q2].
 
+\subsection{Loki cuts the netlist and the model decodes one block at a time}
+\label{arg:la5}
+\label{sec:ql10}
+
+\hev{Hypothesis.} If Loki cuts the gate netlist into its joined blocks and a language model decodes one block per prompt, and a script glues the decoded blocks into one design, then (a) on designs that fit Gate-Breaker's prompt the result is as correct as the whole-netlist prompt of arm~A, (b) on designs too large for one prompt it still gives correct RTL, and (c) adding Loki's kind guess for a block to its prompt does not improve correctness, as the hints did not in the whole-netlist setting.
+
+\hev{Implication.} If (a) holds, Loki, and not the model, decides how the netlist is split, and every decoded piece answers to one block with a provenance key; the model's context no longer limits the size of the design, which is (b). Statement (c) tells whether the weakest part of Loki, the kind guess, matters for a model that reads the gates of the block itself.
+
+\hev{Experiment.} The blocks are the joined blocks of Section~\ref{sec:results-main}. In \emph{arm~D} the model sees one block at a time, only its gates and the nets that cross its boundary, with no examples and no hint. In \emph{arm~D+h} the prompt is the same plus one sentence with Loki's kind guess, for the blocks of four or more cells that have a guess; for the other blocks the two arms share one reply. A script writes the replies into one module that instantiates the decoded blocks and copies the netlist's \code{assign} statements. The baseline is arm~A of the full run (Section~\ref{sec:llm-full}) on the same problems and draws. The \emph{multi-block designs} are the 27 of the 137 problems that Loki cuts into two or more blocks. Fifteen problems have no gate cell and are scored without a model call. The 94 single-block problems were not run: there the block is the whole netlist, so arm~D would be arm~A in another wrapper. Two sets that arm~A cannot run are added. The \emph{over-cap designs} are four VerilogEval problems whose prompt exceeds the 40\,000-byte cap of the earlier runs (mux256to1, gates100, rotate100, shift18), scored by their testbench. The \emph{processor modules} are five modules of picorv32 and tinyriscv (66 to 195 blocks each, one draw), scored by sequential equivalence of the assembled RTL with the netlist, because no testbench exists. One fresh Sonnet subagent answers each prompt, and 1,414 replies were collected (none empty).
+
+\hev{Methodology.} A design passes when its testbench reports no mismatch (strict scorer of Section~\ref{sec:llm-full}), or for a processor module when the equivalence check says equal. Pass@1 is the share of passing draws, averaged over designs, with a 95 percent bootstrap interval over designs (2\,000 resamples, seed fixed). The rules were fixed before any call: (a) holds when the lower bound of the pass@1 difference D minus A is above $-0.05$, and is contradicted when the upper bound is below 0; (b) holds when one design passes and at least 0.8 of the blocks pass the \emph{block check}, which simulates a decoded block against its own gates on 400 random cycles; (c) is DISMISSED when the interval of D+h minus D lies within $\pm0.05$ and D+h is not better by an adjusted exact McNemar $p<0.05$, USEFUL when it is, and else INCONCLUSIVE. The second measure is Gate-Breaker's AST and CFG similarity (Section~\ref{sec:background}) to the reference RTL. Both read one module, so the assembled design is flattened with Odin~III into one module; arm~A is passed through the same flatten, and the \emph{same-writer pair} (D flattened against A flattened) is the headline, since the writer alone lowers A's own score. This measure had no rule and gives no verdict. Twenty-two of the 1,339 calls broke the call template (a subagent used a shell or an editor on its own reply file); the results are repeated without the 27 rows they touch.
+
+\hev{Measurements.} Table~\ref{tab:ql10} gives the pass rates. On the multi-block designs D passes 72 of 81 (design, draw) pairs and A 73 of 81: the difference is $-0.012$ ($-0.074$ to $+0.037$), W3 / L4 / T74 over draws; both reach pass@3 on 26 of 27 designs. Without the 27 template-deviation rows the difference is the same. The block check passes for 954 of 969 block replies of the over-cap and processor designs (0.985); three of the four over-cap designs pass in at least one draw (shift18 in none), and one of the five processor modules is equivalent. Replacing the blocks that failed the check by their own gates makes all ten checked processor assemblies equivalent. The hint arm passes 0.708 against 0.750 for D on the 8 designs with a hint that were run (6 multi-block, 2 over-cap): $-0.042$ ($-0.125$ to $0.000$), W1 / L2 / T21 over draws, $p=1.0$; of 102 hinted blocks 95 pass the check in each arm. For the second measure, on the multi-block designs the same-writer pair gives an AST difference of $-0.037$ ($-0.063$ to $-0.014$, 23 designs, W6 / L17) and a CFG difference of $-0.042$ ($-0.067$ to $-0.021$, 27 designs, W6 / L21); against A as the model wrote it the differences are $-0.132$ and $-0.065$. The hint changes neither similarity. Answer key: for 8 multi-block designs with a key, a block holds the construct as a right block for 12 of 36 key constructs (three draws) and the decoded block is correct for 10; for the two over-cap designs with a key, 6 of 6. Estimated cost (not measured): arm~D is about 14\,500 tokens per multi-block design over three draws against about 10\,300 for A.
+
+\begin{table}[t]
+\caption{Block-by-block decode against the whole-netlist prompt. Pass@1 over draws, mean over designs. The reference arm is A (for the last row, D) and the tested arm is D (for the last row, D+h); the interval is the bootstrap 95 percent interval of tested minus reference.}
+\label{tab:ql10}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrrl@{}}
+\toprule
+Set & N & Ref. & Tested & Difference (95\% interval) \\
+\midrule
+Multi-block, D vs A & 27 & 0.901 & 0.889 & $-0.012$ ($-0.074$, $+0.037$) \\
+Gate-free, no call & 15 & 0.822 & 0.867 & $+0.044$ (0.000, $+0.133$) \\
+Over-cap, D only & 4 & -- & 0.667 & -- \\
+Processor, D only & 5 & -- & 0.200 & -- \\
+Hint, D+h vs D & 8 & 0.750 & 0.708 & $-0.042$ ($-0.125$, 0.000) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\hev{Interpretation.} Where Loki's cut changes the prompt, the blocked decode passes about as often as the whole-netlist prompt (72 against 73 of 81), too close to tell with 27 designs: the interval allows a loss of 7 points. Its AST and CFG similarity to the reference is lower by about 0.04, in about three designs of four, even through the same writer. So the cut costs a little in how alike the text is and nothing detectable in correctness. For the over-cap designs the model decodes nearly every block correctly, but a design passes only if every block is right: with a per-block rate of 0.985 the chance that 100 blocks are all right is about 0.2, which is why the processor modules mostly fail even though each failing assembly is made equivalent by fixing the one to three blocks the check flags. The hint was never found better; the interval of eight designs is too wide to call it harmless. The limits are the single-block designs that were not run, the answer key that covers registers only (34 of the 42 designs with a key are single-block), the random-input block check, and the processor equivalence, which is a check and not a proof.
+
+\hev{Conclusion.} (a) Blocked decode is as correct as the whole-netlist prompt: \verdict{INCONCLUSIVE} ($-0.012$, the lower bound $-0.074$ is below the margin $-0.05$). (b) The model decodes the blocks of designs too large for one prompt: \verdict{USEFUL} (the rule is met: a design passes and 0.985 of the blocks pass the check), with whole-design correctness low for the largest designs. (c) The kind-guess hint does not improve correctness: \verdict{INCONCLUSIVE} ($-0.042$, W1 / L2 / T21, interval not inside $\pm0.05$). AST and CFG similarity, the same-writer pair: a \verdict{MEASUREMENT} of about $-0.04$ for D [QL10-a to QL10-e; Appendix~\ref{rec:ql10}].
+
 \section{Discussion and limits}
 \label{sec:discussion}
 
@@ -1561,14 +1597,12 @@ designs: equivalence and recovery were not run on the big VTR designs.
 
 The next question comes first, then the untested hypotheses. Each is an idea and the experiment it needs.
 
-\emph{A block-by-block decode (the next question, named Q-L10 in the plan).} Gate-Breaker gives a language model the whole
-netlist in one prompt. Loki now cuts the netlist into joined blocks, each with a kind guess
-(Section~\ref{sec:results-main}). The question is whether a model that decodes the netlist one Loki
-block at a time, each block with its kind guess, recovers more RTL than the model given the whole
-netlist as in Gate-Breaker's prompt. The experiment is the Gate-Breaker task on the same problems, with the
-same scorer and draws as Section~\ref{sec:llm-full}, and two arms: the whole-netlist prompt and the
-block-by-block decode driven by the Loki blocks. The measure is the pass rate per problem with the
-exact paired test per quartile. Nothing has been run, and no result is claimed.
+\emph{Finishing the block-by-block decode.} Section~\ref{sec:ql10} left three things open. First, the 94 single-block problems
+were not run, so (a) is tested on 27 multi-block designs only; running them would add designs where the cut is the whole netlist,
+and would show how much of the difference is the prompt wrapper. Second, a design passes only if every block is right, and the block
+check names the wrong blocks (all ten checked processor assemblies were made equivalent by replacing the one to three flagged blocks);
+a repair round that asks the model again only for the flagged blocks is the obvious next experiment, with the same scorer. Third, the
+interval for the hint (eight designs) is too wide to call it harmless or useful; more multi-block designs with a kind guess are needed.
 
 \emph{A guard for the join.} The join loses 29 constructs that were right because a joined block takes in
 a neighbour. A guard that refuses to join two blocks whose kind posteriors are both confident and
@@ -1598,9 +1632,9 @@ transformation was applied, starting with state-machine encoding and then carry 
 \label{sec:conclusion}
 
 Loki~III asks how far netlist-to-RTL reverse engineering gets without a language model. We
-stated each claim as a hypothesis and gave it one experiment and one verdict. Of 99 register rows,
-13 are USEFUL, 12 are POSSIBLY GOOD with their fragility stated, 19 are DISMISSED, 32 are
-INCONCLUSIVE and 23 are measurements. The provenance answer key and the renamed-instance protocol are
+stated each claim as a hypothesis and gave it one experiment and one verdict. Of 104 register rows,
+14 are USEFUL, 12 are POSSIBLY GOOD with their fragility stated, 19 are DISMISSED, 34 are
+INCONCLUSIVE and 25 are measurements. The provenance answer key and the renamed-instance protocol are
 the part that works and that we would export to any future comparison, with or without a model. The
 structures that synthesis already reverse engineered are recovered (hard adders 67 of 67, precision
 0.985), the stated probabilities are better calibrated (error 0.217 against 0.650), and the pipeline is
@@ -1609,10 +1643,16 @@ from anchors to the end of their path and joined by a conductance rule are the r
 of 1141 held-out constructs, against 0.385 for bounded cones, though the kind guess on them is weak
 (macro F1 0.392). The structures that synthesis erased recover weakly, clustering does not find the
 designer's hierarchy, and a word-first detector, a split step and Loki's hints to a language model
-did not help. The next question is whether a model that decodes the netlist block by block, driven by
-Loki's blocks, does better than Gate-Breaker's whole-netlist prompt (Section~\ref{sec:future}).
+did not help. A model that decodes the netlist one Loki block at a time passes about as often as
+Gate-Breaker's whole-netlist prompt on the 27 designs the cut changes (72 against 73 of 81, inconclusive), decodes three of
+four designs too large for one prompt, and its text is slightly less like the reference (Section~\ref{sec:ql10}).
 
 \appendices
+\makeatletter
+\newcommand\lokiAlph[1]{\ifnum#1>26 A\@Alph{\numexpr#1-26\relax}\else\@Alph{#1}\fi}
+\def\thesubsection{\mbox{\thesection-\lokiAlph{\value{subsection}}}}
+\def\thesubsectiondis{\lokiAlph{\value{subsection}}.}
+\makeatother
 
 \section{Experiment records}
 \label{app:records}
@@ -1646,6 +1686,7 @@ L3 census and detector & 2026-10-30, 10-31 & \#66, \#67 \\
 Graphlet library and partitions & 2026-10-31 & \#68, \#69, \#70 \\
 Fuzzy graphlets & 2026-10-31 & \#71 \\
 Q-L4 to Q-L9 & 2026-11-01, 11-02 & \#72 to \#78 \\
+Q-L10 & 2026-11-02 & \#82 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3107,6 +3148,15 @@ right are lost (all in composite parts, a joined block swallows a neighbour). Th
 blocks rises from 0.237 to 0.392 (the \#75 Gaussian posterior on the blocks before and after the step).
 
 \hev{Verdict and PR.} QL9-a and QL9-b USEFUL; QL9-c POSSIBLY GOOD; QL9-d DISMISSED; QL9-e a measurement. loki PR \#78 (2026-11-02).
+
+\subsection{Q-L10: Loki's blocks decoded one at a time by a language model}
+\label{rec:ql10}
+
+\hev{Question.} Hypothesis (plan in \code{experiments/ql10-blocks/EXPERIMENT.md}, rules fixed before any model call): when Loki cuts the netlist into its joined blocks and a model decodes one block per prompt, (a) the assembled design is as correct as the whole-netlist prompt of arm~A, (b) designs too large for one prompt still decode, (c) the kind guess as a hint does not help.
+
+\hev{Experiment and result.} The controller ran the model calls (pilot of 75 calls, then all multi-block designs with three draws; the 358 single-block calls were deliberately not run, a dated amendment of the plan; 1,414 replies, none empty, no API error). Twenty-two calls used a shell or an editor on their own reply file, which the call template forbids; none read another file, and the analysis is repeated without the 27 rows they touch (same verdicts). Of 137 problems, 15 have no gate (scored with no call), 27 are multi-block (D 72 of 81 draws pass, A 73 of 81; difference $-0.012$, $-0.074$ to $+0.037$), 94 single-block problems were not run, and one pilot design (Prob088) has one draw. Over-cap designs: 8 of 12 draws pass (mux256to1 3 of 3, gates100 3 of 3, rotate100 2 of 3, shift18 0 of 3); processor modules: 1 of 5 equivalent (tinyriscv\_div), 4 not equivalent, and replacing the blocks that failed the block check by their own gates makes all four equivalent. Block check: 954 of 969 replies ok. Hint: D+h minus D $-0.042$ ($-0.125$ to 0.000) on 8 designs. AST and CFG similarity, multi-block, D flattened against A flattened: $-0.037$ (23 designs) and $-0.042$ (27 designs). Estimated tokens per multi-block design over three draws: D about 14\,500, A about 10\,300.
+
+\hev{Verdict and PR.} QL10-a INCONCLUSIVE; QL10-b USEFUL; QL10-c INCONCLUSIVE; QL10-d (AST and CFG) and QL10-e (answer key) measurements. loki PR \#82 (2026-11-02).
 
 \section{The f3 experiment in detail}
 \label{app:f3}

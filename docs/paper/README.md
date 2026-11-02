@@ -24,6 +24,7 @@ Every number traces to the experiment records:
   generated: run `python3 experiments/quartiles/quartiles.py` (byte-identical on rerun).
 - `experiments/l3-census/EXPERIMENT.md` and `results/` -- the Loki L3 pattern census (register row P3C; loki.tex paragraph "Loki L3: design patterns").
 - `experiments/llm-full/EXPERIMENT.md` (Results 2026-10-29) and `experiments/llm-full/results/` -- the full LLM run (137 problems, 3 draws, arms A, B, C); loki.tex Section `sec:llm-full`, register rows LLM3 and LLM4. The PDF was not rebuilt in the session that wrote it (no TeX tools on that machine).
+- `experiments/ql10-blocks/EXPERIMENT.md` and `results/` -- Q-L10, Loki's blocks decoded one at a time by a language model (register rows QL10-a to QL10-e; loki.tex Section `sec:ql10`, appendix record `rec:ql10`). `python3 experiments/ql10-blocks/q10_analyze.py` rewrites `results/summary.md` and the csv tables from the committed copies (no model call); `q10_astcfg.py` (needs Odin III and the Gate-Breaker scripts) writes `results/astcfg_rows.csv`.
 - The Gate-Breaker VerilogEval replication table (`tab:veval`) is in Experiments (rows GB1, GB2 of the register).
 
 Tables marked `[TODO: ...]` are numbers not yet measured.
