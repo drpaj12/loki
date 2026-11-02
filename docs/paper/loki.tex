@@ -2386,6 +2386,17 @@ comparison with the old anchors is a tie (geomean 1.001, 0.980 to 1.024) with a 
 composite parts are now better (1.184, 1.101 to 1.273; it was inconclusive). The loss comes from new blocks that take cells of a design that is itself the construct, and from the constant block taking tie-off
 cells that sit inside other constructs; both are a joining problem, not a missing anchor.
 
+\paragraph{Loki L3: joining and splitting grown blocks (Q-L9).}
+The failure census of the growth order showed that most missed constructs are cut across several blocks (251 constructs), not mis-ordered inside one. We added a step after growth (plan in
+\code{experiments/ql9-join/EXPERIMENT.md}, rules, grids and verdict rules fixed before any run): a join step that merges two touching blocks when a rule says they are one construct, and a split step that cuts a
+block along the Fiedler vector of its cell graph when two parts explain it better than one. Four join rules were tried: a Bayes factor of one construct against two with the \#73 likelihood, the same with the
+\#75 Gaussian, the cut conductance between the two blocks, and shared global control nets; each had its threshold set on 383 training designs and compared on 320 validation designs. The conductance rule won
+(join when at least a fifth of the link ends of the smaller block lie on links to the other). No split threshold had a net gain on either set, so the headline has no split. On the test designs the right-block share rises from 0.550 to 0.715
+(cone detector 0.385); per unit the geomean is 1.149 (1.123 to 1.177) against the blocks before the step, W194 / L9 / T654, with single designs 1.151 (they were the cost of the extra anchors in Q-L8b) and gate, 4-LUT, k6 and
+composite sets all better. Of the 251 constructs split across blocks, 157 are now right. The swallowed ones are not helped (the 42 of 95 right after the step were already right before it), and 29 constructs that were
+right are lost (all in composite parts, a joined block swallows a neighbour). The Bayes-factor joins are weaker (0.680 and 0.677) and shared control nets weaker still (0.617). The macro F1 of the kind guess on the
+blocks rises from 0.237 to 0.392 (the \#75 Gaussian posterior on the blocks before and after the step).
+
 \section{Conclusion}
 \label{sec:conclusion}
 

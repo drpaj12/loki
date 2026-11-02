@@ -144,3 +144,65 @@ their TRAIN thresholds (BF73 at -4, BFM2 at -1, CTRL at 0.5, so the hypothesis's
 reported; none of them is the headline and none is tuned on TEST. (2) The TEST block set of units that get no new anchor is #74's
 `blocks_nostop` and the others #77's own paths, read only; TRAIN and VALIDATION #77 paths were regrown here with `q8b_grow.py` (same code).
 (3) A dry run of the whole evaluation on VALIDATION (`$QL9_OUT/dry`) was made to test the scripts; it has no D70 column.
+
+## Results, 2026-11-02 (TEST, run once; plain English first)
+
+Plain English: joining touching blocks works and splitting does not. One join step, run after growth, raises the right-block share
+from 0.550 to 0.715 (cone detector D70 0.385). It fixes 157 of the 251 constructs that growth had cut across several blocks. It
+does not help the constructs swallowed by a block that grows past them (the join never recovers one), and it costs 29 constructs
+that were right (a joined block takes in a neighbour). The split step, in every setting tried, cuts more true constructs than it
+repairs, so the headline has none. The join rule that won is the plainest of the four: join two blocks when a fifth or more of the
+link ends of the smaller block lie on links to the other. The Bayes-factor rule the hypothesis described is weaker (0.680 with the
+#73 likelihood, 0.677 with the #75 Gaussian) and shared control nets are weaker still (0.617).
+
+CAD-style counts first (TEST only; 1141 constructs of 857 units that D70 also scored; `results/*.csv`; BASE = the #77 blocks,
+reproduced here to 0.550, single 0.539, composite 0.565 before any step; HEAD = BASE plus the JCOND join at 0.2). Right-block share:
+
+| scope | constructs | D70 | BASE (#77) | HEAD |
+|---|---|---|---|---|
+| all | 1141 | 0.385 | 0.550 | 0.715 |
+| gate (O + Y) | 351 | 0.242 | 0.538 | 0.610 |
+| k4 (O + Y) | 460 | 0.439 | 0.602 | 0.754 |
+| k6 / hardmap | 330 | 0.461 | 0.491 | 0.773 |
+| single | 635 | 0.356 | 0.539 | 0.742 |
+| comp | 506 | 0.421 | 0.565 | 0.682 |
+
+By kind (BASE to HEAD): fsm 0.568 to 0.736, counter 0.338 to 0.750, shift 0.772 to 0.693, regfile 0.659 to 0.864, register 0.537 to
+0.663. Join rules (share): JCOND 0.715 (headline), JBF(E73) 0.680, JBF(EM2) 0.677, JCTRL 0.617; SPLIT alone 0.550; JS (join, then the
+TRAIN-best split) 0.713.
+
+Per unit (design x cell; geomean of (g+1)/(d+1), 90 percent bootstrap over designs, 857 units; `results/unit_cmp.csv`). HEAD against
+BASE: all 1.149 (1.123 to 1.177), W194 / L9 / T654, BETTER; gate 1.061 (1.043 to 1.083), k4 1.134 (1.099 to 1.172), k6 / hardmap 1.295
+(1.252 to 1.346), single 1.151 (1.120 to 1.181) W129 / L0, comp 1.142 (1.096 to 1.190) W65 / L9, all BETTER. HEAD against D70: all 1.318
+(1.276 to 1.364), W394 / L46 / T417, BETTER, and BETTER in every target and set (k6 / hardmap 1.304, composite parts 1.352). The other
+rules against BASE: JBF(E73) 1.129, JBF(EM2) 1.116, JCTRL 1.055 (all BETTER); SPLIT 0.999 (0.998 to 1.000), INCONCLUSIVE.
+
+Failure classes (`results/fixed_by_class.csv`). On the #77 blocks the 513 constructs not right are 425 SPLIT, 53 BLOATED and 35
+UNDERREACH (no NOSEED, the anchors of #77 touch all). Right after HEAD: SPLIT 217 of 425 (0.511), BLOATED 0 of 53, UNDERREACH 0 of
+35. On the #76 classes (the E74 blocks): SPLIT 157 of 251 right after HEAD, and 0 right before (BASE); BLOATED 42 of 95 right after and
+44 right before (the anchors of #77 had already fixed them, the join recovers none and loses 2); UNDERREACH 6 of 103 (7 before);
+MERGED 11 of 27 (15 before); NOSEED 46 of 58 (47 before: the #77 result). Newly broken (`results/gained_lost.csv`, `lost.csv`): 217 gained,
+29 lost, net +188; all 29 lost are composite parts whose construct is now swallowed by a joined block (17 shift, 11 fsm, 1 counter), none
+a single design. Steps made: 584 joins in 284 of the 1350 units; the split alone makes 2 splits in 2 units, 0 gained and 1 lost.
+
+Kind F1 after joining (`results/kind_f1.csv`; the #75 M2 posterior, claim of a block of 4 or more cells whose argmax is not glue;
+precision over claims, recall over constructs): macro F1 0.237 to 0.392; fsm 0.282 to 0.476, counter 0.132 to 0.509, shift 0.287 to 0.317,
+regfile 0.296 to 0.393, register 0.188 to 0.266. These are not the #75 numbers (those are on the rule-d blocks of 1163 constructs).
+
+Verdicts (rules fixed above; `results/verdict.csv`). QL9-a (the hypothesis, share): SUPPORTED (geomean 1.149 BETTER against BASE overall,
+single designs 1.151 not WORSE). QL9-b (failure classes): SPLIT SUPPORTED (157 of 251, 62.5 percent, bar a quarter); swallowed SUPPORTED
+by the fixed count (42 of 95, bar a quarter), but 44 were right before the step and the join gained none, so this label is fragile and
+registered as POSSIBLY GOOD. QL9-c (cost): MEASUREMENT, 29 lost, 217 gained. QL9-d (kind F1): MEASUREMENT. The split half of the
+hypothesis is not supported: no split threshold had a net above 0 on TRAIN or VALIDATION (step 3), so by the fixed rule there is no split
+(registered DISMISSED).
+
+Limits, stated not hidden. Units above 400 cells and blocks above 300 cells are not scored; the join is greedy and capped at 50
+merges per unit; the headline rule and its threshold (0.2) were chosen on VALIDATION among four rules at TRAIN thresholds, and on TEST
+cut conductance is first and shared control nets last, as on VALIDATION (the two Bayes-factor rules swap places); the split rule is one family (Fiedler cut with a Bayes-factor test) with
+a grid of five thresholds, so "no split helps" means this one does not; the 251 / 95 / 103 counts are of the E74 blocks, the #77 blocks
+have a different mix (425 / 53 / 35) and the swallowed constructs are mostly #77's own repair; the 29 lost constructs show the join has no
+guard against taking in a neighbour; one deterministic run; Y-cell composite parts have no key and are not scored.
+
+Next step suggested, not run: a guard against swallowing (the 29 lost constructs): do not join two blocks whose kind posteriors are both
+confident and different. And a different cut for the split step (for example along the dependency graph of the flip-flops instead of
+the Fiedler vector of the cell graph), since the Fiedler cut with a Bayes-factor test never gained.
