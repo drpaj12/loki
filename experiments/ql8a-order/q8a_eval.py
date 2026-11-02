@@ -251,7 +251,7 @@ def main(argv: list[str]) -> int:
                        ).read_text(encoding="utf-8"))
     d_pick = q7r.pickers(cfg7, clf)["d"]
     res = {n: score_order(feat.load(n, split), d_pick) for n in names}
-    if len({n: len(res[n]["END"]) for n in names}.values()) != 1:
+    if len({len(res[n]["END"]) for n in names}) != 1:
         raise SystemExit("orders differ in construct count")
     if set(pick.values()) != {head}:
         res["PT"] = {"END": per_target(res, pick), "claims": []}

@@ -86,3 +86,18 @@ recovered formerly-ORDER constructs and the failure classes of the rest: MEASURE
 Units above 400 cells and blocks above 300 cells are not scored; single-design units make END the ceiling for 55
 percent of the constructs (#74); three orders and one per-target choice are four comparisons, the headline carries the
 verdict; the order uses only the cell graph and the #73 evidence, not the answer key; one deterministic run.
+
+## Choice on VALIDATION (written before the TEST run)
+
+The three orders were grown on the 320 VALIDATION units (82 designs, 328 constructs; `results/tuning_VALIDATION.csv`,
+`results/chosen.json`). END right share (all): E74 0.512, OA 0.534, OB 0.521, OC 0.534; OA and OC tie, OA is listed
+first. Headline order: OA. By target the best are gate OB (0.619 against OA 0.536), k4 OA (0.569, tied with OC),
+k6/hardmap OA (0.485 against E74 0.426). Single-design units: OB 0.699, others 0.669 (the sibling frontier of OB
+reaches more of a single design). Composite parts: OA and OC 0.441, E74 0.405, OB 0.400. The per-target best row (gate
+OB, k4 OA, k6 OA) is therefore the OA+OB mix; TEST is grown for OA and OB only (OC is not needed for the verdicts).
+TRAIN was not grown: no number is tuned, so TRAIN has no role (deviation 1).
+
+## Deviations from the plan (all before the TEST run)
+
+(1) TRAIN is not used (nothing is fitted; the choice among three fixed orders is made on VALIDATION alone).
+(2) TEST is grown for the headline OA and the per-target order OB only.
