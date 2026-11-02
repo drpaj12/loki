@@ -15,6 +15,7 @@ import json
 import random
 import sys
 from collections import defaultdict
+from collections.abc import Sequence
 from math import comb
 from pathlib import Path
 from typing import Any
@@ -40,7 +41,7 @@ def write_csv(path: Path, fields: list[str], rows: list[dict[str, Any]]) -> None
         w.writerows(rows)
 
 
-def mean(xs: list[float]) -> float:
+def mean(xs: Sequence[float]) -> float:
     return sum(xs) / len(xs) if xs else float("nan")
 
 
@@ -495,18 +496,21 @@ def astcfg_section(data: Data, res: Path) -> tuple[list[str], list[dict[str, Any
                         "ast_draws": a[1], "ast_mean": a[2], "ast_lo": a[3], "ast_hi": a[4],
                         "cfg_n": k[0], "cfg_draws": k[1], "cfg_mean": k[2], "cfg_lo": k[3],
                         "cfg_hi": k[4]})
-    comps = [("D-flat minus A-raw (headline)", ("D", "flat"), ("A", "raw")),
-             ("D-asm minus A-raw", ("D", "asm"), ("A", "raw")),
-             ("D-flat minus A-flat (same writer)", ("D", "flat"), ("A", "flat")),
-             ("D+h-flat minus D-flat", ("Dh", "flat"), ("D", "flat"))]
+    comps = [("D-flat minus A-flat, same writer (headline)", ("D", "flat"), ("A", "flat"), True),
+             ("D-flat minus A-raw (A as the model wrote it)", ("D", "flat"), ("A", "raw"), True),
+             ("D-asm minus A-raw (D as assembled, top module only)", ("D", "asm"), ("A", "raw"),
+              True),
+             ("D+h-flat minus D-flat", ("Dh", "flat"), ("D", "flat"), False)]
     lines += ["", "Paired differences (same problem and draw; first minus second):", "",
               "| comparison | set | metric | problems | diff [95% CI] | draws W/L/T | "
               "problems W/L/T |", "| --- | --- | --- | --- | --- | --- | --- |"]
     qsets = {"multi-block": multi, "ran set (gate-free + multi-block)": gf + multi}
-    for name, f, s in comps:
+    for name, f, s2, both in comps:
         for sn, probs in qsets.items():
+            if not both and sn != "multi-block":
+                continue
             for m in ("ast", "cfg"):
-                c = compare_cont(cell_pairs(vals, f, s, m, probs))
+                c = compare_cont(cell_pairs(vals, f, s2, m, probs))
                 if not c["n"]:
                     continue
                 lines.append(f"| {name} | {sn} | {m.upper()} | {c['n']} | {c['diff']:+.3f} "
@@ -514,18 +518,19 @@ def astcfg_section(data: Data, res: Path) -> tuple[list[str], list[dict[str, Any
                              f"{'/'.join(map(str, c['wlt_draw']))} | "
                              f"{'/'.join(map(str, c['wlt_problem']))} |")
                 out.append({"comparison": name, "set": sn, "metric": m, **c})
-    lines += ["", "Per quartile, D-flat minus A-raw (multi-block + gate-free):", "",
-              "| quartile | metric | problems | A mean | D-flat mean | diff [95% CI] |",
-              "| --- | --- | --- | --- | --- | --- |"]
-    for q in ("Q1", "Q2", "Q3", "Q4"):
-        probs = [p for p in gf + multi if data.designs[p]["quartile"] == q]
-        for m in ("ast", "cfg"):
-            c = compare_cont(cell_pairs(vals, ("D", "flat"), ("A", "raw"), m, probs))
-            if c["n"]:
-                lines.append(f"| {q} | {m.upper()} | {c['n']} | {c['second']:.3f} | "
-                             f"{c['first']:.3f} | {c['diff']:+.3f} [{c['lo']:+.3f}, "
-                             f"{c['hi']:+.3f}] |")
-                out.append({"comparison": "quartile " + q, "metric": m, **c})
+    for tag, second in (("A-flat (headline)", ("A", "flat")), ("A-raw", ("A", "raw"))):
+        lines += ["", f"Per quartile, D-flat minus {tag} (multi-block + gate-free):", "",
+                  "| quartile | metric | problems | A mean | D-flat mean | diff [95% CI] |",
+                  "| --- | --- | --- | --- | --- | --- |"]
+        for q in ("Q1", "Q2", "Q3", "Q4"):
+            probs = [p for p in gf + multi if data.designs[p]["quartile"] == q]
+            for m in ("ast", "cfg"):
+                c = compare_cont(cell_pairs(vals, ("D", "flat"), second, m, probs))
+                if c["n"]:
+                    lines.append(f"| {q} | {m.upper()} | {c['n']} | {c['second']:.3f} | "
+                                 f"{c['first']:.3f} | {c['diff']:+.3f} [{c['lo']:+.3f}, "
+                                 f"{c['hi']:+.3f}] |")
+                    out.append({"comparison": f"quartile {q} vs {tag}", "metric": m, **c})
     errs: dict[str, int] = defaultdict(int)
     for r in rows:
         for fld in ("ast_err", "cfg_err"):
@@ -534,6 +539,42 @@ def astcfg_section(data: Data, res: Path) -> tuple[list[str], list[dict[str, Any
     lines += ["", "Rows without a value (reason, count):", ""]
     lines += [f"- {k}: {v}" for k, v in sorted(errs.items())]
     return lines, out
+
+
+def extract_a_calls(src: Path, res: Path) -> None:
+    """Copy the arm A token estimates of the full run (calls.jsonl of its run directory)."""
+    sysb = len((HERE.parent / "llm-pilot" / "prompts_variants" / "re" / "system.txt").read_bytes())
+    rows = []
+    for ln in src.read_text(encoding="utf-8").splitlines():
+        c = json.loads(ln)
+        if c["arm"] == "A":
+            rows.append({"problem": c["problem"], "draw": c["draw"],
+                         "est_tokens_in": c["est_tokens_in"] + round(sysb / 3.2),
+                         "est_tokens_out": c["est_tokens_out"]})
+    rows.sort(key=lambda r: (r["problem"], r["draw"]))
+    write_csv(res / "a_calls_estimate.csv", ["problem", "draw", "est_tokens_in",
+                                             "est_tokens_out"], rows)
+
+
+def a_token_line(data: Data, res: Path) -> list[str]:
+    path = res / "a_calls_estimate.csv"
+    if not path.is_file():
+        return []
+    a = {(r["problem"], int(r["draw"])): int(r["est_tokens_in"]) + int(r["est_tokens_out"])
+         for r in read_csv(path)}
+    multi = data.strata()["multi-block"]
+    tok_a = [sum(a.get((p, d), 0) for d in (1, 2, 3)) for p in multi]
+    done = {c for c, s in data.status.items() if s == "ok"}
+    per: dict[str, float] = defaultdict(float)
+    for c in done:
+        r = data.calls[c]
+        if r["problem"] in multi and "D" in r["arms"].split("+"):
+            per[r["problem"]] += int(r["est_tokens_in"]) + int(r["est_tokens_out"])
+    tok_d = [per[p] for p in multi]
+    return ["", f"Arm A on the same {len(multi)} multi-block designs, same estimate basis (prompt "
+            f"bytes / 3.2 plus the system message; output = the pilot mean): {mean(tok_a):,.0f} "
+            f"estimated tokens per design over 3 draws; arm D: {mean(tok_d):,.0f} (ratio "
+            f"{mean(tok_d) / mean(tok_a):.2f}). Both are estimates, not measured."]
 
 
 def coverage(data: Data) -> list[str]:
@@ -603,6 +644,7 @@ def run(res: Path) -> str:
     parts += ["", "## AST and CFG similarity (Gate-Breaker's second measure)", ""] + lx
     lt, rt = tokens(data)
     parts += ["", "## Tokens (estimates from calls_table.csv, not measured)", ""] + lt
+    parts += a_token_line(data, res)
     flat = []
     for tag, rows in (("a", ra), ("a_sens", ra2), ("c", rc), ("c_sens", rc2)):
         for r in rows:
@@ -631,7 +673,11 @@ def run(res: Path) -> str:
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--res", type=Path, default=HERE / "results")
+    ap.add_argument("--a-calls", type=Path, default=None,
+                    help="calls.jsonl of the full run: (re)write results/a_calls_estimate.csv")
     a = ap.parse_args(argv)
+    if a.a_calls is not None:
+        extract_a_calls(a.a_calls, a.res)
     sys.stdout.write(run(a.res))
     return 0
 

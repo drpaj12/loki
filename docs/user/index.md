@@ -45,7 +45,7 @@ command), dismissed (measured, did not help). The full table with links is in th
   clustering, ORCA graphlets and the GNN baseline `loki analyze`; the loss audit `loki audit`; the HAL and DANA comparison;
   the L3 pattern census and v0 detector.
 - Experiment: the Gate-Breaker LLM replication harness (arms A netlist, B netlist and hints, C interface only; follow-up arms
-  A2, B1', B2, W); L3 anchor-grow-join blocks and the M2 kind guess; graphlet signature matching; the state-machine encoding
+  A2, B1', B2, W); L3 anchor-grow-join blocks and the M2 kind guess; the block-by-block decode (Q-L10, `experiments/ql10-blocks`); graphlet signature matching; the state-machine encoding
   study.
 - Dismissed or inconclusive: the word-first detector ([wordfirst](wordfirst.md)), the Bayes-factor stop rule, the split step,
   clustering as the designer's hierarchy, Loki's hints to a model that already has the netlist.

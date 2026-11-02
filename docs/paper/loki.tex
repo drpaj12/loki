@@ -191,12 +191,12 @@ use it yet.
 
 Loki~III is one tool of the Yggdrasil~III suite. Odin~III is the trunk of the suite: its one provenance-tracked IR is what Loki~III reads and what supplies its answer key. Loki~III runs as a step of Wyrd~III, the experiment runner, and M\'{\i}mir~III, the circuit knowledge base, holds the benchmarks and the records that this paper uses. The suite is drawn as a tree, with the pieces and their links, in the hub repository at \url{https://github.com/drpaj12/YggdrasilIII}; the tree is shown in the Odin~III paper.
 
-Figure~\ref{fig:flow} shows Loki~III as one flow, from the Odin~III netlist and answer key to the recovered blocks that are scored against the key. The stages are L0 (datasets), L1 (the Bayesian flow), L2 (graph analysis) and L3 (blocks); the language-model harness is a side path with no Loki stage inside it. Each circled mark is the subsection of the Results (Section~\ref{sec:results-main}) or of the language-model section (Section~\ref{sec:llm}) that tests the stage it sits on, and the dashed box holds the ideas that did not work.
+Figure~\ref{fig:flow} shows Loki~III as one flow, from the Odin~III netlist and answer key to the recovered blocks that are scored against the key. The stages are L0 (datasets), L1 (the Bayesian flow), L2 (graph analysis) and L3 (blocks); the language-model harness is a side path with no Loki stage inside it, and a second path hands Loki's blocks to the model one block per prompt. Each circled mark is the subsection of the Results (Section~\ref{sec:results-main}) or of the language-model section (Section~\ref{sec:llm}) that tests the stage it sits on, and the dashed box holds the ideas that did not work.
 
 \begin{figure*}[tp]
 \centering
 \odinfit{\textwidth}{\input{IMAGE/fig_loki_flow}}
-\caption{Loki~III as a flow. Boxes are stages, the text under a box lists the features of the stage, and the labels on the arrows are the data that move between stages. The answer key from Odin~III runs under the whole pipeline to the score. Each circled number is the subsection of the Results or of the language-model section that tests the stage; the dashed box holds closed ideas, and the language-model harness is a side path that takes the gate netlist and, in one prompt, Loki's hints.}
+\caption{Loki~III as a flow. Boxes are stages, the text under a box lists the features of the stage, and the labels on the arrows are the data that move between stages. The answer key from Odin~III runs under the whole pipeline to the score. Each circled number is the subsection of the Results or of the language-model section that tests the stage; the dashed box holds closed ideas, and the language-model harness is a side path that takes the gate netlist and, in one prompt, Loki's hints; a second arrow carries Loki's blocks to the model one block per prompt (Q-L10).}
 \label{fig:flow}
 \end{figure*}
 

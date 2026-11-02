@@ -43,6 +43,9 @@
   \draw[flow] (9.45,0) -- (9.45,-3.6) -| (gb.north);
   \node[edgelabel, anchor=west] at (9.5,-3.9) {claims as hints, arm B only};
   \draw[flow] (gb) -- (rtl);
+  % Q-L10: Loki's blocks go to the model one block per prompt, and the replies are assembled
+  \fill (16.8,0) circle (1pt);
+  \draw[flow] (16.8,0) -- (16.8,-5.4) -- node[edgelabel, above=1pt] {blocks, one per prompt} (rtl.east);
   % argument marks (circled: subsection number in the Results and in the language-model sections)
   \lkmark{3.0,0.9}{arg:ra1}{}
   \lkmark{4.8,0.9}{arg:ra5}{}
@@ -61,4 +64,5 @@
   \lkmark{8.6,-4.8}{arg:la2}{}
   \lkmark{9.4,-4.8}{arg:la3}{}
   \lkmark{10.2,-4.8}{arg:la4}{}
+  \lkmark{16.8,-4.6}{arg:la5}{}
 \end{tikzpicture}

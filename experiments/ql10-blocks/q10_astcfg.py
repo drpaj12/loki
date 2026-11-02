@@ -53,6 +53,36 @@ def load_tools() -> tuple[Any, Any]:
     return importlib.import_module("metrics"), importlib.import_module("odin3_cfg")
 
 
+def fast_similarity(probe: Any, a: Any, b: Any, sigma: float = 0.5) -> float:
+    """SimCFG with the probe's own features and formula, the kernel sums done with numpy.
+
+    ``probe.cfg_kernel`` sums the n x m kernel in Python (hours above 2,000 nodes). The features
+    (``shortest_features``, padded to one width) and the formula are the probe's; only the double
+    sum is vectorised. ``test_q10_astcfg`` checks it equals ``probe.cfg_similarity`` on small CFGs.
+    """
+    import numpy as np
+    if len(a.labels) < 2 or len(b.labels) < 2:
+        return 0.0
+    fa, fb = probe.shortest_features(a), probe.shortest_features(b)
+    width = max(len(f) for f in fa + fb)
+    ma = np.array([f + [0.0] * (width - len(f)) for f in fa])
+    mb = np.array([f + [0.0] * (width - len(f)) for f in fb])
+
+    def total(x: Any, y: Any) -> float:
+        out = 0.0
+        ny = (y * y).sum(axis=1)
+        for i in range(0, len(x), 256):
+            blk = x[i:i + 256]
+            d2 = (blk * blk).sum(axis=1)[:, None] + ny[None, :] - 2.0 * blk @ y.T
+            out += float(np.exp(-np.maximum(d2, 0.0) / (2.0 * sigma * sigma)).sum())
+        return out
+
+    cross, sa, sb = total(ma, mb), total(ma, ma), total(mb, mb)
+    if sa <= 0 or sb <= 0:
+        return 0.0
+    return max(0.0, min(1.0, cross / float(np.sqrt(sa * sb))))
+
+
 def clean(src: Path, name: str) -> Path:
     """A copy without ``(* ... *)`` attributes, as round 2 parses them."""
     out = SCRATCH / name
@@ -118,7 +148,7 @@ class Scorer:
                 g = self.cfg_of(cand, top)
                 if max(len(g), len(ref_cfg)) > NODE_LIMIT:
                     raise ValueError(f"skipped: CFG over {NODE_LIMIT} nodes")
-                out["cfg"] = round(float(self.cfg.cfg_similarity(ref_cfg, g)), 6)
+                out["cfg"] = round(fast_similarity(self.cfg, ref_cfg, g), 6)
             except Exception as err:
                 out["cfg_err"] = f"{type(err).__name__}: {str(err)[:80]}"
         return out
@@ -140,7 +170,7 @@ def work_items(designs: dict[str, Ent], rows: list[dict[str, str]]) -> list[tupl
         if r["outcome"] not in ("pass", "runtime") or d["tier"] == "ext":
             continue
         out.append((d, r["arm"], int(r["draw"])))
-        if (d["problem"], int(r["draw"])) not in seen_a:
+        if d["tier"] == "vq" and (d["problem"], int(r["draw"])) not in seen_a:
             seen_a.add((d["problem"], int(r["draw"])))
             out.append((d, "A", int(r["draw"])))
     return out
