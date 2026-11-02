@@ -188,7 +188,7 @@ Framing: plan committed before the runs (experiments/l3-census/EXPERIMENT.md); h
 
 ## Counts
 
-69 register rows (grouped H-IDs count once; H12b covers V0, V1, V2): 51 hypotheses with a verdict, 15 measurements and 3 untested hypotheses listed above. Round-2 IDs carry the prefix R2- so that they do not collide with the layer names L1 and L2.
+102 register rows (grouped H-IDs count once; H12b covers V0, V1, V2): 99 rows with a verdict or a measurement and 3 untested hypotheses listed above (2026-11-02, after Q-L9). Of the 99: 13 USEFUL (L0a, L0b, L1h, L1c, H12a, H13a, H13c, H14a, LLM4, QL7a, QL7b, QL9-a, QL9-b), 12 POSSIBLY GOOD, 19 DISMISSED, 32 INCONCLUSIVE and 23 measurements. Round-2 IDs carry the prefix R2- so that they do not collide with the layer names L1 and L2.
 
 | USEFUL | POSSIBLY GOOD | DISMISSED | INCONCLUSIVE | measurement, not a hypothesis | untested |
 |---|---|---|---|---|---|

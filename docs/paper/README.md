@@ -33,6 +33,16 @@ Tables marked `[TODO: ...]` are numbers not yet measured.
   names, the three wells and the self-cited baseline replaced by placeholders, as the Odin III paper's
   `make_blind.py` does. No build uses it yet (there is no blind build of this paper).
 
+## Cleanup for reading (2026-11-02)
+
+`loki.tex` now tells the current story in the main text (summary, glossary, method as it stands
+including L3 anchors, growth and join, results with a what-did-not-work table, the language-model
+section, discussion, future work with Q-L10, conclusion). The round-by-round records are Appendix
+`app:records` in time order (rounds 1 to 6, HAL, LLM pilot, FSM encoding, L3 census and detector,
+graphlets, Q-L4 to Q-L9), then the f3 detail, then the research log (`register.tex`) last. Nothing
+was deleted. Build with the Odin-style wrapper `build/loki-local.tex` (see below); the Overleaf zip
+is `loki-paper-overleaf.zip` in `~/odin3-ws/PAPERS`.
+
 ## Step 2 structure (2026-10-28)
 
 `loki.tex` is written as hypothesis, experiment, result, verdict (USEFUL, POSSIBLY GOOD, INCONCLUSIVE,
