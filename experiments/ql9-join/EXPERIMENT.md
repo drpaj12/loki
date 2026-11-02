@@ -79,7 +79,8 @@ TUNE odd half: TRAIN = `(md5 // 2) % 2 == 0`, VALIDATION = rest; the even half i
    per rule the best threshold (ties: the strictest, i.e. fewest joins).
 2. VALIDATION: the four join rules at their TRAIN threshold; the headline join rule = highest net on VALIDATION; if no rule has a
    net above 0 there is no join in the headline (and the result is stated as it is).
-3. TRAIN: SFIED with the headline evidence source, every threshold, SPLIT only; best net, then VALIDATION net of that one.
+3. TRAIN: SFIED with each evidence source (E73, EM2), every threshold, SPLIT only; best net (ties: the strictest, the highest
+   threshold); it stays in the headline only if its VALIDATION net is above 0 (as for the join), else there is no split.
 4. VALIDATION: the five orders at the chosen thresholds; the headline order = highest net on VALIDATION (ties: JOIN, SPLIT,
    JS, SJ, FIX).
 5. TEST (the 1350 units) is run once with the headline configuration, the BASE row, and the fixed ablations (JOIN only and
