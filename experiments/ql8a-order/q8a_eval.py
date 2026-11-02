@@ -49,23 +49,24 @@ def score_order(units: list[Any], head_d: Any) -> dict[str, list[dict[str, Any]]
     return out
 
 
-def per_target(res: dict[str, dict[str, list[dict[str, Any]]]], pick: dict[str, str]
-               ) -> list[dict[str, Any]]:
+def per_target(res: dict[str, dict[str, list[dict[str, Any]]]], pick: dict[str, str],
+               what: str = "END") -> list[dict[str, Any]]:
     """Rows of the per-target best order: each construct from the order chosen for its target."""
     tgt = {c: t for t, cs in env.TARGETS.items() for c in cs}
-    idx = {o: {tuple(r[k] for k in KEYS): r for r in res[o]["END"]} for o in pick.values()}
+    idx = {o: {tuple(r[k] for k in KEYS): r for r in res[o][what]} for o in pick.values()}
     base = res["E74"]["END"]
     return [idx[pick[tgt[r["cell"]]]][tuple(r[k] for k in KEYS)] for r in base]
 
 
-def with_refs(rows: list[dict[str, Any]], refs: Any, e74: list[dict[str, Any]]
-              ) -> list[dict[str, Any]]:
+def with_refs(rows: list[dict[str, Any]], refs: Any, e74: list[dict[str, Any]],
+              drows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     out = []
-    for r, b in zip(rows, e74, strict=True):
+    for r, b, d in zip(rows, e74, drows, strict=True):
         ref = refs.get(q7e.key_of(r))
         if ref is not None:
             out.append({**r, "e73": int(ref["right"]), "d70": int(ref["d70"]) if "d70" in ref
-                        else int(ref["d70_right"]), "e74": b["right"], "e74_sub": b["sub"]})
+                        else int(ref["d70_right"]), "e74": b["right"], "e74_sub": b["sub"],
+                        "d_right": d["right"]})
     return out
 
 
@@ -86,7 +87,7 @@ def all_scopes() -> list[str]:
 def tables(res: dict[str, dict[str, list[dict[str, Any]]]], names: list[str], refs: Any,
            head: str, pick: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
     e74 = res["E74"]["END"]
-    rows = {n: with_refs(res[n]["END"], refs, e74) for n in names}
+    rows = {n: with_refs(res[n]["END"], refs, e74, res[n]["d"]) for n in names}
     out: dict[str, list[dict[str, Any]]] = {}
     out["right_block.csv"] = right_block(rows, names)
     out["unit_cmp.csv"] = unit_cmp(rows, names)
@@ -112,6 +113,7 @@ def right_block(rows: dict[str, list[dict[str, Any]]], names: list[str]) -> list
                              "d70_share": q7s.share([{"right": x["d70"]} for x in sel[names[0]]])}
         for n in names:
             r[f"{n}_end_share"] = round(q7s.share(sel[n]), 3)
+            r[f"{n}_d_share"] = round(q7s.share([{"right": x["d_right"]} for x in sel[n]]), 3)
             r[f"{n}_oracle_share"] = round(q7s.share([{"right": x["oracle"]} for x in sel[n]]), 3)
         for k in ("e73_share", "d70_share"):
             r[k] = round(r[k], 3)
@@ -164,7 +166,7 @@ def recovery_rows(rows: dict[str, list[dict[str, Any]]], names: list[str]) -> li
 
 def pr_rows(res: dict[str, Any], names: list[str]) -> list[dict[str, Any]]:
     out = []
-    for n in names:
+    for n in (x for x in names if x != "PT"):
         claims = res[n]["claims"]
         for k in (*q7e.KINDS5, "all"):
             cl = [c for c in claims if c["claim"] and (k == "all" or c["argmax"] == k)]
@@ -254,7 +256,8 @@ def main(argv: list[str]) -> int:
     if len({len(res[n]["END"]) for n in names}) != 1:
         raise SystemExit("orders differ in construct count")
     if set(pick.values()) != {head}:
-        res["PT"] = {"END": per_target(res, pick), "claims": []}
+        res["PT"] = {"END": per_target(res, pick), "claims": [],
+                     "d": per_target(res, pick, "d")}
         names.append("PT")
     refs = q7e.ref_rows() if split == "TEST" else q7e.ZeroRefs()
     tabs = tables(res, names, refs, head, pick)

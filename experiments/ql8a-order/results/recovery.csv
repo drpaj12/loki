@@ -1,0 +1,13 @@
+order,scope,e74_order_class,recovered_of_e74_order,e74_noseed,recovered_of_e74_noseed,e74_right,lost_of_e74_right
+OA,all,449,12,58,0,602,14
+OA,target gate,128,0,14,0,206,5
+OA,target k4,159,6,26,0,254,2
+OA,target k6/hardmap,162,6,18,0,142,7
+OB,all,449,30,58,0,602,37
+OB,target gate,128,19,14,0,206,6
+OB,target k4,159,5,26,0,254,10
+OB,target k6/hardmap,162,6,18,0,142,21
+PT,all,449,31,58,0,602,15
+PT,target gate,128,19,14,0,206,6
+PT,target k4,159,6,26,0,254,2
+PT,target k6/hardmap,162,6,18,0,142,7

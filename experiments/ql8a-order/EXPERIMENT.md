@@ -101,3 +101,62 @@ TRAIN was not grown: no number is tuned, so TRAIN has no role (deviation 1).
 
 (1) TRAIN is not used (nothing is fitted; the choice among three fixed orders is made on VALIDATION alone).
 (2) TEST is grown for the headline OA and the per-target order OB only.
+
+## Results, 2026-11-02 (plain English first)
+
+Plain English: none of the three structural orders helps in a way that matters. The headline order OA (grow where the
+block is most strongly tied to the cells it already has) recovers the right block for 0.526 of the 1141 constructs,
+against 0.528 for the #74 order grown to the end and 0.385 for the D70 cones. Of the 449 constructs that had no right
+prefix on any block in #74, OA gives a right prefix to 12 at the path end (2.7 percent; 20 have a right prefix somewhere on
+the path), and it loses 14 of the 602 that #74 had right. K6/hardmap (0.965 against D70) and composite parts (1.044 against
+D70) stay inconclusive, exactly where #74 was. The sibling frontier of OB does help where the whole design is the block
+(single designs 0.625 against 0.597) and on gate netlists (0.624 against 0.587, geomean 1.034 against the #74 order), but
+costs composite parts (0.393 against 0.441, WORSE) and k6/hardmap (0.388 against 0.430, WORSE). Picking the order per target
+on VALIDATION (gate OB, k4 and k6/hardmap OA) gives 0.542, a small and real gain over the #74 order (geomean 1.013, 1.006 to
+1.021, W31 / L13 / T813) that is not the headline. What is left is not the order of single cells: 251 constructs are split
+across several blocks, 103 are never fully reached, 95 are swallowed in a block that grows past them.
+
+CAD-style counts first (TEST only; 1141 constructs of 857 units that D70 and #73 also scored; `results/*.csv`). Right-block
+share at the path end (END), and in brackets the oracle (any prefix of any block right):
+
+| scope | constructs | D70 | E74 (#74 order) | OA (headline) | OB | per-target mix |
+|---|---|---|---|---|---|---|
+| all | 1141 | 0.385 | 0.528 (0.556) | 0.526 (0.573) | 0.522 (0.578) | 0.542 (0.588) |
+| gate (O + Y) | 351 | 0.242 | 0.587 (0.595) | 0.573 (0.632) | 0.624 (0.681) | 0.624 |
+| k4 (O + Y) | 460 | 0.439 | 0.552 (0.598) | 0.561 (0.613) | 0.541 (0.607) | 0.561 |
+| k6 / hardmap | 330 | 0.461 | 0.430 (0.455) | 0.427 (0.455) | 0.388 (0.427) | 0.427 |
+| single | 635 | 0.356 | 0.597 | 0.597 | 0.625 | 0.622 |
+| comp | 506 | 0.421 | 0.441 (0.504) | 0.437 (0.543) | 0.393 (0.518) | 0.441 |
+
+Per unit (design x cell) against D70 (`results/unit_cmp.csv`; geomean of (g+1)/(d+1), 90 percent bootstrap over designs,
+857 units): OA all 1.145 (1.102 to 1.188), W293 / L127 / T437, BETTER; gate 1.341 BETTER; k4 1.125 BETTER; k6 / hardmap 0.965
+(0.914 to 1.016) INCONCLUSIVE; single 1.182 BETTER; comp 1.044 (0.979 to 1.111) INCONCLUSIVE. Against the #74 order grown to
+the end: OA all 0.999 (0.994 to 1.004), W12 / L13 / T832, INCONCLUSIVE; gate 0.990 (0.980 to 0.998) WORSE; k4 1.006
+(1.000 to 1.013); k6 / hardmap 0.999 (0.986 to 1.013); comp 0.996 (0.975 to 1.016). OB against the #74 order: gate 1.034 BETTER,
+single 1.020 BETTER, k4 0.993, k6 / hardmap 0.964 (0.941 to 0.986) WORSE, comp 0.939 (0.911 to 0.968) WORSE. Per-target mix
+against D70 1.161 (1.117 to 1.205) BETTER (k6 / hardmap 0.965 INCONCLUSIVE), against the #74 order 1.013 (1.006 to 1.021) BETTER
+(the one extra comparison; not the headline).
+
+Remaining constructs with no right prefix on any block (class ORDER of #74, by failure class, all targets; E74 / OA / OB):
+NOSEED 58 / 58 / 58 (anchors, Q-L8b); BLOATED (some block covers 0.8 of it at some prefix, Jaccard stays below 0.5) 95 / 76 / 75;
+SPLIT (no block covers 0.8, the blocks that touch it together do) 251 / 250 / 269; UNDERREACH (together they do not
+reach 0.8) 103 / 103 / 80. At the path end, constructs that have a right prefix but whose END is past it: TOOBIG 5 / 9 / 12, MERGED 27 / 45 / 51.
+Orders that reach more right prefixes also overshoot them more: ORACLE rises (0.556 to 0.573 and 0.578) while END does not.
+SPLIT is the largest class and does not move: a construct cut across blocks is a competition between anchors, not a
+question of the order inside one block. Of the 449 formerly ORDER: recovered 12 (OA), 30 (OB, 19 of them gate), 31 (per-target mix);
+lost of the 602 right in #74: 14 (OA), 37 (OB), 15 (mix). Precision of the claimed kind at END: E74 0.277, OA 0.290, OB 0.254.
+Stop rule d of #74 as a check: OA 0.528 (END 0.526), OB 0.530, mix 0.543; the stop does not change the picture.
+
+Verdicts (rules fixed above). QL8a-a (headline OA against D70): BETTER overall, gate and k4 and single; INCONCLUSIVE k6 / hardmap
+and comp. QL8a-b (OA against the #74 order): INCONCLUSIVE overall (0.999), gate WORSE (0.990). QL8a-c (hypothesis): INCONCLUSIVE by the fixed
+rule (k6 / hardmap and comp not BETTER than D70, 12 of 449 = 2.7 percent recovered, below the 10 percent bar; not CONTRADICTED because
+12 is not none); in plain words, not supported: the order changes almost nothing. QL8a-d: MEASUREMENT (the counts above).
+
+Next step suggested, not run: the loss is SPLIT, not order. A construct that is cut across blocks needs blocks merged or
+anchors joined (for example two anchors that share a feedback or enable net), so work on merging blocks at the end of the
+path; and a stop that knows OB's gate gain and OA's k4 gain is a per-target choice, not a new order.
+
+Limits, stated not hidden. Units above 400 cells and blocks above 300 cells are not scored; three orders and one per-target
+mix are four comparisons (the verdicts carry OA only); the orders use only the cell graph and the #73 evidence; TRAIN was not used;
+TEST ran once; rule d and its classifier come from #74 (trained on E74 paths); the per-target mix is chosen on 82 designs; Y-cell composite
+parts have no key and are not scored. The precision of the kind guess stays low because the #73 likelihood is weak.
