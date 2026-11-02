@@ -208,15 +208,29 @@ that this paper uses.
 \section{Background}
 \label{sec:background}
 
-\subsection{Glossary}
-\label{sec:glossary}
+This section introduces, one step at a time, the terms the rest of the paper uses. We start with
+the cells of an FPGA and the CAD step that covers a netlist with them. Next we describe
+provenance and what Odin~III records, then the earlier study, Gate-Breaker, whose measures and
+language-model protocol we reuse. We then describe the benchmark designs and the levels at which they are cut,
+the way Loki proposes and scores structure hypotheses, and finally the graph methods and the published
+baseline that Loki is compared with. The basic FPGA and CAD terms follow the thesis of
+Jamieson~\cite{jamiesonthesis} (Chapter~2) and the thesis of Luu~\cite{luuthesis}
+(Sections~2.1.1 and~4.1.2). The Introduction has already introduced the HDL, RTL, gates and netlists
+that Loki reads, provenance, the answer key, hypotheses and the three layers.
 
-The terms of this paper are defined here, in the order in which they depend on one another.
-Basic FPGA and CAD terms follow the thesis of Jamieson~\cite{jamiesonthesis} (Chapter~2) and
-the thesis of Luu~\cite{luuthesis} (Sections~2.1.1 and~4.1.2). Terms that the Introduction needs
-(from HDL to the three layers) are also defined where it first uses them.
+\subsection{Storage and logic cells of an FPGA}
 
-\input{glossary}
+A netlist of gates is the form in which a design leaves a simple synthesis flow. A real FPGA offers two
+other kinds of cell. The first is storage: a one-bit element that keeps its value between clock edges
+is called a \emph{flip-flop}. % def:ff
+The second is logic: a small memory that implements any logic function of $K$ inputs is called a
+\emph{look-up table} (LUT), with $K=6$ in this paper. % def:lut
+In most FPGAs a LUT and a flip-flop together form one basic logic element~\cite{jamiesonthesis,luuthesis}.
+The CAD step that covers the logic of a netlist with the cells that the target offers is called
+\emph{technology mapping}: % def:techmap
+gates for a gate library, LUTs and flip-flops for an FPGA~\cite{jamiesonthesis}. Mapping is one of the
+steps that throws structure away, which is why the same design can be cut at several levels
+(Section~\ref{sec:bg-floors}).
 
 \subsection{The provenance problem and Odin III}
 
@@ -229,25 +243,89 @@ survives elaboration, optimization, partial mapping and the linked ABC flow. Lok
 that link: its L0 datasets carry the answer key the synthesis tool kept, which is what makes
 the recovery statistics in this paper possible at all.
 
+The newest form of the link is Odin~III's version-2 name map, which we call the \emph{D14 provenance map}. % def:d14
+For each object it records the source-statement units that the object blends, and it keeps labelled
+join records for the places where objects merge. The map answers a question that the loss audit
+(Section~\ref{sec:innov}) asks after every pass. A \emph{unit} is the statement-level anchor of a construct; % def:unit
+a unit is \emph{separable} while some object has exactly that unit set, and it is \emph{lost} at the first
+later snapshot where no object has. To say whether a loss is more than chance, the audit compares it with two
+null models. The \emph{random-set null} draws, at each pass, random unit sets of the real sizes. % def:nullm
+The \emph{persistence null} instead starts from the objects of the previous snapshot and merges them at random
+until the real object count is reached.
+
 \subsection{Gate-Breaker as the method baseline}
 
 Gate-Breaker measures recovery by functional correctness and by the similarity of the
 recovered and reference RTL: Success Rate (the fraction of $K$ samples that simulate
-correctly), Success@$k$ (the fraction of designs solved within the first $k$ samples), AST
-similarity (mean subtree Jaccard over normalized identifiers, depth $d=3$) and CFG similarity
-(a normalized shortest-path node kernel over control-flow graphs). Its complexity score
-weights sequential blocks, generates, loops, instantiations, always blocks, buses,
-multiplexers, cases, arithmetic operators, assignments and concatenations into quartiles Q1
-(simple combinational) through Q4 (complex sequential). Loki reports its own statistics on
-the same axes where they apply -- recovery rate per structure kind, calibration error,
-clustering quality against the known hierarchy, and GNN accuracy against a 1-WL baseline --
-and the Gate-Breaker metrics on the replication runs.
+correctly) and Success@$k$ (the fraction of designs solved within the first $k$ samples).
+It also measures how alike two RTL texts are, by \emph{AST and CFG similarity}: % def:astcfg
+AST similarity is the mean subtree Jaccard overlap of the syntax trees over normalized identifiers
+(depth $d=3$), and CFG similarity is a normalized shortest-path node kernel over the control-flow graphs.
+Its complexity score weights sequential blocks, generates, loops, instantiations, always blocks, buses,
+multiplexers, cases, arithmetic operators, assignments and concatenations. Ordering the designs by that score
+and cutting the order into four equal parts gives the \emph{quartiles} % def:quart
+Q1 (simple combinational) through Q4 (complex sequential).
 
-\subsection{Dataflow analysis and HAL as a second baseline}
+Gate-Breaker also fixes how a language model is asked. The pilot and the full run of this paper vary the
+prompt in three \emph{arms~A, B and C}: % def:arms
+arm~A gives the model the gate netlist, arm~B the netlist plus Loki's hints, and arm~C only the interface line,
+which controls for memorisation. Loki reports its own statistics on
+the same axes where they apply, and the Gate-Breaker metrics on the replication runs.
 
-HAL, the Hardware Analyzer of the Embedded Security Group~\cite{hal,fyrbiak2019hal}, is an open
+\subsection{Benchmark designs and how they are cut}
+\label{sec:bg-floors}
+
+Loki uses two benchmarks. The first is the 68 small synthesizable RTL designs (counters, registers,
+arithmetic, ALUs, muxes, comparators, small state machines), which we call the \emph{micro designs}. % def:micro
+The second is the 156 reference RTL designs of the VerilogEval spec-to-RTL set, the \emph{VerilogEval references}. % def:veval
+
+A design can be written down as a netlist at several levels. We call the abstraction level and technology
+mapping at which a design is cut, and written as the netlist to reconstruct, a \emph{floor} % def:floor
+(f1-k6 and f1-earch, f2, f3; Section~\ref{sec:innov} describes each).
+A recovery method must not read the names that the designer chose. To test that, the
+\emph{renamed-instance protocol} renames every identifier through one shared permutation, % def:renamed
+runs the pipeline, and maps the tokens back; equal results show that the pipeline does not use names.
+
+Two further sets are built from these. A seeded generator makes 1200 labelled idiom designs in twelve families,
+with train, iid and ood splits; we call this the \emph{synthetic corpus}. % def:corpus
+A table from a cell's cone class and WL colour to the construct it usually is, mined from the synthetic corpus,
+is the \emph{signature dictionary}. % def:dict
+
+\subsection{Structure hypotheses and how they are scored}
+
+A plug-in that proposes structure hypotheses for a netlist and reports features of them, never a
+likelihood, is a \emph{detector}. % def:det
+A structure hypothesis can be settled by a \emph{prover}, an engine (cone check, truth table, transfer) % def:prover
+that proves the hypothesis equal to the netlist; a proof makes it near certain. For the hypotheses that
+no engine settles, the probabilities come from \emph{calibration}: % def:cal
+fitting priors and likelihood ratios on a training split so that predicted probabilities match observed
+rates. The quality of a calibration is the \emph{expected calibration error} (ECE), % def:ece
+the average gap between predicted probability and observed match rate over ten bins.
+
+To score hypotheses against the answer key we need a rule for which are kept and which are right. A hypothesis is \emph{counted} when it is committed or has probability at least 0.5, and a counted hypothesis \emph{matches} an answer-key instance by an overlap rule (Section~\ref{sec:eval}). % def:count
+The \emph{precision} is the share of counted hypotheses that match, the \emph{recall} is the share of answer-key instances matched, and the \emph{F1} is their harmonic mean. % def:prf
+The F1 averaged over the kinds of structure is the \emph{macro-F1}, and the F1 pooled over all instances is the \emph{micro-F1}. % def:macro
+
+Many structures in a netlist are several bits wide. A group of cells that acts as one multi-bit signal
+(a register, a datapath operator, a bus) is a \emph{word}. % def:word
+The \emph{operator type-F1} is the F1 of the recovered word-level operator types (adder, mux, comparator, ...) % def:opf1
+against the answer key's operators. A candidate that looks wrong but is in fact part of a real construct is a
+\emph{fragment}. % def:frag
+A detector that first groups flip-flops into register words by shared clock, enable and reset, and then builds the
+rest around them, is a \emph{word-first detector}. % def:wf
+
+\subsection{Graph methods and a published baseline}
+
+Loki's second layer treats the netlist as a graph. Community detection groups the nodes: \emph{Louvain} is such a method, % def:louv
+\emph{modularity} scores how dense the clusters are, and \emph{NMI} (normalized mutual information) scores the
+agreement of a clustering with the known module hierarchy. A graph neural network labels each node from its
+neighbours; this is a \emph{GNN}. % def:gnn
+To judge it we compare it with the \emph{1-WL baseline}, colour refinement, whose distinguishing power a
+message-passing GNN cannot exceed.
+
+\emph{HAL}, the Hardware Analyzer of the Embedded Security Group~\cite{hal,fyrbiak2019hal}, is an open % def:dana
 framework (MIT licence) for the reverse engineering of gate-level netlists. Its dataflow plugin
-implements DANA~\cite{albartus2020dana}, which groups flip-flops into register words from their
+implements \emph{DANA}~\cite{albartus2020dana}, a published method that groups flip-flops into register words from their
 shared control nets (clock, enable, set, reset) and from common predecessors and successors in
 the flip-flop dataflow graph, without reading the logic between them. DANA is therefore a
 word-finding method that is independent of the cell library once the flip-flops are known, which
@@ -256,6 +334,9 @@ makes it the natural external baseline for the register words that Loki's word-f
 scores both against the same Odin~III answer key. We credit HAL and DANA in the README and the
 bibliography; no HAL code is part of this repository, only our gate-library files, a converter
 and the scorer.
+
+Last, two paired tests compare methods on the same designs. The \emph{McNemar test} is an exact test on discordant pairs, % def:tests
+and the \emph{Wilcoxon test} is a paired rank test.
 
 \section{The method as it stands}
 \label{sec:innov}

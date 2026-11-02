@@ -35,7 +35,7 @@ Tables marked `[TODO: ...]` are numbers not yet measured.
 
 ## Cleanup for reading (2026-11-02)
 
-`loki.tex` now tells the current story in the main text (summary, glossary, method as it stands
+`loki.tex` now tells the current story in the main text (summary, step-by-step Background, method as it stands
 including L3 anchors, growth and join, results with a what-did-not-work table, the language-model
 section, discussion, future work with Q-L10, conclusion). The round-by-round records are Appendix
 `app:records` in time order (rounds 1 to 6, HAL, LLM pilot, FSM encoding, L3 census and detector,
@@ -50,13 +50,13 @@ DISMISSED). Support files, all in `docs/paper/`:
 
 - `hypotheses.md` (the register, one row per hypothesis), `innovations.md`, `outline.md`, `terms.md`.
 - `make_register.py` writes `register.tex` (the appendix research log) from `hypotheses.md`.
-- `make_glossary.py` writes `glossary.tex` and `terms.md` from one term list; `check_terms.py --tex loki.tex`
+- `make_glossary.py` writes `terms.md` from `terms.json` (the Background defines each term in prose, tagged `% def:<key>`; no glossary file); `check_terms.py --tex loki.tex`
   must report 0 use-before-definition findings.
 - `split_tables.py` splits the generated `round*-tables.tex` and `hal-tables.tex` into `gen/*-macros.tex`
   (the number macros) and one `gen/tab-*.tex` per table, so the paper prints only the tables of the kept
   hypotheses. Rerun it after the generated files change.
 - Bibliography: `luuthesis` (J. Luu, PhD thesis, University of Toronto, 2014) joins `jamiesonthesis`
-  (P. A. Jamieson, PhD thesis, University of Toronto, 2007) for the Glossary. The PDFs live only in
+  (P. A. Jamieson, PhD thesis, University of Toronto, 2007) for the Background. The PDFs live only in
   `work/mimir-papers/` and are never committed.
 - Build: `tectonic -X compile build/loki-local.tex -Z search-path=docs/paper` (the wrapper selects the OT1 font encoding).
 - Tests for `make_register.py`, `make_glossary.py` and `split_tables.py`: `tests/test_paper_tools.py` (determinism plus a small fixture each).
