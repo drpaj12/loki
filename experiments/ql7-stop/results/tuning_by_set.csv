@@ -1,0 +1,13 @@
+rule,set,train,validation
+a,single,0.4916,0.5714
+a,comp,0.2797,0.2718
+b,single,0.5084,0.6165
+b,comp,0.322,0.3231
+c,single,0.6313,0.6692
+c,comp,0.3729,0.4
+d,single,0.6313,0.6692
+d,comp,0.3771,0.4051
+END,single,0.6313,0.6692
+END,comp,0.3941,0.4051
+ORACLE,single,0.6313,0.6692
+ORACLE,comp,0.4534,0.4205

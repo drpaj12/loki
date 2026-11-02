@@ -122,6 +122,8 @@ QL7a: the headline rule recovers more constructs than D70: BETTER / WORSE / INCO
 QL7b: the headline rule closes most of the gap (hypothesis): SUPPORTED when the bootstrap lower bound of the gap
 closed is above 0.5, CONTRADICTED when the upper bound is below 0.5, else INCONCLUSIVE.
 QL7c: each rule against E73 (geomean per unit), measurement label as QL7a. QL7d (failure classes, sizes): MEASUREMENT.
+QL7e (added, see Deviations): the headline rule against END (grow to the path end), geomean per unit, all / single / comp,
+labelled BETTER / WORSE / INCONCLUSIVE; a stop rule is only useful if it beats "never stop".
 
 ## Limits, stated before the run
 
@@ -130,6 +132,35 @@ order and for features; the oracle and the key-trained classifier use the key (c
 on its own); 90-odd designs train (c) and the combination; one deterministic run, seed 0 for the classifier;
 Y-cell composite parts have no key and are not scored; the priors do not match the TEST mix (#73).
 
-## Deviations from the plan
+## Fitting and choosing (TRAIN and VALIDATION only; written before the TEST run)
 
-(none yet)
+Split sizes (checked): 179 odd-half designs, 97 TRAIN and 82 VALIDATION; 703 units of at most 400 cells (383
+TRAIN, 320 VALIDATION); 415 and 328 non-glue constructs; 524 and 440 blocks. Right share (`results/tuning.csv`,
+`results/tuning_by_set.csv`):
+
+| rule | TRAIN | VALIDATION | VALIDATION single / comp |
+|---|---|---|---|
+| a (lambda = -8, grid edge) | 0.371 | 0.393 | 0.571 / 0.272 |
+| b (L0 = 16, grid edge) | 0.402 | 0.442 | 0.617 / 0.323 |
+| c (classifier) | 0.484 | 0.509 | 0.669 / 0.400 |
+| d (larger of c and b) | 0.487 | 0.512 | 0.669 / 0.405 |
+| END (grow to the end of the path) | 0.496 | 0.512 | 0.669 / 0.405 |
+| ORACLE | 0.530 | 0.521 | 0.669 / 0.421 |
+
+Chosen: lambda = -8, L0 = 16, pair c + b, operator larger, headline rule d (`results/chosen.json`). Reading before
+the TEST run: on a single-design unit the true block is the whole design, so growing to the end is already
+the ceiling there (0.669); on composite parts END is 0.405 against an oracle of 0.421 on VALIDATION (0.394 against 0.453 on
+TRAIN). So the room for a stop rule above "never stop" is small on this benchmark, and rule a only improves as lambda
+falls to the grid edge (it tends to END), rule b as L0 grows (also toward END). Rule d is within one prefix of END
+on VALIDATION. The TEST verdicts below are fixed accordingly (QL7e).
+
+## Deviations from the plan (all before the TEST run)
+
+(1) The lambda grid was extended from {-1 ... 4} to {-8, -4, -2, -1, ..., 4} after the first TRAIN and VALIDATION
+tuning (best lambda was the grid edge -1, right share rising as lambda fell); -8 is still the best and still the
+edge: the optimum of rule a is "no size cost", i.e. the limit END. (2) A split of the scores by set (single design
+against composite part) and the comparison with END (verdict QL7e: headline rule against growing to the path end,
+all / single / comp, same geomean rule) were added after TRAIN and VALIDATION showed END close to ORACLE. No TEST
+number had been seen. (3) The failure class NOTCHOSEN is dropped: with the any-block criterion it cannot occur.
+(4) The VALIDATION dry run of q7_eval.py has no D70 or #73 column (both counted as zero); those rows are meaningless
+there and are not used. (5) Unit and construct counts were added above; the plan fixed none.

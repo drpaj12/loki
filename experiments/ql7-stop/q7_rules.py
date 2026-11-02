@@ -16,7 +16,7 @@ import q7_feat as ft
 from sklearn.ensemble import HistGradientBoostingClassifier
 
 Picker = Callable[[ft.BlockPath], int]
-LAMBDAS = (-1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 4.0)
+LAMBDAS = (-8.0, -4.0, -2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 4.0)  # -8 to -2 added, see plan
 L0S = (2, 4, 8, 16)
 OPERATORS = ("smaller", "larger", "middle")
 GLUE = env.KINDS.index("glue")

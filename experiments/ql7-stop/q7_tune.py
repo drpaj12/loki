@@ -30,6 +30,12 @@ def oracle_share(units: list[ft.UnitData]) -> float:
     return sum(r["oracle"] for r in rows) / len(rows)
 
 
+def set_share(units: list[ft.UnitData], pick: rules.Picker, sname: str, key: str) -> float:
+    """Share of constructs of one set (single or comp) with ``key`` (right or oracle) set."""
+    rows = [r for r in sc.score(units, picks_of(units, pick))[0] if r["set"] == sname]
+    return round(sum(r[key] for r in rows) / len(rows), 4) if rows else float("nan")
+
+
 def best_of(grid: list[tuple[Any, float]]) -> Any:
     """Highest share; ties go to the earlier grid value (the grids start at the smaller / lower)."""
     return max(grid, key=lambda g: g[1])[0]
@@ -76,7 +82,16 @@ def main() -> int:
                      "validation": round(share_of(val, pk[name]), 4)})
     rows.append({"rule": "ORACLE", "param": "", "train": round(oracle_share(train), 4),
                  "validation": round(oracle_share(val), 4)})
+    def pick_of(name: str) -> rules.Picker:
+        return pk.get(name, rules.end_of_path)  # ORACLE needs no picker, END is a reference
+
+    by_set = [{"rule": name, "set": sname, "train": set_share(train, pick_of(name), sname, key),
+               "validation": set_share(val, pick_of(name), sname, key)}
+              for name, key in (*[(n, "right") for n in ("a", "b", "c", "d", "END")],
+                                ("ORACLE", "oracle"))
+              for sname in ("single", "comp")]
     env.RES.mkdir(exist_ok=True)
+    env.l3dlib.write_csv(env.RES / "tuning_by_set.csv", list(by_set[0]), by_set)
     env.l3dlib.write_csv(env.RES / "tuning.csv", list(rows[0]), rows)
     (env.RES / "chosen.json").write_text(json.dumps(cfg, sort_keys=True) + "\n", encoding="utf-8")
     with (env.OUT7 / "clf.pkl").open("wb") as fh:

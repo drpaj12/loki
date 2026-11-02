@@ -1,0 +1,24 @@
+rule,param,train,validation
+a,lambda=0.0,0.0747,0.0579
+a,lambda=-0.5,0.1301,0.0915
+a,lambda=0.5,0.0578,0.0335
+a,lambda=-1.0,0.1373,0.122
+a,lambda=1.0,0.0482,0.0152
+a,lambda=-2.0,0.1663,0.1768
+a,lambda=2.0,0.0434,0.0152
+a,lambda=-4.0,0.253,0.2744
+a,lambda=4.0,0.0313,0.0061
+a,lambda=-8.0,0.3711,0.3933
+b,L0=2,0.3181,0.378
+b,L0=4,0.3398,0.3872
+b,L0=8,0.3831,0.4177
+b,L0=16,0.4024,0.4421
+a,chosen,0.3711,0.3933
+b,chosen,0.4024,0.4421
+c,chosen,0.4843,0.5091
+d,chosen,0.4867,0.5122
+d,operator=smaller of c+b,,0.439
+d,operator=larger of c+b,,0.5122
+d,operator=middle of c+b,,0.4421
+END,,0.4964,0.5122
+ORACLE,,0.5301,0.5213

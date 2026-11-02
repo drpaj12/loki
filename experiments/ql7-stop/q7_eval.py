@@ -101,6 +101,8 @@ def tables(res: dict[str, tuple[list[dict[str, Any]], list[dict[str, Any]]]],
     scopes: list[tuple[str, list[int]]] = [("all", list(range(len(base))))]
     scopes += [(f"target {t}", [i for i, r in enumerate(base) if r["cell"] in cs])
                for t, cs in TARGETS.items()]
+    scopes += [(f"set {s}", [i for i, r in enumerate(base) if r["set"] == s])
+               for s in ("single", "comp")]
     scopes += [(f"cell {c}", [i for i, r in enumerate(base) if r["cell"] == c]) for c in env.CELLS]
     scopes += [(f"kind {k}", [i for i, r in enumerate(base) if r["kind"] == k]) for k in KINDS5]
     for name, idx in scopes:
@@ -130,13 +132,17 @@ def tables(res: dict[str, tuple[list[dict[str, Any]], list[dict[str, Any]]]],
 
 def unit_comparisons(merged: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
     out = []
+    scopes: list[tuple[str, Any]] = [("all", None)]
+    scopes += [(f"target {t}", ("cell", cs)) for t, cs in TARGETS.items()]
+    scopes += [(f"set {s}", ("set", (s,))) for s in ("single", "comp")]
     for n in RULES:
-        rows = [{**r, "g": r["right"]} for r in merged[n]]
-        for scope, cells in (("all", None), *[(f"target {t}", cs) for t, cs in TARGETS.items()]):
-            sel = [r for r in rows if cells is None or r["cell"] in cells]
-            for ref in ("d70", "e73"):
-                out.append({"rule": n, "scope": scope, "against": ref.upper(),
-                            **compare(sel, "right", ref)})
+        rows = [{**r, "end": e["right"]} for r, e in zip(merged[n], merged["END"], strict=True)]
+        for scope, sel_by in scopes:
+            sel = [r for r in rows if sel_by is None or r[sel_by[0]] in sel_by[1]]
+            for ref in ("d70", "e73", "end"):
+                if sel and not (n == "END" and ref == "end"):
+                    out.append({"rule": n, "scope": scope, "against": ref.upper(),
+                                **compare(sel, "right", ref)})
     return out
 
 
@@ -207,6 +213,14 @@ def verdicts(merged: dict[str, list[dict[str, Any]]], head: str,
     out.append({"id": "QL7b", "question": f"rule {head} closes most of the gap from E73 to ORACLE",
                 "value": round(pt, 3), "ci90_lo": round(lo, 3), "ci90_hi": round(hi, 3),
                 "counts": f"{len(rows)} constructs", "label": ql7b})
+    for scope in ("all", "set single", "set comp"):
+        r = next(x for x in cmp_rows if x["rule"] == head and x["scope"] == scope
+                 and x["against"] == "END")
+        out.append({"id": f"QL7e-{scope.replace('set ', '')}",
+                    "question": f"headline rule {head} against growing to the path end ({scope})",
+                    "value": r["geomean"], "ci90_lo": r["ci90_lo"], "ci90_hi": r["ci90_hi"],
+                    "counts": f"W{r['W']}/L{r['L']}/T{r['T']} of {r['units']} units",
+                    "label": r["label"]})
     for n in RULES:
         r = next(x for x in cmp_rows if x["rule"] == n and x["scope"] == "all"
                  and x["against"] == "E73")
