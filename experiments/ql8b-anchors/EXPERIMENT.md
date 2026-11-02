@@ -37,10 +37,11 @@ reason (first match of the anchor tests of `q6_net.anchors`):
   type and the part's HDL line; which pass dropped the part's own logic is not in `labels.csv` (it has the cell type and
   the HDL span only), so L15 cannot name the pass here; this is stated as an open question, not guessed. Two more (fsm,
   6 cells, Y-gate and Y-lut, one design) are combinational netlists with no flip-flop.
-- 19 have flip-flops that read two or more other flip-flops (not a closed loop, not a chain): 15 are the 64-flip-flop
-  variable shifter of problem 115 (a load / enable / 4-way amount mux; every flip-flop reads 5 or 6 others and the cones
-  hold 4 or 5 cut nets: load, enable, amount), and 4 are 4-flip-flop finite-state machines in a composite whose flip-flops
-  also read flip-flops outside the machine. None of these flip-flops is in an anchor.
+- 19 have flip-flops that read two or more other flip-flops (not a closed loop, not a chain): 14 are the 64-flip-flop
+  variable shifter of problem 115 (a load / enable / 4-way amount mux; the most-reading flip-flop reads 5, 6 or 14 other
+  flip-flops and the cones hold 4 or 5 global nets per flip-flop: load, enable, amount), and 5 are finite-state machines of 4
+  to 6 flip-flops in composites (their flip-flops read 3 to 14 other flip-flops; the 4-flip-flop ones have no global net in
+  their cones). None of these flip-flops is in an anchor.
 
 By target: O-lut 25, O-hard 18, O-gate 13, Y-gate 1, Y-lut 1; by kind: shift 30, fsm 27, counter 1; by size: 37 of 1 to 3
 cells, 21 of 4 to 300, none above.
