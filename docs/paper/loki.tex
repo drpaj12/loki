@@ -2339,6 +2339,19 @@ not more often right (verdict inconclusive), and pieces of 4 to 7 cells give a t
 (lower bound 0.011, possibly good). The anchor census bounds the approach: an anchor of the matching class survives for 0.35 (shift) to 0.75 (register file) of
 the constructs.
 
+\paragraph{Loki L3: choosing where a grown block stops (Q-L7).}
+The previous paragraph left the stop rule as the failing part, so we grew every block to the end of its path (frontier exhausted, or 300 cells)
+and chose the cut afterwards (plan, split, four candidate rules and verdict rules in \code{experiments/ql7-stop/EXPERIMENT.md}, fixed before the test run). The rules were
+the posterior odds of a known construct against glue with a size term, the first prefix at a local minimum of the conductance of the block (wires
+crossing its border over its wires), a classifier on trajectory features trained on held-out designs, and the larger of the last two, chosen on a validation split of
+designs that trained nothing else. On the 1141 test constructs that the cones and the earlier grower also scored, the combined rule is right for 0.528, against 0.053 for the
+earlier stop, 0.385 for the cones and 0.556 for the answer-key ceiling, so it closes 94 percent of the gap to the ceiling (0.927 to 0.961) and beats the cones (geomean
+over design and cell units 1.146, 1.105 to 1.190; gate netlists 1.348, four-input LUT 1.122, but k6 hard-map 0.968 and composite parts 1.058 are inconclusive). The gain is
+however only that blocks are no longer stopped early: growing every block to the end of its path is right for the same 0.528, and none of the three rules beats it (they are
+worse by 1 to 9 percent, and the combination equals it). On single-design units the end of the path is already the ceiling (0.597), and on composite parts it is 0.441
+against a ceiling of 0.504, so the stop has little room. What is left to recover lies in the growth order (449 of 1141 constructs have no right prefix on any block) and in the
+anchors (58 constructs are not touched by any block), and the kind guess stays weak (precision 0.27, recall 0.19).
+
 \section{Conclusion}
 \label{sec:conclusion}
 

@@ -154,6 +154,84 @@ TRAIN). So the room for a stop rule above "never stop" is small on this benchmar
 falls to the grid edge (it tends to END), rule b as L0 grows (also toward END). Rule d is within one prefix of END
 on VALIDATION. The TEST verdicts below are fixed accordingly (QL7e).
 
+## Results, 2026-11-02 (plain English first)
+
+Plain English: letting every block grow to the end of its path and then choosing where to cut did what the
+hypothesis asked for: the right block is found for 0.528 of the constructs (headline rule d), against 0.053 for the
+#73 stop, 0.385 for the D70 cones and 0.556 for the answer-key ceiling, so about 94 percent of the gap between the #73 stop
+and the ceiling is closed. But the result is almost entirely "do not stop": growing to the end of the path (END) is right
+for the same 0.528, and none of the three stop rules we built (size-penalised posterior, lowest conductance, learned
+classifier) beats it; rules a, b and c are each worse than END, and rule d, the combination chosen on VALIDATION, is END
+within one prefix. The reason is the benchmark: for a single-design unit the true block is the whole design, so the end of the
+path is already the ceiling (0.597 of 635 single constructs); only the composite parts (506 constructs) leave room, and
+there END is 0.441 and the ceiling 0.504. Where the headline rule does beat D70 it is on gate netlists (geomean 1.348)
+and single designs; on composite parts (1.058, CI 0.991 to 1.125) and on the k6 hard-map target (0.968) the difference to D70 is
+inconclusive. The remaining failures are the growth order (449 of 1141 constructs have no right prefix on any block) and
+anchors that never touch the true block (58), not the stop.
+
+CAD-style counts first (TEST only; `results/*.csv`; 1141 constructs of the TEST units of at most 400 cells that D70 and
+#73 also scored; the ceiling 0.556 and D70 0.385 equal the #73 post hoc numbers on the same constructs).
+
+Right-block share (`results/right_block.csv`, `results/right_block.svg`):
+
+| scope | constructs | E73 | D70 | a | b | c | d (headline) | END | ORACLE |
+|---|---|---|---|---|---|---|---|---|---|
+| all | 1141 | 0.053 | 0.385 | 0.422 | 0.462 | 0.514 | 0.528 | 0.528 | 0.556 |
+| gate (O + Y) | 351 | 0.000 | 0.242 | 0.368 | 0.387 | 0.564 | 0.581 | 0.587 | 0.595 |
+| k4 (O + Y) | 460 | 0.057 | 0.439 | 0.483 | 0.550 | 0.554 | 0.557 | 0.552 | 0.598 |
+| k6 / hardmap | 330 | 0.106 | 0.461 | 0.394 | 0.418 | 0.406 | 0.430 | 0.430 | 0.455 |
+| single | 635 | 0.043 | 0.356 | 0.450 | 0.507 | 0.581 | 0.594 | 0.597 | 0.597 |
+| comp | 506 | 0.067 | 0.421 | 0.385 | 0.405 | 0.431 | 0.445 | 0.441 | 0.504 |
+
+Per kind (all cells): fsm d 0.438 against D70 0.392 (ceiling 0.459); counter 0.483 against 0.342 (0.512); shift 0.569
+against 0.525 (0.649); regfile 0.795 against 0.477 (0.795); register 0.589 against 0.310 (0.595).
+
+Per design x cell unit against D70 (`results/unit_cmp.csv`; geomean of (g+1)/(d+1), 90 percent bootstrap over designs,
+857 units): headline d 1.146 (1.105 to 1.190), W296 / L130 / T431, BETTER (QL7a). By target: gate 1.348 (1.298 to 1.404) BETTER;
+k4 1.122 (1.066 to 1.179) BETTER; k6 / hardmap 0.968 (0.919 to 1.020) INCONCLUSIVE; by set: single 1.179 (1.129 to 1.234)
+BETTER; comp 1.058 (0.991 to 1.125) INCONCLUSIVE. The other rules against D70: a 1.045 (1.008 to 1.084), b 1.080
+(1.041 to 1.118), c 1.134 (1.092 to 1.177), all BETTER overall. Against the #73 grower every rule is far better
+(QL7c: d 1.521, 1.477 to 1.569, W506 / L3 / T348). Gap closed from E73 to ORACLE for d: 0.944 (0.927 to 0.961), SUPPORTED
+(QL7b).
+
+Against growing to the path end (QL7e, added before the TEST run): a 0.912 (0.898 to 0.927) WORSE; b 0.943 (0.932 to 0.952)
+WORSE; c 0.990 (0.984 to 0.996) WORSE; d 1.000 (0.997 to 1.004), W5 / L5 / T847, INCONCLUSIVE (comp only: 1.008, 0.997 to 1.022,
+W5 / L3 / T214). Rule d differs from END on a handful of units and has the same 602 right constructs.
+
+Recall and precision per kind (`results/pr_by_kind.csv`; claim = chosen prefix of 4 cells or more whose argmax is not glue;
+the #73 posterior is the weak part): headline d all kinds 792 claims, 213 true positives, precision 0.269, recall 0.185 (211
+of 1141 constructs recovered with the right kind claimed); END precision 0.277, recall 0.182; c precision 0.264, recall 0.186;
+b 0.227 and 0.174; a 0.188 and 0.162. By kind for d (precision / recall): fsm 0.286 / 0.249, counter 0.265 / 0.129, shift
+0.251 / 0.233, regfile 0.714 / 0.114 (7 claims), register 0.247 / 0.141. Recovering the block is much easier than naming
+its kind with this posterior.
+
+Block sizes (`results/sizes.csv`, chosen size of the best-Jaccard block): true median 29 cells (quartiles 13 and 65); d median
+27 (10 and 66), END 27 (11 and 68), c 25, b 22, a 24. Over the true size: median 0.914 for d (0.965 for the blocks that are right); in the constructs that fail,
+the ratio median is 0.63 and the upper quartile above 2 (blocks that are too big or merged) for c, d and END; b is smaller (0.525,
+upper quartile 0.766).
+
+Failure classes of the non-recovered constructs (`results/failure_classes.csv`, all cells; rule a / b / c / d / END):
+NOSEED 58 for every rule; ORDER 449 for every rule (the growth order never reaches the right block); TOOSMALL 125 / 93 / 22 / 5 / 0;
+TOOBIG 6 / 0 / 0 / 0 / 5; MERGED (also covers half of a neighbouring construct) 21 / 14 / 25 / 27 / 27; BETWEEN 1 / 0 / 0 / 0 / 0.
+Rule a and rule b mostly stop too small (their lowest score or lowest conductance sits early on the path); rules c and d have
+almost no too-small cases and are left with the merged neighbours, which END has as well.
+
+Verdicts. QL7a (headline rule recovers more than D70): BETTER, as specified; with the caveat that composite parts
+(1.058) and k6 / hardmap (0.968) are inconclusive. QL7b (closes most of the gap from #73 to the ceiling): SUPPORTED (0.944, 0.927 to 0.961).
+QL7c (each rule against #73): MEASUREMENT, all BETTER. QL7d (sizes, failure classes): MEASUREMENT. QL7e (rule against growing to
+the end): a, b, c WORSE, d INCONCLUSIVE. The hypothesis is true as worded and the useful part of it is "grow to the end", not
+the stop rule.
+
+Next step suggested, not run: the remaining loss is the growth order (449 constructs with no right prefix on any block) and the
+anchor seed (58), so work on the order (a likelihood trained on more than six kinds, a different order than the weak per-step
+evidence) and on separating merged neighbours in the composites, where END is 0.441 against 0.504.
+
+Limits, stated not hidden. Units above 400 cells and blocks above 300 cells are not scored; the single-design units make END the
+ceiling for 55 percent of the constructs; the classifier is trained on 97 designs (415 constructs) and
+its features are mostly the weak #73 posterior and conductance; TEST was run once; four rules and four comparisons with
+D70 (the headline carries the verdict); precision of the kind guess is low (0.27) because the #73 likelihood is weak; Y-cell
+composite parts have no key and are not scored.
+
 ## Deviations from the plan (all before the TEST run)
 
 (1) The lambda grid was extended from {-1 ... 4} to {-8, -4, -2, -1, ..., 4} after the first TRAIN and VALIDATION
