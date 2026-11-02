@@ -124,3 +124,73 @@ for only 6 blocks; its 10 gains are the constant-only constructs.
 
 (1) The class ablation grew only the units that get a new anchor of the class (the others keep their #74 paths, which is the
 same result, and saves the regrowth); (2) TRAIN is not used (nothing is fitted).
+
+## Results, 2026-11-02 (plain English first)
+
+Plain English: the new anchors reach what they were built for and cost a lot elsewhere. All 58 constructs that no block touched
+are now touched, and 47 of them are right: 19 of the 21 structural ones (the 64-flip-flop shifter and the small state machines,
+found by the bank and loop classes) and 28 of the 37 constant ones (the constant cells the provenance gives to a part). But
+89 constructs that were right before are lost (115 are gained in total, 47 of them from the 58), because a new block takes cells
+the old block needed: the constant anchor takes tie-off cells that sit inside 61 of the lost constructs (and inside hard-cell
+blocks: hard blocks right at the end fall from 16 to 3), and bank and loop blocks split single designs whose whole netlist is the
+construct (single designs 0.539 against 0.597, WORSE). Net: the right-block share rises from 0.528 to 0.550 (D70 0.385), gained on
+composite parts (0.565 against 0.441, now BETTER than D70) and on k6/hardmap (0.491 against 0.430), lost on gate netlists (0.538
+against 0.587) and single designs. The per-unit comparison against the old anchors is a tie (geomean 1.001).
+
+CAD-style counts first (TEST only; 1141 constructs of 857 units that D70 and #73 also scored; `results/*.csv`; NEW = #74 anchors
+plus bank, loop and const; OLD = #74). Right-block share at the path end (oracle in brackets):
+
+| scope | constructs | D70 | OLD | NEW |
+|---|---|---|---|---|
+| all | 1141 | 0.385 | 0.528 (0.556) | 0.550 (0.559) |
+| gate (O + Y) | 351 | 0.242 | 0.587 (0.595) | 0.538 (0.547) |
+| k4 (O + Y) | 460 | 0.439 | 0.552 (0.598) | 0.602 (0.613) |
+| k6 / hardmap | 330 | 0.461 | 0.430 (0.455) | 0.491 (0.497) |
+| single | 635 | 0.356 | 0.597 | 0.539 |
+| comp | 506 | 0.421 | 0.441 (0.504) | 0.565 (0.585) |
+
+By kind (OLD to NEW): fsm 0.438 to 0.568, shift 0.559 to 0.772, counter 0.483 to 0.338, register 0.595 to 0.537, regfile 0.795 to 0.659.
+
+The 58 (`results/untouched.csv`, `untouched_summary.csv`): touched 58 of 58 (OLD 0), right 47. Structural 21: touched 21, right 19 (all
+19 with flip-flops; the two combinational six-cell fsm netlists are touched by the constant anchor and not right). Constant 37:
+touched 37, right 28 (the nine that are not right are one-cell constructs: the constant block holds all two or three constant cells
+of the netlist, so its Jaccard with the one cell is 1/3).
+
+Per unit (design x cell) against D70 (`results/unit_cmp.csv`; geomean of (g+1)/(d+1), 90 percent bootstrap over designs, 857 units): NEW
+all 1.148 (1.103 to 1.197), W306 / L135 / T416, BETTER; gate 1.285 BETTER; k4 1.140 BETTER; k6 / hardmap 1.007 (0.956 to 1.059)
+INCONCLUSIVE; single 1.135 BETTER; comp 1.184 (1.101 to 1.273) BETTER (it was 1.058, INCONCLUSIVE, in #74). Against OLD: all 1.001
+(0.980 to 1.024), W78 / L66 / T713, INCONCLUSIVE; gate 0.948 (0.919 to 0.975) WORSE; k4 1.020 (0.998 to 1.045); k6 / hardmap 1.042 (1.010 to
+1.076) BETTER; single 0.960 (0.942 to 0.977) WORSE, W0 / L37; comp 1.129 (1.058 to 1.203) BETTER, W78 / L29.
+
+Anchor precision (`results/anchor_precision.csv`; blocks of the class in the 1350 TEST units; touch = some anchor cell is in an answer-key
+construct of the unit; right = right for some construct at the path end): bank 107 blocks, 107 touch, 34 right (0.32); loop 167,
+167, 52 (0.31); const 1186, 807 touch (0.68), 30 right (0.03). Old classes OLD to NEW right at the end: fsm 160 to 152 of 280, register
+156 to 95 of 620, memory 119 to 113 of 143, hard 16 to 3 of 305, shift 89 to 91, counter 64 to 63. False blocks elsewhere
+(`results/false_blocks.csv`): in units where the old anchors left no construct untouched there are 84 bank blocks (all touch a
+construct), 159 loop blocks (all touch) and 1129 const blocks (750 touch). Constructs right before and lost (`results/lost.csv`): 89;
+61 of them contain constant cells that the const block now holds, 28 are lost to bank or loop blocks (by set: 44 composite counters,
+19 single registers, 12 single fsm, 6 single register files).
+
+Post hoc, after the TEST numbers above were seen (not part of the plan; `results/posthoc_bank+loop/`): without the const class, bank and loop
+alone recover the same 19 structural constructs, 0 of the constants, and lose 86 (right share 0.527 against OLD 0.528; against OLD
+0.984, 0.965 to 1.002; single 0.963 WORSE, gate 0.930 WORSE, comp 1.049 INCONCLUSIVE, k6 / hardmap 1.023). So the const class explains the
+gain on composite parts and k6 / hardmap and part of the loss; the loss on single designs belongs to bank and loop, which cut a
+design whose netlist is the whole construct into several blocks.
+
+Verdicts (rules fixed above). QL8b-a (the untouched constructs become touched and right): SUPPORTED, 47 of 58 right (58 touched);
+structural 19 of 21; constant 28 of 37. QL8b-b (cost): against D70 BETTER overall (1.148); against OLD INCONCLUSIVE overall (1.001), WORSE on gate
+and single designs, BETTER on composite parts and k6 / hardmap. The second half of the hypothesis, "cost no right construct elsewhere", is
+false as worded (89 constructs lost, 115 gained), and by the fixed per-unit rule it is INCONCLUSIVE overall (not WORSE) with WORSE
+on two targets. QL8b-c (anchor precision): MEASUREMENT, as above.
+
+Next step suggested, not run: make the new classes harmless where the design is one construct. A new block that would take cells of a
+single-design netlist could be merged into the old block when they share a net, and a constant anchor could be dropped from a part
+that holds a hard cell or another class (the tie-off cells sit inside the construct). Neither is a new anchor; both are a merging step,
+the same joining problem as SPLIT in Q-L8a.
+
+Limits, stated not hidden. Units above 400 cells and blocks above 300 cells are not scored; 37 of the 58 are the constant cells the
+provenance gives to a part, an artefact of how parts are cut out and not structure; the census is of TEST constructs (descriptive; the classes
+were designed after seeing it, and 14 of the 19 structural recoveries are one HDL problem (115, the 64-flip-flop shifter) seen in several
+composites and cells, so they are not 19 independent cases); VALIDATION chose the class set (all three kept, each net-positive there, and the TEST net of the const
+class is not); TEST ran once for the headline set; the post hoc row is exploratory; the kind guess is unchanged (#73 likelihood); Y-cell composite parts
+have no key and are not scored.

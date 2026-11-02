@@ -1,4 +1,7 @@
-"""Score the new anchors on one split and write the tables: ``python -B q8b_eval.py [SPLIT]``.
+"""Score the new anchors on one split and write the tables.
+
+``python -B q8b_eval.py [SPLIT [CLASSES]]``. CLASSES (default: results/chosen.json) is for post hoc
+sets and writes results/posthoc_<CLASSES>/.
 
 TEST only after the class set is chosen and committed (EXPERIMENT.md). SPLIT = TEST (default) writes
 results/*.csv; VALIDATION is a dry run into $QL8B_OUT/dry (no D70 column).
@@ -195,7 +198,7 @@ def verdicts(cen_sum: list[dict[str, Any]], cmp_rows: list[dict[str, Any]],
 def main(argv: list[str]) -> int:
     split = argv[0] if argv else "TEST"
     cfg = json.loads((env.RES / "chosen.json").read_text(encoding="utf-8"))
-    var = cfg["variant"]
+    var = argv[1] if len(argv) > 1 else cfg["variant"]  # another set: post hoc, own directory
     old_u, new_u = feat.load("OLD", split), feat.load(var, split)
     old_r, new_r = end_rows(old_u), end_rows(new_u)
     refs = q7e.ref_rows() if split == "TEST" else q7e.ZeroRefs()
@@ -211,6 +214,8 @@ def main(argv: list[str]) -> int:
         "false_blocks.csv": false_blocks(new_u, old_r), "lost.csv": lost_rows(rows)}
     tabs["verdict.csv"] = verdicts(cs, tabs["unit_cmp.csv"], prec) if cs else []
     dest = env.RES if split == "TEST" else env.OUT8 / "dry"
+    if len(argv) > 1:
+        dest = env.RES / f"posthoc_{var}"
     dest.mkdir(parents=True, exist_ok=True)
     for name, trows in tabs.items():
         if trows:

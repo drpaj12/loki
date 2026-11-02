@@ -1,0 +1,16 @@
+set,anchor_kind,blocks,touch_at_anchor,touch_share,right_at_end,right_share
+NEW,bank,107,107,1.0,34,0.318
+NEW,const,1186,807,0.68,30,0.025
+NEW,counter,172,172,1.0,63,0.366
+NEW,fsm,280,280,1.0,152,0.543
+NEW,hard,305,282,0.925,3,0.01
+NEW,loop,167,167,1.0,52,0.311
+NEW,memory,143,143,1.0,113,0.79
+NEW,register,620,620,1.0,95,0.153
+NEW,shift,237,237,1.0,91,0.384
+OLD,counter,172,172,1.0,64,0.372
+OLD,fsm,280,280,1.0,160,0.571
+OLD,hard,305,282,0.925,16,0.052
+OLD,memory,143,143,1.0,119,0.832
+OLD,register,620,620,1.0,156,0.252
+OLD,shift,237,237,1.0,89,0.376

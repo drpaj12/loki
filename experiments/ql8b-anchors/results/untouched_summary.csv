@@ -1,0 +1,6 @@
+group,constructs,touched,right
+all,58,58,47
+constant,37,37,28
+structural,21,21,19
+"reason: flip-flops read two or more other flip-flops (not a chain, not a closed loop)",19,19,19
+reason: no flip-flop and no hard cell (every anchor class needs one),39,39,28
