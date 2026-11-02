@@ -1,0 +1,26 @@
+{
+ "blocks_checked_ok": 380,
+ "blocks_total": 402,
+ "designs": [
+  "Prob001_zero",
+  "Prob024_hadd",
+  "Prob034_dff8",
+  "Prob045_edgedetect2",
+  "Prob115_shift18",
+  "Prob121_2014_q3bfsm",
+  "Prob140_fsm_hdlc",
+  "Prob154_fsm_ps2data",
+  "tinyriscv_clint"
+ ],
+ "outcomes": {
+  "assembly": 14,
+  "pass": 25,
+  "runtime": 4,
+  "syntax": 4
+ },
+ "pass": 25,
+ "replies": 402,
+ "rows": 47,
+ "timeouts": 0,
+ "unexpected": []
+}

@@ -159,3 +159,32 @@ approach's cost. Initial register values are not in a netlist; a reference that 
 (Prob034_dff8 in the dry run needs `initial q = 0`). The block check is a random-input simulation. The key covers registers only.
 The estimator of pass@k carries the full run's note: no citation until verified. Draws are independent but not reproducible
 (temperature not controlled). The `ext` equivalence check is `dsec` on netlists with register init 0.
+
+## Amendments
+
+- 2026-11-02 (before any model call; plan commit 1987409): preparation finished. Changes to the plan text only; no prompt file changed
+  (the two sha256 above still hold).
+  1. `ext` is five designs with one draw (not three): picorv32_pcpi_div (2408 cells, 175 blocks), picorv32_pcpi_mul (2586, 128),
+     tinyriscv_div (3055, 195), tinyriscv_csr (3535, 90), tinyriscv_clint (1316, 66): 654 blocks, 29 of them with a kind guess. One draw
+     because the designs cut into hundreds of blocks (three draws would be 2000 more calls); `ext` gives pass@1 and the block-check share
+     only, no pass@3 and no MAJ. Block building took 6 minutes per design at most (one process each). The `ext` calls are the last
+     batches (`group` = `ext`), smallest design first, so the run can stop before them. Netlists are generated (`q10_synth_ext.py`), not
+     committed; the sha256 of every prompt is in `calls_table.csv`.
+  2. The residual blocks (cells no anchor block holds) are the connected components of the uncovered cells, in traversal order,
+     chunked at 300 cells; the Fiedler cut named in the first part of this plan is not used. 221 of 314 blocks are residual in `vq` and
+     `vbig`; 622 of 654 in `ext` (32 have an anchor class; `blocks_summary.csv`, column kind).
+  3. Counts. Blocks: `vq` 209 in 122 designs (15 designs have no gate), `vbig` 105, `ext` 654; 968 in all. Kind guesses: 78 blocks in 38
+     designs (47 `vq`, 2 `vbig`, 29 `ext`). Calls (one per unique prompt and draw; a prompt shared by D and D+h is one call): 1772 in
+     all: pilot 75 (draw 1, 10 designs, 4 batches); full 1697 = core 1014 (44 batches, three draws) + ext 683 (29 batches, one draw).
+  4. Token estimate (prompt bytes / 3.2 plus the system message, plus 113 + 0.36 x cells output tokens per call, the fit of the 40 pilot
+     arm A replies; harness overhead of each subagent not included): pilot input 58,229 + output 8,775 = 67,004; full input 2,262,298 +
+     output 209,769 = 2,472,067 (core 1,296,838 + 125,370; ext 965,460 + 84,399); all 2,539,071. Per batch 1.7k to 176k tokens. For a
+     scale against the meter: the full run moved the weekly meter from 62 to 70 percent over 1233 calls (about 0.0065 points a call); at
+     that rate 1772 calls is about 11 points. Our calls are smaller on average (no two-shot prefix), so that is an upper guide, not an
+     estimate.
+  5. Dry run (`q10_dryrun.py`, `dryrun_result.json`): 402 stub replies for 9 designs (a gate-free one, a combinational one, the single-block
+     FSM, three multi-block register or FSM designs, one over-cap problem and tinyriscv_clint), faithful RTL for draw 1 and one of five
+     patterns (faithful, outputs tied low, syntax error, no markers, wrong module name) afterwards: 47 design rows, all outcomes as
+     expected, 0 timeouts; 380 of 402 blocks check `ok` (the rest are the injected faults); the assembled clint is `equiv` by `dsec`
+     and `neq` after every NAND, NOR and NOT output is inverted.
+  6. Structure-only provenance number, computed with no model (42 designs with a key, 47 key constructs): 39 have a right block (0.83).

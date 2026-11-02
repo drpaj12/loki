@@ -1,0 +1,422 @@
+{
+ "batch_size": 24,
+ "batches": [
+  {
+   "batch": 1,
+   "calls": [
+    {
+     "call": 45,
+     "call_file": "calls/call-0045.txt",
+     "outbox_file": "outbox/resp-0045.txt"
+    },
+    {
+     "call": 46,
+     "call_file": "calls/call-0046.txt",
+     "outbox_file": "outbox/resp-0046.txt"
+    },
+    {
+     "call": 98,
+     "call_file": "calls/call-0098.txt",
+     "outbox_file": "outbox/resp-0098.txt"
+    },
+    {
+     "call": 99,
+     "call_file": "calls/call-0099.txt",
+     "outbox_file": "outbox/resp-0099.txt"
+    },
+    {
+     "call": 100,
+     "call_file": "calls/call-0100.txt",
+     "outbox_file": "outbox/resp-0100.txt"
+    },
+    {
+     "call": 101,
+     "call_file": "calls/call-0101.txt",
+     "outbox_file": "outbox/resp-0101.txt"
+    },
+    {
+     "call": 127,
+     "call_file": "calls/call-0127.txt",
+     "outbox_file": "outbox/resp-0127.txt"
+    },
+    {
+     "call": 128,
+     "call_file": "calls/call-0128.txt",
+     "outbox_file": "outbox/resp-0128.txt"
+    },
+    {
+     "call": 129,
+     "call_file": "calls/call-0129.txt",
+     "outbox_file": "outbox/resp-0129.txt"
+    },
+    {
+     "call": 130,
+     "call_file": "calls/call-0130.txt",
+     "outbox_file": "outbox/resp-0130.txt"
+    },
+    {
+     "call": 132,
+     "call_file": "calls/call-0132.txt",
+     "outbox_file": "outbox/resp-0132.txt"
+    },
+    {
+     "call": 133,
+     "call_file": "calls/call-0133.txt",
+     "outbox_file": "outbox/resp-0133.txt"
+    },
+    {
+     "call": 134,
+     "call_file": "calls/call-0134.txt",
+     "outbox_file": "outbox/resp-0134.txt"
+    },
+    {
+     "call": 161,
+     "call_file": "calls/call-0161.txt",
+     "outbox_file": "outbox/resp-0161.txt"
+    },
+    {
+     "call": 162,
+     "call_file": "calls/call-0162.txt",
+     "outbox_file": "outbox/resp-0162.txt"
+    },
+    {
+     "call": 163,
+     "call_file": "calls/call-0163.txt",
+     "outbox_file": "outbox/resp-0163.txt"
+    },
+    {
+     "call": 164,
+     "call_file": "calls/call-0164.txt",
+     "outbox_file": "outbox/resp-0164.txt"
+    },
+    {
+     "call": 165,
+     "call_file": "calls/call-0165.txt",
+     "outbox_file": "outbox/resp-0165.txt"
+    },
+    {
+     "call": 166,
+     "call_file": "calls/call-0166.txt",
+     "outbox_file": "outbox/resp-0166.txt"
+    },
+    {
+     "call": 167,
+     "call_file": "calls/call-0167.txt",
+     "outbox_file": "outbox/resp-0167.txt"
+    },
+    {
+     "call": 168,
+     "call_file": "calls/call-0168.txt",
+     "outbox_file": "outbox/resp-0168.txt"
+    },
+    {
+     "call": 171,
+     "call_file": "calls/call-0171.txt",
+     "outbox_file": "outbox/resp-0171.txt"
+    },
+    {
+     "call": 172,
+     "call_file": "calls/call-0172.txt",
+     "outbox_file": "outbox/resp-0172.txt"
+    },
+    {
+     "call": 173,
+     "call_file": "calls/call-0173.txt",
+     "outbox_file": "outbox/resp-0173.txt"
+    }
+   ],
+   "draw": 1,
+   "est_tokens_in": 14638,
+   "est_tokens_out": 2770,
+   "group": "core",
+   "n_calls": 24
+  },
+  {
+   "batch": 2,
+   "calls": [
+    {
+     "call": 174,
+     "call_file": "calls/call-0174.txt",
+     "outbox_file": "outbox/resp-0174.txt"
+    },
+    {
+     "call": 175,
+     "call_file": "calls/call-0175.txt",
+     "outbox_file": "outbox/resp-0175.txt"
+    },
+    {
+     "call": 176,
+     "call_file": "calls/call-0176.txt",
+     "outbox_file": "outbox/resp-0176.txt"
+    },
+    {
+     "call": 177,
+     "call_file": "calls/call-0177.txt",
+     "outbox_file": "outbox/resp-0177.txt"
+    },
+    {
+     "call": 178,
+     "call_file": "calls/call-0178.txt",
+     "outbox_file": "outbox/resp-0178.txt"
+    },
+    {
+     "call": 179,
+     "call_file": "calls/call-0179.txt",
+     "outbox_file": "outbox/resp-0179.txt"
+    },
+    {
+     "call": 180,
+     "call_file": "calls/call-0180.txt",
+     "outbox_file": "outbox/resp-0180.txt"
+    },
+    {
+     "call": 181,
+     "call_file": "calls/call-0181.txt",
+     "outbox_file": "outbox/resp-0181.txt"
+    },
+    {
+     "call": 182,
+     "call_file": "calls/call-0182.txt",
+     "outbox_file": "outbox/resp-0182.txt"
+    },
+    {
+     "call": 183,
+     "call_file": "calls/call-0183.txt",
+     "outbox_file": "outbox/resp-0183.txt"
+    },
+    {
+     "call": 184,
+     "call_file": "calls/call-0184.txt",
+     "outbox_file": "outbox/resp-0184.txt"
+    },
+    {
+     "call": 185,
+     "call_file": "calls/call-0185.txt",
+     "outbox_file": "outbox/resp-0185.txt"
+    },
+    {
+     "call": 186,
+     "call_file": "calls/call-0186.txt",
+     "outbox_file": "outbox/resp-0186.txt"
+    },
+    {
+     "call": 187,
+     "call_file": "calls/call-0187.txt",
+     "outbox_file": "outbox/resp-0187.txt"
+    },
+    {
+     "call": 188,
+     "call_file": "calls/call-0188.txt",
+     "outbox_file": "outbox/resp-0188.txt"
+    },
+    {
+     "call": 189,
+     "call_file": "calls/call-0189.txt",
+     "outbox_file": "outbox/resp-0189.txt"
+    },
+    {
+     "call": 190,
+     "call_file": "calls/call-0190.txt",
+     "outbox_file": "outbox/resp-0190.txt"
+    },
+    {
+     "call": 191,
+     "call_file": "calls/call-0191.txt",
+     "outbox_file": "outbox/resp-0191.txt"
+    },
+    {
+     "call": 192,
+     "call_file": "calls/call-0192.txt",
+     "outbox_file": "outbox/resp-0192.txt"
+    },
+    {
+     "call": 193,
+     "call_file": "calls/call-0193.txt",
+     "outbox_file": "outbox/resp-0193.txt"
+    },
+    {
+     "call": 194,
+     "call_file": "calls/call-0194.txt",
+     "outbox_file": "outbox/resp-0194.txt"
+    },
+    {
+     "call": 195,
+     "call_file": "calls/call-0195.txt",
+     "outbox_file": "outbox/resp-0195.txt"
+    },
+    {
+     "call": 196,
+     "call_file": "calls/call-0196.txt",
+     "outbox_file": "outbox/resp-0196.txt"
+    },
+    {
+     "call": 197,
+     "call_file": "calls/call-0197.txt",
+     "outbox_file": "outbox/resp-0197.txt"
+    }
+   ],
+   "draw": 1,
+   "est_tokens_in": 12686,
+   "est_tokens_out": 2738,
+   "group": "core",
+   "n_calls": 24
+  },
+  {
+   "batch": 3,
+   "calls": [
+    {
+     "call": 198,
+     "call_file": "calls/call-0198.txt",
+     "outbox_file": "outbox/resp-0198.txt"
+    },
+    {
+     "call": 199,
+     "call_file": "calls/call-0199.txt",
+     "outbox_file": "outbox/resp-0199.txt"
+    },
+    {
+     "call": 200,
+     "call_file": "calls/call-0200.txt",
+     "outbox_file": "outbox/resp-0200.txt"
+    },
+    {
+     "call": 201,
+     "call_file": "calls/call-0201.txt",
+     "outbox_file": "outbox/resp-0201.txt"
+    },
+    {
+     "call": 202,
+     "call_file": "calls/call-0202.txt",
+     "outbox_file": "outbox/resp-0202.txt"
+    },
+    {
+     "call": 203,
+     "call_file": "calls/call-0203.txt",
+     "outbox_file": "outbox/resp-0203.txt"
+    },
+    {
+     "call": 204,
+     "call_file": "calls/call-0204.txt",
+     "outbox_file": "outbox/resp-0204.txt"
+    },
+    {
+     "call": 205,
+     "call_file": "calls/call-0205.txt",
+     "outbox_file": "outbox/resp-0205.txt"
+    },
+    {
+     "call": 206,
+     "call_file": "calls/call-0206.txt",
+     "outbox_file": "outbox/resp-0206.txt"
+    },
+    {
+     "call": 207,
+     "call_file": "calls/call-0207.txt",
+     "outbox_file": "outbox/resp-0207.txt"
+    },
+    {
+     "call": 208,
+     "call_file": "calls/call-0208.txt",
+     "outbox_file": "outbox/resp-0208.txt"
+    },
+    {
+     "call": 209,
+     "call_file": "calls/call-0209.txt",
+     "outbox_file": "outbox/resp-0209.txt"
+    },
+    {
+     "call": 210,
+     "call_file": "calls/call-0210.txt",
+     "outbox_file": "outbox/resp-0210.txt"
+    },
+    {
+     "call": 211,
+     "call_file": "calls/call-0211.txt",
+     "outbox_file": "outbox/resp-0211.txt"
+    },
+    {
+     "call": 234,
+     "call_file": "calls/call-0234.txt",
+     "outbox_file": "outbox/resp-0234.txt"
+    },
+    {
+     "call": 235,
+     "call_file": "calls/call-0235.txt",
+     "outbox_file": "outbox/resp-0235.txt"
+    },
+    {
+     "call": 236,
+     "call_file": "calls/call-0236.txt",
+     "outbox_file": "outbox/resp-0236.txt"
+    },
+    {
+     "call": 237,
+     "call_file": "calls/call-0237.txt",
+     "outbox_file": "outbox/resp-0237.txt"
+    },
+    {
+     "call": 238,
+     "call_file": "calls/call-0238.txt",
+     "outbox_file": "outbox/resp-0238.txt"
+    },
+    {
+     "call": 239,
+     "call_file": "calls/call-0239.txt",
+     "outbox_file": "outbox/resp-0239.txt"
+    },
+    {
+     "call": 240,
+     "call_file": "calls/call-0240.txt",
+     "outbox_file": "outbox/resp-0240.txt"
+    },
+    {
+     "call": 241,
+     "call_file": "calls/call-0241.txt",
+     "outbox_file": "outbox/resp-0241.txt"
+    },
+    {
+     "call": 242,
+     "call_file": "calls/call-0242.txt",
+     "outbox_file": "outbox/resp-0242.txt"
+    },
+    {
+     "call": 245,
+     "call_file": "calls/call-0245.txt",
+     "outbox_file": "outbox/resp-0245.txt"
+    }
+   ],
+   "draw": 1,
+   "est_tokens_in": 15503,
+   "est_tokens_out": 2773,
+   "group": "core",
+   "n_calls": 24
+  },
+  {
+   "batch": 4,
+   "calls": [
+    {
+     "call": 246,
+     "call_file": "calls/call-0246.txt",
+     "outbox_file": "outbox/resp-0246.txt"
+    },
+    {
+     "call": 247,
+     "call_file": "calls/call-0247.txt",
+     "outbox_file": "outbox/resp-0247.txt"
+    },
+    {
+     "call": 248,
+     "call_file": "calls/call-0248.txt",
+     "outbox_file": "outbox/resp-0248.txt"
+    }
+   ],
+   "draw": 1,
+   "est_tokens_in": 15402,
+   "est_tokens_out": 494,
+   "group": "core",
+   "n_calls": 3
+  }
+ ],
+ "run_dir": "work/ql10-out",
+ "schema": 1
+}
