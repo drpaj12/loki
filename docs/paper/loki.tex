@@ -137,7 +137,7 @@ the main paper; dismissed ideas are one line each in Table~\ref{tab:notwork} and
 Loki has three layers: L0, labelled and anonymised netlist datasets with the answer key; L1, % def:layers
 a Bayesian flow that proposes structure hypotheses and settles them with probabilities and
 equivalence checks; and L2, graph analysis. The innovations that the experiments confirm are
-these four, in plain English, each with the hypotheses that confirmed it.
+these four, in plain English, each with the hypotheses that confirmed it. A hypothesis is named by the id of its \emph{register row}, one line of the research log (Appendix~\ref{app:log}); an id such as L0a is only a pointer to that line.
 \begin{enumerate}
 \item \emph{A benchmark in which the answer is known and the names carry nothing.} We build
 the netlists with a front end that remembers which source text made each gate, give every
@@ -157,7 +157,7 @@ inside the repeats (H13c). Confirmed: H14a, H12a, H13a, H13c.
 \item \emph{A block search that grows from anchors and joins.} Blocks grow cell by cell from
 anchors to the end of their path, extra anchors cover constructs that no block touches, and a join
 step merges touching blocks that are one construct. On 1141 held-out constructs the blocks are
-right for 0.715, against 0.385 for bounded cones (Q-L9). Confirmed: QL7a, QL7b, QL9-a, QL9-b. The
+right for 0.715, against 0.385 for bounded cones. Confirmed: QL7a, QL7b, QL9-a, QL9-b. The
 stop rule adds nothing over growing to the end of the path (QL7e, INCONCLUSIVE), and the split step
 is DISMISSED (QL9-d).
 \end{enumerate}
@@ -189,34 +189,44 @@ claim they correlate with the recovery scores. M\'{\i}mir~III, the suite's circu
 is where an answer key of this kind would be stored and queried across designs; Loki does not
 use it yet.
 
-Figure~\ref{fig:yggdrasil} places Loki~III in the suite. Yggdrasil~III is drawn as a tree.
-Odin~III is the trunk, and its one provenance-tracked IR is what Loki~III reads and what supplies
-its answer key. Loki~III is a side branch, a tool and experiment for reverse engineering, next to
-Leman~Russ~III (hardware Trojan detection tools), The Norns~III (placement with provenance) and
-Verdandi~III (the Micro through the Macro). It runs as a step of Wyrd~III, the experiment runner
-in the canopy. M\'{\i}mir~III, the circuit knowledge base, hangs from the canopy as the fruit.
-Three wells at the deep roots hold the outside work the suite draws on, including the benchmarks
-that this paper uses.
+Loki~III is one tool of the Yggdrasil~III suite. Odin~III is the trunk of the suite: its one provenance-tracked IR is what Loki~III reads and what supplies its answer key. Loki~III runs as a step of Wyrd~III, the experiment runner, and M\'{\i}mir~III, the circuit knowledge base, holds the benchmarks and the records that this paper uses. The suite is drawn as a tree, with the pieces and their links, in the hub repository at \url{https://github.com/drpaj12/YggdrasilIII}; the tree is shown in the Odin~III paper.
+
+Figure~\ref{fig:flow} shows Loki~III as one flow, from the Odin~III netlist and answer key to the recovered blocks that are scored against the key. The stages are L0 (datasets), L1 (the Bayesian flow), L2 (graph analysis) and L3 (blocks); the language-model harness is a side path with no Loki stage inside it. Each circled mark is the subsection of the Results (Section~\ref{sec:results-main}) or of the language-model section (Section~\ref{sec:llm}) that tests the stage it sits on, and the dashed box holds the ideas that did not work.
 
 \begin{figure*}[tp]
 \centering
-\odinfit{\textwidth}{\input{IMAGE/fig_yggdrasil}}
-\caption{Yggdrasil~III drawn as a tree, and where Loki~III sits in it. The trunk is Odin~III (\protect\url{https://github.com/drpaj12/odin3}); the roots are its inputs and the tools it links to, and three wells hold outside work. The oracles stand beside the trunk. The canopy holds Wyrd~III (\protect\url{https://github.com/drpaj12/wyrd}), Bifrost~III and Midgard~III, and the fruit, M\'{\i}mir~III (\protect\url{https://github.com/drpaj12/mimirIII}). Side branches carry tools and experiments: Loki~III (\protect\url{https://github.com/drpaj12/loki}, this paper), Leman~Russ~III, The Norns~III (\protect\url{https://github.com/drpaj12/nornsIII}) and Verdandi~III (\protect\url{https://github.com/drpaj12/verdandiIII}). The hub is \protect\url{https://github.com/drpaj12/YggdrasilIII}.}
-\label{fig:yggdrasil}
+\odinfit{\textwidth}{\input{IMAGE/fig_loki_flow}}
+\caption{Loki~III as a flow. Boxes are stages, the text under a box lists the features of the stage, and the labels on the arrows are the data that move between stages. The answer key from Odin~III runs under the whole pipeline to the score. Each circled number is the subsection of the Results or of the language-model section that tests the stage; the dashed box holds closed ideas, and the language-model harness is a side path that takes the gate netlist and, in one prompt, Loki's hints.}
+\label{fig:flow}
 \end{figure*}
+
 
 \section{Background}
 \label{sec:background}
 
-\subsection{Glossary}
-\label{sec:glossary}
+This section introduces, one step at a time, the terms the rest of the paper uses. We start with
+the cells of an FPGA and the CAD step that covers a netlist with them. Next we describe
+provenance and what Odin~III records, then the earlier study, Gate-Breaker, whose measures and
+language-model protocol we reuse. We then describe the benchmark designs and the levels at which they are cut,
+the way Loki proposes and scores structure hypotheses, and finally the graph methods and the published
+baseline that Loki is compared with. The basic FPGA and CAD terms follow the thesis of
+Jamieson~\cite{jamiesonthesis} (Chapter~2) and the thesis of Luu~\cite{luuthesis}
+(Sections~2.1.1 and~4.1.2). The Introduction has already introduced the HDL, RTL, gates and netlists
+that Loki reads, provenance, the answer key, hypotheses and the three layers.
 
-The terms of this paper are defined here, in the order in which they depend on one another.
-Basic FPGA and CAD terms follow the thesis of Jamieson~\cite{jamiesonthesis} (Chapter~2) and
-the thesis of Luu~\cite{luuthesis} (Sections~2.1.1 and~4.1.2). Terms that the Introduction needs
-(from HDL to the three layers) are also defined where it first uses them.
+\subsection{Storage and logic cells of an FPGA}
 
-\input{glossary}
+A netlist of gates is the form in which a design leaves a simple synthesis flow. A real FPGA offers two
+other kinds of cell. The first is storage: a one-bit element that keeps its value between clock edges
+is called a \emph{flip-flop}. % def:ff
+The second is logic: a small memory that implements any logic function of $K$ inputs is called a
+\emph{look-up table} (LUT), with $K=6$ in this paper. % def:lut
+In most FPGAs a LUT and a flip-flop together form one basic logic element~\cite{jamiesonthesis,luuthesis}.
+The CAD step that covers the logic of a netlist with the cells that the target offers is called
+\emph{technology mapping}: % def:techmap
+gates for a gate library, LUTs and flip-flops for an FPGA~\cite{jamiesonthesis}. Mapping is one of the
+steps that throws structure away, which is why the same design can be cut at several levels
+(Section~\ref{sec:bg-floors}). Mapping to LUTs is a research problem with a long literature; ABC's mapper, which our flow links, is described by Mishchenko et al.~\cite{abc}. In the experiments, these cells are the nodes of every netlist that Loki reads, and the levels at which a design is cut (Section~\ref{sec:bg-floors}) differ in how much structure the mapping left.
 
 \subsection{The provenance problem and Odin III}
 
@@ -227,27 +237,93 @@ problem~\cite{gharibian2010finding}. Odin~III, the provenance-tracked front end 
 keeps that link: every object of its one IR records its source location, and the link
 survives elaboration, optimization, partial mapping and the linked ABC flow. Loki stands on
 that link: its L0 datasets carry the answer key the synthesis tool kept, which is what makes
-the recovery statistics in this paper possible at all.
+the recovery statistics in this paper possible at all. The problem was stated for FPGA netlists by Gharibian et al.~\cite{gharibian2010finding}, who recovered system-level structure from flat netlists; Odin~II~\cite{odinII} is the open-source synthesis tool from which Odin~III descends. The first two Results arguments check that the key is complete and independent of names, and every later argument is scored against it.
+
+The newest form of the link is Odin~III's version-2 name map, which we call the \emph{D14 provenance map}. % def:d14
+For each object it records the source-statement units that the object blends, and it keeps labelled
+join records for the places where objects merge. The map answers a question that the loss audit
+(Section~\ref{sec:innov}) asks after every pass. A \emph{unit} is the statement-level anchor of a construct; % def:unit
+a unit is \emph{separable} while some object has exactly that unit set, and it is \emph{lost} at the first
+later snapshot where no object has. To say whether a loss is more than chance, the audit compares it with two
+null models. The \emph{random-set null} draws, at each pass, random unit sets of the real sizes. % def:nullm
+The \emph{persistence null} instead starts from the objects of the previous snapshot and merges them at random
+until the real object count is reached. We introduced the map and the audit for this paper, so there is no earlier citation; the loss-audit argument of the Results uses them.
 
 \subsection{Gate-Breaker as the method baseline}
 
 Gate-Breaker measures recovery by functional correctness and by the similarity of the
 recovered and reference RTL: Success Rate (the fraction of $K$ samples that simulate
-correctly), Success@$k$ (the fraction of designs solved within the first $k$ samples), AST
-similarity (mean subtree Jaccard over normalized identifiers, depth $d=3$) and CFG similarity
-(a normalized shortest-path node kernel over control-flow graphs). Its complexity score
-weights sequential blocks, generates, loops, instantiations, always blocks, buses,
-multiplexers, cases, arithmetic operators, assignments and concatenations into quartiles Q1
-(simple combinational) through Q4 (complex sequential). Loki reports its own statistics on
-the same axes where they apply -- recovery rate per structure kind, calibration error,
-clustering quality against the known hierarchy, and GNN accuracy against a 1-WL baseline --
-and the Gate-Breaker metrics on the replication runs.
+correctly) and Success@$k$ (the fraction of designs solved within the first $k$ samples).
+It also measures how alike two RTL texts are, by \emph{AST and CFG similarity}: % def:astcfg
+AST similarity is the mean subtree Jaccard overlap of the syntax trees over normalized identifiers
+(depth $d=3$), and CFG similarity is a normalized shortest-path node kernel over the control-flow graphs.
+Its complexity score weights sequential blocks, generates, loops, instantiations, always blocks, buses,
+multiplexers, cases, arithmetic operators, assignments and concatenations. Ordering the designs by that score
+and cutting the order into four equal parts gives the \emph{quartiles} % def:quart
+Q1 (simple combinational) through Q4 (complex sequential).
 
-\subsection{Dataflow analysis and HAL as a second baseline}
+Gate-Breaker also fixes how a language model is asked. The pilot and the full run of this paper vary the
+prompt in three \emph{arms~A, B and C}: % def:arms
+arm~A gives the model the gate netlist, arm~B the netlist plus Loki's hints, and arm~C only the interface line,
+which controls for memorisation. Gate-Breaker was introduced by Faruque et al.~\cite{faruque2025gatebreaker}, who report that its model needed graph tools such as clustering and partitioning; Loki is the attempt to build those tools with provenance. Loki reports its own statistics on
+the same axes where they apply, and the Gate-Breaker metrics on the replication runs; the language-model section of the Results reproduces the baseline and adds Loki's hints in arms~B.
 
-HAL, the Hardware Analyzer of the Embedded Security Group~\cite{hal,fyrbiak2019hal}, is an open
+\subsection{Benchmark designs and how they are cut}
+\label{sec:bg-floors}
+
+Loki uses two benchmarks. The first is the 68 small synthesizable RTL designs (counters, registers,
+arithmetic, ALUs, muxes, comparators, small state machines), which we call the \emph{micro designs}. % def:micro
+The second is the 156 reference RTL designs of the VerilogEval spec-to-RTL set of Liu et al.~\cite{liu2023verilogeval}, the \emph{VerilogEval references}. % def:veval
+
+A design can be written down as a netlist at several levels. We call the abstraction level and technology
+mapping at which a design is cut, and written as the netlist to reconstruct, a \emph{floor} % def:floor
+(f1-k6 and f1-earch, f2, f3; Section~\ref{sec:innov} describes each).
+A recovery method must not read the names that the designer chose. To test that, the
+\emph{renamed-instance protocol} renames every identifier through one shared permutation, % def:renamed
+runs the pipeline, and maps the tokens back; equal results show that the pipeline does not use names.
+
+Two further sets are built from these. A seeded generator makes 1200 labelled idiom designs in twelve families,
+with train, iid and ood splits; we call this the \emph{synthetic corpus}. % def:corpus
+A table from a cell's cone class and WL colour to the construct it usually is, mined from the synthetic corpus,
+is the \emph{signature dictionary}. % def:dict
+The floors, the renamed-instance protocol, the corpus and the dictionary are our own constructions, so they have no earlier citation. The renamed-instance protocol is what the first Results argument runs, and the floors are what the later arguments compare.
+
+\subsection{Structure hypotheses and how they are scored}
+
+A plug-in that proposes structure hypotheses for a netlist and reports features of them, never a
+likelihood, is a \emph{detector}. % def:det
+A structure hypothesis can be settled by a \emph{prover}, an engine (cone check, truth table, transfer) % def:prover
+that proves the hypothesis equal to the netlist; a proof makes it near certain. For the hypotheses that
+no engine settles, the probabilities come from \emph{calibration}: % def:cal
+fitting priors and likelihood ratios on a training split so that predicted probabilities match observed
+rates. The quality of a calibration is the \emph{expected calibration error} (ECE), % def:ece
+the average gap between predicted probability and observed match rate over ten bins. The ideas of calibration and ECE come from the machine-learning literature; their original sources are not in this paper's bibliography, so we only define them here. Detectors and provers are part of Loki. The Results use these definitions in the arguments on recovering kept and erased structure.
+
+To score hypotheses against the answer key we need a rule for which are kept and which are right. A hypothesis is \emph{counted} when it is committed or has probability at least 0.5, and a counted hypothesis \emph{matches} an answer-key instance by an overlap rule (Section~\ref{sec:eval}). % def:count
+The \emph{precision} is the share of counted hypotheses that match, the \emph{recall} is the share of answer-key instances matched, and the \emph{F1} is their harmonic mean. % def:prf
+The F1 averaged over the kinds of structure is the \emph{macro-F1}, and the F1 pooled over all instances is the \emph{micro-F1}. % def:macro
+
+Many structures in a netlist are several bits wide. A group of cells that acts as one multi-bit signal
+(a register, a datapath operator, a bus) is a \emph{word}. % def:word
+The \emph{operator type-F1} is the F1 of the recovered word-level operator types (adder, mux, comparator, ...) % def:opf1
+against the answer key's operators. A candidate that looks wrong but is in fact part of a real construct is a
+\emph{fragment}. % def:frag
+A detector that first groups flip-flops into register words by shared clock, enable and reset, and then builds the
+rest around them, is a \emph{word-first detector}. % def:wf
+Related word-level work is WordRev~\cite{li2013wordrev}, which derives word-level structures from bit-level gates; the word-first detector and the loss audit are our own, and the Results compare the word-first detector with a published method (below).
+
+\subsection{Graph methods and a published baseline}
+
+Loki's second layer treats the netlist as a graph. Community detection groups the nodes: \emph{Louvain} is such a method, % def:louv
+\emph{modularity} scores how dense the clusters are, and \emph{NMI} (normalized mutual information) scores the
+agreement of a clustering with the known module hierarchy. A graph neural network labels each node from its
+neighbours; this is a \emph{GNN}. % def:gnn
+To judge it we compare it with the \emph{1-WL baseline}, colour refinement, whose distinguishing power a
+message-passing GNN cannot exceed, a result of Xu et al.~\cite{xu2019powerful}. GNN-RE~\cite{alrahis2022gnnre} applied graph networks to the reverse engineering of gate-level netlists. K-means~\cite{kmeans} is one of the clusterings we compare. The graph argument of the Results asks whether any of these methods recovers the designer's hierarchy and gate roles.
+
+\emph{HAL}, the Hardware Analyzer of the Embedded Security Group~\cite{hal,fyrbiak2019hal}, is an open % def:dana
 framework (MIT licence) for the reverse engineering of gate-level netlists. Its dataflow plugin
-implements DANA~\cite{albartus2020dana}, which groups flip-flops into register words from their
+implements \emph{DANA}~\cite{albartus2020dana}, a published method that groups flip-flops into register words from their
 shared control nets (clock, enable, set, reset) and from common predecessors and successors in
 the flip-flop dataflow graph, without reading the logic between them. DANA is therefore a
 word-finding method that is independent of the cell library once the flip-flops are known, which
@@ -256,6 +332,9 @@ makes it the natural external baseline for the register words that Loki's word-f
 scores both against the same Odin~III answer key. We credit HAL and DANA in the README and the
 bibliography; no HAL code is part of this repository, only our gate-library files, a converter
 and the scorer.
+
+Last, two paired tests compare methods on the same designs. The \emph{McNemar test} is an exact test on discordant pairs, % def:tests
+and the \emph{Wilcoxon test} is a paired rank test. Both are standard tests, whose sources are not in this paper's bibliography. The language-model arguments of the Results use the McNemar test and the word-first argument uses the Wilcoxon test.
 
 \section{The method as it stands}
 \label{sec:innov}
@@ -570,6 +649,7 @@ graphlet orbits it takes part in (73 undirected, 129 directed). The directed cou
 cells form its signature. A library of 700 generated circuits (counters, shift registers, LFSRs,
 registers, timers, register files, state machines and glue, every width from 1 to 32) in the five
 cells gives the signature of each pattern at each width; signatures of wider circuits are made on demand.
+The earlier \emph{bounded-cone detector}, \emph{cones} below, cuts a cone of bounded depth around a group of flip-flops and compares its signature with that library.
 
 \emph{Rule detectors (v0).} A rule detector reads the level-one claims and the netlist through a
 JSON catalogue with one signature per target. For example, on the hard-block target a counter is a
@@ -582,7 +662,7 @@ memory, a register, an adder chain. Three more anchor classes cover constructs t
 touches: flip-flops that share the same global control, open feedback loops of flip-flops, and the
 constant cells (one anchor that does not grow). Every anchor grows at once, one neighbouring cell
 per step. Each block is grown to the end of its path (the frontier is
-empty or the block has 300 cells); no tested stop rule did better than this (Q-L7).
+empty or the block has 300 cells); no tested stop rule did better than this.
 
 \emph{Join.} A join step then looks at every pair of touching blocks and merges them when at least a
 fifth of the link ends of the smaller block lie on links to the other (a conductance rule; the
@@ -592,8 +672,7 @@ parts explain it better than one) is part of the code but is not in the headline
 (QL9-d).
 
 \emph{Kind guess.} Each block carries a probability over five construct kinds (finite-state machine,
-counter, shift register, register file, register) and glue. The kind likelihood used is the M2 model
-of Q-L8c: a full-covariance Gaussian per kind on 24 principal components of features that include
+counter, shift register, register file, register) and glue. The kind likelihood used is the \emph{Gaussian kind model}: a full-covariance Gaussian per kind on 24 principal components of features that include
 orbit instances per cell, how the block touches the rest of the netlist (conductance, frontier
 fan-in and fan-out), the share of flip-flops, hard and adder cells, and the feedback structure of
 the block. It is fitted on answer-key blocks of held-out designs only.
@@ -923,10 +1002,9 @@ nodes over 65 designs, a mean of about 770.
 \section{Results: what the evidence says now}
 \label{sec:results-main}
 
-This section gives the current answer to each question of the Introduction. Numbers come first and
-the verdict label second. Each result names the register rows it rests on; the record of each
-experiment (hypothesis, data, split, measure, result, verdict and pull request) is in
-Appendix~\ref{app:records}. Table~\ref{tab:headline} lists the results in the order of this section.
+Each result in this section is one argument with seven parts, always in the same order: the \textbf{Hypothesis} (what we claim), its \textbf{Implication} (why it matters if true), the \textbf{Experiment} (what is run and against what), the \textbf{Methodology} (the measure, the split and the statistics), the \textbf{Measurements} (the numbers), the \textbf{Interpretation} (what the numbers mean) and the \textbf{Conclusion} with one verdict word (Section~\ref{sec:intro} defines the four words). The arguments are ordered so that each builds on the ones before it. How we came to each experiment, and the fix rounds on the way, are in the appendix records (Appendix~\ref{app:records}) and not here. The Implication parts are our own reasoning about use, not measured results.
+
+Each argument ends with the \emph{register rows} it rests on, in square brackets. A register row is one line of the research log (Appendix~\ref{app:log}) with the hypothesis, data, measure and verdict of one experiment; its short id (for example L0a) is a pointer and not a concept. Table~\ref{tab:headline} lists the results in the order of this section.
 
 \begin{table*}[t]
 \caption{The current results, with the verdict of the register row (Appendix~\ref{app:log}).}
@@ -951,46 +1029,139 @@ Netlist helps a model & B minus C $+0.319$ (0.241 to 0.394) & USEFUL & LLM4 \\
 \end{tabular}
 \end{table*}
 
-\subsection{The answer key and naming neutrality}
+\subsection{Names carry nothing, and the answer key covers every gate}
+\label{arg:ra1}
 
-The provenance answer key covers every gate node of the 150 designs that build (54,306 nodes,
-module coverage 1.000), and scrambling all names changes no answer: 476 byte-identical run pairs
-over 105,646 renamed identifiers (L0a, L0b, both USEFUL; Appendix~\ref{sec:veval-l0}). The same
-protocol exposed two defects, a rename-script defect that removed every hard proposal on renamed
-floors (fixed) and a spectral nondeterminism (reported).
+\hev{Hypothesis.} The pipeline uses no names, so scrambling every identifier changes no answer; and the provenance answer key labels every gate node of the benchmark designs.
 
-\subsection{L1 and L2}
+\hev{Implication.} If both hold, every later recovery score measures structure and not name guessing, and the key is a complete target. If either failed, no number in this paper could be trusted.
 
-Structures that synthesis already reverse engineered are recovered: hard adders 67 of 67 (precision
-0.985) and hard multipliers 30 of 30 (L1h, USEFUL). The stated probabilities are better calibrated
-after fitting, with an error of 0.217 against 0.650 (L1c, USEFUL). Structures that synthesis erased
-recover weakly (F1 0.354, 271 counted and 107 matched; L1s, INCONCLUSIVE) and from the gate
-netlist not at all: 0 of 144 counted, 0 committed (F3, DISMISSED). Clustering the netlist graph
-does not find the designer's modules: the normalised mutual information against the module path is
-0.3220 for k-means, 0.2708 for affinity propagation, 0.1378 for spectral clustering and 0.1360 for
-Louvain (L2a, DISMISSED). A graph network labels gate roles at 0.4241 against 0.2717 for a baseline
-that sees only the neighbourhood of each gate, on one split of 13 designs (L2b, POSSIBLY GOOD).
-Appendices~\ref{sec:l1-results} and~\ref{sec:l2-results} give the records.
+\hev{Experiment.} We run the pipeline on the netlists of the 150 designs that build, once with the original names and once with every identifier renamed through one permutation (the renamed-instance protocol), and compare the two runs. We separately count the gate nodes that carry a label in the answer key.
 
-\subsection{What synthesis loses}
+\hev{Methodology.} The measure for names is byte identity of the L1 scores and of the L2 clusterings between the two runs; for the key it is the share of gate nodes with a label, a cell type, an HDL span and a module. There is no split: both are checks of the dataset, not of a trained model.
 
-Coding style does not survive synthesis: the best possible recovery on twin designs is 0.50 on the
-gate floor (H14a, USEFUL). The six big VTR designs are mostly repeated structure: the share repeated
-is 0.9283 (6,653 of 7,167; H13a, USEFUL), with identical neighbourhoods inside the
-repeats at 0.8606 (H13c, USEFUL). The loss audit finds that the mux word is the one kind that a pass
-(\code{abc}) demonstrably fools (L15d, POSSIBLY GOOD); the placement of other losses at the first
-\code{opt} is what a chance merging of the same objects also gives (L15a, POSSIBLY GOOD). A
-word-first detector that looks for multi-bit signals first does not tile the words (0.023 against
-0.022 for the baseline; H16a, DISMISSED), and against the published DANA method it is level with
-no lead shown: pooled word overlap $F_J$ 0.169 for Loki against 0.261 for DANA, difference $-0.092$
-with 95\% interval $[-0.317, 0.043]$ (RQ-H1, INCONCLUSIVE). Appendices~\ref{sec:round3},
-\ref{sec:round4}, \ref{sec:round5} and~\ref{sec:round6} give the records.
+\hev{Measurements.} The key covers all 54,306 gate nodes of the 150 designs (module coverage 1.000). Renaming 105,646 identifiers gives 476 byte-identical run pairs; the L2 clusters are identical on 271 of 272 partitions, the exception being a nondeterminism of spectral clustering that we report. The protocol also exposed one defect of our own rename script, which removed every hard-block proposal on renamed floors and is fixed.
 
-\subsection{L3: single-pattern detectors}
+\hev{Interpretation.} No answer depended on a name, so a score is a score of structure. The one spectral exception is a nondeterminism of one method, which we report, and not a use of names.
 
-The rule detectors of Section~\ref{sec:l3-method} were scored on 252 held-out single designs and,
-for composites, on 82 held-out composite benchmarks wired from 27 VerilogEval references with a
-known wiring. They are measurements with a stated rule (rows L3A and L3C).
+\hev{Conclusion.} The benchmark has a complete key and neutral names. \verdict{USEFUL} [L0a, L0b; Appendix~\ref{sec:veval-l0}].
+
+\subsection{Recovering what synthesis kept, and honest probabilities}
+\label{arg:ra2}
+
+\hev{Hypothesis.} The Bayesian flow recovers almost perfectly the structures that synthesis already reverse engineered (hard adders and multipliers), and fitting priors on training designs makes its stated probabilities honest.
+
+\hev{Implication.} A tool that reports a probability is only useful if the probability can be believed; recovering the structures synthesis kept is the base on which anything harder stands.
+
+\hev{Experiment.} We run the flow on the micro designs at the floor that keeps hard blocks, scoring its hard-adder and hard-multiplier claims against the key, and we run it with and without the fitted priors and likelihood ratios.
+
+\hev{Methodology.} Precision and recall of the claims, and the expected calibration error over ten bins, with the fit done on a training split of designs and the scores on held-out designs (Section~\ref{sec:eval}).
+
+\hev{Measurements.} Hard adders 67 of 67 recovered (precision 0.985) and hard multipliers 30 of 30. The calibration error is 0.650 before fitting and 0.217 after.
+
+\hev{Interpretation.} Where synthesis has already typed a block, the flow finds it essentially every time. An error of 0.217 means that a stated probability is on average off by about one fifth from the observed rate, much closer than the 0.650 of the unfitted flow, though not exact.
+
+\hev{Conclusion.} Kept structures are recovered, and fitting makes the probabilities usable. \verdict{USEFUL} for both [L1h, L1c; Appendix~\ref{sec:l1-results}].
+
+\subsection{Recovering what synthesis erased}
+\label{arg:ra3}
+
+\hev{Hypothesis.} The same flow recovers the soft structures that synthesis erased, on LUT netlists and on the gate netlist Gate-Breaker uses.
+
+\hev{Implication.} This is the actual reverse-engineering task. A positive answer would mean that a designer could recover registers, muxes and adders from a flat netlist without a language model.
+
+\hev{Experiment.} We score the flow's soft-structure claims against the key at the two LUT floors, and on the 15 test designs of the gate floor (144 answer-key instances).
+
+\hev{Methodology.} Macro-F1 over the structure kinds, where a hypothesis is counted when it is committed or has probability at least 0.5 and matches by the overlap rule (Section~\ref{sec:eval}). No threshold for success was set beforehand for the LUT floors.
+
+\hev{Measurements.} At the first floor the macro-F1 is 0.354 (271 counted, 107 matched, 688 in the key); at the second floor it is 0.108. On the gate netlist 0 of 144 instances are counted and none is committed.
+
+\hev{Interpretation.} With LUTs the flow matches 107 of the 688 key instances (about one in six), and the gate netlist gives it nothing to hold on to: its single-level claims do not see through the mapping.
+
+\hev{Conclusion.} Weak on LUT netlists, \verdict{INCONCLUSIVE} because no bar was set; on the gate netlist \verdict{DISMISSED} [L1s, F3; Appendix~\ref{sec:l1-results}].
+
+\subsection{Graph analysis: clusters and a graph network}
+\label{arg:ra4}
+
+\hev{Hypothesis.} Clustering the netlist graph finds the designer's module hierarchy, and a graph network that sees node, graphlet, colour-refinement and NPN features labels gate roles better than a baseline that sees only the neighbourhood of each gate (the 1-WL baseline).
+
+\hev{Implication.} If clusters matched modules, the hierarchy that synthesis flattens could be restored from the graph alone. If a network beat 1-WL, learned graph features would add information beyond structure that colour refinement already sees.
+
+\hev{Experiment.} Four clusterings (k-means, affinity propagation, spectral, Louvain) are scored against the module path of 68 designs. A graph network is trained to predict each node's construct type and compared with 1-WL on 13 held-out designs (3,932 nodes).
+
+\hev{Methodology.} NMI against the module path for the clusterings; macro-F1 and accuracy for the network, one run, one split, no interval.
+
+\hev{Measurements.} NMI is 0.3220 for k-means, 0.2708 for affinity propagation, 0.1378 for spectral clustering and 0.1360 for Louvain. The network scores macro-F1 0.4241 against 0.2717 for 1-WL (accuracy 0.8863 against 0.8492); a network on node features alone loses (0.2413 against 0.2711).
+
+\hev{Interpretation.} An NMI of at most 0.32 means that the clusters share under a third of the information of the real hierarchy, and the community methods are the worst. The network's lead is large in the point estimate but rests on one run and 13 designs.
+
+\hev{Conclusion.} Clustering does not find the hierarchy, \verdict{DISMISSED}. The network is \verdict{POSSIBLY GOOD}: it needs several splits with an interval and a second benchmark [L2a, L2b; Appendix~\ref{sec:l2-results}].
+
+\subsection{What synthesis loses: a limit on style, and repeated structure}
+\label{arg:ra5}
+
+\hev{Hypothesis.} The flow destroys information about coding style, so even a perfect recovery cannot restore it; and large designs are mostly repeated structure.
+
+\hev{Implication.} The first sets an upper bound for every method here. The second says that a method that finds one instance of a pattern finds many.
+
+\hev{Experiment.} Twin designs that compute the same function in different styles are put through the flow, and the best possible recovery from the netlist is computed. The six large VTR designs are cut into units and the units grouped by signature.
+
+\hev{Methodology.} The ceiling is the best score a recovery that sees only the netlist can reach, with the pre-stated bound of at most 0.60. The repeated share is compared with a threshold of 0.50 and the identical-neighbourhood share with 0.70.
+
+\hev{Measurements.} The ceiling is 0.50 on the gate floor (0.4823 and 0.4697 at the two LUT floors). The share repeated is 0.9283 (6,653 of 7,167 units), and 0.8606 of the repeat groups have identical neighbourhoods.
+
+\hev{Interpretation.} Half of the twin pairs cannot be told apart from the netlist. In the big designs more than nine units in ten are copies of another unit, so a block detector pays off once per pattern and not once per instance.
+
+\hev{Conclusion.} Both hold. \verdict{USEFUL} for the style limit and for repetition [H14a, H13a, H13c; Appendix~\ref{sec:round4}].
+
+\subsection{The loss audit}
+\label{arg:ra6}
+
+\hev{Hypothesis.} Each kind of construct is first lost at one dominant Odin~III pass, and a pass can be shown to fool a detector.
+
+\hev{Implication.} If the pass that loses a construct is known, a flow could preserve the construct by changing that pass.
+
+\hev{Experiment.} The D14 provenance map (Section~\ref{sec:background}) is read after each pass for 1,436 source units; we count the units first lost at each pass and compare with the random-set and persistence null models. Detector recall is measured before and after each pass.
+
+\hev{Methodology.} Share of first losses at the dominant pass, with the null models as the chance level; recall change per kind with at least 10 answer-key instances.
+
+\hev{Measurements.} There are 580 first losses (419 not subsumed by an earlier loss). The first \code{opt} pass is dominant for registers, comparisons, muxes and arithmetic under the random-set null, but the persistence null gives the same placement by chance. Only the mux word is demonstrably fooled, by \code{abc}: its recall falls from 0.55 to 0.07, although the two answer keys differ in size (174 and 166 instances).
+
+\hev{Interpretation.} Most apparent loss at the first \code{opt} is what random merging of the same objects also gives. The mux result is a real fall in recall, but the two sets are not like for like.
+
+\hev{Conclusion.} Not a firm finding, \verdict{POSSIBLY GOOD} for both [L15a, L15d; Appendix~\ref{sec:round6}].
+
+\subsection{A word-first detector against a published method}
+\label{arg:ra7}
+
+\hev{Hypothesis.} A detector that groups flip-flops into register words first tiles the words of real designs better than the earlier detectors, and recovers words better than DANA run through HAL.
+
+\hev{Implication.} Words are the unit a designer names. A method that finds them would give the first handle for the bus and datapath naming that Gate-Breaker asks for.
+
+\hev{Experiment.} The detector and the baseline detectors tile the words of held-out real designs at the floor with only LUTs and flip-flops (f2). On 100 designs, the pooled word overlap of the detector is compared with that of DANA.
+
+\hev{Methodology.} Tiling quality with a Wilcoxon test, and pooled word overlap $F_J$ with a 95 percent interval of the difference. Both comparisons were fixed before the runs, and the scorer was fixed before any DANA score was computed.
+
+\hev{Measurements.} Tiling is 0.023 against 0.022 for the baseline (null model 0.203; Wilcoxon $p=1.0$). The pooled $F_J$ is 0.169 for Loki against 0.261 for DANA, a difference of $-0.092$ with interval $[-0.317, 0.043]$ over 41 designs with a ground-truth word.
+
+\hev{Interpretation.} Tiling is no better than the baseline and the detector does not beat DANA; the interval contains both a clear loss and a small gain, so the two are not separated.
+
+\hev{Conclusion.} Tiling \verdict{DISMISSED}; against DANA \verdict{INCONCLUSIVE} [H16a, RQ-H1; Appendix~\ref{sec:round5}].
+
+\subsection{Level three: single-pattern detectors}
+\label{arg:ra8}
+\label{sec:res-l3a}
+
+\hev{Hypothesis.} Rule detectors on the level-one claims find state machines, counters, shift registers, timers, register files and glue logic in whole designs at a precision and recall of at least 0.80, and find composites of them with the right wiring.
+
+\hev{Implication.} Patterns are the next level above single constructs. If rules sufficed, block recovery would need no further search.
+
+\hev{Experiment.} The detectors of Section~\ref{sec:l3-method} are scored on 252 held-out single designs and on 82 held-out composite benchmarks wired from 27 VerilogEval references with a known wiring. Two follow-ups try to raise the weak detectors: a state-machine claim from the turning-on relation of state bits, and graphlet signatures with a library of every width and learned classifiers.
+
+\hev{Methodology.} Precision and recall per pattern against the key, with 0.80 as the bar for a working detector and 0.70 for composites; the rules are stated before the scoring.
+
+\hev{Measurements.} Table~\ref{tab:l3-detectors} gives the results. A state-machine claim read from how the state bits turn each other on recovers 98 of 100 one-hot machines and 99 of 100 binary ones, but its pooled precision is 0.17, and a rule on the next-state function lifts it to 0.68, short of 0.80. Graphlet signature matching with a library of every width reaches 0.80 for no pattern on whole designs, and with learned classifiers for four cells only.
+
 \begin{table}[t]
 \caption{Rule detectors on held-out designs (rows L3A, L3C). The bar for a working detector is 0.80.}
 \label{tab:l3-detectors}
@@ -1010,33 +1181,41 @@ Composites & parts found 0.41 to 0.50, wires 0.12 to 0.18 (bar 0.70) & no \\
 \bottomrule
 \end{tabular}
 \end{table}
-Most misses are a missing level-one claim, not a wrong composition. A state-machine claim read from
-how the state bits turn each other on recovers 98 of 100 one-hot machines and 99 of 100 binary ones,
-but its precision is low (pooled 0.17), and a rule on the next-state function lifts it to 0.68, short
-of the bar of 0.80 (FSM2a and FSM3, DISMISSED; FSM2b, POSSIBLY GOOD for recall).
-Matching graphlet signatures with a library of all widths does not reach 0.80 for any pattern on
-whole designs, and with learned classifiers it does so for four cells only (GL1 to GL9, all
-INCONCLUSIVE). Appendices~\ref{rec:fsm} to~\ref{rec:fuzzy} give the records.
 
-\subsection{L3: from cones to joined blocks}
+\hev{Interpretation.} Three patterns work (state machines, counters and glue logic) and four do not. Most misses are a missing level-one claim, not a wrong composition: the rule sees the pattern's parts but not the whole. Rules alone do not close the gap.
 
-The signature detectors cut a cone around a group of flip-flops and compare it with a library. Q-L4
-asked why they miss. For 80 percent of the misses of the bounded-cone detector (D70) the fixed rule
-calls the miss a near miss (wrong partition, no library entry of that width, or the threshold), but the true
-block cut out by the provenance is close to its pattern for only 39 percent of them: the partition
-is the largest gap (QL4a, POSSIBLY GOOD; QL4b, INCONCLUSIVE). The blocks are therefore grown, not cut.
+\hev{Conclusion.} Detectors for state machine, counter and glue work; shift register, timer, register file and composites do not. The next-state rule is \verdict{DISMISSED} (precision), with \verdict{POSSIBLY GOOD} for its recall; all graphlet follow-ups are \verdict{INCONCLUSIVE} [L3A, L3C, FSM2a, FSM2b, FSM3, GL1 to GL9; Appendices~\ref{rec:fsm} to~\ref{rec:fuzzy}].
 
-Table~\ref{tab:steps} gives the right-block share of each step on the same 1141 test constructs
-of 857 design and cell units. Growing with a Bayes-factor stop is worse than the cones because the
-blocks stop early (a median of 11 cells against 35; QL6a, DISMISSED), but the growth paths contain the
-right block for 0.556 of the constructs. Growing every block to the end of its path
-recovers 0.528 (QL7a and QL7b, USEFUL: per unit geomean 1.146, 1.105 to 1.190 against the cones; 94
-percent of the gap to the ceiling closed, 0.927 to 0.961). The gain is that blocks are no longer
-stopped early: none of three stop rules beats never stopping (QL7e, INCONCLUSIVE). A growth order
-that respects structure does not add (0.526, 12 of 449 constructs with no right prefix recovered;
-QL8a, INCONCLUSIVE). Extra anchors touch all 58 constructs that no block touched, 47 of them right
-(QL8b-a, POSSIBLY GOOD), at the price of constructs lost elsewhere (0.528 to 0.550, a tie per unit,
-geomean 1.001, 0.980 to 1.024; QL8b-b, INCONCLUSIVE).
+\subsection{Level three: why the cone detectors miss}
+\label{arg:ra9}
+
+\hev{Hypothesis.} Most failed detections of the bounded-cone detector (cones) are near misses, whose gap is the partition, a missing width in the library or the threshold, and not missing structure.
+
+\hev{Implication.} If the misses were near misses, tuning the cone detector would be enough. If the partition is the gap, the blocks must be found another way.
+
+\hev{Experiment.} We take the 695 single-design constructs and 1,044 composite parts that cones miss, and for each ask what the fixed rule calls the miss, and how close the true block (cut out by the provenance) is to the pattern.
+
+\hev{Methodology.} The share of misses classed as near misses by a rule and the share whose true block is close to its pattern, on the test designs, with the rule and the thresholds committed before the run.
+
+\hev{Measurements.} The rule calls 80 percent of the misses near misses, but the true block is close to its pattern for only 39 percent of them.
+
+\hev{Interpretation.} For most misses the cone is the wrong group of cells, not a slightly wrong signature: the largest gap is the partition.
+
+\hev{Conclusion.} Cones need a better partition. The near-miss reading is \verdict{POSSIBLY GOOD}; the claim that the true block is close is \verdict{INCONCLUSIVE} [QL4a, QL4b; Appendix~\ref{rec:ql4}].
+
+\subsection{Level three: growing blocks from anchors}
+\label{arg:ra10}
+
+\hev{Hypothesis.} Blocks grown cell by cell from anchors, the places where a known pattern is easy to see, are the right block for more constructs than cones are.
+
+\hev{Implication.} Growing finds blocks of any shape and size, so detection no longer needs a library entry for each width.
+
+\hev{Experiment.} Starting from the anchors, every block grows one neighbouring cell per step. We compare four ways to decide when a block stops (a Bayes-factor stop, three other stop rules, and never stopping before the end of the path), and a growth order that respects structure, against cones. All are scored on the same 1,141 test constructs of 857 design and cell units.
+
+\hev{Methodology.} A block is right for a construct when it covers at least 0.8 of it with a Jaccard overlap of at least 0.5. The measure is the share of constructs for which some block is right, and per design and cell the geomean of $(g+1)/(d+1)$ with a 90 percent bootstrap interval over designs and win / loss / tie counts (Section~\ref{sec:l3-method}). The plan, the split and the rules were committed before the test runs. The ceiling is the share for which some prefix of the grown path is right.
+
+\hev{Measurements.} Table~\ref{tab:steps} gives the share at each step. The Bayes-factor stop gives 0.053 against 0.385 for cones, because the blocks stop early (a median of 11 cells against 35). The growth paths contain the right block for 0.556 of the constructs. Growing every block to the end of its path gives 0.528 (geomean 1.146 per unit against cones, 1.105 to 1.190), which closes 94 percent of the gap between the Bayes-factor stop and the ceiling (0.927 to 0.961). No stop rule beats never stopping; they are 1 to 9 percent worse. A growth order that respects structure gives 0.526, recovering 12 of 449 constructs with no right prefix.
+
 \begin{table}[t]
 \caption{Right-block share on 1141 test constructs of 857 units, one row per step.}
 \label{tab:steps}
@@ -1046,7 +1225,7 @@ geomean 1.001, 0.980 to 1.024; QL8b-b, INCONCLUSIVE).
 \toprule
 Step & Pull request & Right-block share \\
 \midrule
-Bounded cones (D70) & & 0.385 \\
+Bounded cones & & 0.385 \\
 Grow, Bayes-factor stop & \#73 & 0.053 \\
 Grow to the end of the path (the best stop rule equals it) & \#74 & 0.528 \\
 Attachment growth order (not adopted) & \#76 & 0.526 \\
@@ -1058,15 +1237,40 @@ Ceiling: some prefix of the \#74 paths is right & \#74 & 0.556 \\
 \end{tabular}
 \end{table}
 
-The join step is the last gain. One conductance rule raises the share from 0.550 to 0.715 against
-0.385 for the cones; per unit the geomean against the blocks before the join is 1.149 (1.123 to
-1.177), W194 / L9 / T654, and against the cones 1.318 (1.276 to 1.364), W394 / L46 / T417
-(QL9-a, USEFUL). It repairs 157 of the 251 constructs that growth had cut across several blocks
-(QL9-b, USEFUL). It recovers none of the constructs a block swallows (the 42 of 95 right after the
-step were right before it; QL9-c, POSSIBLY GOOD) and it loses 29 constructs that were right, all in
-composite parts. Table~\ref{tab:join} gives the share per scope. The Bayes-factor join rules are
-weaker (0.680 and 0.677) and shared control nets weaker still (0.617). No split threshold had a net
-gain, so the headline has no split (QL9-d, DISMISSED).
+\hev{Interpretation.} About 5 of 10 test constructs are now recovered as one block, against fewer than 4 of 10 for cones, and almost all of what the growth paths can reach. The gain comes from not stopping blocks early, not from a cleverer stop or order.
+
+\hev{Conclusion.} Growing to the end of the path is \verdict{USEFUL}; the Bayes-factor stop is \verdict{DISMISSED}; a stop rule better than never stopping and the structural order are \verdict{INCONCLUSIVE} [QL6a, QL7a, QL7b, QL7e, QL8a; Appendices~\ref{rec:ql6} to~\ref{rec:ql8a}].
+
+\subsection{Level three: anchors for untouched constructs}
+\label{arg:ra11}
+
+\hev{Hypothesis.} Three more anchor classes (flip-flop banks that share global control, open feedback loops of flip-flops, and constant cells) touch and recover constructs that no block touched, at no cost to the constructs recovered before.
+
+\hev{Implication.} Without them a fixed share of the constructs can never be found, whatever the later steps do.
+
+\hev{Experiment.} The 58 constructs that no block touched are re-run with the extra anchors, and the whole test set is re-scored against growing to the end of the path.
+
+\hev{Methodology.} The share of the 58 touched and right, and the right-block share and per-unit geomean on all 1,141 constructs, as above.
+
+\hev{Measurements.} All 58 are touched and 47 are right. The overall share rises from 0.528 to 0.550, a tie per unit (geomean 1.001, 0.980 to 1.024), because some constructs found before are lost.
+
+\hev{Interpretation.} The anchors reach what was out of reach, and the price is some constructs lost elsewhere, so the net gain is within noise.
+
+\hev{Conclusion.} The coverage is \verdict{POSSIBLY GOOD}; the claim of no cost is \verdict{INCONCLUSIVE} [QL8b-a, QL8b-b; Appendix~\ref{rec:ql8b}].
+
+\subsection{Level three: joining touching blocks}
+\label{arg:ra12}
+
+\hev{Hypothesis.} Joining touching blocks that are one construct raises the right-block share above 0.550 without losing single designs, repairs many of the 251 constructs that growth cut across several blocks, recovers many of the 95 constructs that one block swallowed, and a split step that cuts a block in two helps.
+
+\hev{Implication.} A construct that growth cuts in several pieces counts as missed. A join step is the cheapest way to repair it, and if a split step helped, blocks that are too large could be repaired as well.
+
+\hev{Experiment.} A join rule is applied to every pair of touching blocks after growth. We compare four join rules (a conductance rule, two Bayes-factor rules, and shared control nets) and a split along the Fiedler vector of the block's cell graph, on the same 1,141 test constructs.
+
+\hev{Methodology.} As in the growth argument. The rule is merged greedily, capped at 50 merges per design and cell; the conductance threshold 0.2 was chosen among four rules on validation designs, and the test designs were run once.
+
+\hev{Measurements.} The conductance join raises the share from 0.550 to 0.715, against 0.385 for cones. Per unit the geomean is 1.149 (1.123 to 1.177), W194 / L9 / T654, against the blocks before the join, and 1.318 (1.276 to 1.364), W394 / L46 / T417, against cones. It repairs 157 of the 251 constructs cut across blocks. Of the 95 swallowed constructs, 42 are right after the step and were right before it, and it loses 29 constructs that were right, all in composite parts. The Bayes-factor joins give 0.680 and 0.677, shared control nets 0.617. Every split threshold loses more constructs than it repairs. Table~\ref{tab:join} gives the share by scope.
+
 \begin{table}[t]
 \caption{Right-block share by scope before and after the join (test, 1141 constructs).}
 \label{tab:join}
@@ -1074,7 +1278,7 @@ gain, so the headline has no split (QL9-d, DISMISSED).
 \footnotesize
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
-Scope & Constructs & Cones (D70) & Before join & After join \\
+Scope & Constructs & Cones & Before join & After join \\
 \midrule
 All & 1141 & 0.385 & 0.550 & 0.715 \\
 Gate netlists & 351 & 0.242 & 0.538 & 0.610 \\
@@ -1086,18 +1290,26 @@ Composite parts & 506 & 0.421 & 0.565 & 0.682 \\
 \end{tabular}
 \end{table}
 
-\emph{Kind guess.} The guess of what a block is lags the block itself. A stronger likelihood, a Gaussian
-on richer directed graphlet features, raises the macro F1 over five kinds from 0.211 to 0.262
-(gain 0.051, 0.019 to 0.081; 232 constructs against 213 recovered with their kind), about half of the
-0.10 that was set as ``well above'' (QL8c-b, DISMISSED; QL8c-a, POSSIBLY GOOD). Given the answer-key block the macro F1 is only
-0.487. On the joined blocks it is 0.392, against 0.237 before the join; per kind, finite-state machine
-0.282 to 0.476, counter 0.132 to 0.509, shift register 0.287 to 0.317, register file 0.296 to 0.393,
-register 0.188 to 0.266 (QL9-e, measurement). Appendices~\ref{rec:ql4} to~\ref{rec:ql9} give the records.
+\hev{Interpretation.} About 7 of 10 held-out constructs are recovered as one block, where cones recover fewer than 4 of 10. The join repairs the pieces that growth cut and does not touch the swallowed constructs; a split never pays for itself. The limits are that designs above 400 cells and blocks above 300 cells are not scored, that composite parts built with Yosys have no provenance key and are not scored, that the join is greedy, and that this one split family did not help.
 
-\emph{Limits of this result.} Designs above 400 cells and blocks above 300 cells are not scored; Yosys
-composite parts have no provenance key and are not scored; the join is greedy; the rule and its threshold were chosen
-on validation designs and the test designs were run once; and the split result means that this one
-split family did not help.
+\hev{Conclusion.} The join and the repair of split constructs are \verdict{USEFUL}; recovering swallowed constructs is \verdict{POSSIBLY GOOD}; the split step is \verdict{DISMISSED} [QL9-a, QL9-b, QL9-c, QL9-d; Appendix~\ref{rec:ql9}].
+
+\subsection{Level three: guessing the kind of a block}
+\label{arg:ra13}
+
+\hev{Hypothesis.} A stronger likelihood for the kind of a block (a Gaussian on richer directed graphlet features, the \emph{Gaussian kind model}) raises the macro-F1 over the five kinds by 0.10 over the earlier likelihood.
+
+\hev{Implication.} A recovered block is useful to a reader only with a name: counter, shift register, state machine, register file or register.
+
+\hev{Experiment.} The Gaussian kind model replaces the earlier likelihood on the same grown blocks, and is then applied to the joined blocks.
+
+\hev{Methodology.} Macro-F1 over five kinds (precision over all claims, recall over constructs), with 90 percent bootstrap interval of the gain; the gain of 0.10 was fixed before the test run as ``well above''.
+
+\hev{Measurements.} The macro-F1 rises from 0.211 to 0.262 (gain 0.051, 0.019 to 0.081; 232 constructs recovered with their kind against 213). Given the answer-key block it is only 0.487. On the joined blocks it is 0.392, against 0.237 before the join; per kind, finite-state machine 0.282 to 0.476, counter 0.132 to 0.509, shift register 0.287 to 0.317, register file 0.296 to 0.393 and register 0.188 to 0.266.
+
+\hev{Interpretation.} The kind guess lags the block itself: it improves, by about half of the gain we asked for, and even a perfect block gives a macro-F1 below 0.5.
+
+\hev{Conclusion.} The gain is positive but short of the stated bar, \verdict{DISMISSED} for the 0.10 hypothesis and \verdict{POSSIBLY GOOD} for the direction. The per-kind scores on joined blocks are a measurement with no verdict [QL8c-a, QL8c-b, QL9-e; Appendices~\ref{rec:ql8c} and~\ref{rec:ql9}].
 
 \subsection{What did not work}
 
@@ -1135,34 +1347,21 @@ LLM6 & Wrong hints hurt the model & W 0.828 against A2 0.802; W is not below A2 
 \section{The language-model replication and Loki's hints}
 \label{sec:llm}
 
-Gate-Breaker's own method gives a language model the netlist with hidden wire names and asks for
-the RTL. This section reproduces that baseline and then adds Loki's hints to the prompt. The arms
-are A (the netlist), B (the netlist and Loki's hints) and C (the interface line only). The first
-subsection is the replication of the Gate-Breaker harness (GB1, GB2). The full run (LLM3, LLM4) is
-the main answer: the hints add nothing measurable to the netlist (LLM3 DISMISSED), and the netlist
-adds a lot to the interface alone (LLM4 USEFUL). The hints-version-2 run (LLM5, LLM6) and the
-per-quartile tables follow. The earlier pilot (LLM1, LLM2, 40 problems, one draw) is Appendix record
-\ref{sec:llm-pilot}.
+Gate-Breaker's own method gives a language model the netlist with hidden wire names and asks for the RTL. This section reproduces that baseline and then adds Loki's hints to the prompt. The arguments use the same seven parts as Section~\ref{sec:results-main}. The model prompts come in the arms of Section~\ref{sec:background}: arm~A (the netlist), arm~B (the netlist and Loki's hints) and arm~C (the interface line only). The earlier pilot (40 problems, one draw) is Appendix record~\ref{sec:llm-pilot}.
 
-\subsection{The language-model baseline: the Gate-Breaker replication (GB1, GB2)}
+\subsection{The Gate-Breaker baseline, replicated}
+\label{arg:la1}
 \label{sec:gb-results}
 
-\hev{Measurement.} GB1 and GB2 are measurements, not hypotheses: they give the baseline that the
-language-model rows of this section (R2-L2, LLM1, LLM2) compare against. Gate-Breaker's metrics compare a
-recovered RTL against a reference: Success Rate, Success@$k$, AST similarity and CFG similarity
-(Section~\ref{sec:background}). Loki recovers structure, not a new RTL text, so the direct comparison is
-the replication: the Gate-Breaker harness itself, run with the only language model available on the host.
+\hev{Hypothesis.} None. This is a measurement of the baseline that the language-model arguments below compare against.
 
-\hev{Experiment.} GB1 runs the harness on the simple benchmarks of the fallback micro set. GB2 runs it on
-the VerilogEval quartiles the original paper used (Table~\ref{tab:veval}): one run, $K=10$, four workers,
-180\,s per call, 740 calls. The AST and CFG kernels are recomputed with common-width feature vectors (the
-first run padded per graph and truncated in the zip, which the v1.1.0 CFG probe found; those columns are not
-comparable to it).
+\hev{Implication.} Loki recovers structure and not a new RTL text, so a direct comparison with Gate-Breaker's metrics is possible only by running its harness ourselves. The numbers tell how far a model alone gets from the gate netlist.
 
-\hev{Result.} GB1: success rate 0.933 on Q1 and 0.829 on Q2, Success@10 1.000 in both quartiles, AST
-similarity 0.576 and 0.444, CFG similarity 1.000 and 0.736, with 169 of 174 extracted candidates functionally
-correct; this is a first replication on the fallback micro set, not the original paper's VerilogEval set.
-GB2 is in Table~\ref{tab:veval}.
+\hev{Experiment.} We run the Gate-Breaker harness itself, with the only language model available on the host. The first run uses the simple benchmarks of the fallback micro set. The second uses the VerilogEval designs of its quartiles Q1 and Q2: one run, $K=10$, four workers, 180\,s per call, 740 calls.
+
+\hev{Methodology.} The metrics are the Gate-Breaker ones (Success Rate, Success@$k$, AST and CFG similarity; Section~\ref{sec:background}). The AST and CFG kernels are recomputed with common-width feature vectors; the first run padded per graph and truncated in the zip, so those columns are not comparable to the first run. Seventy-four of the 78 designs of Q1 and Q2 are usable: three are excluded because their synthesized netlists fail the official testbench self-check, one because its 241\,KB prompt exceeds the OS argument limit.
+
+\hev{Measurements.} On the fallback micro set the success rate is 0.933 on Q1 and 0.829 on Q2, Success@10 is 1.000 in both, AST similarity 0.576 and 0.444, CFG similarity 1.000 and 0.736, with 169 of 174 extracted candidates functionally correct. On VerilogEval the results are in Table~\ref{tab:veval}. Against the paper's O3-Mini the deltas are: Q1 success rate $-0.092$, AST $-0.030$, CFG $-0.011$; Q2 success rate $-0.039$, Success@5 $+0.125$, Success@10 $+0.111$, AST $-0.164$, CFG $+0.083$.
 
 \begin{table}[t]
 \caption{Gate-Breaker metrics on the VerilogEval quartiles (one run, K=10, 4 workers, 180\,s
@@ -1180,55 +1379,23 @@ Q2 (37) & 0.778 & 0.811 & 1.000 & 1.000 & 0.761 & 0.890 \\
 \end{tabular}
 \end{table}
 
+\hev{Interpretation.} Every scored design is solved by attempt 5, so a model that sees the gates recovers function almost always, and names nothing reliably. The Q1 gap to the paper is harness no-output, not wrong RTL; the Q2 AST gap is truth-table and case references against the model's boolean expressions. Two caveats: the host's only model path routes through a gateway that aliases a DeepSeek backend as Claude Opus, so the model column is not verifiably the paper's comparison class, and the CLI exposes none of the paper's sampling flags ($T{=}0.85$, $p{=}0.95$). The two lines of work are complementary: the model recovers behaviour, Loki recovers the structures the flow preserved and proves what it claims. The Gate-Breaker future work (bus naming, datapath and control classification, partitioning) is exactly the work of level two.
 
-This replication ran Q1 and Q2 only; the Loki-only results for Q3 and Q4 on the same designs are in
-Section~\ref{sec:quartiles}. Seventy-four of the 78 Q1+Q2 designs are usable (three excluded because their synthesized
-netlists fail the official testbench self-check, one because its 241\,KB prompt exceeds the
-OS argument limit); every scored design is solved by attempt 5. The deltas against the
-paper's O3-Mini: Q1 success rate -0.092, AST -0.030, CFG -0.011; Q2 success rate -0.039,
-Success@5 +0.125, Success@10 +0.111, AST -0.164, CFG +0.083. The Q1 gap is harness
-no-output, not wrong RTL; the Q2 AST gap is truth-table and case references against the
-model's boolean expressions. Two caveats: the host's only model path routes through a
-gateway that aliases a DeepSeek backend as Claude Opus (so the model column is not
-verifiably the paper's comparison class), and the CLI exposes none of the paper's sampling
-flags ($T{=}0.85$, $p{=}0.95$). The CFG column uses the common-width node kernel (the
-odin3 CFG probe); the AST column uses the paper's pyverilog Algorithm~2 of Gate-Breaker.
+\hev{Conclusion.} Both runs are \verdict{MEASUREMENT}: they carry no verdict and are not counted [GB1, GB2].
 
-\hev{Verdict.} GB1 and GB2 \verdict{MEASUREMENT}: they carry no verdict and are not counted.
-
-What the two lines of work measure is complementary. The language model recovers functional
-behaviour from the gates and names nothing reliably; Loki recovers the structures the flow
-preserved (hard blocks and the signal roles its features see) and proves what it
-claims. The Gate-Breaker future work -- bus naming, datapath/control classification,
-partitioning -- is exactly L2's table, and its numbers are the baseline a model-assisted
-Loki would have to beat.
-
-\subsection{Language model plus Loki's hints: the full run (LLM3, LLM4)}
+\subsection{Do Loki's hints help a model that has the netlist? The full run}
+\label{arg:la2}
 \label{sec:llm-full}
 
-\hev{Hypotheses.} LLM3: a model given Loki's hints recovers RTL better than the same model given the netlist
-alone. LLM4: the netlist helps beyond what the model knows from the interface line alone.
+\hev{Hypothesis.} A model given Loki's hints recovers RTL better than the same model given the netlist alone (arm~B above arm~A); and the netlist helps beyond what the model knows from the interface line alone (arm~B above arm~C).
 
-% Sources: experiments/llm-full/EXPERIMENT.md (Results 2026-10-29), experiments/llm-full/results/summary.md,
-% results.csv, transcript-audit.txt, blinding-probe-full.txt. Every number below is copied from those files.
+\hev{Implication.} If the hints helped, Loki's structure would be a usable aid to language-model reverse engineering. If the netlist did not help beyond the interface line, the benchmark would be testing memorisation of the reference designs.
 
-The pilot could not separate the arms, so the same question was asked on every eligible problem of the four
-quartile files. The plan (arms, scorer, primary outcome, tests, stop rules) was written before the runs and committed first.
+\hev{Experiment.} The earlier pilot could not separate the arms, so the same question is asked on every eligible problem of the four quartile files: 137 problems (144 in the files, 7 excluded: four prompts over the 40000-byte cap, one reference that fails its own testbench, two whose hints cannot be built). Each arm has three independent draws per problem: 1,233 calls to fresh \code{claude-sonnet-5-5} subagents, with the pilot's prompts, scorer and answer format.
 
-\emph{Setup.} 137 problems (144 in the quartile files, 7 excluded: four prompts over the 40000-byte cap, one
-reference that fails its own testbench, two whose hints cannot be built), arms A (netlist), B (netlist and Loki's hints)
-and C (interface only), three independent draws per problem and arm: 1233 calls to fresh \code{claude-sonnet-5-5}
-subagents, with the pilot's prompts, scorer and answer format. The primary outcome is that a problem passes in at least 2 of
-its 3 draws. Per quartile, the exact two-sided McNemar test; across quartiles, the exact stratified form (discordant problems pooled); Holm
-adjustment over the ten tests. A claim needs an adjusted $p<0.05$.
+\hev{Methodology.} The primary outcome is that a problem passes in at least 2 of its 3 draws (\emph{MAJ}). Per quartile we use the exact two-sided McNemar test, across quartiles the exact stratified form (discordant problems pooled), and Holm adjustment over the ten tests; a claim needs an adjusted $p<0.05$. The plan (arms, scorer, primary outcome, tests and stop rules) was written and committed before the runs.
 
-\emph{Results.} All 1233 calls were answered (0 API refusals, 0 no-file calls, 0 timeouts). Table~\ref{tab:llm-full}
-gives the pass rates and Table~\ref{tab:llm-full-tests} the tests. Arms A and B are level
-(mean pass@1 0.888 against 0.878; A minus B $+0.010$, 95\% interval $[-0.017,+0.036]$), with 3 problems
-only A passes and 4 only B passes. Arm~C, with no netlist, still passes 0.560, so over half of the passes need only the interface line. The
-netlist adds the rest: B minus C is $+0.319$ ($[+0.241,+0.394]$), 52 problems only B passes against 5 only C passes
-(Holm $p<0.0001$). By quartile the B-against-C difference passes the rule in Q1 and Q2; Q3 and Q4 have the same sign but
-Holm $p=0.1504$ and $0.2109$.
+\hev{Measurements.} All 1,233 calls were answered (0 API refusals, 0 no-file calls, 0 timeouts). Table~\ref{tab:llm-full} gives the pass rates and Table~\ref{tab:llm-full-tests} the tests. Arms A and B are level: mean pass@1 0.888 against 0.878, A minus B $+0.010$ with 95\% interval $[-0.017,+0.036]$, and 3 problems that only A passes against 4 that only B passes. Arm~C, with no netlist, still passes 0.560. B minus C is $+0.319$ ($[+0.241,+0.394]$), with 52 problems that only B passes against 5 that only C passes (Holm $p<0.0001$). By quartile the B-against-C difference passes the rule in Q1 and Q2; Q3 and Q4 have the same sign but Holm $p=0.1504$ and $0.2109$.
 
 \begin{table}[t]
 \centering
@@ -1269,54 +1436,23 @@ B vs C & all & 52, 5 & $<0.0001$ & $<0.0001$ \\
 \end{tabular}
 \end{table}
 
-\emph{Threats to validity.} (i)~Dispatch: a Sonnet dispatcher subagent spawned the call subagents, so the controller
-session did not. (ii)~Blinding: the call subagents were not tool-less. A probe lists Agent, Artifact, Bash, Edit, Read, Skill, ToolSearch, Write
-and the Docs tools, with the workspace instructions, a memory index and a terse-style hook text in context; the reference files are on
-the same disk. The transcript audit of all 1233 calls found 0 calls touching any path other than their own call file and reply
-file; 37 used more than two tool calls (paged reads, double writes, and in 3 calls a shell search of their own call file). All are scored as made. This
-is evidence from behaviour, not a technical block. (iii)~The 7 excluded problems and the prompt-size cap
-under-represent the largest designs. (iv)~Arm~A is near the ceiling in Q1 and Q2, which limits how much any hint could show.
-(v)~The system prompt mentions Loki hints in every arm, and sampling is not controlled.
+\hev{Interpretation.} The interval rules out a gain from the hints larger than about 0.04 of the pass rate. Over half of the problems pass with only the interface line, so the benchmark carries some memorisation, and the netlist adds the other third of the pass rate. The threats are these. (i)~A Sonnet dispatcher subagent spawned the call subagents, so the controller session did not. (ii)~The call subagents were not tool-less: a probe lists Agent, Artifact, Bash, Edit, Read, Skill, ToolSearch, Write and the Docs tools, with the workspace instructions, a memory index and a terse-style hook text in context, and the reference files are on the same disk. The transcript audit of all 1,233 calls found 0 calls touching any path other than their own call file and reply file; 37 used more than two tool calls (paged reads, double writes, and in 3 calls a shell search of their own call file). All are scored as made. This is evidence from behaviour, not a technical block. (iii)~The 7 excluded problems and the prompt-size cap under-represent the largest designs. (iv)~Arm~A is near the ceiling in Q1 and Q2, which limits how much any hint could show. (v)~The system prompt mentions Loki hints in every arm, and sampling is not controlled.
 
-\hev{Verdicts.} LLM3 \verdict{DISMISSED}: A minus B $+0.010$ [$-0.017,+0.036$], stratified discordant 3 against 4, Holm $p=1.0000$; the
-interval rules out a gain larger than about 0.04. LLM4 \verdict{USEFUL}: B minus C $+0.319$, stratified 52 against 5, Holm $p<0.0001$; per quartile Q1 and Q2
-pass the rule and Q3 and Q4 are \verdict{INCONCLUSIVE}. Arm~C passing 0.56 bounds what the netlist adds: B minus C $=+0.319$.
+\hev{Conclusion.} The hints add nothing measurable, \verdict{DISMISSED}. The netlist helps, \verdict{USEFUL}; per quartile Q1 and Q2 pass the rule and Q3 and Q4 are \verdict{INCONCLUSIVE} [LLM3, LLM4; Appendix~\ref{sec:llm-full-rec}].
 
-\subsection{Language model plus Loki's hints, version 2 (LLM5, LLM6)}
+\subsection{Better hints, and wrong hints}
+\label{arg:la3}
 \label{sec:llm-hints2}
 
-\hev{Hypotheses.} LLM5: a model given Loki's linked hints (version 2) recovers RTL better than the netlist alone.
-LLM6: the model uses the hints, so hints with wrong content hurt.
+\hev{Hypothesis.} A model given Loki's linked hints of the second version recovers RTL better than the netlist alone, and the model uses the hints, so hints with wrong content hurt.
 
-% Sources: experiments/llm-hints2/EXPERIMENT.md (Results 2026-10-30), experiments/llm-hints2/results/summary.md,
-% results.csv, transcript-audit.txt, blinding-probe-hints2.txt. Every number below is copied from those files.
+\hev{Implication.} The full run found no gain from the first version of the hints. Two defects were fixed: the claims were weak (no counter kind, empty state-machine claims, duplicates), and the model was never told what the hints are. If the second version helps, the first result was a defect of the hints and not of the idea. If wrong hints hurt, the model reads the hints at all.
 
-The full run found no gain from the version-1 hints. Two defects were fixed before this run: the claims were weak
-(no counter kind, empty state-machine claims, duplicates), and the model was never told what the hints are. Version 2
-writes one plain-English line per claim with a probability, links it into the netlist as a comment on the line of each
-cell the claim covers, and the prompt explains the hints and asks the model to name the claims it used. The plan was
-written and committed before the calls.
+\hev{Experiment.} We take the 64 problems of Q3 (34) and Q4 (30), where arm~A of the full run was not at the ceiling. Four arms are run: \emph{A2} (netlist only, new prompt), \emph{B1'} (the first-version hints with the new prompt), \emph{B2} (second-version hints) and \emph{W} (the second-version claims moved to wires they do not describe; 5 problems whose wrong claims stayed too close to the true ones are left out of the W tests). The second-version hints write one plain-English line per claim with a probability, link it into the netlist as a comment on the line of each cell the claim covers, and the prompt explains the hints and asks the model to name the claims it used.
 
-\emph{Setup.} The 64 problems of Q3 (34) and Q4 (30), where arm A of the full run was not at the ceiling. Four arms:
-A2 (netlist only), B1' (the version-1 hints with the new prompt), B2 (version-2 hints) and W (version-2 claims moved to
-wires they do not describe; 5 problems whose wrong claims stayed too close to the true ones are left out of the W tests).
-Three draws per problem and arm: 768 calls to fresh \code{claude-sonnet-5-5} subagents, the full-run scorer and tests
-(at least 2 of 3 draws; exact stratified McNemar; Holm over nine tests). The stop was set at 97 percent of the weekly
-meter (Peter, before the calls); the meter never passed 89.
+\hev{Methodology.} Three draws per problem and arm: 768 calls to fresh \code{claude-sonnet-5-5} subagents, with the scorer and tests of the full run (at least 2 of 3 draws; exact stratified McNemar; Holm over nine tests). The plan was committed before the calls, and the stop was set at 97 percent of the weekly meter before the calls; the meter never passed 89.
 
-\emph{Results.} 762 calls produced a reply file; 6 did not (the model answered in chat), with 0 API refusals and 0 timeouts.
-Outcomes: pass 645, runtime 109, compile 8. Table~\ref{tab:llm-hints2} gives the pass rates. In Q4 the model passes more
-often with the version-2 hints (pass@1 0.933 for B2 against 0.744 for A2, 0.800 for B1' and 0.789 for W); in Q3 all arms sit
-between 0.85 and 0.87. Over all 64 problems B2 minus A2 is $+0.099$ with 95\% interval $[+0.052,+0.151]$ and B2 minus B1'
-is $+0.073$ $[+0.031,+0.115]$. Pass@3 is 0.906 for A2, B1' and B2 (W 0.875): the hints raise the consistency of a single
-draw, not the best-of-three ceiling. The primary test does not reach the rule: 4 problems only B2 passes against 0 only
-A2 passes, Holm $p=1.0000$. A2 already passes 54 of 64 problems by that measure, so few problems can differ.
-
-\emph{Use of the claims.} The model names a claim in 107 of 192 B2 calls. FSM claims were used in 57 B2 calls and all 57
-passed; counter claims in 24 and all passed. In W, FSM claims were used in 33 calls with 27 passes, against 24 calls where
-an FSM claim was offered and not used with 19 passes (0.82 against 0.79, no difference); a used wrong state-machine hint passed
-less often than a used right one (27 of 33 against 57 of 57), but on different problems, so this is not a paired test. W minus
-A2 is $+0.026$ ($[-0.021,+0.073]$), with 2 problems only W passes and 2 only A2 passes.
+\hev{Measurements.} 762 calls produced a reply file and 6 did not (the model answered in chat); there were 0 API refusals and 0 timeouts. Outcomes: pass 645, runtime 109, compile 8. Table~\ref{tab:llm-hints2} gives the pass rates. In Q4 pass@1 is 0.933 for B2 against 0.744 for A2, 0.800 for B1' and 0.789 for W; in Q3 all arms sit between 0.85 and 0.87. Over all 64 problems B2 minus A2 is $+0.099$ ($[+0.052,+0.151]$) and B2 minus B1' is $+0.073$ ($[+0.031,+0.115]$). Pass@3 is 0.906 for A2, B1' and B2 (W 0.875). The primary test does not reach the rule: 4 problems that only B2 passes against 0 that only A2 passes, Holm $p=1.0000$. The model names a claim in 107 of 192 B2 calls; state-machine claims were used in 57 B2 calls and all 57 passed, counter claims in 24 and all passed. In W, state-machine claims were used in 33 calls with 27 passes, against 24 calls where one was offered and not used with 19 passes (0.82 against 0.79). W minus A2 is $+0.026$ ($[-0.021,+0.073]$), with 2 problems that only W passes and 2 that only A2 passes.
 
 \begin{table}[t]
 \centering
@@ -1343,113 +1479,27 @@ All & W & 64 & 0.828 & 0.875 & 55/64 \\
 \end{tabular}
 \end{table}
 
-\emph{Threats to validity.} (i)~Underpowered: the primary test counts discordant problems, A2 is near the ceiling, and 4
-against 0 cannot pass after Holm; the pass@1 interval and the claim-use table are not the pre-stated rule. (ii)~Blinding: as in
-the full run, the call subagents were not tool-less and saw the workspace instructions, a memory index and a terse-style hook text.
-The transcript audit of all 768 calls found 0 calls touching any path other than their own call file and reply file and 0 using other
-tools; 26 used more than two tool calls (paged reads, double writes, and 6 calls that edited their own reply file with Edit instead
-of Write). All are scored as made. (iii)~Confound: A2 has neither the hint explanation nor the claim-use line, so B2 against A2 differs by
-both; B2 against B1' holds the prompt fixed and isolates the hint content. (iv)~The probability of a sequential claim is a per-kind
-constant checked on the netlist, not a measure of designer intent, and it was not used in any analysis. The checks are in-sample.
-(v)~Wrong claims (W) stay partly close to the true ones in small designs. (vi)~Memorisation is not controlled in this run. Sampling is
-not controlled.
+\hev{Interpretation.} The second-version hints raise the pass rate of a single draw, mostly in Q4, but not the best-of-three ceiling, and the pre-stated test cannot show it: A2 already passes 54 of 64 problems by that measure, so few problems can differ, and 4 against 0 cannot pass after Holm. The point estimate and the claim-use table suggest that the model reads and uses state-machine and counter claims; this is a pointer for a better-powered test, not a verdict. A used wrong state-machine hint passed less often than a used right one (27 of 33 against 57 of 57), but on different problems, so this is not a paired test. The threats: (i)~the test is underpowered, and the pass@1 interval and the claim-use table are not the pre-stated rule; (ii)~blinding is as in the full run, and the audit of all 768 calls found 0 calls touching any path other than their own call file and reply file, and 0 using other tools; 26 used more than two tool calls (paged reads, double writes, and 6 calls that edited their own reply file with Edit instead of Write); (iii)~A2 has neither the hint explanation nor the claim-use line, so B2 against A2 differs by both, while B2 against B1' holds the prompt fixed and isolates the hint content; (iv)~the probability of a sequential claim is a per-kind constant checked on the netlist, not a measure of designer intent, and it was not used in any analysis; (v)~wrong claims stay partly close to the true ones in small designs; (vi)~memorisation and sampling are not controlled in this run.
 
-\hev{Verdicts.} LLM5 \verdict{INCONCLUSIVE}: B2 against A2 stratified discordant 4 against 0, Holm $p=1.0000$, although mean pass@1
-is $+0.099$ $[+0.052,+0.151]$. The interval and the claim-use table suggest that version-2 hints help on Q4 and that the model reads
-and uses state-machine and counter claims; this is a pointer for a better-powered test, not a verdict. LLM6 \verdict{DISMISSED}: W against
-A2 discordant 2 against 2, Holm $p=1.0000$; the hypothesis that wrong hints lower the pass rate is not supported by the pre-stated test.
+\hev{Conclusion.} Better hints: \verdict{INCONCLUSIVE} (stratified 4 against 0, Holm $p=1.0000$). Wrong hints hurt: \verdict{DISMISSED} (2 against 2, Holm $p=1.0000$) [LLM5, LLM6; Appendix~\ref{sec:llm-hints2-rec}].
 
-\subsection{Per-quartile results: Loki alone and Loki with a model (Q1, Q2)}
+\subsection{Do the hints help in some quartiles, and what does Loki alone recover?}
+\label{arg:la4}
 \label{sec:quartiles}
 
-\hev{Hypothesis and measurement.} Q1: the hints help in some complexity quartiles (hypothesis; verdict
-\verdict{INCONCLUSIVE}, the cells hold 8 to 10 problems and no quartile has enough discordant pairs for $p<0.05$). Q2: what Loki alone
-recovers per quartile (a measurement with no verdict).
+\hev{Hypothesis.} The hints help in some Gate-Breaker complexity quartiles (Q1 to Q4) and not in others. A second question, a measurement, asks what Loki alone recovers in each quartile.
 
+\hev{Implication.} A gain confined to the hard quartiles would show where structure helps a model; the Loki-only table shows where the structure itself is recovered.
 
-% Sources: every number in this subsection is in the tables of quartile-tables.tex, generated by
-% experiments/quartiles/quartiles.py (CSVs beside it: pilot_cells.csv, pilot_tests.csv,
-% loki_only.csv, loki_only_bins.csv, comparison.csv, partition_crosstab.csv, not_built.csv).
-% Partition: experiments/quartiles/gb-quartiles/*.txt (copies of the Gate-Breaker quartile files;
-% the pilot's selection.csv `quartile` column equals them). Pilot cells:
-% experiments/llm-pilot/results/re/results.csv. Loki-only L0 ceiling and sizes:
-% experiments/veval-l0/{l0-ceiling-veval,sizes,benchmark}.csv. AST and CFG per design:
-% experiments/quartiles/round2_per_design.csv (from the sources of round2/l2_headtohead.csv).
-% Word recovery: experiments/hal/results/scores-hal8.csv. Power floor: quartiles.py
-% min_discordant. The 14 hypotheses in 7 designs: experiments/round2/EXPERIMENT.md. Non-built
-% references: veval-l0/EXPERIMENT.md, quartiles/not_built.csv.
+\hev{Experiment.} The pilot of the Appendix is split by quartile and tested per quartile; Loki-only results that are defined on the VerilogEval designs are tabulated in the four quartiles. No new run or model call was made. The partition is the Gate-Breaker quartile files (41, 36, 36 and 31 problems); 138 built designs appear in them, and 12 built designs that appear in no file are left out.
 
-Two questions ask the
-same thing per Gate-Breaker complexity quartile: is the model with Loki's hints better than the
-model without them, and what does Loki alone recover? All numbers here come from files already
-committed; no new run or model call was made for this subsection. Every table below uses one
-partition, the Gate-Breaker quartile files (41, 36, 36 and 31 problems), which are also the
-partition of the full language-model run. The 138 built designs that appear in a quartile file
-are binned by them; 12 built designs appear in no file and are left out. The paper's absolute
-complexity bins give a different partition, shown once in Table~\ref{tab:q-bins}: of the 138
-designs, 35 sit in a different quartile there (103 agree), and 9 of the 40 pilot designs would
-change quartile.
+\hev{Methodology.} The exact two-sided McNemar test per quartile, with the stratified exact test equal to the overall test. A test needs at least 6 discordant pairs, all in one direction, for $p<0.05$; the largest number in any one quartile here is 3.
 
-\emph{Loki with a model, per quartile.} Table~\ref{tab:q-pilot} splits the pilot of
-Appendix~\ref{sec:llm-pilot} by quartile, and Table~\ref{tab:q-tests} gives the exact two-sided
-McNemar test in each quartile. Conditioning on the discordant pairs of each quartile, each
-discordant pair is equally likely to favour either arm under the null, so the sum of the
-first-only counts over quartiles is binomial over all discordant pairs: the stratified exact
-test equals the overall exact McNemar test, which is the All row of the table. Arm~B is ahead of
-arm~A by one problem in Q2 and in Q3, level in Q1, and behind by two in Q4 (all calls: 7/10
-against 9/10). Both problems for which arm~B has no reply file are Q4 problems, so in the paired
-Q4 view A and B are level at 7/8. Over all quartiles the paired difference is 2 problems for B
-and 0 for A ($p=0.50$), and in the all-calls view 2 against 2 ($p=1.0$). Arm~C, which sees no
-netlist, is behind arm~B in the point estimate in every quartile except Q4 (level 7/10), but the
-overall test of B against C is $p=0.070$ in the paired view and $p=0.18$ in the all-calls view,
-and no quartile reaches $p<0.05$.
+\hev{Measurements.} Arm~B is ahead of arm~A by one problem in Q2 and in Q3, level in Q1 and behind by two in Q4. Overall the paired difference is 2 problems for B and 0 for A ($p=0.50$). Arm~C is behind arm~B in the point estimate in every quartile except Q4, and the overall test of B against C is $p=0.070$ (paired view) and $p=0.18$ (all calls); no quartile reaches $p<0.05$. The Loki-only tables, the word recovery against HAL per quartile and the side-by-side with the Gate-Breaker replication are in the appendix record~\ref{sec:quartiles-rec}.
 
-\emph{What the tests can show.} A two-sided exact McNemar test needs at least 6 discordant
-pairs, all in one direction, for $p<0.05$; with 8 discordant pairs it needs 8 to 0, and with 10
-it needs 9 to 1. The largest number of discordant pairs in any single quartile comparison here
-is 3. Overall, B against C in the all-calls view has 9 discordant pairs split 7 to 2, where
-8 to 1 would have been needed. These data therefore do not show that Loki's hints help in any
-quartile, and do not show that they do not. No claim beyond these tests is made. A larger run
-(all designs of the quartile files, 3 draws per arm) is planned and is what can test an effect.
+\hev{Interpretation.} The pilot has too few problems per quartile for any test to decide, so it neither shows nor excludes a gain in any quartile. The full run above is the test with power.
 
-\input{quartile-tables}
-
-\emph{Loki alone, per quartile.} Table~\ref{tab:q-loki} shows every Loki result that is defined
-on the VerilogEval designs, in the four quartiles. The L0 ceiling is flat: every node of every
-built design has a label row, a \code{cell\_type} and an HDL span, and the module coverage is
-1.000 in every quartile. Signal coverage has mean (median) $1.000\ (1.000)$, $0.986\ (1.000)$,
-$1.008\ (1.000)$ and $0.896\ (0.866)$ in Q1 to Q4. The 138 designs of the quartile files include
-the 6 references that are not built (3 in Q3, 3 in Q4: two that Odin III's SystemVerilog reader
-skips and four that fail Loki's own equivalence gate), so all three floors are built for 41, 36,
-33 and 28 designs. The AST similarity of the re-emitted Verilog is lowest in Q2: calibrated
-\code{f3} gives $0.691$, $0.508$, $0.602$ and $0.533$ for Q1 to Q4 on $n=41$, $34$, $30$ and
-$15$ designs, and the CFG similarity is $0.740$, $0.750$, $0.763$ and $0.757$ on $n=41$, $36$,
-$33$ and $28$. Designs whose reference pyverilog cannot parse have no AST value (0, 2, 3 and 13
-in Q1 to Q4), so the Q3 and Q4 AST means rest on fewer, plainer designs and are not a clean
-effect of complexity. L1 changes little: calibrated and L0-stop \code{f3} AST agree to the third
-decimal in Q1, Q2 and Q4 ($0.602$ against $0.612$ in Q3), because the calibrated flow commits
-14 hypotheses in 7 designs (round~2). The recovery experiment on the micro designs
-(Appendix~\ref{sec:l1-results}) is ranked by node count, not by Gate-Breaker quartile, and the
-loss audit of Appendix~\ref{sec:round6} reports pooled counts per unit kind; neither is
-defined per quartile, so neither appears in the tables.
-
-\emph{Word recovery against HAL, per quartile.} Table~\ref{tab:q-hal} splits the round~5b
-comparison of Appendix~\ref{sec:hal} on the 28 test-split VerilogEval designs that are in a
-quartile file. Q1 and Q2 have no ground-truth word and every tool predicts none. In Q3
-(5 designs) the three tools match 5, 5 and 6 of 7 ground-truth words; in Q4 (6 designs) Loki W
-matches 5 of 6 with 7 predicted words, Loki WB 4 of 6 with 11 and HAL 4 of 6 with 5. The counts
-are small, and they depend on the partition: with the absolute bins (Table~\ref{tab:q-bins}) Q4
-holds 10 designs and 139 ground-truth words.
-
-\emph{Side by side.} Table~\ref{tab:q-compare} puts the Loki-only AST and CFG, the round-1
-Gate-Breaker harness replication and the pilot's pass rates in one table, with Loki and the
-round-1 model both on the common set (designs scored by both). The metrics differ: AST and CFG
-measure the similarity of recovered text, and the pilot measures functional correctness. On the
-common set Loki alone is below the round-1 model on AST and CFG in Q1 (AST $0.699$ against
-$0.907$, CFG $0.741$ against $0.913$) and Q2 (AST $0.512$ against $0.733$, CFG $0.754$ against
-$0.917$); the common set has one design in each of Q3 and Q4, so no mean is compared there
-(Section~\ref{sec:gb-results}). The pilot has no AST or CFG score, so the pilot and these
-columns are not compared on a common metric.
+\hev{Conclusion.} The hints help in some quartiles: \verdict{INCONCLUSIVE}. The per-quartile Loki-only results are a \verdict{MEASUREMENT} [Q1, Q2].
 
 \section{Discussion and limits}
 \label{sec:discussion}
@@ -1511,7 +1561,7 @@ designs: equivalence and recovery were not run on the big VTR designs.
 
 The next question comes first, then the untested hypotheses. Each is an idea and the experiment it needs.
 
-\emph{Q-L10, a block-by-block decode (the next question).} Gate-Breaker gives a language model the whole
+\emph{A block-by-block decode (the next question, named Q-L10 in the plan).} Gate-Breaker gives a language model the whole
 netlist in one prompt. Loki now cuts the netlist into joined blocks, each with a kind guess
 (Section~\ref{sec:results-main}). The question is whether a model that decodes the netlist one Loki
 block at a time, each block with its kind guess, recovers more RTL than the model given the whole
@@ -2633,6 +2683,196 @@ a claim about the hints in either direction.
 
 
 \hev{Record.} loki PR \#49, \#50 and \#52 (2026-10-27); register rows LLM1, LLM2.
+
+\subsection{Per-quartile tables: Loki alone and Loki with a model (Q1, Q2)}
+\label{sec:quartiles-rec}
+
+\hev{Hypothesis and measurement.} Q1: the hints help in some complexity quartiles (hypothesis; verdict
+\verdict{INCONCLUSIVE}, the cells hold 8 to 10 problems and no quartile has enough discordant pairs for $p<0.05$). Q2: what Loki alone
+recovers per quartile (a measurement with no verdict).
+
+
+% Sources: every number in this subsection is in the tables of quartile-tables.tex, generated by
+% experiments/quartiles/quartiles.py (CSVs beside it: pilot_cells.csv, pilot_tests.csv,
+% loki_only.csv, loki_only_bins.csv, comparison.csv, partition_crosstab.csv, not_built.csv).
+% Partition: experiments/quartiles/gb-quartiles/*.txt (copies of the Gate-Breaker quartile files;
+% the pilot's selection.csv `quartile` column equals them). Pilot cells:
+% experiments/llm-pilot/results/re/results.csv. Loki-only L0 ceiling and sizes:
+% experiments/veval-l0/{l0-ceiling-veval,sizes,benchmark}.csv. AST and CFG per design:
+% experiments/quartiles/round2_per_design.csv (from the sources of round2/l2_headtohead.csv).
+% Word recovery: experiments/hal/results/scores-hal8.csv. Power floor: quartiles.py
+% min_discordant. The 14 hypotheses in 7 designs: experiments/round2/EXPERIMENT.md. Non-built
+% references: veval-l0/EXPERIMENT.md, quartiles/not_built.csv.
+
+Two questions ask the
+same thing per Gate-Breaker complexity quartile: is the model with Loki's hints better than the
+model without them, and what does Loki alone recover? All numbers here come from files already
+committed; no new run or model call was made for this subsection. Every table below uses one
+partition, the Gate-Breaker quartile files (41, 36, 36 and 31 problems), which are also the
+partition of the full language-model run. The 138 built designs that appear in a quartile file
+are binned by them; 12 built designs appear in no file and are left out. The paper's absolute
+complexity bins give a different partition, shown once in Table~\ref{tab:q-bins}: of the 138
+designs, 35 sit in a different quartile there (103 agree), and 9 of the 40 pilot designs would
+change quartile.
+
+\emph{Loki with a model, per quartile.} Table~\ref{tab:q-pilot} splits the pilot of
+Appendix~\ref{sec:llm-pilot} by quartile, and Table~\ref{tab:q-tests} gives the exact two-sided
+McNemar test in each quartile. Conditioning on the discordant pairs of each quartile, each
+discordant pair is equally likely to favour either arm under the null, so the sum of the
+first-only counts over quartiles is binomial over all discordant pairs: the stratified exact
+test equals the overall exact McNemar test, which is the All row of the table. Arm~B is ahead of
+arm~A by one problem in Q2 and in Q3, level in Q1, and behind by two in Q4 (all calls: 7/10
+against 9/10). Both problems for which arm~B has no reply file are Q4 problems, so in the paired
+Q4 view A and B are level at 7/8. Over all quartiles the paired difference is 2 problems for B
+and 0 for A ($p=0.50$), and in the all-calls view 2 against 2 ($p=1.0$). Arm~C, which sees no
+netlist, is behind arm~B in the point estimate in every quartile except Q4 (level 7/10), but the
+overall test of B against C is $p=0.070$ in the paired view and $p=0.18$ in the all-calls view,
+and no quartile reaches $p<0.05$.
+
+\emph{What the tests can show.} A two-sided exact McNemar test needs at least 6 discordant
+pairs, all in one direction, for $p<0.05$; with 8 discordant pairs it needs 8 to 0, and with 10
+it needs 9 to 1. The largest number of discordant pairs in any single quartile comparison here
+is 3. Overall, B against C in the all-calls view has 9 discordant pairs split 7 to 2, where
+8 to 1 would have been needed. These data therefore do not show that Loki's hints help in any
+quartile, and do not show that they do not. No claim beyond these tests is made. A larger run
+(all designs of the quartile files, 3 draws per arm) is planned and is what can test an effect.
+
+\input{quartile-tables}
+
+\emph{Loki alone, per quartile.} Table~\ref{tab:q-loki} shows every Loki result that is defined
+on the VerilogEval designs, in the four quartiles. The L0 ceiling is flat: every node of every
+built design has a label row, a \code{cell\_type} and an HDL span, and the module coverage is
+1.000 in every quartile. Signal coverage has mean (median) $1.000\ (1.000)$, $0.986\ (1.000)$,
+$1.008\ (1.000)$ and $0.896\ (0.866)$ in Q1 to Q4. The 138 designs of the quartile files include
+the 6 references that are not built (3 in Q3, 3 in Q4: two that Odin III's SystemVerilog reader
+skips and four that fail Loki's own equivalence gate), so all three floors are built for 41, 36,
+33 and 28 designs. The AST similarity of the re-emitted Verilog is lowest in Q2: calibrated
+\code{f3} gives $0.691$, $0.508$, $0.602$ and $0.533$ for Q1 to Q4 on $n=41$, $34$, $30$ and
+$15$ designs, and the CFG similarity is $0.740$, $0.750$, $0.763$ and $0.757$ on $n=41$, $36$,
+$33$ and $28$. Designs whose reference pyverilog cannot parse have no AST value (0, 2, 3 and 13
+in Q1 to Q4), so the Q3 and Q4 AST means rest on fewer, plainer designs and are not a clean
+effect of complexity. L1 changes little: calibrated and L0-stop \code{f3} AST agree to the third
+decimal in Q1, Q2 and Q4 ($0.602$ against $0.612$ in Q3), because the calibrated flow commits
+14 hypotheses in 7 designs (round~2). The recovery experiment on the micro designs
+(Appendix~\ref{sec:l1-results}) is ranked by node count, not by Gate-Breaker quartile, and the
+loss audit of Appendix~\ref{sec:round6} reports pooled counts per unit kind; neither is
+defined per quartile, so neither appears in the tables.
+
+\emph{Word recovery against HAL, per quartile.} Table~\ref{tab:q-hal} splits the round~5b
+comparison of Appendix~\ref{sec:hal} on the 28 test-split VerilogEval designs that are in a
+quartile file. Q1 and Q2 have no ground-truth word and every tool predicts none. In Q3
+(5 designs) the three tools match 5, 5 and 6 of 7 ground-truth words; in Q4 (6 designs) Loki W
+matches 5 of 6 with 7 predicted words, Loki WB 4 of 6 with 11 and HAL 4 of 6 with 5. The counts
+are small, and they depend on the partition: with the absolute bins (Table~\ref{tab:q-bins}) Q4
+holds 10 designs and 139 ground-truth words.
+
+\emph{Side by side.} Table~\ref{tab:q-compare} puts the Loki-only AST and CFG, the round-1
+Gate-Breaker harness replication and the pilot's pass rates in one table, with Loki and the
+round-1 model both on the common set (designs scored by both). The metrics differ: AST and CFG
+measure the similarity of recovered text, and the pilot measures functional correctness. On the
+common set Loki alone is below the round-1 model on AST and CFG in Q1 (AST $0.699$ against
+$0.907$, CFG $0.741$ against $0.913$) and Q2 (AST $0.512$ against $0.733$, CFG $0.754$ against
+$0.917$); the common set has one design in each of Q3 and Q4, so no mean is compared there
+(Section~\ref{sec:gb-results}). The pilot has no AST or CFG score, so the pilot and these
+columns are not compared on a common metric.
+
+\subsection{Language model plus Loki's hints: the full run, as run (LLM3, LLM4)}
+\label{sec:llm-full-rec}
+
+\hev{Hypotheses.} LLM3: a model given Loki's hints recovers RTL better than the same model given the netlist
+alone. LLM4: the netlist helps beyond what the model knows from the interface line alone.
+
+% Sources: experiments/llm-full/EXPERIMENT.md (Results 2026-10-29), experiments/llm-full/results/summary.md,
+% results.csv, transcript-audit.txt, blinding-probe-full.txt. Every number below is copied from those files.
+
+The pilot could not separate the arms, so the same question was asked on every eligible problem of the four
+quartile files. The plan (arms, scorer, primary outcome, tests, stop rules) was written before the runs and committed first.
+
+\emph{Setup.} 137 problems (144 in the quartile files, 7 excluded: four prompts over the 40000-byte cap, one
+reference that fails its own testbench, two whose hints cannot be built), arms A (netlist), B (netlist and Loki's hints)
+and C (interface only), three independent draws per problem and arm: 1233 calls to fresh \code{claude-sonnet-5-5}
+subagents, with the pilot's prompts, scorer and answer format. The primary outcome is that a problem passes in at least 2 of
+its 3 draws. Per quartile, the exact two-sided McNemar test; across quartiles, the exact stratified form (discordant problems pooled); Holm
+adjustment over the ten tests. A claim needs an adjusted $p<0.05$.
+
+\emph{Results.} All 1233 calls were answered (0 API refusals, 0 no-file calls, 0 timeouts). Table~\ref{tab:llm-full}
+gives the pass rates and Table~\ref{tab:llm-full-tests} the tests. Arms A and B are level
+(mean pass@1 0.888 against 0.878; A minus B $+0.010$, 95\% interval $[-0.017,+0.036]$), with 3 problems
+only A passes and 4 only B passes. Arm~C, with no netlist, still passes 0.560, so over half of the passes need only the interface line. The
+netlist adds the rest: B minus C is $+0.319$ ($[+0.241,+0.394]$), 52 problems only B passes against 5 only C passes
+(Holm $p<0.0001$). By quartile the B-against-C difference passes the rule in Q1 and Q2; Q3 and Q4 have the same sign but
+Holm $p=0.1504$ and $0.2109$.
+
+(Table~\ref{tab:llm-full} is in the main text.)
+
+(Table~\ref{tab:llm-full-tests} is in the main text.)
+
+\emph{Threats to validity.} (i)~Dispatch: a Sonnet dispatcher subagent spawned the call subagents, so the controller
+session did not. (ii)~Blinding: the call subagents were not tool-less. A probe lists Agent, Artifact, Bash, Edit, Read, Skill, ToolSearch, Write
+and the Docs tools, with the workspace instructions, a memory index and a terse-style hook text in context; the reference files are on
+the same disk. The transcript audit of all 1233 calls found 0 calls touching any path other than their own call file and reply
+file; 37 used more than two tool calls (paged reads, double writes, and in 3 calls a shell search of their own call file). All are scored as made. This
+is evidence from behaviour, not a technical block. (iii)~The 7 excluded problems and the prompt-size cap
+under-represent the largest designs. (iv)~Arm~A is near the ceiling in Q1 and Q2, which limits how much any hint could show.
+(v)~The system prompt mentions Loki hints in every arm, and sampling is not controlled.
+
+\hev{Verdicts.} LLM3 \verdict{DISMISSED}: A minus B $+0.010$ [$-0.017,+0.036$], stratified discordant 3 against 4, Holm $p=1.0000$; the
+interval rules out a gain larger than about 0.04. LLM4 \verdict{USEFUL}: B minus C $+0.319$, stratified 52 against 5, Holm $p<0.0001$; per quartile Q1 and Q2
+pass the rule and Q3 and Q4 are \verdict{INCONCLUSIVE}. Arm~C passing 0.56 bounds what the netlist adds: B minus C $=+0.319$.
+
+\subsection{Language model plus Loki's hints, version 2, as run (LLM5, LLM6)}
+\label{sec:llm-hints2-rec}
+
+\hev{Hypotheses.} LLM5: a model given Loki's linked hints (version 2) recovers RTL better than the netlist alone.
+LLM6: the model uses the hints, so hints with wrong content hurt.
+
+% Sources: experiments/llm-hints2/EXPERIMENT.md (Results 2026-10-30), experiments/llm-hints2/results/summary.md,
+% results.csv, transcript-audit.txt, blinding-probe-hints2.txt. Every number below is copied from those files.
+
+The full run found no gain from the version-1 hints. Two defects were fixed before this run: the claims were weak
+(no counter kind, empty state-machine claims, duplicates), and the model was never told what the hints are. Version 2
+writes one plain-English line per claim with a probability, links it into the netlist as a comment on the line of each
+cell the claim covers, and the prompt explains the hints and asks the model to name the claims it used. The plan was
+written and committed before the calls.
+
+\emph{Setup.} The 64 problems of Q3 (34) and Q4 (30), where arm A of the full run was not at the ceiling. Four arms:
+A2 (netlist only), B1' (the version-1 hints with the new prompt), B2 (version-2 hints) and W (version-2 claims moved to
+wires they do not describe; 5 problems whose wrong claims stayed too close to the true ones are left out of the W tests).
+Three draws per problem and arm: 768 calls to fresh \code{claude-sonnet-5-5} subagents, the full-run scorer and tests
+(at least 2 of 3 draws; exact stratified McNemar; Holm over nine tests). The stop was set at 97 percent of the weekly
+meter (Peter, before the calls); the meter never passed 89.
+
+\emph{Results.} 762 calls produced a reply file; 6 did not (the model answered in chat), with 0 API refusals and 0 timeouts.
+Outcomes: pass 645, runtime 109, compile 8. Table~\ref{tab:llm-hints2} gives the pass rates. In Q4 the model passes more
+often with the version-2 hints (pass@1 0.933 for B2 against 0.744 for A2, 0.800 for B1' and 0.789 for W); in Q3 all arms sit
+between 0.85 and 0.87. Over all 64 problems B2 minus A2 is $+0.099$ with 95\% interval $[+0.052,+0.151]$ and B2 minus B1'
+is $+0.073$ $[+0.031,+0.115]$. Pass@3 is 0.906 for A2, B1' and B2 (W 0.875): the hints raise the consistency of a single
+draw, not the best-of-three ceiling. The primary test does not reach the rule: 4 problems only B2 passes against 0 only
+A2 passes, Holm $p=1.0000$. A2 already passes 54 of 64 problems by that measure, so few problems can differ.
+
+\emph{Use of the claims.} The model names a claim in 107 of 192 B2 calls. FSM claims were used in 57 B2 calls and all 57
+passed; counter claims in 24 and all passed. In W, FSM claims were used in 33 calls with 27 passes, against 24 calls where
+an FSM claim was offered and not used with 19 passes (0.82 against 0.79, no difference); a used wrong state-machine hint passed
+less often than a used right one (27 of 33 against 57 of 57), but on different problems, so this is not a paired test. W minus
+A2 is $+0.026$ ($[-0.021,+0.073]$), with 2 problems only W passes and 2 only A2 passes.
+
+(Table~\ref{tab:llm-hints2} is in the main text.)
+
+\emph{Threats to validity.} (i)~Underpowered: the primary test counts discordant problems, A2 is near the ceiling, and 4
+against 0 cannot pass after Holm; the pass@1 interval and the claim-use table are not the pre-stated rule. (ii)~Blinding: as in
+the full run, the call subagents were not tool-less and saw the workspace instructions, a memory index and a terse-style hook text.
+The transcript audit of all 768 calls found 0 calls touching any path other than their own call file and reply file and 0 using other
+tools; 26 used more than two tool calls (paged reads, double writes, and 6 calls that edited their own reply file with Edit instead
+of Write). All are scored as made. (iii)~Confound: A2 has neither the hint explanation nor the claim-use line, so B2 against A2 differs by
+both; B2 against B1' holds the prompt fixed and isolates the hint content. (iv)~The probability of a sequential claim is a per-kind
+constant checked on the netlist, not a measure of designer intent, and it was not used in any analysis. The checks are in-sample.
+(v)~Wrong claims (W) stay partly close to the true ones in small designs. (vi)~Memorisation is not controlled in this run. Sampling is
+not controlled.
+
+\hev{Verdicts.} LLM5 \verdict{INCONCLUSIVE}: B2 against A2 stratified discordant 4 against 0, Holm $p=1.0000$, although mean pass@1
+is $+0.099$ $[+0.052,+0.151]$. The interval and the claim-use table suggest that version-2 hints help on Q4 and that the model reads
+and uses state-machine and counter claims; this is a pointer for a better-powered test, not a verdict. LLM6 \verdict{DISMISSED}: W against
+A2 discordant 2 against 2, Holm $p=1.0000$; the hypothesis that wrong hints lower the pass rate is not supported by the pre-stated test.
 
 \subsection{State-machine encoding (FSM2a, FSM2b, FSM3)}
 \label{rec:fsm}

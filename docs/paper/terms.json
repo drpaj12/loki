@@ -36,37 +36,6 @@
   "intro": true
  },
  {
-  "key": "ff",
-  "name": "flip-flop",
-  "definition": "A one-bit storage element that keeps its value between clock edges.",
-  "depends": [],
-  "search": "flip-flops?|\\bFFs?\\b",
-  "intro": false
- },
- {
-  "key": "lut",
-  "name": "LUT",
-  "definition": "Look-up table: a small memory that implements any logic function of $K$ inputs ($K=6$ here). In most FPGAs a LUT and a flip-flop form one basic logic element~\\cite{jamiesonthesis}~\\cite{luuthesis}.",
-  "depends": [
-   "flip-flop"
-  ],
-  "search": "\\bLUT6?s?\\b|look-up table",
-  "intro": false
- },
- {
-  "key": "techmap",
-  "name": "technology mapping",
-  "definition": "The CAD step that covers the logic of a netlist with the cells the target offers: gates for a gate library, LUTs and flip-flops for an FPGA~\\cite{jamiesonthesis}.",
-  "depends": [
-   "netlist",
-   "gate",
-   "LUT",
-   "flip-flop"
-  ],
-  "search": "technology.map",
-  "intro": false
- },
- {
   "key": "prov",
   "name": "provenance",
   "definition": "The link from each netlist object back to the HDL that produced it.",
@@ -130,13 +99,64 @@
   "intro": true
  },
  {
-  "key": "quart",
-  "name": "quartile",
-  "definition": "One quarter of the benchmark designs ordered by Gate-Breaker's complexity score (Q1 simplest, Q4 most complex).",
+  "key": "ff",
+  "name": "flip-flop",
+  "definition": "A one-bit storage element that keeps its value between clock edges.",
+  "depends": [],
+  "search": "flip-flops?|\\bFFs?\\b",
+  "intro": false
+ },
+ {
+  "key": "lut",
+  "name": "LUT",
+  "definition": "Look-up table: a small memory that implements any logic function of $K$ inputs ($K=6$ here). In most FPGAs a LUT and a flip-flop form one basic logic element~\\cite{jamiesonthesis}~\\cite{luuthesis}.",
   "depends": [
-   "Gate-Breaker"
+   "flip-flop"
   ],
-  "search": "quartile",
+  "search": "\\bLUT6?s?\\b|look-up table",
+  "intro": false
+ },
+ {
+  "key": "techmap",
+  "name": "technology mapping",
+  "definition": "The CAD step that covers the logic of a netlist with the cells the target offers: gates for a gate library, LUTs and flip-flops for an FPGA~\\cite{jamiesonthesis}.",
+  "depends": [
+   "netlist",
+   "gate",
+   "LUT",
+   "flip-flop"
+  ],
+  "search": "technology.map",
+  "intro": false
+ },
+ {
+  "key": "d14",
+  "name": "D14 provenance map",
+  "definition": "Odin III's version-2 name map: per object, the source-statement units it blends, and labelled join records.",
+  "depends": [
+   "provenance"
+  ],
+  "search": "D14|name map|prov-map",
+  "intro": false
+ },
+ {
+  "key": "unit",
+  "name": "unit, separable, lost",
+  "definition": "A unit is the statement-level anchor of a construct; it is separable while some object has exactly that unit set, and lost at the first later snapshot where none has.",
+  "depends": [
+   "D14 provenance map"
+  ],
+  "search": "separable|unit set|statement-level",
+  "intro": false
+ },
+ {
+  "key": "nullm",
+  "name": "random-set null / persistence null",
+  "definition": "The random-set null draws random unit sets of the real sizes at each pass; the persistence null starts from the objects of the previous snapshot and merges at random until the real object count is reached.",
+  "depends": [
+   "unit, separable, lost"
+  ],
+  "search": "random-set null|persistence null|persistence-free",
   "intro": false
  },
  {
@@ -148,6 +168,26 @@
    "Gate-Breaker"
   ],
   "search": "\\bAST\\b|\\bCFG\\b",
+  "intro": false
+ },
+ {
+  "key": "quart",
+  "name": "quartile",
+  "definition": "One quarter of the benchmark designs ordered by Gate-Breaker's complexity score (Q1 simplest, Q4 most complex).",
+  "depends": [
+   "Gate-Breaker"
+  ],
+  "search": "quartile",
+  "intro": false
+ },
+ {
+  "key": "arms",
+  "name": "LLM pilot arms A, B, C",
+  "definition": "Arm A: gate netlist; arm B: netlist plus Loki hints; arm C: interface line only (memorisation control).",
+  "depends": [
+   "Gate-Breaker"
+  ],
+  "search": "\\barms?[~ ]?[ABC]\\b",
   "intro": false
  },
  {
@@ -192,6 +232,26 @@
   "intro": false
  },
  {
+  "key": "corpus",
+  "name": "synthetic corpus",
+  "definition": "A seeded generator's 1200 labelled idiom designs (twelve families) with train, iid and ood splits.",
+  "depends": [
+   "floor"
+  ],
+  "search": "synthetic corpus|\\bcorpus\\b",
+  "intro": false
+ },
+ {
+  "key": "dict",
+  "name": "signature dictionary",
+  "definition": "A table from a cell's cone class and WL colour to the construct it usually is, mined from the synthetic corpus.",
+  "depends": [
+   "synthetic corpus"
+  ],
+  "search": "dictionary",
+  "intro": false
+ },
+ {
   "key": "det",
   "name": "detector",
   "definition": "A plug-in that proposes structure hypotheses for a netlist and reports features of them, never a likelihood.",
@@ -199,6 +259,16 @@
    "hypothesis"
   ],
   "search": "detectors?",
+  "intro": false
+ },
+ {
+  "key": "prover",
+  "name": "prover",
+  "definition": "An engine (cone check, truth table, transfer) that proves a structure hypothesis equal to the netlist; a proof makes it near certain.",
+  "depends": [
+   "hypothesis"
+  ],
+  "search": "prover|proof",
   "intro": false
  },
  {
@@ -219,16 +289,6 @@
    "calibration"
   ],
   "search": "\\bECE\\b",
-  "intro": false
- },
- {
-  "key": "prover",
-  "name": "prover",
-  "definition": "An engine (cone check, truth table, transfer) that proves a structure hypothesis equal to the netlist; a proof makes it near certain.",
-  "depends": [
-   "hypothesis"
-  ],
-  "search": "prover|proof",
   "intro": false
  },
  {
@@ -260,27 +320,6 @@
    "precision / recall / F1"
   ],
   "search": "macro-F1|micro-F1",
-  "intro": false
- },
- {
-  "key": "louv",
-  "name": "Louvain / modularity / NMI",
-  "definition": "Louvain is a community-detection method; modularity scores how dense the clusters are; NMI scores the agreement of a clustering with the known module hierarchy.",
-  "depends": [
-   "netlist",
-   "answer key / ground truth"
-  ],
-  "search": "Louvain|modularity|\\bNMI\\b",
-  "intro": false
- },
- {
-  "key": "gnn",
-  "name": "GNN and 1-WL baseline",
-  "definition": "A graph neural network (GNN) labels each netlist node from its neighbours; the 1-WL baseline is colour refinement, whose distinguishing power a message-passing GNN cannot exceed.",
-  "depends": [
-   "netlist"
-  ],
-  "search": "\\bGNN|1-WL",
   "intro": false
  },
  {
@@ -328,6 +367,27 @@
   "intro": false
  },
  {
+  "key": "louv",
+  "name": "Louvain / modularity / NMI",
+  "definition": "Louvain is a community-detection method; modularity scores how dense the clusters are; NMI scores the agreement of a clustering with the known module hierarchy.",
+  "depends": [
+   "netlist",
+   "answer key / ground truth"
+  ],
+  "search": "Louvain|modularity|\\bNMI\\b",
+  "intro": false
+ },
+ {
+  "key": "gnn",
+  "name": "GNN and 1-WL baseline",
+  "definition": "A graph neural network (GNN) labels each netlist node from its neighbours; the 1-WL baseline is colour refinement, whose distinguishing power a message-passing GNN cannot exceed.",
+  "depends": [
+   "netlist"
+  ],
+  "search": "\\bGNN|1-WL",
+  "intro": false
+ },
+ {
   "key": "dana",
   "name": "DANA (through HAL)",
   "definition": "A published method, run through the HAL framework, that groups flip-flops into register words from their shared control nets and the dataflow between them.",
@@ -344,66 +404,6 @@
   "definition": "An exact paired test on discordant pairs; a paired rank test.",
   "depends": [],
   "search": "McNemar|Wilcoxon",
-  "intro": false
- },
- {
-  "key": "corpus",
-  "name": "synthetic corpus",
-  "definition": "A seeded generator's 1200 labelled idiom designs (twelve families) with train, iid and ood splits.",
-  "depends": [
-   "floor"
-  ],
-  "search": "synthetic corpus|\\bcorpus\\b",
-  "intro": false
- },
- {
-  "key": "dict",
-  "name": "signature dictionary",
-  "definition": "A table from a cell's cone class and WL colour to the construct it usually is, mined from the synthetic corpus.",
-  "depends": [
-   "synthetic corpus"
-  ],
-  "search": "dictionary",
-  "intro": false
- },
- {
-  "key": "d14",
-  "name": "D14 provenance map",
-  "definition": "Odin III's version-2 name map: per object, the source-statement units it blends, and labelled join records.",
-  "depends": [
-   "provenance"
-  ],
-  "search": "D14|name map|prov-map",
-  "intro": false
- },
- {
-  "key": "unit",
-  "name": "unit, separable, lost",
-  "definition": "A unit is the statement-level anchor of a construct; it is separable while some object has exactly that unit set, and lost at the first later snapshot where none has.",
-  "depends": [
-   "D14 provenance map"
-  ],
-  "search": "separable|unit set|statement-level",
-  "intro": false
- },
- {
-  "key": "nullm",
-  "name": "random-set null / persistence null",
-  "definition": "The random-set null draws random unit sets of the real sizes at each pass; the persistence null starts from the objects of the previous snapshot and merges at random until the real object count is reached.",
-  "depends": [
-   "unit, separable, lost"
-  ],
-  "search": "random-set null|persistence null|persistence-free",
-  "intro": false
- },
- {
-  "key": "arms",
-  "name": "LLM pilot arms A, B, C",
-  "definition": "Arm A: gate netlist; arm B: netlist plus Loki hints; arm C: interface line only (memorisation control).",
-  "depends": [
-   "Gate-Breaker"
-  ],
-  "search": "\\barms?[~ ]?[ABC]\\b",
   "intro": false
  }
 ]

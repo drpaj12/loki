@@ -27,15 +27,11 @@ Every number traces to the experiment records:
 - The Gate-Breaker VerilogEval replication table (`tab:veval`) is in Experiments (rows GB1, GB2 of the register).
 
 Tables marked `[TODO: ...]` are numbers not yet measured.
-- The suite tree (`IMAGE/fig_yggdrasil.tex`, with `IMAGE/odin3-tikz-styles.tex`) is a byte-identical copy of
-  the hub's `images/src/` files (Yggdrasil III hub, `drpaj12/YggdrasilIII`). `make_blind_tree.py`
-  (run in `docs/paper`) writes `IMAGE/blind/fig_yggdrasil.tex`, the same figure with the suite and tool
-  names, the three wells and the self-cited baseline replaced by placeholders, as the Odin III paper's
-  `make_blind.py` does. No build uses it yet (there is no blind build of this paper).
+- The suite tree is no longer in this paper (2026-11-02: it appears only in the Odin III paper and on GitHub); the Introduction has the Loki flow figure `IMAGE/fig_loki_flow.tex` instead, and `IMAGE/fig_loki.tex` is the pipeline figure of the Methodology. 
 
 ## Cleanup for reading (2026-11-02)
 
-`loki.tex` now tells the current story in the main text (summary, glossary, method as it stands
+`loki.tex` now tells the current story in the main text (summary, step-by-step Background, method as it stands
 including L3 anchors, growth and join, results with a what-did-not-work table, the language-model
 section, discussion, future work with Q-L10, conclusion). The round-by-round records are Appendix
 `app:records` in time order (rounds 1 to 6, HAL, LLM pilot, FSM encoding, L3 census and detector,
@@ -50,14 +46,18 @@ DISMISSED). Support files, all in `docs/paper/`:
 
 - `hypotheses.md` (the register, one row per hypothesis), `innovations.md`, `outline.md`, `terms.md`.
 - `make_register.py` writes `register.tex` (the appendix research log) from `hypotheses.md`.
-- `make_glossary.py` writes `glossary.tex` and `terms.md` from one term list; `check_terms.py --tex loki.tex`
+- `make_glossary.py` writes `terms.md` from `terms.json` (the Background defines each term in prose, tagged `% def:<key>`; no glossary file); `check_terms.py --tex loki.tex`
   must report 0 use-before-definition findings.
 - `split_tables.py` splits the generated `round*-tables.tex` and `hal-tables.tex` into `gen/*-macros.tex`
   (the number macros) and one `gen/tab-*.tex` per table, so the paper prints only the tables of the kept
   hypotheses. Rerun it after the generated files change.
 - Bibliography: `luuthesis` (J. Luu, PhD thesis, University of Toronto, 2014) joins `jamiesonthesis`
-  (P. A. Jamieson, PhD thesis, University of Toronto, 2007) for the Glossary. The PDFs live only in
+  (P. A. Jamieson, PhD thesis, University of Toronto, 2007) for the Background. The PDFs live only in
   `work/mimir-papers/` and are never committed.
 - Build: `tectonic -X compile build/loki-local.tex -Z search-path=docs/paper` (the wrapper selects the OT1 font encoding).
 - Tests for `make_register.py`, `make_glossary.py` and `split_tables.py`: `tests/test_paper_tools.py` (determinism plus a small fixture each).
 - `gen/quartile-*`, `gen/tab-q-*`, `gen/tab-veval-*` (untracked) are leftovers of an earlier `split_tables.py` that also split `quartile-tables.tex` and `veval-tables.tex`; the paper inputs those two files directly and does not use them.
+
+## Structured arguments (2026-11-02)
+
+The Results and the language-model section of `loki.tex` are structured arguments with seven fixed parts (Hypothesis, Implication, Experiment, Methodology, Measurements, Interpretation, Conclusion with the verdict). Register-row ids are pointers to the research log. The as-run narrative of the full run, hints version 2 and the per-quartile tables is in appendix records `sec:llm-full-rec`, `sec:llm-hints2-rec` and `sec:quartiles-rec`. The Background gives sources and ties each subsection to the experiments. The Implication parts are the authors' reasoning.
