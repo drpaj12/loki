@@ -102,3 +102,25 @@ geomean label as above; the hypothesis wants it not WORSE (the lower bound of th
 Units above 400 cells and blocks above 300 cells are not scored; 37 of the 58 are the constant cells the provenance gives to a part,
 an artefact of how parts are cut out rather than structure; the census is of TEST constructs (descriptive, no number is fitted); the
 bank threshold (8 flip-flops) and the exact-control-set grouping are fixed, not tuned; one deterministic run.
+
+## Choice on VALIDATION (written before the TEST run)
+
+Each class alone on the 320 VALIDATION units (82 designs, 328 constructs; `results/ablation_VALIDATION.csv`,
+`results/chosen.json`); 168 constructs are right at the path end with the #74 anchors. Gained = right now and not before, lost = the
+reverse; anchor blocks of the class: all / touching a construct at the anchor / right at the path end.
+
+| class | right | gained | lost | net | blocks | touch | right at end |
+|---|---|---|---|---|---|---|---|
+| bank | 172 | 5 | 1 | +4 | 13 | 13 | 12 |
+| loop | 179 | 30 | 19 | +11 | 71 | 71 | 42 |
+| const | 178 | 10 | 0 | +10 | 290 | 201 | 6 |
+
+Every class has a non-negative net effect, so the headline set is bank + loop + const. The loop class pays for its gain: 19
+constructs right before are lost (a new loop block took cells that an old block needed); that cost is reported on TEST. The
+const anchor touches a construct in 201 of 290 units (the constant cells are given to a part in most units) but is right
+for only 6 blocks; its 10 gains are the constant-only constructs.
+
+## Deviations from the plan (all before the TEST run)
+
+(1) The class ablation grew only the units that get a new anchor of the class (the others keep their #74 paths, which is the
+same result, and saves the regrowth); (2) TRAIN is not used (nothing is fitted).

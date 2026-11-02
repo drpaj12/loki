@@ -1,0 +1,4 @@
+split,class,constructs,old_right,new_right,gained,lost,net,blocks,touch_at_anchor,right_at_end
+VALIDATION,bank,328,168,172,5,1,4,13,13,12
+VALIDATION,loop,328,168,179,30,19,11,71,71,42
+VALIDATION,const,328,168,178,10,0,10,290,201,6

@@ -1,7 +1,8 @@
-"""Describe the TEST constructs that no block touches (class NOSEED of #74): ``python -B q8b_describe.py``.
+"""Describe the TEST constructs that no block touches (class NOSEED of #74).
 
-Reads #74's TEST features (read only) and the answer key; writes results/describe_untouched.csv (one row
-per construct) and results/describe_summary.csv. Descriptive only: nothing here is tuned.
+``python -B q8b_describe.py``. Reads #74's TEST features (read only) and the answer key; writes
+results/describe_untouched.csv (one row per construct) and results/describe_summary.csv.
+Descriptive only: nothing here is tuned.
 """
 
 from __future__ import annotations
