@@ -1,0 +1,8 @@
+id,question,value,ci90_lo,ci90_hi,counts,label
+QL8b-a all,untouched constructs become touched and right,19,,,"19 touched, 19 right of 58",SUPPORTED
+QL8b-a constant,untouched constructs become touched and right,0,,,"0 touched, 0 right of 37",CONTRADICTED
+QL8b-a structural,untouched constructs become touched and right,19,,,"19 touched, 19 right of 21",SUPPORTED
+QL8b-b vs D70,new anchors against D70,1.128,1.086,1.17,W284/L134/T439 of 857 units,BETTER
+QL8b-b vs OLD,new anchors against OLD,0.984,0.965,1.002,W48/L64/T745 of 857 units,INCONCLUSIVE
+QL8b-c bank,anchor precision,1.0,,,"107 blocks, 107 touch, 34 right at end",MEASUREMENT
+QL8b-c loop,anchor precision,1.0,,,"167 blocks, 167 touch, 52 right at end",MEASUREMENT

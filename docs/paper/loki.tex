@@ -2376,6 +2376,16 @@ of the 602 that were right, and k6 and hard-map netlists (0.965 against the cone
 several blocks (251 of the failures), then constructs never fully reached (103) and constructs swallowed by a block that grows past them (95): a problem of joining blocks, not of the order
 inside one.
 
+\paragraph{Loki L3: anchors for the constructs no block touches (Q-L8b).}
+Fifty-eight of the 1141 test constructs were never touched by any block. Described first (plan and census in \code{experiments/ql8b-anchors/EXPERIMENT.md}, fixed before the test run): 37 are the
+constant cells of the netlist that the provenance gives to a part, two are six-cell combinational state machines, and 19 are flip-flop groups that read several other flip-flops, 14 of them the
+64-flip-flop shifter of one problem. We added three anchor classes (flip-flops sharing the same global control, open feedback loops of flip-flops, and the constant cells as one anchor that does not grow),
+kept all three on 82 validation designs, and ran the same growth once on the test designs. All 58 are now touched and 47 are right (19 of the 21 structural ones, 28 of the 37 constants), so the
+hypothesis that anchors can cover them is supported. The price is not zero: 89 constructs that were right are lost and 115 are gained, the right-block share rises from 0.528 to 0.550, and the per-unit
+comparison with the old anchors is a tie (geomean 1.001, 0.980 to 1.024) with a loss on single designs (0.960) and gate netlists (0.948) and a gain on composite parts (1.129) and k6 and hard-map netlists (1.042). Against the cone detector
+composite parts are now better (1.184, 1.101 to 1.273; it was inconclusive). The loss comes from new blocks that take cells of a design that is itself the construct, and from the constant block taking tie-off
+cells that sit inside other constructs; both are a joining problem, not a missing anchor.
+
 \section{Conclusion}
 \label{sec:conclusion}
 
