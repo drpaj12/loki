@@ -145,7 +145,8 @@ def reliability_svg(rows: list[dict[str, Any]], path: Path) -> None:
                if r["model"] == name and r["blocks"] == "grown_all" and r["n"]]
         path_d = " ".join(f"{left + c * size:.1f},{top + size - a * size:.1f}" for c, a in pts)
         out.append(f'<polyline points="{path_d}" fill="none" stroke="{col}" stroke-width="1.5"/>')
-        out.append(f'<text x="{left + size + 8}" y="{top + 14 * (j + 1)}" fill="{col}">{name}</text>')
+        ty = top + 14 * (j + 1)
+        out.append(f'<text x="{left + size + 8}" y="{ty}" fill="{col}">{name}</text>')
     out.append(f'<text x="{left}" y="{top + size + 30}">confidence</text></svg>')
     path.write_text("\n".join(out) + "\n", encoding="utf-8")
 

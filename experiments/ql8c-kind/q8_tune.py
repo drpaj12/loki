@@ -79,7 +79,8 @@ def main(argv: list[str]) -> int:
         rows.append({"model": name, "T": temps[name], "val_macro_f1": round(sc.macro_f1(v), 4),
                      "val_true_macro_f1": round(sc.macro_f1(v, True), 4),
                      "val_nll": round(v[sc.O_NLL] / v[sc.O_NLL + 1], 4),
-                     "val_ece_grown": round(sc.ece(v, 0), 4), "val_ece_true": round(sc.ece(v, 2), 4),
+                     "val_ece_grown": round(sc.ece(v, 0), 4),
+                     "val_ece_true": round(sc.ece(v, 2), 4),
                      "val_top3_right": round(sc.top3(v, False), 4),
                      "val_top3_true": round(sc.top3(v, True), 4)})
     new = [r for r in rows if r["model"].startswith("M")]
@@ -89,7 +90,8 @@ def main(argv: list[str]) -> int:
     env.l3dlib.write_csv(env.RES / f"tuning{suffix}.csv", list(rows[0]), rows)
     if suffix:
         return 0
-    chosen = {"model": best["model"], "temperatures": temps, "n_scalars": len(qf.SCALARS), "cal_mode": cal_mode}
+    chosen = {"model": best["model"], "temperatures": temps, "n_scalars": len(qf.SCALARS),
+              "cal_mode": cal_mode}
     (env.RES / "chosen.json").write_text(json.dumps(chosen, sort_keys=True, indent=1) + "\n",
                                          encoding="utf-8")
     with (env.OUT8 / "models.pkl").open("wb") as fh:

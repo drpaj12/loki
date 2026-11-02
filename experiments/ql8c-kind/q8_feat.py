@@ -1,7 +1,8 @@
 """Block features of Q-L8c: orbit shares, orbit density, boundary, feedback and typed-cell scalars.
 
-``featurize(ctx, cells)`` returns the vector [H (129), D (129), S (len(SCALARS))] of one block (a set
-of cell indices). Orbit counts are the Odin III graphlets pass (q6_sig.SigCounter); everything else
+``featurize(ctx, cells)`` returns the vector [H (129), D (129), S (len(SCALARS))] of one block
+(a set of cell indices). Orbit counts are the Odin III graphlets pass (q6_sig.SigCounter);
+everything else
 is computed on the cell graph of q6_net.Graph.
 """
 

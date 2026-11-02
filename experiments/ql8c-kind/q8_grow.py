@@ -1,8 +1,8 @@
 """Grow the #74 paths on the FIT designs: ``python -B q8_grow.py [JOBS]`` (at most 2 processes).
 
 Same grower as q7_paths (q6_grow no-stop variant), on the units of the even TUNE half of at most 400
-cells, written to $QL8C_OUT/paths_fit/<set>__<design>__<cell>.json. Smallest first. Used only to give
-the glue class its wrong grown blocks (EXPERIMENT.md, deviation 2).
+cells, written to $QL8C_OUT/paths_fit/<set>__<design>__<cell>.json. Smallest first. Used only
+to give the glue class its wrong grown blocks (EXPERIMENT.md, deviation 2).
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ import json
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
+from typing import Any
 
 import q8_env as env
 
@@ -21,7 +22,7 @@ qt = env.mod("q6_truth")
 PATHS = env.OUT8 / "paths_fit"
 
 
-def fit_units() -> list[qt.Unit]:
+def fit_units() -> list[Any]:
     us = [u for u in qt.units("TUNE") if qt.has_labels(u) and env.design_set(u.design) == "FIT"
           and u.net.stat().st_size > 0]
     return sorted(us, key=lambda u: u.net.stat().st_size)

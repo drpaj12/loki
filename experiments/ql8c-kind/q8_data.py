@@ -1,8 +1,11 @@
-"""Build the feature records of every set: ``python -B q8_data.py SET [JOBS]`` (SET = FIT, FITG, CAL, VAL, TEST).
+"""Build the feature records of a set: ``python -B q8_data.py SET [JOBS]``.
+
+SET = FIT, FITG, CAL, VAL or TEST.
 
 FIT: prefixes of the answer-key blocks of the even-half TUNE designs (the #73 training samples).
-CAL, VAL, TEST: per unit the grown blocks of #74 rule d (cut at the chosen prefix) and the answer-key
-true blocks. Writes $QL8C_OUT/data_<SET>.pkl. Units run smallest first, at most 2 processes.
+CAL, VAL, TEST: per unit the grown blocks of #74 rule d (cut at the chosen prefix) and the
+answer-key true blocks. Writes $QL8C_OUT/data_<SET>.pkl.
+Units run smallest first, at most 2 processes.
 """
 
 from __future__ import annotations
@@ -11,7 +14,6 @@ import json
 import pickle
 import sys
 from concurrent.futures import ProcessPoolExecutor
-from pathlib import Path
 from typing import Any
 
 import numpy as np

@@ -1,10 +1,10 @@
 """Scoring of a posterior on the grown and true blocks (EXPERIMENT.md "Evaluation").
 
-``unit_vector`` turns one unit record and a posterior into a flat vector of counts, so that sums over
-units, scopes and bootstrap resamples are plain sums. Layout (K = 5 kinds, NB = 10 bins):
-claims K, tp K, cons K, rec K (grown) | tclaims K, ttp K, tcons K (true) | for each of the three
-calibration sets (grown all, grown right, true) NB x (n, confidence sum, correct) | top-3 right
-(n, hits) | top-3 true (n, hits) | nll sum, nll n (grown all).
+``unit_vector`` turns one unit record and a posterior into a flat vector of counts, so that sums
+over units, scopes and bootstrap resamples are plain sums. Layout (K = 5 kinds, NB = 10 bins):
+claims K, tp K, cons K, rec K (grown) | tclaims K, ttp K, tcons K (true) | for each of the
+three calibration sets (grown all, grown right, true) NB x (n, confidence sum, correct) | top-3
+right (n, hits) | top-3 true (n, hits) | nll sum, nll n (grown all).
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ def cal_add(v: np.ndarray, which: int, p: np.ndarray, label: list[int]) -> None:
     o = O_CAL + (which * NB + b) * 3
     v[o] += 1
     v[o + 1] += conf
-    v[o + 2] += int(int(p.argmax()) in label)
+    v[o + 2] += int(int(np.argmax(p)) in label)
 
 
 def unit_vector(rec: dict[str, Any], post: Post) -> np.ndarray:
@@ -48,7 +48,7 @@ def unit_vector(rec: dict[str, Any], post: Post) -> np.ndarray:
     recovered: set[tuple[int, str]] = set()
     for b in rec["blocks"]:
         p = post(rec["cell"], b["x"], b["size"])
-        arg = int(p.argmax())
+        arg = int(np.argmax(p))
         kinds = sorted({k for _p, k in b["right"]})
         label = qm.label_set(kinds)
         if arg != env.GLUE and b["size"] >= MIN_CLAIM:
@@ -63,11 +63,11 @@ def unit_vector(rec: dict[str, Any], post: Post) -> np.ndarray:
             cal_add(v, 1, p, label)
             v[O_TOP3] += 1
             v[O_TOP3 + 1] += bool(set(label) & set(np.argsort(-p)[:3].tolist()))
-    for pt, k in recovered & cons:
+    for _pt, k in recovered & cons:
         v[O_REC + env.KINDS5.index(k)] += 1
     for t in rec["true"]:
         p = post(rec["cell"], t["x"], t["size"])
-        arg = int(p.argmax())
+        arg = int(np.argmax(p))
         ki = env.KINDS.index(t["kind"])
         if arg != env.GLUE and t["size"] >= MIN_CLAIM:
             i = env.KINDS5.index(env.KINDS[arg])
@@ -81,11 +81,12 @@ def unit_vector(rec: dict[str, Any], post: Post) -> np.ndarray:
 
 
 def f1s(tp: np.ndarray, claims: np.ndarray, cons: np.ndarray, rec: np.ndarray) -> np.ndarray:
-    """Per-kind F1 from precision tp/claims and recall rec/cons (0 when either is undefined)."""
+    """Per-kind F1 from precision tp/claims and recall rec/cons (0 when undefined)."""
     prec = np.divide(tp, claims, out=np.zeros(K), where=claims > 0)
     recall = np.divide(rec, cons, out=np.zeros(K), where=cons > 0)
     den = prec + recall
-    return np.divide(2 * prec * recall, den, out=np.zeros(K), where=den > 0)
+    out: np.ndarray = np.divide(2 * prec * recall, den, out=np.zeros(K), where=den > 0)
+    return out
 
 
 def macro_f1(v: np.ndarray, true: bool = False) -> float:
@@ -129,7 +130,7 @@ def kind_rows(v: np.ndarray, true: bool) -> list[dict[str, Any]]:
             "precision": round(tp[i] / cl[i], 3) if cl[i] else "", "constructs": int(cons[i]),
             "recalled": int(rec[i]), "recall": round(rec[i] / cons[i], 3) if cons[i] else "",
             "f1": round(float(f[i]), 3)} for i, k in enumerate(env.KINDS5)]
-    c, t, n, r = cl.sum(), tp.sum(), cons.sum(), rec.sum()
+    c, t, n, r = (float(a.sum()) for a in (cl, tp, cons, rec))
     out.append({"kind": "all", "claims": int(c), "tp": int(t),
                 "precision": round(t / c, 3) if c else "", "constructs": int(n),
                 "recalled": int(r), "recall": round(r / n, 3) if n else "",

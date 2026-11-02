@@ -13,9 +13,9 @@ from typing import Any, Protocol
 import numpy as np
 import q8_env as env
 import q8_feat as qf
-from sklearn.mixture import GaussianMixture
 
 qm = env.mod("q6_model")
+GaussianMixture = env.mod("sklearn.mixture").GaussianMixture
 KINDS = env.KINDS
 ALL = "ALL"
 MIN_N = 40
@@ -168,7 +168,7 @@ class Mixture:
         ls = np.log2([max(s["size"], 1) for s in samples])
         self.ls_mu, self.ls_sd = float(ls.mean()), float(ls.std()) or 1.0
         z = np.array([self.joint(red(s["x"]), int(s["size"])) for s in samples])
-        self.gm: dict[tuple[str, str], tuple[GaussianMixture, int]] = {}
+        self.gm: dict[tuple[str, str], tuple[Any, int]] = {}
         for key, idx in groups(samples).items():
             k = 1 if len(idx) < 80 else min(3, len(idx) // 40)
             gm = GaussianMixture(k, covariance_type="diag", reg_covar=1e-3, random_state=0,
@@ -215,7 +215,7 @@ class Posterior:
         if empty:
             return self.prior
         s = self.T * ll + self.logprior
-        s -= s.max()
+        s = s - np.max(s)
         p = np.exp(s)
         return np.asarray(p / p.sum())
 
@@ -226,7 +226,7 @@ def label_set(kinds: list[str]) -> list[int]:
 
 def fit_temperature(lik: Likelihood, prior: dict[str, float],
                     blocks: list[tuple[str, np.ndarray, int, list[str]]]) -> float:
-    """T minimising the negative log posterior of the label on (cell, x, size, right kinds) blocks."""
+    """T minimising the negative log posterior of the label on (cell, x, size, kinds) blocks."""
     rows = [(np.asarray(lik.loglik(c, x, s)), label_set(ks)) for c, x, s, ks in blocks
             if x[qf.H].any()]
     best, best_nll = 1.0, math.inf
