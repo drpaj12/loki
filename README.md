@@ -1,9 +1,22 @@
 # Loki III
 
 Reverse engineering of structural netlists (LUT, hard-block and gate-level) back to hierarchical, word-level
-Verilog, with a Bayesian hypothesis flow over Odin III's provenance IR. Three levels, each with a spec and
-a plan in `docs/specs/` and `docs/plans/`: L0 ground-truth dataset, L1 Bayesian hypotheses (`loki re`), L2
-analysis plugins (`loki analyze`).
+Verilog, with a Bayesian hypothesis flow over Odin III's provenance IR. It asks how much of a design can be
+recovered without a language model, and measures it against an answer key that Odin III provenance supplies.
+Four levels, each with a spec in `docs/specs/`:
+
+- **L0**, the ground-truth dataset: provenance is the answer key (`loki bench`, `loki assemble`).
+- **L1**, Bayesian hypotheses: detectors, provers and a commit step (`loki re`).
+- **L2**, analysis plugins: graph export, structural features, clustering, graphlets and a GNN baseline (`loki analyze`).
+- **L3**, design patterns and blocks: a pattern census with a v0 detector, and anchor-grow-join blocks with a kind guess (research code under `experiments/`).
+
+A Gate-Breaker style harness (`experiments/llm-*`) tests whether Loki's hints help a language model that
+is given the netlist. Headline result (paper, `docs/paper/loki.tex`): the answer key covers all 54,306 gate nodes of
+150 designs and the pipeline is naming-neutral over 105,646 renamed identifiers; hard adders are recovered 67 of 67;
+grown and joined blocks are the right block for 0.715 of 1141 held-out constructs against 0.385 for bounded cones, and the
+kind guess on them reaches a macro F1 of 0.392 (the weakest part). Clustering does not find the designer's hierarchy, and
+Loki's hints did not help a model that already has the netlist. Loki does not detect Trojans (see Leman Russ III for that).
+Paper: [`docs/paper/`](docs/paper/README.md). Manual: <https://drpaj12.github.io/loki/>. Hub: <https://github.com/drpaj12/YggdrasilIII>.
 
 Loki III is part of **Yggdrasil III**, the suite of Odin III (<https://github.com/drpaj12/odin3>, the trunk), Wyrd III (<https://github.com/drpaj12/wyrd>, the canopy, with Bifrost III and Midgard III), Loki III (<https://github.com/drpaj12/loki>), The Norns III (<https://github.com/drpaj12/nornsIII>) and Verdandi III (<https://github.com/drpaj12/verdandiIII>) on side branches, and Mímir III (<https://github.com/drpaj12/mimirIII>, the fruit). Loki III is a side branch, a tool and experiment; it uses Odin III's provenance IR and its L2 clusters seed The Norns III. It depends on the `odin3` Python package and never changes the Odin III core. Version 0.1.0 (`pyproject.toml`). The hub is <https://github.com/drpaj12/YggdrasilIII> (documentation: <https://drpaj12.github.io/YggdrasilIII/>, versions of every piece: <https://drpaj12.github.io/YggdrasilIII/versions.html>) and its picture of the tree is <https://github.com/drpaj12/YggdrasilIII/blob/main/images/yggdrasil-tree.png>.
 

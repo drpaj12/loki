@@ -2,20 +2,29 @@
 
 Loki III reverse-engineers structural netlists (LUT, hard-block and gate-level) back to
 hierarchical, word-level Verilog. It is part of the Yggdrasil III suite and depends on the `odin3`
-Python package; it never changes the Odin III core. There is no LLM step: the method is Bayesian
-hypotheses over Odin III's provenance IR, with graph analysis later.
+Python package; it never changes the Odin III core. The method is Bayesian hypotheses over Odin III's
+provenance IR, graph analysis and, newest, blocks grown from anchors. The core flow has no language-model
+step; a Gate-Breaker style harness measures whether Loki's hints help a language model that has the netlist.
 
-The work is split in three levels.
+The work is split in four levels.
 
 | Level | What | Command |
 |---|---|---|
 | L0 | Ground-truth dataset builder: Odin III provenance is the answer key | `loki bench`, `loki assemble` |
 | L1 | Bayesian hypothesis flow (detectors, provers, commit with `raise`/`submod`) | `loki re` |
-| L2 | Analysis plugins (graph and clustering methods) | `loki analyze` |
+| L2 | Analysis plugins (graph and clustering methods, graphlets, GNN baseline) | `loki analyze` |
+| L3 | Design patterns and blocks: pattern census and v0 detector; anchor-grow-join blocks and a kind guess | `loki/l3/`, `experiments/` |
+
+Headline result, from the [paper](https://github.com/drpaj12/loki/tree/main/docs/paper): the answer key covers
+all 54,306 gate nodes of 150 designs and the pipeline is naming-neutral over 105,646 renamed identifiers; hard
+adders are recovered 67 of 67; grown and joined blocks are the right block for 0.715 of 1141 held-out
+constructs against 0.385 for bounded cones, and a kind guess on them reaches a macro F1 of 0.392. Clustering
+does not find the designer's hierarchy, and Loki's hints did not help a model that already has the netlist.
+Loki III does not detect hardware Trojans.
 
 This manual covers installing Loki III, building the L0 dataset, the files in that dataset, what L1
 and L2 do, and the L0 results on the Odin III micro designs. The paper and the experiments that
-measure all three levels are in the repository: the
+measure the levels are in the repository: the
 [paper](https://github.com/drpaj12/loki/tree/main/docs/paper),
 [renamed-instance experiment](https://github.com/drpaj12/loki/blob/main/experiments/rename-l2/EXPERIMENT.md) and
 [f3 recovery experiment](https://github.com/drpaj12/loki/blob/main/experiments/f3-recovery/EXPERIMENT.md).
