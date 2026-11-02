@@ -1,0 +1,59 @@
+set,design,cell,part,kind,n_true,n_const,n_ff,n_hard,n_comb,max_ff_deps,max_cone_cells,cut_nets_in_cones,self_only,ff_in_anchor,n_cells,n_anchors,reason
+comp,Q120_138,O-gate,0,fsm,2,2,0,0,0,0,0,0,0,0,3,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q120_138,O-lut,0,fsm,2,2,0,0,0,0,0,0,0,0,3,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q120_138,O-hard,0,fsm,2,2,0,0,0,0,0,0,0,0,3,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_120,O-gate,0,fsm,2,2,0,0,0,0,0,0,0,0,3,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_120,O-lut,0,fsm,2,2,0,0,0,0,0,0,0,0,3,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_120,O-hard,0,fsm,2,2,0,0,0,0,0,0,0,0,3,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_138,O-gate,1,fsm,2,2,0,0,0,0,0,0,0,0,3,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_138,O-lut,1,fsm,2,2,0,0,0,0,0,0,0,0,3,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_138,O-hard,1,fsm,2,2,0,0,0,0,0,0,0,0,3,0,no flip-flop and no hard cell (every anchor class needs one)
+single,ve_Prob151_review2015_fsm,Y-gate,0,fsm,6,3,0,0,3,0,0,0,0,0,6,0,no flip-flop and no hard cell (every anchor class needs one)
+single,ve_Prob151_review2015_fsm,Y-lut,0,fsm,6,3,0,0,3,0,0,0,0,0,6,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q084_120_138,O-lut,0,fsm,2,2,0,0,0,0,0,0,0,0,13,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q084_120_138,O-hard,0,fsm,2,2,0,0,0,0,0,0,0,0,13,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_084_120_138,O-lut,0,fsm,2,2,0,0,0,0,0,0,0,0,18,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_084_120_138,O-hard,0,fsm,2,2,0,0,0,0,0,0,0,0,18,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q084_120_138,O-gate,0,fsm,2,2,0,0,0,0,0,0,0,0,32,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_084_120_138,O-gate,0,fsm,2,2,0,0,0,0,0,0,0,0,41,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q115_120_128,O-gate,0,shift,3,3,0,0,0,0,0,0,0,0,68,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q115_120_128,O-lut,0,shift,3,3,0,0,0,0,0,0,0,0,68,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q115_120_128,O-hard,0,shift,3,3,0,0,0,0,0,0,0,0,68,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_084_115,O-gate,1,shift,3,3,0,0,0,0,0,0,0,0,68,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_084_115,O-lut,1,shift,3,3,0,0,0,0,0,0,0,0,68,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_084_115,O-hard,1,shift,3,3,0,0,0,0,0,0,0,0,68,0,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q068_128,O-lut,0,fsm,1,1,0,0,0,0,0,0,0,0,41,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_115_128,O-lut,0,shift,3,3,0,0,0,0,0,0,0,0,75,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_115_128,O-hard,0,shift,3,3,0,0,0,0,0,0,0,0,75,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q040_115_120,O-lut,1,shift,1,1,0,0,0,0,0,0,0,0,75,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_115_128,O-gate,0,shift,3,3,0,0,0,0,0,0,0,0,84,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_080_115_141,O-lut,0,shift,3,3,0,0,0,0,0,0,0,0,93,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_080_115_141,O-gate,0,shift,3,3,0,0,0,0,0,0,0,0,96,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q040_115_120,O-gate,1,shift,1,1,0,0,0,0,0,0,0,0,99,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q040_115_120,O-hard,1,shift,1,1,0,0,0,0,0,0,0,0,81,2,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_068_115,O-lut,0,shift,3,3,0,0,0,0,0,0,0,0,105,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q068_128,O-gate,0,fsm,1,1,0,0,0,0,0,0,0,0,126,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_128_141,O-lut,1,fsm,1,1,0,0,0,0,0,0,0,0,76,2,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q040_080_128_138,O-hard,1,fsm,14,0,6,0,8,14,4,12,0,0,75,4,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q060_068_115,O-gate,0,shift,3,3,0,0,0,0,0,0,0,0,192,1,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_128_141,O-gate,1,fsm,1,1,0,0,0,0,0,0,0,0,283,2,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q060_115_138,O-lut,2,fsm,13,0,6,0,7,5,1,6,0,0,208,2,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q060_115_138,O-hard,2,fsm,13,0,6,0,7,5,1,6,0,0,208,2,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q060_115,O-lut,0,shift,196,3,64,0,129,5,3,256,0,0,204,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q060_115,O-hard,0,shift,196,3,64,0,129,5,3,256,0,0,204,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q115_120,O-lut,0,shift,197,3,64,0,130,5,3,256,0,0,205,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q115_120,O-hard,0,shift,197,3,64,0,130,5,3,256,0,0,205,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q115_120_138,O-lut,1,shift,194,1,64,0,129,5,3,256,0,0,217,2,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q115_120_138,O-hard,1,shift,194,1,64,0,129,5,3,256,0,0,217,2,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q080_115_120_128,O-lut,0,fsm,1,1,0,0,0,0,0,0,0,0,202,2,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q080_115_120_128,O-lut,2,counter,1,1,0,0,0,0,0,0,0,0,202,2,no flip-flop and no hard cell (every anchor class needs one)
+comp,Q080_115,O-lut,1,shift,192,0,64,0,128,14,4,256,0,0,222,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q082_115,O-lut,0,shift,200,3,64,0,133,5,3,256,0,0,264,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q082_115,O-hard,0,shift,200,3,64,0,133,5,3,256,0,0,264,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q082_115_120,O-lut,0,shift,199,3,64,0,132,6,4,256,0,0,271,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q082_115_120,O-lut,2,fsm,8,0,4,0,4,3,1,0,0,0,271,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q082_115_120,O-hard,0,shift,199,3,64,0,132,6,4,256,0,0,271,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q082_115_120,O-hard,2,fsm,8,0,4,0,4,3,1,0,0,0,271,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q068_115_128,O-lut,0,shift,215,3,64,0,148,5,3,320,0,0,261,2,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q068_115,O-lut,1,shift,206,1,64,0,141,5,3,320,0,0,246,1,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"
+comp,Q080_115,O-hard,1,shift,193,0,64,0,129,14,5,320,0,0,231,2,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)"

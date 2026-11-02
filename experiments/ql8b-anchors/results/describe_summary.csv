@@ -1,0 +1,14 @@
+by,value,constructs
+reason,"flip-flops read two or more other flip-flops (not a chain, not a closed loop)",19
+reason,no flip-flop and no hard cell (every anchor class needs one),39
+cell,O-gate,13
+cell,O-hard,18
+cell,O-lut,25
+cell,Y-gate,1
+cell,Y-lut,1
+kind,counter,1
+kind,fsm,27
+kind,shift,30
+size,size 1 to 3,37
+size,size 4 to 300,21
+size,size above 300,0
