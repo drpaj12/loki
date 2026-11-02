@@ -61,3 +61,7 @@ DISMISSED). Support files, all in `docs/paper/`:
 - Build: `tectonic -X compile build/loki-local.tex -Z search-path=docs/paper` (the wrapper selects the OT1 font encoding).
 - Tests for `make_register.py`, `make_glossary.py` and `split_tables.py`: `tests/test_paper_tools.py` (determinism plus a small fixture each).
 - `gen/quartile-*`, `gen/tab-q-*`, `gen/tab-veval-*` (untracked) are leftovers of an earlier `split_tables.py` that also split `quartile-tables.tex` and `veval-tables.tex`; the paper inputs those two files directly and does not use them.
+
+## Structured arguments (2026-11-02)
+
+The Results and the language-model section of `loki.tex` are structured arguments with seven fixed parts (Hypothesis, Implication, Experiment, Methodology, Measurements, Interpretation, Conclusion with the verdict). Register-row ids are pointers to the research log. The as-run narrative of the full run, hints version 2 and the per-quartile tables is in appendix records `sec:llm-full-rec`, `sec:llm-hints2-rec` and `sec:quartiles-rec`. The Background gives sources and ties each subsection to the experiments. The Implication parts are the authors' reasoning.
