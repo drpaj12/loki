@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 import q9_cfg as cfgs
 import q9_env as env
+import q9_eval as qe
 import q9_net as nt
 import q9_rules as rules
 import q9_score as sc
@@ -212,6 +213,43 @@ class ConfigTests(unittest.TestCase):
         r = tune.nets([u(0, 1), u(1, 0), u(1, 1)])["x"]
         self.assertEqual((r["gained"], r["lost"], r["net"], r["joins"], r["splits"]),
                          (1, 1, 0, 3, 6))
+
+
+def erow(base: int, head: int, cls: str, c74: str, kind: str = "fsm") -> dict[str, Any]:
+    r: dict[str, Any] = {"set": "comp", "design": "d", "cell": "O-lut", "part": 0, "kind": kind,
+                         "n_true": 5, "base": base, "base_cls": cls, "c74": c74, "d70": 0,
+                         "e73": 0}
+    for n in qe.NAMES:
+        r[n.lower()] = head
+        r[n.lower() + "_cls"] = "" if head else "BLOATED"
+    return r
+
+
+class EvalTests(unittest.TestCase):
+    def test_fixed_rows_count_by_class(self) -> None:
+        rows = [erow(0, 1, "SPLIT", "SPLIT"), erow(0, 0, "SPLIT", "SPLIT"),
+                erow(1, 1, "", "BLOATED"), erow(0, 0, "UNDERREACH", "")]
+        out = {(r["classes"], r["class"]): r for r in qe.fixed_rows(rows)}
+        self.assertEqual(out[("#77 class", "SPLIT")]["head_right"], 1)
+        self.assertEqual(out[("#77 class", "SPLIT")]["constructs"], 2)
+        self.assertEqual(out[("#76 class (E74)", "BLOATED")]["base_right"], 1)
+        self.assertNotIn(("#76 class (E74)", ""), out)
+
+    def test_gained_lost(self) -> None:
+        rows = [erow(0, 1, "SPLIT", "SPLIT"), erow(1, 0, "", "")]
+        h = qe.gained_lost(rows)[0]
+        self.assertEqual((h["gained"], h["lost"], h["net"], h["lost_by_class"]),
+                         (1, 1, 0, "BLOATED:1"))
+
+    def test_verdict_labels(self) -> None:
+        rows = [erow(0, 1, "SPLIT", "SPLIT")] * 4 + [erow(0, 0, "SPLIT", "SPLIT")] * 4
+        cmp_rows = [{"scope": s, "config": "HEAD", "against": "BASE", "geomean": 1.2,
+                     "ci90_lo": 1.1, "ci90_hi": 1.3, "W": 4, "L": 0, "T": 4, "units": 8,
+                     "label": "BETTER"} for s in ("all", "set single")]
+        v = {r["id"]: r for r in qe.verdicts(rows, cmp_rows, qe.gained_lost(rows))}
+        self.assertEqual(v["QL9-a"]["label"], "SUPPORTED")
+        self.assertEqual(v["QL9-b split"]["label"], "SUPPORTED")  # 4 of 8 >= a quarter
+        self.assertEqual(v["QL9-b swallowed"]["label"], "CONTRADICTED")  # none of the class
 
 
 if __name__ == "__main__":

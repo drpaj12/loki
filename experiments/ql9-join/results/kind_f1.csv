@@ -1,0 +1,13 @@
+config,kind,claims,tp,precision,constructs,recalled,recall,f1
+BASE,fsm,333,94,0.282,333,94,0.282,0.282
+BASE,counter,92,22,0.239,242,22,0.091,0.132
+BASE,shift,254,66,0.26,206,66,0.32,0.287
+BASE,regfile,10,8,0.8,44,8,0.182,0.296
+BASE,register,227,53,0.233,338,53,0.157,0.188
+BASE,macro,,,,,,,0.237
+HEAD,fsm,281,146,0.52,333,146,0.438,0.476
+HEAD,counter,131,95,0.725,242,95,0.393,0.509
+HEAD,shift,192,63,0.328,206,63,0.306,0.317
+HEAD,regfile,12,11,0.917,44,11,0.25,0.393
+HEAD,register,151,65,0.43,338,65,0.192,0.266
+HEAD,macro,,,,,,,0.392

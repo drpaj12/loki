@@ -79,7 +79,9 @@ def fixed_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         for cls in sorted({r[key] for r in rows if not r["base"] or key == "c74"} - {""}):
             sel = [r for r in rows if r[key] == cls and (key == "c74" or not r["base"])]
             out.append({"classes": how, "class": cls, "constructs": len(sel),
+                        "base_right": sum(r["base"] for r in sel),
                         **{f"{n.lower()}_right": sum(r[n.lower()] for r in sel) for n in NAMES},
+                        "base_share": share(sel, "base"),
                         **{f"{n.lower()}_share": share(sel, n.lower()) for n in NAMES}})
     return out
 
@@ -165,7 +167,8 @@ def verdicts(rows: list[dict[str, Any]], cmp_rows: list[dict[str, Any]],
         sh = right / len(sel) if sel else 0.0
         out.append({"id": qid, "question": f"#76 {cls} constructs right after the step",
                     "value": round(sh, 3), "ci90_lo": "", "ci90_hi": "",
-                    "counts": f"{right} of {len(sel)}",
+                    "counts": f"{right} of {len(sel)} ({sum(r['base'] for r in sel)} right "
+                              "already before the step)",
                     "label": "SUPPORTED" if sh >= 0.25 else "CONTRADICTED" if sh < 0.05
                     else "INCONCLUSIVE"})
     h = next(r for r in gl if r["config"] == "HEAD")
