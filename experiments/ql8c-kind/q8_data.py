@@ -1,4 +1,4 @@
-"""Build the feature records of every set: ``python -B q8_data.py SET [JOBS]`` (SET = FIT, CAL, VAL, TEST).
+"""Build the feature records of every set: ``python -B q8_data.py SET [JOBS]`` (SET = FIT, FITG, CAL, VAL, TEST).
 
 FIT: prefixes of the answer-key blocks of the even-half TUNE designs (the #73 training samples).
 CAL, VAL, TEST: per unit the grown blocks of #74 rule d (cut at the chosen prefix) and the answer-key
@@ -57,10 +57,11 @@ def fit_unit(key: tuple[str, str, str]) -> list[dict[str, Any]]:
 
 def eval_unit(args: tuple[str, str, str, str, list[int]]) -> dict[str, Any]:
     kind, design, cell, tsplit, picks = args
-    u = next(x for x in qt.units(tsplit, (cell,)) if x.set == kind and x.design == design)
-    split = "TEST" if tsplit == "TEST" else "TRAIN"
-    rec = json.loads((env.q7env.paths_dir(split) / f"{kind}__{design}__{cell}.json").read_text(
-        encoding="utf-8"))
+    usplit = "TUNE" if tsplit == "FITG" else tsplit
+    u = next(x for x in qt.units(usplit, (cell,)) if x.set == kind and x.design == design)
+    pdir = env.OUT8 / "paths_fit" if tsplit == "FITG" else env.q7env.paths_dir(
+        "TEST" if tsplit == "TEST" else "TRAIN")
+    rec = json.loads((pdir / f"{kind}__{design}__{cell}.json").read_text(encoding="utf-8"))
     g = qn.Graph.read(u.net)
     cons = [c for c in qt.constructs(u, g) if c.kind != "glue" and c.cells]
     sc = qs.SigCounter(u.net, g.b)
@@ -86,6 +87,16 @@ def chosen_picks(units: list[Any]) -> list[list[int]]:
     return [[pick(bp) for bp in u.blocks] for u in units]
 
 
+def fitg_units() -> list[Any]:
+    """UnitData of the FIT-design paths grown by q8_grow.py (the q7_feat features, no TEST data)."""
+    out = []
+    for p in sorted((env.OUT8 / "paths_fit").glob("*.json")):
+        kind, design, cell = p.stem.split("__")
+        u = next(x for x in qt.units("TUNE", (cell,)) if x.set == kind and x.design == design)
+        out.append(q7f.unit_data(u, json.loads(p.read_text(encoding="utf-8"))))
+    return out
+
+
 def build(name: str, n_jobs: int) -> list[Any]:
     if name == "FIT":
         us = [u for u in qt.units("TUNE") if qt.has_labels(u) and env.design_set(u.design) == "FIT"
@@ -94,9 +105,10 @@ def build(name: str, n_jobs: int) -> list[Any]:
         with ProcessPoolExecutor(n_jobs) as pool:
             return [r for part in pool.map(fit_unit, [(u.set, u.design, u.cell) for u in us],
                                            chunksize=4) for r in part]
-    data = [d for d in q7f.load(SPLIT7[name]) if d.n_cells <= MAX_UNIT]
+    data = fitg_units() if name == "FITG" else [
+        d for d in q7f.load(SPLIT7[name]) if d.n_cells <= MAX_UNIT]
     picks = chosen_picks(data)
-    tsplit = "TEST" if name == "TEST" else "TUNE"
+    tsplit = "TEST" if name == "TEST" else "FITG" if name == "FITG" else "TUNE"
     order = sorted(range(len(data)), key=lambda i: data[i].n_cells)
     args = [(data[i].set, data[i].design, data[i].cell, tsplit, picks[i]) for i in order]
     with ProcessPoolExecutor(n_jobs) as pool:

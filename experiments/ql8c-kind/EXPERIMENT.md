@@ -136,3 +136,22 @@ on wrong blocks is limited by that; the benchmark is the VerilogEval-derived cor
 mix and the census prior does not match the TEST mix (#73); regfile has few constructs; FIT, CAL and VAL are
 small (about 9.6 thousand prefix samples, a few hundred grown blocks), so M2 and M3 fit few components per kind; one
 deterministic run (seeds fixed).
+
+## Deviations, found on CAL and VAL and fixed before any TEST run (2026-11-02)
+
+The first fit-and-score on VAL (`results/tuning_first.csv`, the plan as written) showed a flaw of the plan, not of
+the models: with the temperature fitted on all CAL grown blocks (label glue for the wrong half), every new model
+sank to a flat posterior (T 0.002 to 0.05) and almost nothing was claimed (VAL macro F1 0.00 to 0.07). No model
+has seen a wrong block, so the only way to lower the loss on wrong blocks is to give up on kinds. Two changes,
+both decided on CAL and VAL numbers only:
+
+1. Calibration set. T is fitted on the CAL grown blocks that are right for a construct only (label = their kinds):
+   the kind guess given a right block, as #73 fitted T on true blocks. The plan's all-blocks calibration is kept
+   as the first-run table and as the "ECE on all grown blocks" column, which now measures how the posterior
+   behaves on wrong blocks too.
+2. Wrong blocks for the glue class (model M4). M4 is M2 fitted on the FIT samples plus the grown blocks of the FIT
+   designs (the same #74 paths grown on the even half by q8_grow.py, cut by rule d; units up to 400 cells), each
+   with its label: the kind of the construct it is right for (one sample per kind), glue when it is right for
+   none. The grown paths of the FIT designs are in-sample for the #73 likelihood that ordered them, so their
+   wrong blocks are somewhat less wrong than those of unseen designs; stated, not corrected. M4 is a fourth
+   comparison; the choice rule (highest VAL macro F1) is unchanged and runs over M1 to M4.
