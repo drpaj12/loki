@@ -105,7 +105,8 @@ def split_step() -> None:
     b = best(train, lambda r: cfg_by[r["config"]].st)
     v = next(r for r in rows if r["split"] == "VALIDATION" and r["config"] == b["config"])
     c = cfg_by[b["config"]]
-    save({"split": {"src": c.ssrc, "t": c.st} if v["net"] > 0 else None})
+    save({"split": {"src": c.ssrc, "t": c.st} if v["net"] > 0 else None,
+          "split_train": {"src": c.ssrc, "t": c.st}})
     print(b, v, cfgs.read_chosen().get("split"))
 
 

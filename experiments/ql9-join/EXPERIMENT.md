@@ -120,3 +120,27 @@ Units above 400 cells and blocks above 300 cells are not scored; the join and sp
 cells are in no block (NOSEED) cannot be fixed; the evidence of a block is a tempered likelihood trained on true blocks, and a union
 of two true parts is out of its training distribution; the thresholds are tuned on 383 and 320 units; one deterministic run; Y-cell
 composite parts have no key and are not scored.
+
+## Choice on TRAIN and VALIDATION (written before the TEST run)
+
+Sizes: TRAIN 383 units, 415 constructs (219 right before any step); VALIDATION 320 units, 328 constructs (189 right before).
+Net = constructs right after and not before, minus the reverse (`results/tuning_*.csv`, `results/chosen.json`).
+
+Step 1, join rules on TRAIN, JOIN only, best threshold of each rule: JBF(E73) at -4: gained 46, lost 17, net +29 (130 joins);
+JBF(EM2) at -1: 40 / 4, net +36 (82 joins); JCOND at 0.2: 66 / 12, net +54 (145 joins); JCTRL at 0.5: 8 / 4, net +4 (22 joins).
+Step 2, the four on VALIDATION: JBF(E73) +37 (gained 52, lost 15), JBF(EM2) +44 (45 / 1), JCOND +54 (62 / 8, 134 joins; 189 to 243
+right), JCTRL +14 (15 / 1); JCOND at 0.2 is the headline join.
+Step 3, SFIED on TRAIN, SPLIT only: every threshold of the grid loses constructs (net -120 at 0 down to -10 at 8 for E73, -3 at 16
+for EM2); E73 at 16 splits 4 blocks and has net 0 on TRAIN and on VALIDATION (5 splits), so it is not above 0 and **there is no split
+in the headline**. The grid is monotone: a stricter threshold would only split nothing.
+Step 4, orders on VALIDATION with no active split: JOIN, JS, SJ and FIX are the same result (net +54), SPLIT alone is +0; the
+headline order is JOIN (the tie rule). So the headline is **JCOND at 0.2 as one join step**.
+
+## Deviations from the plan (all before the TEST run)
+
+(1) With no split in the headline, the fixed TEST ablations are, besides HEAD (= JOIN with JCOND at 0.2): the other three join rules at
+their TRAIN thresholds (BF73 at -4, BFM2 at -1, CTRL at 0.5, so the hypothesis's own wording, Bayes factor, is scored on TEST), SPLIT
+(SFIED E73 at 16, the TRAIN-best threshold, alone) and JS (HEAD join after that split round). Their per-unit comparisons and counts are
+reported; none of them is the headline and none is tuned on TEST. (2) The TEST block set of units that get no new anchor is #74's
+`blocks_nostop` and the others #77's own paths, read only; TRAIN and VALIDATION #77 paths were regrown here with `q8b_grow.py` (same code).
+(3) A dry run of the whole evaluation on VALIDATION (`$QL9_OUT/dry`) was made to test the scripts; it has no D70 column.

@@ -62,9 +62,19 @@ def orders() -> list[Config]:
 
 
 def test_set() -> list[Config]:
-    head = read_chosen()["order"]
-    out = [c for c in (make(head, "HEAD"), make("JOIN", "JOIN"), make("SPLIT", "SPLIT"))
-           if c is not None]
+    """HEAD, the other join rules at their TRAIN threshold, and the split alone and after the
+    join at its TRAIN-best threshold (fixed ablations, EXPERIMENT.md "Deviations")."""
+    ch = read_chosen()
+    jt = ch["join_train"]
+    sp = ch["split_train"]
+    jc, _ = headline_parts()
+    head = make(ch["order"], "HEAD")
+    out = [head] if head is not None else []
+    out += [Config("BF73", "JOIN", "bf", "E73", jt["bf-E73"]),
+            Config("BFM2", "JOIN", "bf", "EM2", jt["bf-EM2"]),
+            Config("CTRL", "JOIN", "ctrl", "E73", jt["ctrl"]),
+            Config("SPLIT", "SPLIT", ssrc=sp["src"], st=sp["t"]),
+            Config("JS", "JS", jc.jrule, jc.jsrc, jc.jt, sp["src"], sp["t"])]
     return out
 
 
