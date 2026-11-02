@@ -1,0 +1,9 @@
+tier,arm,rows,designs_with_key,key_total,key_right,key_right_ok
+multi-block,D,81,8,36,12,10
+multi-block,Dh,81,8,36,12,10
+single-block (pilot),D,1,0,0,0,0
+single-block (pilot),Dh,1,0,0,0,0
+vbig,D,12,2,6,6,6
+vbig,Dh,12,2,6,6,6
+ext,D,5,0,0,0,0
+ext,Dh,5,0,0,0,0

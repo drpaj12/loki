@@ -1,0 +1,11 @@
+problem,arm,original,failed_blocks,n_failed,after_replacing_failed_with_own_cells
+picorv32_pcpi_div,D,neq,0 34,2,equiv
+picorv32_pcpi_div,Dh,neq,6 34,2,equiv
+picorv32_pcpi_mul,D,neq,1 4 5,3,equiv
+picorv32_pcpi_mul,Dh,neq,1,1,equiv
+tinyriscv_div,D,pass,2,1,equiv
+tinyriscv_div,Dh,neq,2 3,2,equiv
+tinyriscv_csr,D,neq,33,1,equiv
+tinyriscv_csr,Dh,neq,33,1,equiv
+tinyriscv_clint,D,neq,15,1,equiv
+tinyriscv_clint,Dh,neq,15,1,equiv

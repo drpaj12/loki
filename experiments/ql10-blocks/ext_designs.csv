@@ -1,0 +1,6 @@
+name,top,source
+picorv32_pcpi_div,picorv32_pcpi_div,external/picorv32/picorv32.v
+picorv32_pcpi_mul,picorv32_pcpi_mul,external/picorv32/picorv32.v
+tinyriscv_div,div,external/tinyriscv/rtl/core/div.v
+tinyriscv_csr,csr_reg,external/tinyriscv/rtl/core/csr_reg.v
+tinyriscv_clint,clint,external/tinyriscv/rtl/core/clint.v

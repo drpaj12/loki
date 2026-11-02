@@ -1,0 +1,16 @@
+Question:
+I would like you to reverse engineer one block of a gate-level netlist back to its original RTL description.
+The whole netlist was synthesized from a Verilog RTL design and has been cut into blocks. You see one block. The nets that cross the block boundary are its ports.
+
+Please create an equivalent, clean, and readable RTL description of this block that implements the same functionality.
+Your RTL should be written in standard Verilog or SystemVerilog using best practices.
+
+The module must be named '{NAME}' and have exactly these single-bit ports, with these exact names and no others:
+  inputs: {INPUTS}
+  outputs: {OUTPUTS}
+Write only this one module and do not define any other module. A port that clocks a flip-flop is a clock input of the block. Write registers with always @(posedge ...), and write flip-flops with an asynchronous set or reset the same way.{HINT}
+
+Gate-level netlist of the block:
+```verilog
+{NETLIST}
+```

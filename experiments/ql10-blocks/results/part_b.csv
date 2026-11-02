@@ -1,0 +1,11 @@
+problem,tier,cells,blocks,D_pass,D_draws,Dh_pass,Dh_draws,D_blocks_ok,D_blocks_replied,Dh_blocks_ok,Dh_blocks_replied,verdict
+Prob018_mux256to1,vbig,849,3,3,3,3,3,9,9,9,9,
+Prob052_gates100,vbig,696,3,3,3,3,3,9,9,9,9,
+Prob105_rotate100,vbig,1007,83,2,3,2,3,247,249,247,249,
+Prob115_shift18,vbig,1001,16,0,3,0,3,43,48,43,48,
+picorv32_pcpi_div,ext,2408,175,0,1,0,1,173,175,173,175,
+picorv32_pcpi_mul,ext,2586,128,0,1,0,1,125,128,127,128,
+tinyriscv_div,ext,3055,195,1,1,0,1,194,195,193,195,
+tinyriscv_csr,ext,3535,90,0,1,0,1,89,90,89,90,
+tinyriscv_clint,ext,1316,66,0,1,0,1,65,66,65,66,
+TOTAL,vbig+ext,,,,,,,954,969,,,SUPPORTED

@@ -1,0 +1,3 @@
+
+
+Loki is a netlist analysis program (no language model). Its guess for this block: the block looks like {KIND}. The guess can be wrong.
