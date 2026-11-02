@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 310" font-family="sans-serif" font-size="10">
+<text x="40" y="12">Top-label reliability, grown blocks (TEST)</text>
+<line x1="40" y1="280" x2="300" y2="20" stroke="#bbb"/>
+<rect x="40" y="20" width="260" height="260" fill="none" stroke="#999"/>
+<polyline points="113.5,230.5 132.6,215.7 157.9,188.5 181.4,169.0 209.2,119.1 235.8,198.5 258.8,140.0 289.4,165.3" fill="none" stroke="#c0504d" stroke-width="1.5"/>
+<text x="308" y="34" fill="#c0504d">B73</text>
+<polyline points="113.5,230.5 132.6,215.7 157.9,188.5 181.4,169.0 209.2,119.1 235.8,198.5 258.8,140.0 289.4,165.3" fill="none" stroke="#e69f00" stroke-width="1.5"/>
+<text x="308" y="48" fill="#e69f00">B73-T</text>
+<polyline points="113.9,248.8 132.5,232.2 157.8,217.6 180.6,211.8 209.1,155.0 236.0,130.8 258.6,89.8 287.9,240.8" fill="none" stroke="#009e73" stroke-width="1.5"/>
+<text x="308" y="62" fill="#009e73">M1</text>
+<polyline points="111.5,255.2 130.1,224.1 159.2,180.5 181.0,132.6 211.1,101.8 235.0,115.7 260.5,110.6 293.1,176.8" fill="none" stroke="#1f77b4" stroke-width="1.5"/>
+<text x="308" y="76" fill="#1f77b4">M2</text>
+<polyline points="112.3,272.8 133.4,216.9 156.1,199.6 179.8,146.7 210.5,145.0 236.2,153.2 257.2,100.0 291.8,154.0" fill="none" stroke="#7f3fbf" stroke-width="1.5"/>
+<text x="308" y="90" fill="#7f3fbf">M3</text>
+<polyline points="111.7,236.7 133.7,168.4 156.9,131.9 181.2,153.3 208.6,78.5 235.3,92.3 259.6,66.8 292.6,115.1" fill="none" stroke="#000000" stroke-width="1.5"/>
+<text x="308" y="104" fill="#000000">M4</text>
+<text x="40" y="310">confidence</text></svg>

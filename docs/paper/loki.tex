@@ -2352,6 +2352,20 @@ worse by 1 to 9 percent, and the combination equals it). On single-design units 
 against a ceiling of 0.504, so the stop has little room. What is left to recover lies in the growth order (449 of 1141 constructs have no right prefix on any block) and in the
 anchors (58 constructs are not touched by any block), and the kind guess stays weak (precision 0.27, recall 0.19).
 
+\paragraph{Loki L3: a stronger kind likelihood for grown blocks (Q-L8c).}
+The grown blocks are now often right, but the guess of what a block is stays weak (precision 0.27, recall 0.19). We gave the likelihood more to look at: orbit instances
+per cell and not only orbit shares, how the block touches the rest of the netlist (conductance, frontier fan-in and fan-out, primary inputs read), the share of
+flip-flops, hard and adder cells, and the feedback structure of the block (strongly connected components, cycle rank, longest combinational path) (plan, features, three
+models and verdict rules in \code{experiments/ql8c-kind/EXPERIMENT.md}, fixed before the test run; the Odin III graphlets pass supplies every orbit count). Three likelihoods
+were fitted on the answer-key blocks of the even half of the tuning designs (naive Bayes on binned features, a full-covariance Gaussian on 24 principal components with a size
+line, a diagonal mixture per kind), their temperature on the grown blocks of 97 further designs, and the model was chosen on 82 more; a fourth, the Gaussian fitted with wrong
+grown blocks as the glue class, was added after a first look. The Gaussian won. On the test designs it recovers 232 of 1163 constructs with their kind against 213 for the
+earlier likelihood (per-unit geomean 1.011, 1.001 to 1.021, W74 / L55 / T1221), and the macro F1 over the five kinds rises from 0.211 to 0.262 (gain 0.051, 0.019 to 0.081),
+which is real but about half of the 0.10 we had set as ``well above''; the hypothesis is not supported. Counters, registers and register files gain, finite-state
+machines and shift registers do not. The posterior is better calibrated on all grown blocks (ECE 0.139 against 0.197, difference -0.057, -0.085 to -0.019) but not on the
+right blocks alone. Given the answer-key block, the kind is guessed with macro F1 0.487 against 0.419 and recall below 0.41, so most of the remaining error is the kind
+guess itself and not the block, and no model here has learned what a wrong block looks like.
+
 \section{Conclusion}
 \label{sec:conclusion}
 

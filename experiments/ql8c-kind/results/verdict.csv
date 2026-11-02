@@ -1,0 +1,12 @@
+id,question,value,ci90_lo,ci90_hi,counts,label
+QL8c-a,"model M2 claims more right kinds than B73 (constructs recovered with their kind, per unit geomean)",1.011,1.001,1.021,W74/L55/T1221 of 1350 units,BETTER
+QL8c-b,"macro F1 gain of M2 over B73 on grown blocks, hypothesis: above +0.10",0.051,0.019,0.081,1350 units,CONTRADICTED
+QL8c-b2,"macro F1 gain of M2 over B73-T on grown blocks, hypothesis: above +0.10",0.051,0.019,0.081,1350 units,CONTRADICTED
+QL8c-c,"ECE of M2 minus ECE of B73-T (grown, all blocks)",-0.057,-0.085,-0.019,,MEASUREMENT
+QL8c-c2,"ECE of M2 minus ECE of B73-T (grown, right blocks)",-0.026,-0.057,0.011,,MEASUREMENT
+QL8c-d,macro F1 gain of M2 over B73 on true blocks,0.068,0.032,0.101,,MEASUREMENT
+QL8c-d2,top-3 gain of M2 over B73 on true blocks,0.042,0.022,0.06,,MEASUREMENT
+QL8c-m-M1,macro F1 gain of M1 over B73 on grown blocks,-0.045,-0.075,-0.017,,MEASUREMENT
+QL8c-m-M2,macro F1 gain of M2 over B73 on grown blocks,0.051,0.019,0.081,,MEASUREMENT
+QL8c-m-M3,macro F1 gain of M3 over B73 on grown blocks,-0.068,-0.103,-0.034,,MEASUREMENT
+QL8c-m-M4,macro F1 gain of M4 over B73 on grown blocks,0.004,-0.021,0.028,,MEASUREMENT

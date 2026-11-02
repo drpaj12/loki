@@ -1,0 +1,433 @@
+model,blocks,scope,kind,claims,tp,precision,constructs,recalled,recall,f1
+B73,grown,all,fsm,287,82,0.286,333,82,0.246,0.265
+B73,grown,all,counter,117,31,0.265,242,31,0.128,0.173
+B73,grown,all,shift,195,49,0.251,206,49,0.238,0.244
+B73,grown,all,regfile,7,5,0.714,44,5,0.114,0.196
+B73,grown,all,register,186,46,0.247,338,46,0.136,0.176
+B73,grown,all,all,792,213,0.269,1163,213,0.183,0.211
+B73,true,all,fsm,279,178,0.638,333,178,0.535,0.582
+B73,true,all,counter,113,90,0.796,242,90,0.372,0.507
+B73,true,all,shift,122,78,0.639,206,78,0.379,0.476
+B73,true,all,regfile,7,5,0.714,44,5,0.114,0.196
+B73,true,all,register,106,74,0.698,338,74,0.219,0.333
+B73,true,all,all,627,425,0.678,1163,425,0.365,0.419
+B73,grown,target gate,fsm,11,2,0.182,105,2,0.019,0.034
+B73,grown,target gate,counter,10,4,0.4,76,4,0.053,0.093
+B73,grown,target gate,shift,11,0,0.0,47,0,0.0,0.0
+B73,grown,target gate,regfile,0,0,,8,0,0.0,0.0
+B73,grown,target gate,register,42,15,0.357,122,15,0.123,0.183
+B73,grown,target gate,all,74,21,0.284,358,21,0.059,0.062
+B73,true,target gate,fsm,29,4,0.138,105,4,0.038,0.06
+B73,true,target gate,counter,8,4,0.5,76,4,0.053,0.095
+B73,true,target gate,shift,3,0,0.0,47,0,0.0,0.0
+B73,true,target gate,regfile,0,0,,8,0,0.0,0.0
+B73,true,target gate,register,38,24,0.632,122,24,0.197,0.3
+B73,true,target gate,all,78,32,0.41,358,32,0.089,0.091
+B73,grown,target k4,fsm,163,37,0.227,133,37,0.278,0.25
+B73,grown,target k4,counter,36,19,0.528,89,19,0.213,0.304
+B73,grown,target k4,shift,132,27,0.205,81,27,0.333,0.254
+B73,grown,target k4,regfile,7,5,0.714,24,5,0.208,0.323
+B73,grown,target k4,register,42,23,0.548,144,23,0.16,0.247
+B73,grown,target k4,all,380,111,0.292,471,111,0.236,0.275
+B73,true,target k4,fsm,126,90,0.714,133,90,0.677,0.695
+B73,true,target k4,counter,56,38,0.679,89,38,0.427,0.524
+B73,true,target k4,shift,74,46,0.622,81,46,0.568,0.594
+B73,true,target k4,regfile,7,5,0.714,24,5,0.208,0.323
+B73,true,target k4,register,49,36,0.735,144,36,0.25,0.373
+B73,true,target k4,all,312,215,0.689,471,215,0.456,0.502
+B73,grown,target k6/hardmap,fsm,113,43,0.381,95,43,0.453,0.413
+B73,grown,target k6/hardmap,counter,71,8,0.113,77,8,0.104,0.108
+B73,grown,target k6/hardmap,shift,52,22,0.423,78,22,0.282,0.338
+B73,grown,target k6/hardmap,regfile,0,0,,12,0,0.0,0.0
+B73,grown,target k6/hardmap,register,102,8,0.078,72,8,0.111,0.092
+B73,grown,target k6/hardmap,all,338,81,0.24,334,81,0.243,0.19
+B73,true,target k6/hardmap,fsm,124,84,0.677,95,84,0.884,0.767
+B73,true,target k6/hardmap,counter,49,48,0.98,77,48,0.623,0.762
+B73,true,target k6/hardmap,shift,45,32,0.711,78,32,0.41,0.52
+B73,true,target k6/hardmap,regfile,0,0,,12,0,0.0,0.0
+B73,true,target k6/hardmap,register,19,14,0.737,72,14,0.194,0.308
+B73,true,target k6/hardmap,all,237,178,0.751,334,178,0.533,0.471
+B73,grown,set single,fsm,176,40,0.227,187,40,0.214,0.22
+B73,grown,set single,counter,30,14,0.467,67,14,0.209,0.289
+B73,grown,set single,shift,131,4,0.031,13,4,0.308,0.056
+B73,grown,set single,regfile,7,5,0.714,44,5,0.114,0.196
+B73,grown,set single,register,112,46,0.411,338,46,0.136,0.204
+B73,grown,set single,all,456,109,0.239,649,109,0.168,0.193
+B73,true,set single,fsm,142,92,0.648,187,92,0.492,0.559
+B73,true,set single,counter,47,26,0.553,67,26,0.388,0.456
+B73,true,set single,shift,30,4,0.133,13,4,0.308,0.186
+B73,true,set single,regfile,7,5,0.714,44,5,0.114,0.196
+B73,true,set single,register,90,74,0.822,338,74,0.219,0.346
+B73,true,set single,all,316,201,0.636,649,201,0.31,0.349
+B73,grown,set comp,fsm,111,42,0.378,146,42,0.288,0.327
+B73,grown,set comp,counter,87,17,0.195,175,17,0.097,0.13
+B73,grown,set comp,shift,64,45,0.703,193,45,0.233,0.35
+B73,grown,set comp,regfile,0,0,,0,0,,0.0
+B73,grown,set comp,register,74,0,0.0,0,0,,0.0
+B73,grown,set comp,all,336,104,0.31,514,104,0.202,0.161
+B73,true,set comp,fsm,137,86,0.628,146,86,0.589,0.608
+B73,true,set comp,counter,66,64,0.97,175,64,0.366,0.531
+B73,true,set comp,shift,92,74,0.804,193,74,0.383,0.519
+B73,true,set comp,regfile,0,0,,0,0,,0.0
+B73,true,set comp,register,16,0,0.0,0,0,,0.0
+B73,true,set comp,all,311,224,0.72,514,224,0.436,0.332
+B73-T,grown,all,fsm,287,82,0.286,333,82,0.246,0.265
+B73-T,grown,all,counter,117,31,0.265,242,31,0.128,0.173
+B73-T,grown,all,shift,195,49,0.251,206,49,0.238,0.244
+B73-T,grown,all,regfile,7,5,0.714,44,5,0.114,0.196
+B73-T,grown,all,register,186,46,0.247,338,46,0.136,0.176
+B73-T,grown,all,all,792,213,0.269,1163,213,0.183,0.211
+B73-T,true,all,fsm,279,178,0.638,333,178,0.535,0.582
+B73-T,true,all,counter,113,90,0.796,242,90,0.372,0.507
+B73-T,true,all,shift,122,78,0.639,206,78,0.379,0.476
+B73-T,true,all,regfile,7,5,0.714,44,5,0.114,0.196
+B73-T,true,all,register,106,74,0.698,338,74,0.219,0.333
+B73-T,true,all,all,627,425,0.678,1163,425,0.365,0.419
+B73-T,grown,target gate,fsm,11,2,0.182,105,2,0.019,0.034
+B73-T,grown,target gate,counter,10,4,0.4,76,4,0.053,0.093
+B73-T,grown,target gate,shift,11,0,0.0,47,0,0.0,0.0
+B73-T,grown,target gate,regfile,0,0,,8,0,0.0,0.0
+B73-T,grown,target gate,register,42,15,0.357,122,15,0.123,0.183
+B73-T,grown,target gate,all,74,21,0.284,358,21,0.059,0.062
+B73-T,true,target gate,fsm,29,4,0.138,105,4,0.038,0.06
+B73-T,true,target gate,counter,8,4,0.5,76,4,0.053,0.095
+B73-T,true,target gate,shift,3,0,0.0,47,0,0.0,0.0
+B73-T,true,target gate,regfile,0,0,,8,0,0.0,0.0
+B73-T,true,target gate,register,38,24,0.632,122,24,0.197,0.3
+B73-T,true,target gate,all,78,32,0.41,358,32,0.089,0.091
+B73-T,grown,target k4,fsm,163,37,0.227,133,37,0.278,0.25
+B73-T,grown,target k4,counter,36,19,0.528,89,19,0.213,0.304
+B73-T,grown,target k4,shift,132,27,0.205,81,27,0.333,0.254
+B73-T,grown,target k4,regfile,7,5,0.714,24,5,0.208,0.323
+B73-T,grown,target k4,register,42,23,0.548,144,23,0.16,0.247
+B73-T,grown,target k4,all,380,111,0.292,471,111,0.236,0.275
+B73-T,true,target k4,fsm,126,90,0.714,133,90,0.677,0.695
+B73-T,true,target k4,counter,56,38,0.679,89,38,0.427,0.524
+B73-T,true,target k4,shift,74,46,0.622,81,46,0.568,0.594
+B73-T,true,target k4,regfile,7,5,0.714,24,5,0.208,0.323
+B73-T,true,target k4,register,49,36,0.735,144,36,0.25,0.373
+B73-T,true,target k4,all,312,215,0.689,471,215,0.456,0.502
+B73-T,grown,target k6/hardmap,fsm,113,43,0.381,95,43,0.453,0.413
+B73-T,grown,target k6/hardmap,counter,71,8,0.113,77,8,0.104,0.108
+B73-T,grown,target k6/hardmap,shift,52,22,0.423,78,22,0.282,0.338
+B73-T,grown,target k6/hardmap,regfile,0,0,,12,0,0.0,0.0
+B73-T,grown,target k6/hardmap,register,102,8,0.078,72,8,0.111,0.092
+B73-T,grown,target k6/hardmap,all,338,81,0.24,334,81,0.243,0.19
+B73-T,true,target k6/hardmap,fsm,124,84,0.677,95,84,0.884,0.767
+B73-T,true,target k6/hardmap,counter,49,48,0.98,77,48,0.623,0.762
+B73-T,true,target k6/hardmap,shift,45,32,0.711,78,32,0.41,0.52
+B73-T,true,target k6/hardmap,regfile,0,0,,12,0,0.0,0.0
+B73-T,true,target k6/hardmap,register,19,14,0.737,72,14,0.194,0.308
+B73-T,true,target k6/hardmap,all,237,178,0.751,334,178,0.533,0.471
+B73-T,grown,set single,fsm,176,40,0.227,187,40,0.214,0.22
+B73-T,grown,set single,counter,30,14,0.467,67,14,0.209,0.289
+B73-T,grown,set single,shift,131,4,0.031,13,4,0.308,0.056
+B73-T,grown,set single,regfile,7,5,0.714,44,5,0.114,0.196
+B73-T,grown,set single,register,112,46,0.411,338,46,0.136,0.204
+B73-T,grown,set single,all,456,109,0.239,649,109,0.168,0.193
+B73-T,true,set single,fsm,142,92,0.648,187,92,0.492,0.559
+B73-T,true,set single,counter,47,26,0.553,67,26,0.388,0.456
+B73-T,true,set single,shift,30,4,0.133,13,4,0.308,0.186
+B73-T,true,set single,regfile,7,5,0.714,44,5,0.114,0.196
+B73-T,true,set single,register,90,74,0.822,338,74,0.219,0.346
+B73-T,true,set single,all,316,201,0.636,649,201,0.31,0.349
+B73-T,grown,set comp,fsm,111,42,0.378,146,42,0.288,0.327
+B73-T,grown,set comp,counter,87,17,0.195,175,17,0.097,0.13
+B73-T,grown,set comp,shift,64,45,0.703,193,45,0.233,0.35
+B73-T,grown,set comp,regfile,0,0,,0,0,,0.0
+B73-T,grown,set comp,register,74,0,0.0,0,0,,0.0
+B73-T,grown,set comp,all,336,104,0.31,514,104,0.202,0.161
+B73-T,true,set comp,fsm,137,86,0.628,146,86,0.589,0.608
+B73-T,true,set comp,counter,66,64,0.97,175,64,0.366,0.531
+B73-T,true,set comp,shift,92,74,0.804,193,74,0.383,0.519
+B73-T,true,set comp,regfile,0,0,,0,0,,0.0
+B73-T,true,set comp,register,16,0,0.0,0,0,,0.0
+B73-T,true,set comp,all,311,224,0.72,514,224,0.436,0.332
+M1,grown,all,fsm,352,75,0.213,333,75,0.225,0.219
+M1,grown,all,counter,320,62,0.194,242,62,0.256,0.221
+M1,grown,all,shift,91,12,0.132,206,12,0.058,0.081
+M1,grown,all,regfile,11,4,0.364,44,4,0.091,0.145
+M1,grown,all,register,348,56,0.161,338,56,0.166,0.163
+M1,grown,all,all,1122,209,0.186,1163,209,0.18,0.166
+M1,true,all,fsm,422,167,0.396,333,167,0.502,0.442
+M1,true,all,counter,248,106,0.427,242,106,0.438,0.433
+M1,true,all,shift,61,23,0.377,206,23,0.112,0.172
+M1,true,all,regfile,17,5,0.294,44,5,0.114,0.164
+M1,true,all,register,211,134,0.635,338,134,0.396,0.488
+M1,true,all,all,959,435,0.454,1163,435,0.374,0.34
+M1,grown,target gate,fsm,23,12,0.522,105,12,0.114,0.188
+M1,grown,target gate,counter,171,43,0.251,76,43,0.566,0.348
+M1,grown,target gate,shift,5,4,0.8,47,4,0.085,0.154
+M1,grown,target gate,regfile,6,1,0.167,8,1,0.125,0.143
+M1,grown,target gate,register,59,9,0.153,122,9,0.074,0.099
+M1,grown,target gate,all,264,69,0.261,358,69,0.193,0.186
+M1,true,target gate,fsm,39,22,0.564,105,22,0.21,0.306
+M1,true,target gate,counter,150,62,0.413,76,62,0.816,0.549
+M1,true,target gate,shift,4,4,1.0,47,4,0.085,0.157
+M1,true,target gate,regfile,11,1,0.091,8,1,0.125,0.105
+M1,true,target gate,register,62,32,0.516,122,32,0.262,0.348
+M1,true,target gate,all,266,121,0.455,358,121,0.338,0.293
+M1,grown,target k4,fsm,196,26,0.133,133,26,0.195,0.158
+M1,grown,target k4,counter,70,16,0.229,89,16,0.18,0.201
+M1,grown,target k4,shift,51,3,0.059,81,3,0.037,0.045
+M1,grown,target k4,regfile,4,3,0.75,24,3,0.125,0.214
+M1,grown,target k4,register,128,39,0.305,144,39,0.271,0.287
+M1,grown,target k4,all,449,87,0.194,471,87,0.185,0.181
+M1,true,target k4,fsm,213,80,0.376,133,80,0.602,0.462
+M1,true,target k4,counter,65,26,0.4,89,26,0.292,0.338
+M1,true,target k4,shift,29,12,0.414,81,12,0.148,0.218
+M1,true,target k4,regfile,5,4,0.8,24,4,0.167,0.276
+M1,true,target k4,register,87,65,0.747,144,65,0.451,0.563
+M1,true,target k4,all,399,187,0.469,471,187,0.397,0.371
+M1,grown,target k6/hardmap,fsm,133,37,0.278,95,37,0.389,0.325
+M1,grown,target k6/hardmap,counter,79,3,0.038,77,3,0.039,0.038
+M1,grown,target k6/hardmap,shift,35,5,0.143,78,5,0.064,0.088
+M1,grown,target k6/hardmap,regfile,1,0,0.0,12,0,0.0,0.0
+M1,grown,target k6/hardmap,register,161,8,0.05,72,8,0.111,0.069
+M1,grown,target k6/hardmap,all,409,53,0.13,334,53,0.159,0.104
+M1,true,target k6/hardmap,fsm,170,65,0.382,95,65,0.684,0.491
+M1,true,target k6/hardmap,counter,33,18,0.545,77,18,0.234,0.327
+M1,true,target k6/hardmap,shift,28,7,0.25,78,7,0.09,0.132
+M1,true,target k6/hardmap,regfile,1,0,0.0,12,0,0.0,0.0
+M1,true,target k6/hardmap,register,62,37,0.597,72,37,0.514,0.552
+M1,true,target k6/hardmap,all,294,127,0.432,334,127,0.38,0.3
+M1,grown,set single,fsm,220,48,0.218,187,48,0.257,0.236
+M1,grown,set single,counter,173,24,0.139,67,24,0.358,0.2
+M1,grown,set single,shift,55,0,0.0,13,0,0.0,0.0
+M1,grown,set single,regfile,10,4,0.4,44,4,0.091,0.148
+M1,grown,set single,register,234,56,0.239,338,56,0.166,0.196
+M1,grown,set single,all,692,132,0.191,649,132,0.203,0.156
+M1,true,set single,fsm,211,120,0.569,187,120,0.642,0.603
+M1,true,set single,counter,114,31,0.272,67,31,0.463,0.343
+M1,true,set single,shift,16,0,0.0,13,0,0.0,0.0
+M1,true,set single,regfile,11,5,0.455,44,5,0.114,0.182
+M1,true,set single,register,146,134,0.918,338,134,0.396,0.554
+M1,true,set single,all,498,290,0.582,649,290,0.447,0.336
+M1,grown,set comp,fsm,132,27,0.205,146,27,0.185,0.194
+M1,grown,set comp,counter,147,38,0.259,175,38,0.217,0.236
+M1,grown,set comp,shift,36,12,0.333,193,12,0.062,0.105
+M1,grown,set comp,regfile,1,0,0.0,0,0,,0.0
+M1,grown,set comp,register,114,0,0.0,0,0,,0.0
+M1,grown,set comp,all,430,77,0.179,514,77,0.15,0.107
+M1,true,set comp,fsm,211,47,0.223,146,47,0.322,0.263
+M1,true,set comp,counter,134,75,0.56,175,75,0.429,0.485
+M1,true,set comp,shift,45,23,0.511,193,23,0.119,0.193
+M1,true,set comp,regfile,6,0,0.0,0,0,,0.0
+M1,true,set comp,register,65,0,0.0,0,0,,0.0
+M1,true,set comp,all,461,145,0.315,514,145,0.282,0.188
+M2,grown,all,fsm,294,76,0.259,333,76,0.228,0.242
+M2,grown,all,counter,117,38,0.325,242,38,0.157,0.212
+M2,grown,all,shift,203,47,0.232,206,47,0.228,0.23
+M2,grown,all,regfile,12,11,0.917,44,11,0.25,0.393
+M2,grown,all,register,181,60,0.331,338,60,0.178,0.231
+M2,grown,all,all,807,232,0.287,1163,232,0.199,0.262
+M2,true,all,fsm,275,179,0.651,333,179,0.538,0.589
+M2,true,all,counter,134,122,0.91,242,122,0.504,0.649
+M2,true,all,shift,135,73,0.541,206,73,0.354,0.428
+M2,true,all,regfile,12,11,0.917,44,11,0.25,0.393
+M2,true,all,register,130,88,0.677,338,88,0.26,0.376
+M2,true,all,all,686,473,0.69,1163,473,0.407,0.487
+M2,grown,target gate,fsm,52,9,0.173,105,9,0.086,0.115
+M2,grown,target gate,counter,15,11,0.733,76,11,0.145,0.242
+M2,grown,target gate,shift,15,1,0.067,47,1,0.021,0.032
+M2,grown,target gate,regfile,0,0,,8,0,0.0,0.0
+M2,grown,target gate,register,28,9,0.321,122,9,0.074,0.12
+M2,grown,target gate,all,110,30,0.273,358,30,0.084,0.102
+M2,true,target gate,fsm,60,23,0.383,105,23,0.219,0.279
+M2,true,target gate,counter,27,22,0.815,76,22,0.289,0.427
+M2,true,target gate,shift,4,1,0.25,47,1,0.021,0.039
+M2,true,target gate,regfile,0,0,,8,0,0.0,0.0
+M2,true,target gate,register,27,14,0.519,122,14,0.115,0.188
+M2,true,target gate,all,118,60,0.508,358,60,0.168,0.187
+M2,grown,target k4,fsm,180,42,0.233,133,42,0.316,0.268
+M2,grown,target k4,counter,31,17,0.548,89,17,0.191,0.283
+M2,grown,target k4,shift,113,19,0.168,81,19,0.235,0.196
+M2,grown,target k4,regfile,10,9,0.9,24,9,0.375,0.529
+M2,grown,target k4,register,56,36,0.643,144,36,0.25,0.36
+M2,grown,target k4,all,390,123,0.315,471,123,0.261,0.327
+M2,true,target k4,fsm,162,104,0.642,133,104,0.782,0.705
+M2,true,target k4,counter,38,32,0.842,89,32,0.36,0.504
+M2,true,target k4,shift,54,32,0.593,81,32,0.395,0.474
+M2,true,target k4,regfile,10,9,0.9,24,9,0.375,0.529
+M2,true,target k4,register,67,50,0.746,144,50,0.347,0.474
+M2,true,target k4,all,331,227,0.686,471,227,0.482,0.537
+M2,grown,target k6/hardmap,fsm,62,25,0.403,95,25,0.263,0.318
+M2,grown,target k6/hardmap,counter,71,10,0.141,77,10,0.13,0.135
+M2,grown,target k6/hardmap,shift,75,27,0.36,78,27,0.346,0.353
+M2,grown,target k6/hardmap,regfile,2,2,1.0,12,2,0.167,0.286
+M2,grown,target k6/hardmap,register,97,15,0.155,72,15,0.208,0.178
+M2,grown,target k6/hardmap,all,307,79,0.257,334,79,0.237,0.254
+M2,true,target k6/hardmap,fsm,53,52,0.981,95,52,0.547,0.703
+M2,true,target k6/hardmap,counter,69,68,0.986,77,68,0.883,0.932
+M2,true,target k6/hardmap,shift,77,40,0.519,78,40,0.513,0.516
+M2,true,target k6/hardmap,regfile,2,2,1.0,12,2,0.167,0.286
+M2,true,target k6/hardmap,register,36,24,0.667,72,24,0.333,0.444
+M2,true,target k6/hardmap,all,237,186,0.785,334,186,0.557,0.576
+M2,grown,set single,fsm,186,45,0.242,187,45,0.241,0.241
+M2,grown,set single,counter,24,8,0.333,67,8,0.119,0.176
+M2,grown,set single,shift,119,2,0.017,13,2,0.154,0.03
+M2,grown,set single,regfile,12,11,0.917,44,11,0.25,0.393
+M2,grown,set single,register,158,60,0.38,338,60,0.178,0.242
+M2,grown,set single,all,499,126,0.253,649,126,0.194,0.216
+M2,true,set single,fsm,139,106,0.763,187,106,0.567,0.65
+M2,true,set single,counter,35,23,0.657,67,23,0.343,0.451
+M2,true,set single,shift,30,3,0.1,13,3,0.231,0.14
+M2,true,set single,regfile,12,11,0.917,44,11,0.25,0.393
+M2,true,set single,register,109,88,0.807,338,88,0.26,0.394
+M2,true,set single,all,325,231,0.711,649,231,0.356,0.405
+M2,grown,set comp,fsm,108,31,0.287,146,31,0.212,0.244
+M2,grown,set comp,counter,93,30,0.323,175,30,0.171,0.224
+M2,grown,set comp,shift,84,45,0.536,193,45,0.233,0.325
+M2,grown,set comp,regfile,0,0,,0,0,,0.0
+M2,grown,set comp,register,23,0,0.0,0,0,,0.0
+M2,grown,set comp,all,308,106,0.344,514,106,0.206,0.159
+M2,true,set comp,fsm,136,73,0.537,146,73,0.5,0.518
+M2,true,set comp,counter,99,99,1.0,175,99,0.566,0.723
+M2,true,set comp,shift,105,70,0.667,193,70,0.363,0.47
+M2,true,set comp,regfile,0,0,,0,0,,0.0
+M2,true,set comp,register,21,0,0.0,0,0,,0.0
+M2,true,set comp,all,361,242,0.67,514,242,0.471,0.342
+M3,grown,all,fsm,203,62,0.305,333,62,0.186,0.231
+M3,grown,all,counter,235,50,0.213,242,50,0.207,0.21
+M3,grown,all,shift,6,3,0.5,206,3,0.015,0.028
+M3,grown,all,regfile,1,1,1.0,44,1,0.023,0.044
+M3,grown,all,register,505,84,0.166,338,84,0.249,0.199
+M3,grown,all,all,950,200,0.211,1163,200,0.172,0.143
+M3,true,all,fsm,196,146,0.745,333,146,0.438,0.552
+M3,true,all,counter,244,138,0.566,242,138,0.57,0.568
+M3,true,all,shift,3,3,1.0,206,3,0.015,0.029
+M3,true,all,regfile,1,1,1.0,44,1,0.023,0.044
+M3,true,all,register,350,155,0.443,338,155,0.459,0.451
+M3,true,all,all,794,443,0.558,1163,443,0.381,0.329
+M3,grown,target gate,fsm,24,9,0.375,105,9,0.086,0.14
+M3,grown,target gate,counter,102,34,0.333,76,34,0.447,0.382
+M3,grown,target gate,shift,0,0,,47,0,0.0,0.0
+M3,grown,target gate,regfile,0,0,,8,0,0.0,0.0
+M3,grown,target gate,register,104,21,0.202,122,21,0.172,0.186
+M3,grown,target gate,all,230,64,0.278,358,64,0.179,0.141
+M3,true,target gate,fsm,26,15,0.577,105,15,0.143,0.229
+M3,true,target gate,counter,123,55,0.447,76,55,0.724,0.553
+M3,true,target gate,shift,0,0,,47,0,0.0,0.0
+M3,true,target gate,regfile,0,0,,8,0,0.0,0.0
+M3,true,target gate,register,97,57,0.588,122,57,0.467,0.521
+M3,true,target gate,all,246,127,0.516,358,127,0.355,0.26
+M3,grown,target k4,fsm,97,18,0.186,133,18,0.135,0.157
+M3,grown,target k4,counter,68,6,0.088,89,6,0.067,0.076
+M3,grown,target k4,shift,6,3,0.5,81,3,0.037,0.069
+M3,grown,target k4,regfile,1,1,1.0,24,1,0.042,0.08
+M3,grown,target k4,register,214,43,0.201,144,43,0.299,0.24
+M3,grown,target k4,all,386,71,0.184,471,71,0.151,0.124
+M3,true,target k4,fsm,92,62,0.674,133,62,0.466,0.551
+M3,true,target k4,counter,57,20,0.351,89,20,0.225,0.274
+M3,true,target k4,shift,3,3,1.0,81,3,0.037,0.071
+M3,true,target k4,regfile,1,1,1.0,24,1,0.042,0.08
+M3,true,target k4,register,183,64,0.35,144,64,0.444,0.391
+M3,true,target k4,all,336,150,0.446,471,150,0.318,0.274
+M3,grown,target k6/hardmap,fsm,82,35,0.427,95,35,0.368,0.395
+M3,grown,target k6/hardmap,counter,65,10,0.154,77,10,0.13,0.141
+M3,grown,target k6/hardmap,shift,0,0,,78,0,0.0,0.0
+M3,grown,target k6/hardmap,regfile,0,0,,12,0,0.0,0.0
+M3,grown,target k6/hardmap,register,187,20,0.107,72,20,0.278,0.154
+M3,grown,target k6/hardmap,all,334,65,0.195,334,65,0.195,0.138
+M3,true,target k6/hardmap,fsm,78,69,0.885,95,69,0.726,0.798
+M3,true,target k6/hardmap,counter,64,63,0.984,77,63,0.818,0.894
+M3,true,target k6/hardmap,shift,0,0,,78,0,0.0,0.0
+M3,true,target k6/hardmap,regfile,0,0,,12,0,0.0,0.0
+M3,true,target k6/hardmap,register,70,34,0.486,72,34,0.472,0.479
+M3,true,target k6/hardmap,all,212,166,0.783,334,166,0.497,0.434
+M3,grown,set single,fsm,127,32,0.252,187,32,0.171,0.204
+M3,grown,set single,counter,115,18,0.157,67,18,0.269,0.198
+M3,grown,set single,shift,3,0,0.0,13,0,0.0,0.0
+M3,grown,set single,regfile,1,1,1.0,44,1,0.023,0.044
+M3,grown,set single,register,352,84,0.239,338,84,0.249,0.243
+M3,grown,set single,all,598,135,0.226,649,135,0.208,0.138
+M3,true,set single,fsm,122,87,0.713,187,87,0.465,0.563
+M3,true,set single,counter,93,35,0.376,67,35,0.522,0.438
+M3,true,set single,shift,0,0,,13,0,0.0,0.0
+M3,true,set single,regfile,1,1,1.0,44,1,0.023,0.044
+M3,true,set single,register,209,155,0.742,338,155,0.459,0.567
+M3,true,set single,all,425,278,0.654,649,278,0.428,0.322
+M3,grown,set comp,fsm,76,30,0.395,146,30,0.205,0.27
+M3,grown,set comp,counter,120,32,0.267,175,32,0.183,0.217
+M3,grown,set comp,shift,3,3,1.0,193,3,0.016,0.031
+M3,grown,set comp,regfile,0,0,,0,0,,0.0
+M3,grown,set comp,register,153,0,0.0,0,0,,0.0
+M3,grown,set comp,all,352,65,0.185,514,65,0.126,0.104
+M3,true,set comp,fsm,74,59,0.797,146,59,0.404,0.536
+M3,true,set comp,counter,151,103,0.682,175,103,0.589,0.632
+M3,true,set comp,shift,3,3,1.0,193,3,0.016,0.031
+M3,true,set comp,regfile,0,0,,0,0,,0.0
+M3,true,set comp,register,141,0,0.0,0,0,,0.0
+M3,true,set comp,all,369,165,0.447,514,165,0.321,0.24
+M4,grown,all,fsm,140,38,0.271,333,38,0.114,0.161
+M4,grown,all,counter,115,42,0.365,242,42,0.174,0.235
+M4,grown,all,shift,90,27,0.3,206,27,0.131,0.182
+M4,grown,all,regfile,8,7,0.875,44,7,0.159,0.269
+M4,grown,all,register,75,47,0.627,338,47,0.139,0.228
+M4,grown,all,all,428,161,0.376,1163,161,0.138,0.215
+M4,true,all,fsm,136,95,0.699,333,95,0.285,0.405
+M4,true,all,counter,123,111,0.902,242,111,0.459,0.608
+M4,true,all,shift,68,41,0.603,206,41,0.199,0.299
+M4,true,all,regfile,8,7,0.875,44,7,0.159,0.269
+M4,true,all,register,76,63,0.829,338,63,0.186,0.304
+M4,true,all,all,411,317,0.771,1163,317,0.273,0.377
+M4,grown,target gate,fsm,2,1,0.5,105,1,0.01,0.019
+M4,grown,target gate,counter,12,8,0.667,76,8,0.105,0.182
+M4,grown,target gate,shift,12,0,0.0,47,0,0.0,0.0
+M4,grown,target gate,regfile,0,0,,8,0,0.0,0.0
+M4,grown,target gate,register,2,0,0.0,122,0,0.0,0.0
+M4,grown,target gate,all,28,9,0.321,358,9,0.025,0.04
+M4,true,target gate,fsm,11,1,0.091,105,1,0.01,0.017
+M4,true,target gate,counter,18,13,0.722,76,13,0.171,0.277
+M4,true,target gate,shift,3,0,0.0,47,0,0.0,0.0
+M4,true,target gate,regfile,0,0,,8,0,0.0,0.0
+M4,true,target gate,register,3,2,0.667,122,2,0.016,0.032
+M4,true,target gate,all,35,16,0.457,358,16,0.045,0.065
+M4,grown,target k4,fsm,108,25,0.231,133,25,0.188,0.207
+M4,grown,target k4,counter,39,26,0.667,89,26,0.292,0.406
+M4,grown,target k4,shift,57,13,0.228,81,13,0.16,0.188
+M4,grown,target k4,regfile,8,7,0.875,24,7,0.292,0.438
+M4,grown,target k4,register,45,36,0.8,144,36,0.25,0.381
+M4,grown,target k4,all,257,107,0.416,471,107,0.227,0.324
+M4,true,target k4,fsm,105,75,0.714,133,75,0.564,0.63
+M4,true,target k4,counter,44,38,0.864,89,38,0.427,0.571
+M4,true,target k4,shift,41,22,0.537,81,22,0.272,0.361
+M4,true,target k4,regfile,8,7,0.875,24,7,0.292,0.438
+M4,true,target k4,register,56,48,0.857,144,48,0.333,0.48
+M4,true,target k4,all,254,190,0.748,471,190,0.403,0.496
+M4,grown,target k6/hardmap,fsm,30,12,0.4,95,12,0.126,0.192
+M4,grown,target k6/hardmap,counter,64,8,0.125,77,8,0.104,0.113
+M4,grown,target k6/hardmap,shift,21,14,0.667,78,14,0.179,0.283
+M4,grown,target k6/hardmap,regfile,0,0,,12,0,0.0,0.0
+M4,grown,target k6/hardmap,register,28,11,0.393,72,11,0.153,0.22
+M4,grown,target k6/hardmap,all,143,45,0.315,334,45,0.135,0.162
+M4,true,target k6/hardmap,fsm,20,19,0.95,95,19,0.2,0.33
+M4,true,target k6/hardmap,counter,61,60,0.984,77,60,0.779,0.87
+M4,true,target k6/hardmap,shift,24,19,0.792,78,19,0.244,0.373
+M4,true,target k6/hardmap,regfile,0,0,,12,0,0.0,0.0
+M4,true,target k6/hardmap,register,17,13,0.765,72,13,0.181,0.292
+M4,true,target k6/hardmap,all,122,111,0.91,334,111,0.332,0.373
+M4,grown,set single,fsm,100,30,0.3,187,30,0.16,0.209
+M4,grown,set single,counter,32,17,0.531,67,17,0.254,0.343
+M4,grown,set single,shift,40,0,0.0,13,0,0.0,0.0
+M4,grown,set single,regfile,8,7,0.875,44,7,0.159,0.269
+M4,grown,set single,register,73,47,0.644,338,47,0.139,0.229
+M4,grown,set single,all,253,101,0.399,649,101,0.156,0.21
+M4,true,set single,fsm,91,79,0.868,187,79,0.422,0.568
+M4,true,set single,counter,40,28,0.7,67,28,0.418,0.523
+M4,true,set single,shift,16,2,0.125,13,2,0.154,0.138
+M4,true,set single,regfile,8,7,0.875,44,7,0.159,0.269
+M4,true,set single,register,75,63,0.84,338,63,0.186,0.305
+M4,true,set single,all,230,179,0.778,649,179,0.276,0.361
+M4,grown,set comp,fsm,40,8,0.2,146,8,0.055,0.086
+M4,grown,set comp,counter,83,25,0.301,175,25,0.143,0.194
+M4,grown,set comp,shift,50,27,0.54,193,27,0.14,0.222
+M4,grown,set comp,regfile,0,0,,0,0,,0.0
+M4,grown,set comp,register,2,0,0.0,0,0,,0.0
+M4,grown,set comp,all,175,60,0.343,514,60,0.117,0.1
+M4,true,set comp,fsm,45,16,0.356,146,16,0.11,0.168
+M4,true,set comp,counter,83,83,1.0,175,83,0.474,0.643
+M4,true,set comp,shift,52,39,0.75,193,39,0.202,0.318
+M4,true,set comp,regfile,0,0,,0,0,,0.0
+M4,true,set comp,register,1,0,0.0,0,0,,0.0
+M4,true,set comp,all,181,138,0.762,514,138,0.268,0.226
