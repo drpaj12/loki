@@ -9,6 +9,35 @@ Loki III is part of **Yggdrasil III**, the suite of Odin III (<https://github.co
 
 License: MIT.
 
+## Features
+
+Status: **works** = a command or module on `main` with tests; **experiment** = research code under
+`experiments/`, run by script and not a `loki` command; **dismissed** = measured and did not help (kept
+as a record, and the options that remain are off by default). Verdicts are in the
+[paper](docs/paper/README.md) register.
+
+| Feature | Status | Where |
+|---|---|---|
+| L0 ground-truth dataset: Odin III provenance as the answer key, three floors (f1, f2, f3), anonymised names, `cell_type` labels in `graph.json` | works | `loki bench`, `loki assemble`, `loki check`; [dataset](docs/user/dataset.md), [formats](docs/user/formats.md) |
+| Naming-neutral answer key: names exist only in `key.json`; the renamed-instance re-run over 105,646 identifiers shows nothing recovered is a naming artefact | works | [`experiments/rename-l2/EXPERIMENT.md`](experiments/rename-l2/EXPERIMENT.md) |
+| L1 Bayesian flow: detectors, provers, commit with Odin III `raise` and `submod`, `unmap` facts and the `hard` detector for hard blocks | works | `loki re`; [hypotheses](docs/user/hypotheses.md), [runbook](docs/runbook-l1.md) |
+| Calibration of the L1 log-odds on the train split | works | `loki calibrate`, `calib/*.json`, `loki re-project`, `loki score`, `loki score-all` |
+| Run record for Mimir and the ReverseProvenance output (`reverse-provenance.json`) with a document for a language model | works | `loki rp`; [llm](docs/user/llm.md) |
+| L2 analysis: graph export (edge list, GraphML, PyG), structural features (1-WL colours, NPN classes, role flags), clustering (k-means, affinity propagation, spectral, Louvain) | works | `loki analyze export`, `structural`, `cluster`; [hypotheses](docs/user/hypotheses.md) |
+| L2 graphlet and orbit counts (ORCA backend, pinned fetch) | works | `loki analyze graphlets`, `loki tools fetch-orca` |
+| L2 GNN baseline for gate roles (GNN-RE style) | works | `loki analyze gnn`; baseline, not a re-implementation |
+| Loss audit: the pass at which each construct is lost | works | `loki audit`; [`experiments/round6`](experiments/round6) |
+| HAL and DANA comparison (`blif2hal`, word scorer) | works (comparison harness; the word-first detector lost to DANA, inconclusive) | `loki/hal/`, [`experiments/hal`](experiments/hal) |
+| Word-first detector and word-group detector | dismissed (opt-in, off by default) | [wordfirst](docs/user/wordfirst.md) |
+| Calibrated intent claims and linked hints (claims v2, A1 to A6) used as hints for a language model | works as a harness; the hints add nothing to a model that has the netlist (inconclusive and dismissed rows) | `loki/intent/`, [`experiments/llm-hints2`](experiments/llm-hints2) |
+| Gate-Breaker LLM replication harness: 137 VerilogEval problems, 3 draws, arm A (netlist), arm B (netlist and Loki hints), arm C (interface only, memorisation control); follow-up arms A2, B1', B2 and W (wrong claims) | experiment | [`experiments/llm-pilot`](experiments/llm-pilot), [`experiments/llm-full`](experiments/llm-full), [`experiments/llm-hints2`](experiments/llm-hints2) |
+| L3 design-pattern census and v0 detector (single patterns and composites, catalogue under `loki/l3/catalogue`) | works (v0) | `loki/l3/`, [L3 spec](docs/specs/2026-10-30-l3-patterns-design.md), [`experiments/l3-census`](experiments/l3-census), [`experiments/l3-detector`](experiments/l3-detector) |
+| Graphlet signature matching against a pattern library, with fuzzy variants | experiment; no pattern reaches 0.80 on whole designs (inconclusive) | [`experiments/graphlets`](experiments/graphlets), [`experiments/graphlets-fuzzy`](experiments/graphlets-fuzzy) |
+| L3 anchor-grow-join blocks: anchors, directed graphlet signatures, a growth order, extra anchors for untouched constructs, a join step; the grown and joined blocks are the right block for 0.715 of 1141 held-out constructs against 0.385 for bounded cones | experiment | [`experiments/ql6-grow`](experiments/ql6-grow), [`ql7-stop`](experiments/ql7-stop), [`ql8a-order`](experiments/ql8a-order), [`ql8b-anchors`](experiments/ql8b-anchors), [`ql9-join`](experiments/ql9-join) |
+| M2 kind guess on the grown blocks (finite-state machine, counter, shift register, register file, register, glue); macro F1 0.392 | experiment (weakest part) | [`experiments/ql8c-kind`](experiments/ql8c-kind) |
+| State-machine encoding study (one-hot against binary) | experiment; the next-state rule FSM3 was dismissed (precision 0.676) | [`experiments/fsm-encoding`](experiments/fsm-encoding) |
+| Bayes-factor stop rule for growing blocks (QL6a), stop rules (QL7e), a split step (QL9-d), clustering as the designer's hierarchy (L2a) | dismissed or inconclusive | paper Table "what did not work", [`experiments/ql6-grow`](experiments/ql6-grow), [`ql7-stop`](experiments/ql7-stop), [`ql9-join`](experiments/ql9-join) |
+
 ## Paper and experiments
 
 The [paper](docs/paper/README.md) (`docs/paper/loki.tex`) reports the L0/L1/L2 recovery statistics under the
