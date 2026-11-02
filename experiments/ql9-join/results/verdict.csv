@@ -1,0 +1,5 @@
+id,question,value,ci90_lo,ci90_hi,counts,label
+QL9-a,headline against BASE (per-unit geomean),1.149,1.123,1.177,W194/L9/T654; single 1.151 BETTER; net 188,SUPPORTED
+QL9-b split,#76 SPLIT constructs right after the step,0.625,,,157 of 251 (0 right already before the step),SUPPORTED
+QL9-b swallowed,#76 BLOATED constructs right after the step,0.442,,,42 of 95 (44 right already before the step),SUPPORTED
+QL9-c,cost: constructs lost,29,,,gained 217,MEASUREMENT

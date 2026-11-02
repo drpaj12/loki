@@ -1,0 +1,19 @@
+{
+ "join": {
+  "rule": "cond",
+  "src": "E73",
+  "t": 0.2
+ },
+ "join_train": {
+  "bf-E73": -4,
+  "bf-EM2": -1,
+  "cond": 0.2,
+  "ctrl": 0.5
+ },
+ "order": "JOIN",
+ "split": null,
+ "split_train": {
+  "src": "E73",
+  "t": 16.0
+ }
+}
