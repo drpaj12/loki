@@ -173,3 +173,52 @@ Sizes: FIT 9596 prefix samples (as #73) plus 1286 grown blocks of 769 FIT units 
 Chosen: M2 (`results/chosen.json`). Reading before the TEST run: the VAL gain of M2 over B73 is +0.049 macro F1
 (90 percent CI -0.001 to +0.075, same bootstrap), below the +0.10 of QL8c-b, so QL8c-b is expected to be
 CONTRADICTED on TEST unless TEST differs from VAL; the TEST verdicts are fixed by the rules above, not by this reading.
+
+## Results, 2026-11-02 (TEST, run once; plain English first)
+
+Plain English: the richer features help a little and not enough. On the grown blocks of the test designs the chosen
+model (M2, the full-covariance Gaussian) names the right kind for 232 of 1163 constructs against 213 for the #74
+likelihood; macro F1 over the five kinds goes from 0.211 to 0.262 (+0.051, 90 percent CI 0.019 to 0.081), about half
+of the +0.10 the hypothesis asked for, so the hypothesis is CONTRADICTED (DISMISSED in the register). The gain is in
+counters, registers and register files; finite-state machines and shift registers do not gain. The posterior is
+better calibrated on all grown blocks (ECE 0.139 against 0.197) and not on the right blocks alone (0.202 against
+0.228, CI touching 0). Given the answer-key block the kind is named with macro F1 0.487 against 0.419 and recall of
+0.407: even a perfect block does not make the kind easy with these features.
+
+Headline (CAD convention: geomean win and W/L/T first, then the label), `results/verdict.csv`:
+
+| id | measure | value (90% CI) | label |
+|---|---|---|---|
+| QL8c-a | per-unit geomean (g+1)/(d+1), M2 vs B73, kinds recovered | 1.011 (1.001 to 1.021), W74 / L55 / T1221 of 1350 units | BETTER (narrow; k4 1.015 BETTER; gate 1.013, k6/hardmap 0.999, composite 1.013 INCONCLUSIVE) |
+| QL8c-b | macro F1 gain on grown blocks (hypothesis: above +0.10) | +0.051 (0.019 to 0.081) | CONTRADICTED |
+| QL8c-b2 | same against B73-T (T refitted on CAL right blocks; equal to B73, T = 0.15 for both) | +0.051 (0.019 to 0.081) | CONTRADICTED |
+| QL8c-c | ECE M2 minus B73-T, all grown blocks | -0.057 (-0.085 to -0.019) | MEASUREMENT |
+| QL8c-c2 | ECE M2 minus B73-T, right blocks | -0.026 (-0.057 to 0.011) | MEASUREMENT |
+| QL8c-d | macro F1 gain on true blocks | +0.068 (0.032 to 0.101) | MEASUREMENT |
+| QL8c-d2 | top-3 gain on true blocks | +0.042 (0.022 to 0.060) | MEASUREMENT |
+| QL8c-m | macro F1 gain on grown blocks: M1 / M3 / M4 | -0.045 / -0.068 / +0.004 | MEASUREMENT (four comparisons with M2) |
+
+Per kind at the argmax (`results/per_kind.csv`; the #74 likelihood is B73; precision over all claims of the kind,
+recall over the constructs of the kind; B73 reproduces #74's argmax table on these 1163 constructs):
+
+| kind | constructs | grown: B73 P / R | grown: M2 P / R | true block: B73 P / R | true block: M2 P / R |
+|---|---|---|---|---|---|
+| fsm | 333 | 0.286 / 0.246 | 0.259 / 0.228 | 0.638 / 0.535 | 0.651 / 0.538 |
+| counter | 242 | 0.265 / 0.128 | 0.325 / 0.157 | 0.796 / 0.372 | 0.910 / 0.504 |
+| shift | 206 | 0.251 / 0.238 | 0.232 / 0.228 | 0.639 / 0.379 | 0.541 / 0.354 |
+| regfile | 44 | 0.714 / 0.114 | 0.917 / 0.250 | 0.714 / 0.114 | 0.917 / 0.250 |
+| register | 338 | 0.247 / 0.136 | 0.331 / 0.178 | 0.698 / 0.219 | 0.677 / 0.260 |
+| all | 1163 | 0.269 / 0.183 | 0.287 / 0.199 | 0.678 / 0.365 | 0.690 / 0.407 |
+| macro F1 | | 0.211 | 0.262 | 0.419 | 0.487 |
+
+Calibration and top-3 (TEST, all units; `results/summary.csv`, `reliability.csv`, `reliability.svg`): ECE on all grown
+blocks 0.197 (B73) and 0.139 (M2); on right blocks 0.228 and 0.202; on true blocks 0.206 and 0.170. Top-3 contains the
+kind: right blocks 0.810 and 0.834; true blocks 0.781 and 0.823. Per target, macro F1 on grown blocks B73 / M2: gate
+0.062 / 0.102, k4 0.275 / 0.327, k6/hardmap 0.190 / 0.254; single 0.193 / 0.216, composite 0.161 / 0.159. The gate
+netlists stay far below the others for every model (the true-block macro F1 of M2 is 0.187 there against 0.537 on k4).
+M4 (wrong grown blocks as glue) calibrates best (ECE 0.102) and claims fewer kinds: macro F1 0.215.
+
+Limits as stated before the run, and one more seen after it: the wrong half of the grown blocks has no right answer
+except glue and only M4 trained on it; M4's wrong blocks come from designs that ordered their own growth (in-sample).
+TEST units are the 1350 units with paths, 1163 constructs (the 1141 of #74 plus 22 that D70 did not score); B73's
+numbers here are computed on these 1163 and differ from #74's table only by that. Four models are four comparisons.
