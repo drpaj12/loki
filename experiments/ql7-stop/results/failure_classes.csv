@@ -1,0 +1,21 @@
+rule,scope,constructs,right,NOSEED,ORDER,TOOSMALL,TOOBIG,MERGED,BETWEEN
+a,all,1141,481,58,449,125,6,21,1
+a,target gate,351,129,14,128,77,0,2,1
+a,target k4,460,222,26,159,34,5,14,0
+a,target k6/hardmap,330,130,18,162,14,1,5,0
+b,all,1141,527,58,449,93,0,14,0
+b,target gate,351,136,14,128,72,0,1,0
+b,target k4,460,253,26,159,14,0,8,0
+b,target k6/hardmap,330,138,18,162,7,0,5,0
+c,all,1141,587,58,449,22,0,25,0
+c,target gate,351,198,14,128,8,0,3,0
+c,target k4,460,255,26,159,4,0,16,0
+c,target k6/hardmap,330,134,18,162,10,0,6,0
+d,all,1141,602,58,449,5,0,27,0
+d,target gate,351,204,14,128,2,0,3,0
+d,target k4,460,256,26,159,2,0,17,0
+d,target k6/hardmap,330,142,18,162,1,0,7,0
+END,all,1141,602,58,449,0,5,27,0
+END,target gate,351,206,14,128,0,0,3,0
+END,target k4,460,254,26,159,0,4,17,0
+END,target k6/hardmap,330,142,18,162,0,1,7,0

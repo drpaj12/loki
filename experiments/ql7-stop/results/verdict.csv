@@ -1,0 +1,11 @@
+id,question,value,ci90_lo,ci90_hi,counts,label
+QL7a,headline rule d recovers more than D70,1.146,1.105,1.19,W296/L130/T431 of 857 units,BETTER
+QL7b,rule d closes most of the gap from E73 to ORACLE,0.944,0.927,0.961,1141 constructs,SUPPORTED
+QL7e-all,headline rule d against growing to the path end (all),1.0,0.997,1.004,W5/L5/T847 of 857 units,INCONCLUSIVE
+QL7e-single,headline rule d against growing to the path end (set single),0.998,0.995,1.0,W0/L2/T633 of 635 units,INCONCLUSIVE
+QL7e-comp,headline rule d against growing to the path end (set comp),1.008,0.997,1.022,W5/L3/T214 of 222 units,INCONCLUSIVE
+QL7c-a,rule a against the #73 grower,1.387,1.347,1.43,W400/L5/T452 of 857 units,MEASUREMENT (BETTER)
+QL7c-b,rule b against the #73 grower,1.433,1.393,1.476,W431/L2/T424 of 857 units,MEASUREMENT (BETTER)
+QL7c-c,rule c against the #73 grower,1.505,1.461,1.552,W492/L1/T364 of 857 units,MEASUREMENT (BETTER)
+QL7c-d,rule d against the #73 grower,1.521,1.477,1.569,W506/L3/T348 of 857 units,MEASUREMENT (BETTER)
+QL7c-END,rule END against the #73 grower,1.52,1.476,1.568,W507/L6/T344 of 857 units,MEASUREMENT (BETTER)
