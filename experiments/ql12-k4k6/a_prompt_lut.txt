@@ -1,0 +1,7 @@
+{INTRO}
+Notation of the netlist (BLIF). A line ".names x1 x2 y" is a lookup table: y is 1 when the values of x1 and x2 match one of the rows that follow, and 0 when none matches. A row is a pattern with one character per input (0, 1, or - for any value), then a space and 1. A table with no row is the constant 0, and a table with no input and the row "1" is the constant 1. A line ".latch d q re clk 3" is a flip-flop: q takes the value of d at each rising edge of clk, and its value before the first edge is unknown. A line ".subckt adder a=.. b=.. cin=.. cout=.. sumout=.." is a one-bit full adder: {cout, sumout} = a + b + cin. Each bit of a vector port is a separate net named <port>_<bit>_ (bit 3 of a port named in is the net in_3_).
+
+LUT-level netlist (BLIF):
+```blif
+{NETLIST}
+```
