@@ -1,0 +1,17 @@
+experiment,arm,endpoints,problems,draws,result rows,k4 / k6
+llm-pilot (variant re),A,gates,40,1,40,no replies
+llm-pilot (variant re),B,gates,38,1,38,no replies
+llm-pilot (variant re),C,gates,40,1,40,no replies
+llm-full,A,gates,137,3,411,no replies
+llm-full,B,gates,137,3,411,no replies
+llm-full,C,gates,137,3,411,no replies
+llm-hints2,A2,gates,64,3,192,no replies
+llm-hints2,B1p,gates,64,3,192,no replies
+llm-hints2,B2,gates,64,3,192,no replies
+llm-hints2,W,gates,64,3,192,no replies
+ql10-blocks,D (ext),gates,5,1,5,no replies
+ql10-blocks,D (vbig),gates,4,3,12,no replies
+ql10-blocks,D (vq),gates,43,3,127,no replies
+ql10-blocks,Dh (ext),gates,5,1,5,no replies
+ql10-blocks,Dh (vbig),gates,4,3,12,no replies
+ql10-blocks,Dh (vq),gates,28,3,82,no replies

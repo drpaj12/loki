@@ -1,0 +1,29 @@
+stage,source,measure
+(i) synthesis lost the structure,Q-L4 pass_loss (O-lut flow),absent lost first in opt: 37; structure miss lost first in kept: 13; structure miss lost first in opt: 69
+(i) provenance mixing across design parts,Q-L6 mixed_provenance,O-gate: 2496 of 60956 cells have a mixed label
+(i) provenance mixing across design parts,Q-L6 mixed_provenance,O-lut: 29 of 14808 cells have a mixed label
+(i) provenance mixing across design parts,Q-L6 mixed_provenance,O-hard: 48 of 16865 cells have a mixed label
+(ii) partition cut the structure wrongly,Q-L9 fixed_by_class #77 class,"BLOATED: 53 constructs, right after join and split 0 (0.0)"
+(ii) partition cut the structure wrongly,Q-L9 fixed_by_class #77 class,"SPLIT: 425 constructs, right after join and split 217 (0.511)"
+(ii) partition cut the structure wrongly,Q-L9 fixed_by_class #77 class,"UNDERREACH: 35 constructs, right after join and split 0 (0.0)"
+(ii) partition cut the structure wrongly,Q-L9 fixed_by_class #76 class (E74),"BLOATED: 95 constructs, right after join and split 42 (0.442)"
+(ii) partition cut the structure wrongly,Q-L9 fixed_by_class #76 class (E74),"MERGED: 27 constructs, right after join and split 11 (0.407)"
+(ii) partition cut the structure wrongly,Q-L9 fixed_by_class #76 class (E74),"NOSEED: 58 constructs, right after join and split 46 (0.793)"
+(ii) partition cut the structure wrongly,Q-L9 fixed_by_class #76 class (E74),"SPLIT: 251 constructs, right after join and split 157 (0.625)"
+(ii) partition cut the structure wrongly,Q-L9 fixed_by_class #76 class (E74),"TOOBIG: 5 constructs, right after join and split 1 (0.2)"
+(ii) partition cut the structure wrongly,Q-L9 fixed_by_class #76 class (E74),"UNDERREACH: 103 constructs, right after join and split 6 (0.058)"
+(iii) wrong kind label,Q-L9 kind_f1 HEAD (M2 kind posterior),"fsm: precision 0.52, recall 0.438, F1 0.476"
+(iii) wrong kind label,Q-L9 kind_f1 HEAD (M2 kind posterior),"counter: precision 0.725, recall 0.393, F1 0.509"
+(iii) wrong kind label,Q-L9 kind_f1 HEAD (M2 kind posterior),"shift: precision 0.328, recall 0.306, F1 0.317"
+(iii) wrong kind label,Q-L9 kind_f1 HEAD (M2 kind posterior),"regfile: precision 0.917, recall 0.25, F1 0.393"
+(iii) wrong kind label,Q-L9 kind_f1 HEAD (M2 kind posterior),"register: precision 0.43, recall 0.192, F1 0.266"
+(iii) wrong kind label,Q-L9 kind_f1 HEAD (M2 kind posterior),"macro: precision -, recall -, F1 0.392"
+(iv) LLM decode of a right block wrong,Q-L10 key_recovery,"multi-block: 12 of 36 key constructs in a right block, 10 also decoded ok"
+(iv) LLM decode of a right block wrong,Q-L10 key_recovery,"vbig: 6 of 6 key constructs in a right block, 6 also decoded ok"
+(iv) LLM decode of a right block wrong,"Q-L10 blocks.csv (all tiers, rows with a block check)","arm D: 1312 checked block replies; compile 28, mismatch 21, ok 1263"
+(iv) LLM decode of a right block wrong,"Q-L10 blocks.csv (all tiers, rows with a block check)","arm Dh: 1312 checked block replies; compile 28, mismatch 21, ok 1263"
+(v) assembly,Q-L10 ext_diagnostic,"picorv32_pcpi_div: neq, 2 failed block(s); with them replaced by their own cells: equiv"
+(v) assembly,Q-L10 ext_diagnostic,"picorv32_pcpi_mul: neq, 3 failed block(s); with them replaced by their own cells: equiv"
+(v) assembly,Q-L10 ext_diagnostic,"tinyriscv_div: pass, 1 failed block(s); with them replaced by their own cells: equiv"
+(v) assembly,Q-L10 ext_diagnostic,"tinyriscv_csr: neq, 1 failed block(s); with them replaced by their own cells: equiv"
+(v) assembly,Q-L10 ext_diagnostic,"tinyriscv_clint: neq, 1 failed block(s); with them replaced by their own cells: equiv"

@@ -1,0 +1,4 @@
+endpoint,arm,calls,est tokens in,est tokens out,basis
+gates,A (whole netlist),411,888597,51375,"gates: Q-L10 a_calls_estimate.csv (estimate: prompt bytes / 3.2); k4, k6: gates figure times the cell-count ratio of the 156 VerilogEval designs (ratio 1.00); a LUT line carries a truth table, so this is a rough estimate, not a bound"
+k4,A (whole netlist),411,184055,51375,"gates: Q-L10 a_calls_estimate.csv (estimate: prompt bytes / 3.2); k4, k6: gates figure times the cell-count ratio of the 156 VerilogEval designs (ratio 0.21); a LUT line carries a truth table, so this is a rough estimate, not a bound"
+k6,A (whole netlist),411,330367,51375,"gates: Q-L10 a_calls_estimate.csv (estimate: prompt bytes / 3.2); k4, k6: gates figure times the cell-count ratio of the 156 VerilogEval designs (ratio 0.37); a LUT line carries a truth table, so this is a rough estimate, not a bound"

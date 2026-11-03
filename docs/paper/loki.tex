@@ -999,6 +999,31 @@ nodes over 65 designs, a mean of about 770.
 
 \input{veval-tables}
 
+\subsubsection{Three endpoints against one}
+\label{sec:endpoints}
+
+Gate-Breaker reports one endpoint: the cmos6 gate netlist of each reference. Loki runs the same references at three. The \emph{gates endpoint} is Gate-Breaker's own input (floor \code{f3}). The \emph{k4 endpoint} is the soft-logic LUT netlist (floor \code{f2}) and the \emph{k6 endpoint} is the netlist of the hard-block map (floor \code{f1-k6}); k4 and k6 are the names the experiments of Section~\ref{sec:results-main} give these two targets, and both come from the six-input mapper of Table~\ref{tab:floors}, the second keeping hard adders, multipliers and memories as hard cells. A reverse-engineering problem at k4 or k6 starts further from the HDL than the gates do, because the mapper has merged several gates into one cell, so the endpoint is part of the experiment and not a detail of the input. Table~\ref{tab:endpoints} measures the difference on the 156 VerilogEval references, from the cells that carry an Odin~III provenance label.
+
+\begin{table}[t]
+\caption{Size of the reverse-engineering problem at the three endpoints. Mean per design over the 156 VerilogEval references. Gates per cell is the gate count divided by the cell count of the endpoint. Construct types per cell is the mean length of the provenance chain of a labelled cell. Source: \code{ql11-astcfg-why/}\allowbreak\code{results/}\allowbreak\code{ve\_endpoint\_size.csv}.}
+\label{tab:endpoints}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+ & gates & k4 & k6 \\
+\midrule
+Cells per design & 305.3 & 63.2 & 113.5 \\
+Nets per design & 333.8 & 91.7 & 211.9 \\
+Inputs per logic cell & 1.74 & 4.27 & 4.04 \\
+Gates per cell & 1.00 & 4.83 & 2.69 \\
+Construct types per cell & 3.70 & 3.65 & 1.79 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The k4 and k6 netlists have fewer cells (63.2 and 113.5 against 305.3), but a cell is a function of about four inputs that stands for 4.8 gates at k4 and 2.7 at k6. So the reverse engineering is larger in what one cell hides, not in how many cells there are. The length of the provenance chain per cell does not grow (3.65 at k4 against 3.70 at gates), so the extra work is in undoing the merge, not in a longer chain. On the benchmark units of Section~\ref{sec:results-main} the pattern is the same (mean 190.1, 48.1 and 54.3 cells; 1.74, 4.14 and 4.06 inputs per logic cell). Every language-model experiment of this paper was run at the gates endpoint only; no reply exists for k4 or k6, so the paired comparisons of Section~\ref{sec:ql11} are at one endpoint and the structural results of Section~\ref{sec:results-main} carry the other two.
+
 \section{Results: what the evidence says now}
 \label{sec:results-main}
 
@@ -1535,12 +1560,50 @@ Hint, D+h vs D & 8 & 0.750 & 0.708 & $-0.042$ ($-0.125$, 0.000) \\
 
 \hev{Interpretation.} Where Loki's cut changes the prompt, the blocked decode passes about as often as the whole-netlist prompt (72 against 73 of 81), too close to tell with 27 designs: the interval allows a loss of 7 points. Its AST and CFG similarity to the reference is lower by about 0.04, in about three designs of four, even through the same writer. So the cut costs a little in how alike the text is and nothing detectable in correctness. For the over-cap designs the model decodes nearly every block correctly, but a design passes only if every block is right: with a per-block rate of 0.985 the chance that 100 blocks are all right is about 0.2, which is why the processor modules mostly fail even though each failing assembly is made equivalent by fixing the one to three blocks the check flags. The hint was never found better; the interval of eight designs is too wide to call it harmless. The limits are the single-block designs that were not run, the answer key that covers registers only (34 of the 42 designs with a key are single-block), the random-input block check, and the processor equivalence, which is a check and not a proof.
 
-\hev{Conclusion.} (a) Blocked decode is as correct as the whole-netlist prompt: \verdict{INCONCLUSIVE} ($-0.012$, the lower bound $-0.074$ is below the margin $-0.05$). (b) The model decodes the blocks of designs too large for one prompt: \verdict{USEFUL} (the rule is met: a design passes and 0.985 of the blocks pass the check), with whole-design correctness low for the largest designs. (c) The kind-guess hint does not improve correctness: \verdict{INCONCLUSIVE} ($-0.042$, W1 / L2 / T21, interval not inside $\pm0.05$). AST and CFG similarity, the same-writer pair: a \verdict{MEASUREMENT} of about $-0.04$ for D [QL10-a to QL10-e; Appendix~\ref{rec:ql10}].
+\hev{Conclusion.} (a) Blocked decode is as correct as the whole-netlist prompt: \verdict{INCONCLUSIVE} ($-0.012$, the lower bound $-0.074$ is below the margin $-0.05$). (b) The model decodes the blocks of designs too large for one prompt: \verdict{USEFUL} (the rule is met: a design passes and 0.985 of the blocks pass the check), with whole-design correctness low for the largest designs. (c) The kind-guess hint does not improve correctness: \verdict{INCONCLUSIVE} ($-0.042$, W1 / L2 / T21, interval not inside $\pm0.05$). AST and CFG similarity, the same-writer pair: a \verdict{MEASUREMENT} of about $-0.04$ for D on the 27 multi-block designs; Section~\ref{sec:ql11} re-scores every arm with one scorer and finds $-0.026$ (AST) and $-0.028$ (CFG) over all the problems run, with the interval below zero [QL10-a to QL10-e; Appendix~\ref{rec:ql10}].
+
+\subsection{Is Loki with a model closer to the reference than the model alone, and why is structure lost?}
+\label{arg:la6}
+\label{sec:ql11}
+
+\hev{Hypothesis.} (a) At the gates endpoint, a model that works with Loki (Loki's blocks, or Loki's version-2 hints) reaches a design that is at least as correct (pass@1) and at least as like the reference (AST and CFG similarity, Gate-Breaker's second measure) as the model with the netlist alone, which is Gate-Breaker's method. (b) A construct is recovered less often the more cells it has, because a large construct is cut across several blocks.
+
+\hev{Implication.} If (a) holds, the paper can say that Loki's control of the reverse engineering improves on Gate-Breaker alone on both of Gate-Breaker's measures. If (b) holds, the loss of higher-level structure is a problem of the size of the block, and a fix would cap or split large blocks; if (b) fails, the loss has another cause and we have to say which.
+
+\hev{Experiment.} All arms are those of Sections~\ref{sec:llm-full}, \ref{sec:llm-hints2} and~\ref{sec:ql10}: A (the netlist), B (v1 hints), C (interface only), A2, B1p, B2 and W (a new prompt, version-2 hints, wrong hints), D and D+h (blocks). Every reply that compiled was scored again with one scorer. For (b) we use the 1,141 answer-key constructs of the test designs of Section~\ref{sec:results-main} and the right-block result of the joined blocks, at the three endpoints of Section~\ref{sec:endpoints}. No model call was made.
+
+\hev{Methodology.} We compared three AST and CFG wrappers that earlier experiments had written (Q-L10, the f3 experiment, round 2) on 16 problems: all three call the same Gate-Breaker AST code and the same Odin~III CFG probe, and they agree to six decimals on 15 of the 16 problems, and the sixteenth fails to parse the same way in all three. We kept the Q-L10 wrapper, which adds a numpy kernel that equals the probe's sum on small graphs, the flatten step and the node limit (12,000), and re-scoring arm~A with it reproduced the 492 values that Q-L10 had written. Two writers are compared: the model's code \emph{as written}, and the code flattened to one module by the Odin~III writer on both sides, the \emph{same-writer} comparison, which is the headline because the blocks arm writes several modules and the other arms one. Pairs are the same problem and draw; a problem's difference is the mean over its draws; the interval is a bootstrap over problems (2\,000 resamples, seed 20261103); the label is BETTER or WORSE when the interval excludes zero and INCONCLUSIVE otherwise. For (b) the constructs are split at the median number of cells of their endpoint and the interval resamples designs. The rule for (b) was fixed before the analysis: SUPPORTED when the interval of large minus small right-block share is below zero, DISMISSED when above.
+
+\hev{Measurements.} Table~\ref{tab:ql11} gives the same-writer differences at the gates endpoint; it is the only endpoint for which a model reply exists. Blocks (D) against the netlist (A) on the 43 problems run (15 of them gate-free): pass@1 $+0.008$, W / L / T over draws 5 / 4 / 118; AST $-0.026$ on 36 problems, W / L / T 16 / 57 / 33; CFG $-0.028$ on 41 problems, 20 / 65 / 34. As written the assembled top module is far from the reference ($-0.354$ AST, $-0.396$ CFG) because it only instantiates blocks. Version-2 hints (B2) against A2: pass@1 $+0.099$, W / L / T over draws 20 / 1 / 171, and against the wrong-hint control $+0.073$; AST and CFG move by under 0.02. On the four over-cap designs, where arm~A cannot run, D passes 8 of 12 draws and its flattened design has AST 0.748 and CFG 0.874. For (b), the right-block share is 0.779 above the median size (29 cells) and 0.653 below it, a difference of $+0.126$ ($+0.076$ to $+0.177$); by endpoint it is $-0.008$ at gates ($-0.116$ to $+0.101$), $+0.292$ at k4 and $+0.234$ at k6.
+
+\begin{table}[t]
+\caption{Differences at the gates endpoint, tested arm minus reference arm, same writer, with the 95 percent bootstrap interval over problems. N is the number of problems with a pass value; AST and CFG use the problems where both arms have a parsed design. The reference is A (A2 for B2, W for the fourth row).}
+\label{tab:ql11}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Tested vs reference & N & pass@1 & AST & CFG \\
+\midrule
+B vs A, hints v1 & 137 & $-$0.010 ($-$0.036, +0.017) & 0.000 ($-$0.001, +0.001) & $-$0.005 ($-$0.016, +0.001)\\
+C vs A, no netlist & 137 & $-$0.329 ($-$0.409, $-$0.253) & $-$0.045 ($-$0.064, $-$0.030) & $-$0.015 ($-$0.028, $-$0.001)\\
+B2 vs A2, hints v2 & 64 & +0.099 (+0.052, +0.151) & +0.001 (0.000, +0.003) & +0.007 (+0.000, +0.019)\\
+B2 vs W, wrong hints & 64 & +0.073 (+0.026, +0.130) & +0.001 ($-$0.001, +0.002) & +0.012 (0.000, +0.035)\\
+D vs A, Loki blocks & 43 & +0.008 ($-$0.031, +0.054) & $-$0.026 ($-$0.045, $-$0.010) & $-$0.028 ($-$0.046, $-$0.013)\\
+D+h vs A & 28 & $-$0.024 ($-$0.083, +0.024) & $-$0.036 ($-$0.063, $-$0.015) & $-$0.040 ($-$0.064, $-$0.019)\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\hev{Interpretation.} Loki's block control does not make the design more like the reference than the netlist alone does: it is about 0.03 lower on both similarity measures, and it loses in 57 of the 106 scored draws against 16 wins, while correctness is not detectably different. The model with the whole netlist writes text closer to the designer's than a model that sees one block at a time, which fits the cut: the glue between blocks is written by a script, not by the model. The version-2 hints are the one place where a model with Loki's help passes more testbenches (about ten points higher pass@1), and the gain is in functional correctness; the similarity to the reference does not change, so the hints change what the model gets right, not how it writes it. For (b), large constructs are not the ones lost. At the gates endpoint size makes no difference, and at k4 and k6 the small constructs are recovered less often (0.61 and 0.66 against 0.91 and 0.89); of their misses 37 of 92 at k4 and 39 of 57 at k6 are constructs swallowed by a larger block. So the cut of the blocks is the cause of the loss, but the failure is the block that grows too far and not the construct that is too big. Only a replay of the block builder with an earlier stop on small constructs can test that.
+
+\hev{Conclusion.} (a) For pass@1 the blocks arm is \verdict{INCONCLUSIVE} against A ($+0.008$, W / L / T over problems 3 / 3 / 37); for AST and CFG it is \verdict{DISMISSED}: the interval is below zero, $-0.026$ and $-0.028$, with no rule fixed in advance. The version-2 hint arm is the one that passes more tests than A2 ($+0.099$, interval above zero), with unchanged similarity. At k4 and k6 the hypothesis is untested: no reply exists there. (b) \verdict{DISMISSED}: large constructs are recovered as often or more often than small ones, $+0.126$ [QL11-a to QL11-c; Appendix~\ref{rec:ql11}].
 
 \section{Discussion and limits}
 \label{sec:discussion}
 
-Five observations follow from the verdicts, and then the candidate innovations.
+Six observations follow from the verdicts, and then the candidate innovations.
 
 First, \emph{the answer depends on what the flow erased}. The structures that survived synthesis
 recover almost perfectly without any intelligence beyond reading the pass's own facts (L1h); the
@@ -1578,6 +1641,8 @@ neighbour), and the kind guess on the joined blocks reaches a macro F1 of only 0
 threshold was fitted on training and validation designs and the test designs were run once, but
 all of it is one deterministic run on small designs.
 
+Sixth, \emph{higher-level structure is lost in the cut of the blocks, not in the size of the construct}. The benchmark has an answer key for five kinds of state structure only (state machine, counter, shift register, register file, register); adders, multiplexer trees, ALUs and RAM arrays have none, so the question is asked of these five. The joined blocks recover 816 of 1,141 constructs (0.715): 0.610 at the gates endpoint, 0.754 at k4 and 0.773 at k6. None of the other 325 is missed outright; a block touches each one and none is right. We rank four explanations by the evidence. First, \emph{swallowing}: a block grown to the end of its path takes in its neighbours, and a small construct disappears inside it (110 constructs; of the misses of small constructs, 37 of 92 at k4 and 39 of 57 at k6). Second, \emph{cutting}: two anchors reach one construct and each grows a part (180 constructs; the join repaired 157 of 251 such cases in an earlier set of blocks). Third, \emph{mixed provenance}: at the gates endpoint the constructs with a cell whose label joins two design parts are recovered at 0.30 against 0.71 without ($-0.59$ to $-0.22$ for the difference), but only 5.5 percent of constructs have such a cell, it is 4.1 percent of the gate cells and 0.2 and 0.3 percent at k4 and k6, and the gap is absent at k6; mixing does not grow with the endpoint and is not the main cause. Fourth, \emph{synthesis erased the structure}: of 119 constructs of the soft-logic flow that the signature detectors missed, 106 lost most of their state units at the first \code{opt} pass. The first hypothesis we tested, that a larger construct is recovered less often, is \verdict{DISMISSED} (Section~\ref{sec:ql11}): the large ones are recovered more often ($+0.126$). Swallowing is the next question; it needs a run of the block builder with an earlier stop for small constructs, and has not been run.
+
 \emph{Candidate innovations.} Three ideas have only POSSIBLY GOOD support and stay out of the contributions.
 The graph network (L2b) needs several random splits with an interval over designs and a second benchmark
 suite. The operator-recovery F1 (R2-L7) needs a set with many more tie pairs and a flow that recovers
@@ -1603,6 +1668,8 @@ and would show how much of the difference is the prompt wrapper. Second, a desig
 check names the wrong blocks (all ten checked processor assemblies were made equivalent by replacing the one to three flagged blocks);
 a repair round that asks the model again only for the flagged blocks is the obvious next experiment, with the same scorer. Third, the
 interval for the hint (eight designs) is too wide to call it harmless or useful; more multi-block designs with a kind guess are needed.
+
+\emph{Running the model at k4 and k6.} Every reply of this paper is for the gates endpoint, so the claim that Loki with a model improves on Gate-Breaker alone is untested at the two endpoints where the problem is larger (Section~\ref{sec:endpoints}). Arm~A at one endpoint needs 411 calls (137 problems, three draws); from the cell counts of Table~\ref{tab:endpoints} we estimate 0.18 million input tokens at k4 and 0.33 million at k6 against 0.89 million at gates, and 51 thousand output tokens, a rough estimate because a LUT line carries a truth table. Arm~D needs the block builder run on the k4 and k6 netlists first, which uses no model call, to know how many blocks, and so calls, it makes. A second step is the swallowing test of Section~\ref{sec:ql11}: the block builder with an earlier stop for small constructs, scored by the right-block share.
 
 \emph{A guard for the join.} The join loses 29 constructs that were right because a joined block takes in
 a neighbour. A guard that refuses to join two blocks whose kind posteriors are both confident and
@@ -1687,6 +1754,7 @@ Graphlet library and partitions & 2026-10-31 & \#68, \#69, \#70 \\
 Fuzzy graphlets & 2026-10-31 & \#71 \\
 Q-L4 to Q-L9 & 2026-11-01, 11-02 & \#72 to \#78 \\
 Q-L10 & 2026-11-02 & \#82 \\
+Q-L11 & open & \#84 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3157,6 +3225,15 @@ blocks rises from 0.237 to 0.392 (the \#75 Gaussian posterior on the blocks befo
 \hev{Experiment and result.} The controller ran the model calls (pilot of 75 calls, then all multi-block designs with three draws; the 358 single-block calls were deliberately not run, a dated amendment of the plan; 1,414 replies, none empty, no API error). Twenty-two calls used a shell or an editor on their own reply file, which the call template forbids; none read another file, and the analysis is repeated without the 27 rows they touch (same verdicts). Of 137 problems, 15 have no gate (scored with no call), 27 are multi-block (D 72 of 81 draws pass, A 73 of 81; difference $-0.012$, $-0.074$ to $+0.037$), 94 single-block problems were not run, and one pilot design (Prob088) has one draw. Over-cap designs: 8 of 12 draws pass (mux256to1 3 of 3, gates100 3 of 3, rotate100 2 of 3, shift18 0 of 3); processor modules: 1 of 5 equivalent (tinyriscv\_div), 4 not equivalent, and replacing the blocks that failed the block check by their own gates makes all four equivalent. Block check: 954 of 969 replies ok. Hint: D+h minus D $-0.042$ ($-0.125$ to 0.000) on 8 designs. AST and CFG similarity, multi-block, D flattened against A flattened: $-0.037$ (23 designs) and $-0.042$ (27 designs). Estimated tokens per multi-block design over three draws: D about 14\,500, A about 10\,300.
 
 \hev{Verdict and PR.} QL10-a INCONCLUSIVE; QL10-b USEFUL; QL10-c INCONCLUSIVE; QL10-d (AST and CFG) and QL10-e (answer key) measurements. loki PR \#82 (2026-11-02).
+
+\subsection{Q-L11: AST and CFG of every arm, and why structure is lost}
+\label{rec:ql11}
+
+\hev{Question.} Plan in \code{experiments/}\allowbreak\code{ql11-astcfg-why/}\allowbreak\code{EXPERIMENT.md}, committed before any scoring (amendment 1, dated 2026-11-03, fixed the test of (b) before the analysis of sizes). Does Loki with a model beat Gate-Breaker alone on pass@1, AST and CFG similarity, and which stage loses higher-level structure? No model call was made.
+
+\hev{Experiment and result.} Inventory: every model reply is for the gates endpoint; the arms are A, B, C (137 problems, three draws), A2, B1p, B2, W (64 problems, three draws), D and D+h (43 and 28 problems run, three draws; 9 more designs with one to three draws) and the 40-problem pilot, which was not re-scored (its replies are stored without an arm key and its arms were run again in the full run). 1,967 compiled replies were scored in two writers (3,934 scores) with the Q-L10 wrapper. Paired differences, same writer, tested minus reference (95 percent interval, problems resampled): D minus A, pass@1 $+0.008$ ($-0.031$ to $+0.054$), AST $-0.026$ ($-0.045$ to $-0.010$), CFG $-0.028$ ($-0.046$ to $-0.013$); B (v1 hints) minus A, pass@1 $-0.010$, AST $0.000$, CFG $-0.005$, all inconclusive; B2 (v2 hints) minus A2, pass@1 $+0.099$ ($+0.052$ to $+0.151$), AST $+0.001$, CFG $+0.007$ ($+0.000$ to $+0.019$); C (no netlist) minus A, pass@1 $-0.329$. The endpoint sizes are in Table~\ref{tab:endpoints}. The loss of structure: recovered 816 of 1,141 constructs, partly 325, missed outright 0; failure class cut 180, swallowed 110, partly reached 35; size test large minus small $+0.126$ ($+0.076$ to $+0.177$).
+
+\hev{Verdict and PR.} QL11-a (D against A on AST and CFG) DISMISSED, with the pass@1 difference INCONCLUSIVE; QL11-b (size of the construct) DISMISSED; QL11-c (endpoint size, failure classes, mixing) a measurement. loki PR \#84.
 
 \section{The f3 experiment in detail}
 \label{app:f3}

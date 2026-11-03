@@ -1,0 +1,6 @@
+cell,endpoint,units,cells_total,cells_median,cells_mean,nets_mean,mean_inputs_per_logic_cell,labelled_cells,ctypes_per_cell,share_pipe,share_star,share_span_gt1
+O-gate,gate,156,47627,16.0,305.3,333.8,1.74,47378,3.699,0.6852,0.0,0.6931
+Y-gate,gate,150,192139,48.0,1280.9,1310.8,1.22,,,,,
+O-lut,k4,156,9865,7.5,63.2,91.7,4.27,9616,3.65,0.5631,0.0,0.5782
+Y-lut,k4,150,10462,9.0,69.7,99.3,3.93,,,,,
+O-hard,k6,156,17707,8.0,113.5,211.9,4.04,17458,1.793,0.2133,0.0,0.2213

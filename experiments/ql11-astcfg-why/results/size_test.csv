@@ -1,0 +1,5 @@
+endpoint,constructs,median_cells,small_n,small_right,large_n,large_right,large_minus_small,ci_lo,ci_hi,split_share_of_large_misses,split_share_of_small_misses,label
+gate,351,69,176,0.614,175,0.606,-0.008,-0.116,0.101,0.696,0.456,INCONCLUSIVE
+k4,460,21,238,0.613,222,0.905,0.292,0.216,0.363,0.762,0.554,DISMISSED
+k6,330,20,166,0.657,164,0.89,0.234,0.145,0.32,0.944,0.298,DISMISSED
+all,1141,29,576,0.653,565,0.779,0.126,0.076,0.177,0.736,0.44,DISMISSED
