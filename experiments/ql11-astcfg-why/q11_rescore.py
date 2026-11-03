@@ -10,15 +10,18 @@ Usage: python -B q11_rescore.py SHARD NSHARDS   -> $QL11_OUT/rescore/shard<SHARD
 from __future__ import annotations
 
 import csv
+import importlib
 import os
 import sys
 from pathlib import Path
 from typing import Any
 
 import q11_env as env
-import q10_astcfg as q10
 
-FIELDS = ["exp", "arm", "problem", "quartile", "draw", "variant", "ast", "cfg", "ast_err", "cfg_err"]
+q10: Any = importlib.import_module("q10_astcfg")
+
+FIELDS = ["exp", "arm", "problem", "quartile", "draw", "variant", "ast", "cfg", "ast_err",
+          "cfg_err"]
 SOURCES = (("llm-full", env.EXP / "llm-full" / "results" / "results.csv", env.FULL),
            ("llm-hints2", env.EXP / "llm-hints2" / "results" / "results.csv", env.H2))
 

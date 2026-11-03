@@ -3,7 +3,7 @@
 Wrappers: q10 (ql10-blocks/q10_astcfg.py), f3 (f3-recovery/tools/astcfg.py ast_pair/cfg_pair) and
 l2 (round2/metrics_ext.py as l2_astcfg.py calls it). All three call the same Gate-Breaker
 ``metrics.py`` (AST, Algorithm 2) and the same ``odin3_cfg.py`` probe (CFG, Algorithm 3); the
-comparison finds what the wrappers add. Sample: arm A draw 1 reply, N problems spread evenly over the
+comparison finds what the wrappers add. Sample: arm A draw 1 reply, N problems spread over the
 reply size ranking. Output: results/scorer_compare.csv.
 Usage: python -B q11_scorecmp.py [N]
 """
@@ -11,6 +11,7 @@ Usage: python -B q11_scorecmp.py [N]
 from __future__ import annotations
 
 import csv
+import importlib
 import os
 import sys
 from pathlib import Path
@@ -18,11 +19,11 @@ from typing import Any
 
 import q11_env as env
 
-import q10_astcfg as q10  # noqa: E402  (path set by q11_env)
+q10: Any = importlib.import_module("q10_astcfg")
 
 
 def l2_score(ref: Path, cand: Path, binding: Any) -> tuple[str, str]:
-    import metrics_ext as mx
+    mx: Any = importlib.import_module("metrics_ext")
     try:
         a = f"{mx.ast_similarity(mx.parse_clean(ref), cand):.6f}"
     except Exception as err:
@@ -35,7 +36,7 @@ def l2_score(ref: Path, cand: Path, binding: Any) -> tuple[str, str]:
 
 
 def f3_score(ref: Path, cand: Path, binding: Any) -> tuple[str, str]:
-    import astcfg as f3
+    f3: Any = importlib.import_module("astcfg")
     try:
         a = f"{f3.ast_pair(ref, cand, cand, '')[0]:.6f}"
     except Exception as err:

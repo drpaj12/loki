@@ -4,7 +4,7 @@ Reads the Q-L9 TEST result (``$QL9_OUT/res_test_TEST.pkl``, config HEAD = the Q-
 rules), the answer key of the benchmark units and the Odin III ``labels.csv`` next to each netlist.
 Writes (results/): ``construct_loss.csv`` (one row per answer-key construct: set, design, cell,
 endpoint, kind, n_cells, right, failure class, provenance-mixing shares of its cells),
-``endpoint_size.csv`` (size of the units per endpoint) and ``ve_endpoint_size.csv`` (the Gate-Breaker
+``endpoint_size.csv`` (size of the units per endpoint) and ``ve_endpoint_size.csv`` (Gate-Breaker
 VerilogEval designs at the three endpoints).
 Endpoint of a cell class: gate = O-gate, Y-gate; k4 = O-lut, Y-lut; k6 = O-hard (hard-block map).
 Provenance exists on the O cells only (Y cells have no labels.csv).
@@ -14,13 +14,15 @@ Usage: python -B q11_struct.py
 from __future__ import annotations
 
 import csv
+import importlib
 import pickle
 import statistics as st
 from pathlib import Path
 from typing import Any
 
 import q11_env as env
-import q9_env as e9
+
+e9: Any = importlib.import_module("q9_env")
 
 qt = e9.mod("q6_truth")
 qn = e9.mod("q6_net")

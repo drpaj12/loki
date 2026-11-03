@@ -11,6 +11,7 @@ from __future__ import annotations
 import csv
 import random
 from collections import Counter, defaultdict
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -82,6 +83,10 @@ def label(lo: float, hi: float) -> str:
     return "SUPPORTED" if hi < 0 else ("DISMISSED" if lo > 0 else "INCONCLUSIVE")
 
 
+def is_large(med: int, r: dict[str, str]) -> bool:
+    return int(r["n_true"]) > med
+
+
 def size_test(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
     out = []
     for ep in (*ENDPOINTS, "all"):
@@ -90,7 +95,7 @@ def size_test(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
         med = sizes[len(sizes) // 2]
         big = [r for r in sel if int(r["n_true"]) > med]
         small = [r for r in sel if int(r["n_true"]) <= med]
-        d, lo, hi = boot_diff(sel, lambda r, m=med: int(r["n_true"]) > m)
+        d, lo, hi = boot_diff(sel, partial(is_large, med))
         out.append({"endpoint": ep, "constructs": len(sel), "median_cells": med,
                     "small_n": len(small), "small_right": round(
                         sum(int(r["right"]) for r in small) / max(1, len(small)), 3),
@@ -107,65 +112,77 @@ def size_test(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
     return out
 
 
+def share(rows: list[dict[str, str]]) -> float:
+    return round(sum(int(r["right"]) for r in rows) / max(1, len(rows)), 3)
+
+
 def mixing(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
     out = []
     for ep in (*ENDPOINTS, "all"):
         sel = [r for r in rows if ep in ("all", r["endpoint"]) and r["star"] != ""]
-        flag = lambda r: float(r["star"]) > 0  # noqa: E731
+
+        def flag(r: dict[str, str]) -> bool:
+            return float(r["star"]) > 0
+
         mixed = [r for r in sel if flag(r)]
         plain = [r for r in sel if not flag(r)]
         d, lo, hi = boot_diff(sel, flag) if mixed and plain else (float("nan"),) * 3
         out.append({"endpoint": ep, "labelled_constructs": len(sel), "with_mixed_cell": len(mixed),
                     "share_with_mixed_cell": round(len(mixed) / max(1, len(sel)), 3),
-                    "right_mixed": round(sum(int(r["right"]) for r in mixed) / max(1, len(mixed)), 3),
-                    "right_plain": round(sum(int(r["right"]) for r in plain) / max(1, len(plain)), 3),
+                    "right_mixed": share(mixed), "right_plain": share(plain),
                     "mixed_minus_plain": round(d, 3), "ci_lo": round(lo, 3), "ci_hi": round(hi, 3),
                     "label": "descriptive"})
     return out
 
 
+def stage(name: str, source: str, measure: str) -> dict[str, Any]:
+    return {"stage": name, "source": source, "measure": measure}
+
+
 def stages() -> list[dict[str, Any]]:
-    e = env.EXP
+    e = env.EXP / "ql4-misses" / "results"
+    q6, q9, q10 = (env.EXP / x / "results" for x in ("ql6-grow", "ql9-join", "ql10-blocks"))
     out: list[dict[str, Any]] = []
-    pl = Counter()
-    for r in read(e / "ql4-misses" / "results" / "pass_loss_summary.csv"):
+    pl: Counter[tuple[str, str]] = Counter()
+    for r in read(e / "pass_loss_summary.csv"):
         pl[(r["class"], r["dominant_loss_pass"])] += int(r["constructs"])
-    out.append({"stage": "(i) synthesis lost the structure", "source": "Q-L4 pass_loss (O-lut flow)",
-                "measure": "; ".join(f"{c} lost first in {p}: {n}" for (c, p), n in sorted(pl.items()))})
-    mp = {(r["cell"], r["category"]): int(r["cells"])
-          for r in read(e / "ql6-grow" / "results" / "mixed_provenance.csv")}
+    out.append(stage("(i) synthesis lost the structure", "Q-L4 pass_loss (O-lut flow)",
+                     "; ".join(f"{c} lost first in {p}: {n}" for (c, p), n in sorted(pl.items()))))
+    mp = {(r["cell"], r["category"]): int(r["cells"]) for r in read(q6 / "mixed_provenance.csv")}
     for c in ("O-gate", "O-lut", "O-hard"):
-        out.append({"stage": "(i) provenance mixing across design parts", "source": "Q-L6 mixed_provenance",
-                    "measure": f"{c}: {mp[(c, 'mixed (*)')]} of {mp[(c, 'all')]} cells carry a mixed label"})
-    for r in read(e / "ql9-join" / "results" / "fixed_by_class.csv"):
-        if r["classes"].startswith("#77") or r["classes"].startswith("#76"):
-            out.append({"stage": "(ii) partition cut the structure wrongly",
-                        "source": f"Q-L9 fixed_by_class {r['classes']}",
-                        "measure": f"{r['class']}: {r['constructs']} constructs, right after join/split "
-                                   f"{r['head_right']} ({r['head_share']})"})
-    for r in read(e / "ql9-join" / "results" / "kind_f1.csv"):
+        mixed, total = mp[(c, "mixed (*)")], mp[(c, "all")]
+        out.append(stage("(i) provenance mixing across design parts", "Q-L6 mixed_provenance",
+                         f"{c}: {mixed} of {total} cells have a mixed label"))
+    for r in read(q9 / "fixed_by_class.csv"):
+        if r["classes"].startswith(("#77", "#76")):
+            out.append(stage("(ii) partition cut the structure wrongly",
+                             f"Q-L9 fixed_by_class {r['classes']}",
+                             f"{r['class']}: {r['constructs']} constructs, right after join and "
+                             f"split {r['head_right']} ({r['head_share']})"))
+    for r in read(q9 / "kind_f1.csv"):
         if r["config"] == "HEAD":
-            out.append({"stage": "(iii) wrong kind label", "source": "Q-L9 kind_f1 HEAD (M2 kind posterior)",
-                        "measure": f"{r['kind']}: precision {r['precision'] or '-'}, recall "
-                                   f"{r['recall'] or '-'}, F1 {r['f1']}"})
-    kr = read(e / "ql10-blocks" / "results" / "key_recovery.csv")
-    for r in kr:
+            out.append(stage("(iii) wrong kind label", "Q-L9 kind_f1 HEAD (M2 kind posterior)",
+                             f"{r['kind']}: precision {r['precision'] or '-'}, recall "
+                             f"{r['recall'] or '-'}, F1 {r['f1']}"))
+    for r in read(q10 / "key_recovery.csv"):
         if r["arm"] == "D" and int(r["key_total"]):
-            out.append({"stage": "(iv) LLM decode of a right block wrong", "source": "Q-L10 key_recovery",
-                        "measure": f"{r['tier']}: {r['key_right']} of {r['key_total']} key constructs in a "
-                                   f"right block, {r['key_right_ok']} also decoded ok"})
-    bl = [r for r in read(e / "ql10-blocks" / "results" / "blocks.csv") if r["check"]]
-    c = Counter((r["arm"], r["check"]) for r in bl)
+            out.append(stage("(iv) LLM decode of a right block wrong", "Q-L10 key_recovery",
+                             f"{r['tier']}: {r['key_right']} of {r['key_total']} key constructs in "
+                             f"a right block, {r['key_right_ok']} also decoded ok"))
+    checks = [r for r in read(q10 / "blocks.csv") if r["check"]]
+    ck = Counter((r["arm"], r["check"]) for r in checks)
     for arm in ("D", "Dh"):
-        n = sum(v for (a, _), v in c.items() if a == arm)
-        out.append({"stage": "(iv) LLM decode of a right block wrong", "source": "Q-L10 blocks.csv",
-                    "measure": f"arm {arm}: {n} checked block replies; " + ", ".join(
-                        f"{k} {v}" for (a, k), v in sorted(c.items()) if a == arm)})
-    for r in read(e / "ql10-blocks" / "results" / "ext_diagnostic.csv"):
+        n = sum(v for (a, _), v in ck.items() if a == arm)
+        detail = ", ".join(f"{k} {v}" for (a, k), v in sorted(ck.items()) if a == arm)
+        out.append(stage("(iv) LLM decode of a right block wrong",
+                         "Q-L10 blocks.csv (all tiers, rows with a block check)",
+                         f"arm {arm}: {n} checked block replies; {detail}"))
+    for r in read(q10 / "ext_diagnostic.csv"):
         if r["arm"] == "D":
-            out.append({"stage": "(v) assembly", "source": "Q-L10 ext_diagnostic",
-                        "measure": f"{r['problem']}: {r['original']}, {r['n_failed']} failed block(s); after "
-                                   f"replacing them with their own cells: {r['after_replacing_failed_with_own_cells']}"})
+            out.append(stage("(v) assembly", "Q-L10 ext_diagnostic",
+                             f"{r['problem']}: {r['original']}, {r['n_failed']} failed block(s); "
+                             f"with them replaced by their own cells: "
+                             f"{r['after_replacing_failed_with_own_cells']}"))
     return out
 
 

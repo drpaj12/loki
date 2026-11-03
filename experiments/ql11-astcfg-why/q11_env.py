@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 HERE = Path(__file__).resolve().parent
 EXP = HERE.parent
