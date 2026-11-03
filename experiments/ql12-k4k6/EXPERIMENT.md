@@ -176,8 +176,8 @@ SHA-256: `block_prompt_lut.txt` cbacc5394283bbc8147f7cfd80c8e6393028dcf1a40e3380
      problem of the set with hard adders, so at k6 hard blocks occur only in the processor modules. For the processor modules the faithful
      decode is the equivalence reference by construction (no ceiling test).
   3. Blocks. Loki's blocks at k4 / k6 for the 40 + 4 designs (`blocks_summary.csv`): Loki cuts a vector of independent bit gates into one
-     block per bit at these endpoints (Prob092_gatesv100 298 blocks, Prob017_mux2to1v 100, Prob043_vector5 20; at gates the grower held them
-     in 1 to 2 blocks). Those bit-slice designs cost most of the D calls (see counts). The 1-cell blocks give the model no word-level context.
+     block per bit at these endpoints (Prob092_gatesv100 298 blocks, Prob017_mux2to1v 100, Prob043_vector5 20, Prob097_mux9to1v 15; at gates
+     they were 2, 2, 10 and 2 blocks). Those bit-slice designs cost most of the D calls (see counts). The 1-cell blocks give the model no word-level context.
   4. Counts (`counts.csv`; one call per prompt and draw; 3 draws for `core`, 1 for `ext`): all calls 3462 (D 3221, A 241): core 3408, ext 54.
      Batches of about 24: 147 (`batches.json`), 135 for D alone (`batches-D.json`). Per endpoint:
      k4: D 1610, A 121; k6: D 1611, A 120. D on the multi-block designs only (the Q-L10 rule): k4 1598, k6 1599 (no saving, because at these
