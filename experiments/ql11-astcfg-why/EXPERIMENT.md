@@ -44,3 +44,25 @@ new model calls; this lane makes none and gives the call count and token estimat
    existing data only, with a CI.
 
 ## Amendments
+
+### 2026-11-03 amendment 1: scope found in the inventory, and the Part B test fixed before the outcome analysis
+
+1. Every model reply in the repository (llm-pilot, llm-full, llm-hints2, ql10-blocks) is for the Gate-Breaker gate netlists
+   of VerilogEval. No reply exists for a k4 or k6 netlist. The paired Part A comparison is therefore at the gates endpoint
+   only; k4 and k6 carry the structural data (Q-L4 to Q-L9, benchmark of r4 and composite designs, cell classes O-gate/Y-gate =
+   gates, O-lut/Y-lut = k4, O-hard = k6 hard-block map) and no LLM number. The cost of the missing LLM arms is given in the
+   results.
+2. Scorer: the three wrappers were run on 16 problems spread over the reply sizes (`results/scorer_compare.csv`). Chosen:
+   `ql10-blocks/q10_astcfg.py` (see results for the reason).
+3. Part B primary test, fixed here before any recovery-rate analysis of construct sizes or provenance mixing was run (the
+   marginals of `endpoint_size.csv` had been read: they show provenance mixing across parts is small, 4 percent of O-gate
+   cells and under 1 percent of O-lut and O-hard cells, and not rising with k). The strongest hypothesis by the existing
+   evidence (Q-L9: of the constructs with no right block, SPLIT is the largest class) is the size hypothesis:
+   H-L11 (controller's words): a construct is recovered less often the more cells it has, because a large construct is cut
+   across several blocks (SPLIT). Measure: right-block share of the answer-key constructs (Q-L9 HEAD, TEST), large against
+   small, where large = more than the median number of cells of the constructs of that endpoint; difference large minus small
+   with a seeded bootstrap 95 percent CI resampling designs (seed 20261103, 2000 resamples), per endpoint and all. SUPPORTED when the
+   CI of the all-endpoint difference is below zero, INCONCLUSIVE when it touches zero, DISMISSED when above zero.
+   The provenance-mixing hypothesis (recovery falls as the share of a construct's cells with mixed provenance rises) is
+   reported as a descriptive table (share of constructs with a mixed cell, right share with and without), without a verdict.
+   Mixed cell: the module path of the cell's Odin III label contains `*` (a join of cells from more than one design part).
