@@ -40,6 +40,7 @@ as a record, and the options that remain are off by default). Verdicts are in th
 | Calibration of the L1 log-odds on the train split | works | `loki calibrate`, `calib/*.json`, `loki re-project`, `loki score`, `loki score-all` |
 | Run record for Mimir and the ReverseProvenance output (`reverse-provenance.json`) with a document for a language model | works | `loki rp`; [llm](docs/user/llm.md) |
 | L2 analysis: graph export (edge list, GraphML, PyG), structural features (1-WL colours, NPN classes, role flags), clustering (k-means, affinity propagation, spectral, Louvain) | works | `loki analyze export`, `structural`, `cluster`; [hypotheses](docs/user/hypotheses.md) |
+| Provenance step files (Odin III 1.4): read the per-step manifests of a silicon or VTR run and resolve any object at any stage (placed cell, extracted cell, LUT) back to the HDL, with the weakest link on the way | works | `loki prov`; [provenance-steps](docs/user/provenance-steps.md) |
 | L2 graphlet and orbit counts (ORCA backend, pinned fetch) | works | `loki analyze graphlets`, `loki tools fetch-orca` |
 | L2 GNN baseline for gate roles (GNN-RE style) | works | `loki analyze gnn`; baseline, not a re-implementation |
 | Loss audit: the pass at which each construct is lost | works | `loki audit`; [`experiments/round6`](experiments/round6) |
