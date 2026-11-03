@@ -204,3 +204,11 @@ SHA-256: `block_prompt_lut.txt` cbacc5394283bbc8147f7cfd80c8e6393028dcf1a40e3380
   8. Deviations from the brief's wording: the block check is the Q-L10 one (400 random cycles in Icarus Verilog against the faithful Verilog of
      the block's covers), not Odin III + ABC `cec`; Q-L10 did not use Odin III + ABC for it. The design check of the processor modules uses
      Yosys + ABC `dsec` as Q-L10 did. Odin III is used (read only) for the netlists, the block builder's graphlet pass and the AST/CFG flatten.
+  9. Run choice (Peter 2026-11-03, before any call; recorded here before the first call): the reduced run. Arm A on every design that has an
+     A call, and arm D on the designs of at most 64 blocks, i.e. without D on the bit-slice designs Prob092_gatesv100 and Prob017_mux2to1v
+     (counts row "D designs of at most 64 blocks"). Both endpoints: 1074 calls (k4 537 = D 416 + A 121; k6 537 = D 417 + A 120). One endpoint
+     per run, k4 first, then k6. Order, batching and template unchanged: the calls of `batches.json` filtered to the endpoint and the
+     subset, in their order and batch (batches shrink to the kept calls; 50 batches at k4). Prob092 and Prob017 still get arm A; for them
+     the D-vs-A and D-vs-gates comparisons have no D row, and the analysis states this. Before the run the user message of all 537 k4 call
+     files was hashed and equals `calls_table.csv` prompt_sha256 (0 mismatches). The stop rule is unchanged (85 percent weekly meter, checked
+     before the run and between the endpoints; refused plus no-file above 12 and above 10 percent of calls made, checked after each batch).
