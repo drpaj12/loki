@@ -24,6 +24,7 @@ import q9_env as e9
 
 qt = e9.mod("q6_truth")
 qn = e9.mod("q6_net")
+q7e = e9.mod("q7_eval")
 l3dlib = e9.mod("l3dlib")
 ENDPOINT = {"O-gate": "gate", "Y-gate": "gate", "O-lut": "k4", "Y-lut": "k4", "O-hard": "k6"}
 
@@ -53,6 +54,7 @@ def mix_shares(cells: frozenset[int], g: Any, lab: dict[str, dict[str, str]]) ->
 def construct_rows() -> list[dict[str, Any]]:
     res = pickle.loads((e9.OUT9 / "res_test_TEST.pkl").read_bytes())
     head = {x["key"]: x["cfg"]["HEAD"]["rows"] for x in res}
+    refs = q7e.ref_rows()  # the constructs Q-L9 scores (its 1141); the others have no D70 row
     out: list[dict[str, Any]] = []
     for u in qt.units("TEST"):
         rows = head.get(u.key)
@@ -62,6 +64,8 @@ def construct_rows() -> list[dict[str, Any]]:
         lab = label_rows(u)
         cons = {(c.idx, c.kind): c for c in qt.constructs(u, g) if c.kind != "glue" and c.cells}
         for r in rows:
+            if refs.get(q7e.key_of(r)) is None:
+                continue
             c = cons.get((r["part"], r["kind"]))
             m = mix_shares(c.cells, g, lab) if c is not None and lab else {}
             out.append({"set": r["set"], "design": r["design"], "cell": r["cell"],
