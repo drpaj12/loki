@@ -7,7 +7,7 @@ import loki
 
 class PackagingTest(unittest.TestCase):
     def test_version_and_entry_point(self) -> None:
-        self.assertEqual(loki.__version__, "0.1.0")
+        self.assertEqual(loki.__version__, "1.0.0")
         path = Path(__file__).resolve().parent.parent / "pyproject.toml"
         with path.open("rb") as fh:
             data = tomllib.load(fh)
