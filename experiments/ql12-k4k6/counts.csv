@@ -1,0 +1,9 @@
+endpoint,arm,calls,est_tokens_in,est_tokens_out
+k4,D,1610,1259843,191764
+k4,D multi-block designs,1598,1183484,188056
+k4,D designs of at most 64 blocks,416,508589,55648
+k4,A,121,354475,20099
+k6,D,1611,1262111,191881
+k6,D multi-block designs,1599,1185752,188173
+k6,D designs of at most 64 blocks,417,510857,55765
+k6,A,120,340944,19512

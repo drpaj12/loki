@@ -4,7 +4,8 @@ Same rules as ``ql10-blocks/q10_blocks.py``: anchors bank+loop+const, grown to t
 model, one JCOND join at 0.2, blocks above 300 cells never made, cells in no block grouped by
 connected component (chunks of at most 300) into ``residual`` blocks. The cell class is ``O-lut``
 (k4) or ``O-hard`` (k6) instead of ``O-gate``. The BLIF is read by ``q6_net.Graph``; its cell index
-is the cell index of ``q12_nl.Netlist``. No kind guess (the arms of Q-L12 have no hint). Needs
+is the cell index of ``q12_nl.Netlist``. Constants and buffers (``Cell.glue``) are glue of the top
+module and belong to no block. No kind guess (the arms of Q-L12 have no hint). Needs
 libodin3 (the graphlet signature pass).
 """
 
@@ -62,12 +63,12 @@ def to_blocks(nl: Netlist, sets: list[Any]) -> list[Any]:
     blocks: list[Any] = []
     taken: set[int] = set()
     for b in sets:
-        cells = sorted(set(b.cells) - taken)
+        cells = sorted(c for c in set(b.cells) - taken if not nl.cells[c].glue)
         if not cells:
             continue
         taken.update(cells)
         blocks.append(Block(len(blocks), b.kind, cells, "", []))
-    for comp in residual(nl, set(range(len(nl.cells))) - taken):
+    for comp in residual(nl, set(nl.logic()) - taken):
         blocks.append(Block(len(blocks), "residual", comp))
     return blocks
 

@@ -21,6 +21,8 @@ import q12_render as rn
 from q12_nl import Netlist
 
 q10_equiv: Any = env.mod("q10_equiv")
+PREP = ("proc; flatten; opt -nosdff -nodffe; techmap; async2sync; opt -nosdff -nodffe; dffunmap; "
+        "clean")  # q10_equiv.PREP plus no sync-reset/enable flops: ABC reads only plain latches
 CYCLES = 400
 TIMEOUT_S = 30
 
@@ -93,7 +95,7 @@ def block_check(nl: Netlist, bid: int, cells: list[int], ports: rn.Ports, code: 
 def gold_module(nl: Netlist, gate: Any) -> str:
     """The whole netlist as one module of the interface of the design, named ``gold`` (the
     faithful Verilog of its cells; one block of every cell, with the original port bits)."""
-    one = type("One", (), {"bid": 0, "cells": list(range(len(nl.cells)))})()
+    one = type("One", (), {"bid": 0, "cells": nl.logic()})()
     ports = rn.block_ports(nl, [one])[0]
     code = rn.assemble(nl, gate, [one], [ports],
                        {0: rn.stub_module(nl, 0, one.cells, ports)})
@@ -106,9 +108,9 @@ def design_equiv(nl: Netlist, gate: Any, sample: Path, work: Path) -> str:
     gold = work / "gold.v"
     gold.write_text(gold_module(nl, gate), encoding="utf-8", newline="\n")
     script = "\n".join([
-        f"read_verilog -sv {gold}", "hierarchy -top gold", q10_equiv.PREP, "write_blif gold.blif",
+        f"read_verilog -sv {gold}", "hierarchy -top gold", PREP, "write_blif gold.blif",
         "design -reset", f"read_verilog -sv {sample}", "hierarchy -top TopModule",
-        q10_equiv.PREP, "write_blif gate.blif", ""])
+        PREP, "write_blif gate.blif", ""])
     (work / "eq.ys").write_text(script, encoding="utf-8", newline="\n")
     bin_ = q10_equiv.BIN
     try:

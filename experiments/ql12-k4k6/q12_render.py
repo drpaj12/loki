@@ -44,7 +44,7 @@ def block_ports(nl: Netlist, blocks: list[Any]) -> list[Ports]:
     reads: dict[str, set[int]] = {}
     for c in nl.cells:
         for n in c.reads:
-            reads.setdefault(n, set()).add(owner[c.idx])
+            reads.setdefault(n, set()).add(owner.get(c.idx, -1))  # -1: glue, outside every block
     res: list[Ports] = []
     for b in blocks:
         mine = set(b.cells)
@@ -122,17 +122,26 @@ def _lit(nl: Netlist, n: str) -> str:
     return nl.ident[n]
 
 
+def _tree(tt: list[int], names: list[str]) -> str:
+    """Shannon tree of a truth table (first input = most significant index bit) as nested ``?:``
+    with equal branches merged: exact three-valued behaviour, an unknown input only gives an
+    unknown output when the function depends on it (a sum of minterms would not)."""
+    if all(v == tt[0] for v in tt):
+        return f"1'b{tt[0]}"
+    half = len(tt) // 2
+    lo, hi = _tree(tt[:half], names[1:]), _tree(tt[half:], names[1:])
+    return lo if lo == hi else f"({names[0]} ? {hi} : {lo})"
+
+
 def lut_expr(nl: Netlist, c: Cell) -> str:
-    if not c.cover:
-        return "1'b0"
-    terms = []
-    for row in c.cover:
-        parts = row.split()
-        pat = parts[0] if len(parts) == 2 else ""
-        lits = [(_lit(nl, n) if ch == "1" else "~" + _lit(nl, n))
-                for ch, n in zip(pat, c.ins, strict=True) if ch != "-"]
-        terms.append("(" + " & ".join(lits) + ")" if lits else "1'b1")
-    return " | ".join(terms)
+    """The function of a LUT cover as a Verilog expression on the identifiers of its inputs."""
+    k = len(c.ins)
+    if k == 0:
+        return "1'b1" if c.cover else "1'b0"
+    rows = [r.split()[0] for r in c.cover]
+    tt = [int(any(all(ch in ("-", bit) for ch, bit in zip(row, f"{m:0{k}b}", strict=True))
+                  for row in rows)) for m in range(2**k)]
+    return _tree(tt, [_lit(nl, n) for n in c.ins])
 
 
 def cell_verilog(nl: Netlist, c: Cell, init: bool) -> str:
@@ -165,6 +174,10 @@ def stub_module(nl: Netlist, bid: int, cells: list[int], ports: Ports, init: boo
     return "\n".join(lines) + "\n"
 
 
+def glue_const(c: Cell) -> str:
+    return "1'b1" if c.cover else "1'b0"
+
+
 def top_net(nl: Netlist, n: str) -> str:
     """The expression of a net in TopModule: the original bit of a primary net, else a wire."""
     return nl.orig[n] if n in nl.orig else "t_" + nl.ident[n]
@@ -182,6 +195,8 @@ def assemble(nl: Netlist, gate: Any, blocks: list[Any], ports: list[Ports],
     for b, p in zip(blocks, ports, strict=True):
         conn = ", ".join(f".{nl.ident[n]}({top_net(nl, n)})" for n in p.inputs + p.outputs)
         top.append(f"  {module_name(b.bid)} u_{b.bid}({conn});")
+    top += [f"  assign {top_net(nl, c.outs[0])} = "
+            f"{top_net(nl, c.ins[0]) if c.ins else glue_const(c)};" for c in nl.cells if c.glue]
     top.append("endmodule")
     body = [codes[b.bid].rstrip("\n") for b in blocks]
     return "\n\n".join([*body, "\n".join(top)]) + "\n"

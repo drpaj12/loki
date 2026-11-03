@@ -40,6 +40,13 @@ class Cell:
     cname: str = ""
 
     @property
+    def glue(self) -> bool:
+        """A constant or a buffer (``.names a y`` with the row ``1 1``): an ``assign`` of the top
+        module, in no block (as the assign and constant cells of the gate netlists in Q-L10)."""
+        return self.kind == "lut" and (not self.ins or (len(self.ins) == 1
+                                                        and self.cover == ["1 1"]))
+
+    @property
     def reads(self) -> list[str]:
         return self.ins + ([self.clock] if self.clock else [])
 
@@ -54,6 +61,10 @@ class Netlist:
 
     def driver(self) -> dict[str, int]:
         return {o: c.idx for c in self.cells for o in c.outs}
+
+    def logic(self) -> list[int]:
+        """Indices of the cells that belong to blocks (not glue)."""
+        return [c.idx for c in self.cells if not c.glue]
 
 
 def sanitize(bit: str) -> str:

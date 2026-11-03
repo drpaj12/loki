@@ -44,12 +44,23 @@ def problems() -> list[dict[str, str]]:
             for d in designs if d["problem"] in ran]
 
 
+def ceiling_zero() -> set[tuple[str, str]]:
+    """(problem, endpoint) whose faithful decode does not pass the testbench (``q12_stubcheck``):
+    the netlist is not the function of the reference, no reply can pass; left out of the calls."""
+    path = env.RES / "stubcheck.csv"
+    if not path.is_file():
+        return set()
+    with path.open(encoding="utf-8", newline="") as fh:
+        return {(r["problem"], r["endpoint"]) for r in csv.DictReader(fh)
+                if r["outcome"] != "pass"}
+
+
 def blocks_file(endpoint: str, problem: str) -> Path:
     return env.RUN / "blocks" / endpoint / f"{problem}.json"
 
 
 def available(endpoint: str, problem: str) -> bool:
-    return nlm.blif_path(endpoint, problem).is_file()
+    return nlm.blif_path(endpoint, problem).is_file() and (problem, endpoint) not in ceiling_zero()
 
 
 def build_one(args: tuple[str, str]) -> tuple[str, str, int, int]:
@@ -255,6 +266,8 @@ def write_counts(calls: list[dict[str, Any]]) -> None:
         for label, sel in (("D", lambda c: c["arm"] == "D"),
                            ("D multi-block designs", lambda c: c["arm"] == "D"
                             and c["n_blocks"] >= 2),
+                           ("D designs of at most 64 blocks", lambda c: c["arm"] == "D"
+                            and c["n_blocks"] <= 64),
                            ("A", lambda c: c["arm"] == "A")):
             cs = [c for c in calls if c["endpoint"] == ep and sel(c)]
             rows.append({"endpoint": ep, "arm": label, "calls": len(cs),
