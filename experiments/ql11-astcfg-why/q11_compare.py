@@ -29,6 +29,7 @@ PAIRS = (("llm-full", "B", "A", "llm-full", "B (Loki hints v1) vs A"),
          ("llm-hints2", "B1p", "A2", "llm-hints2", "B1p (v1 hints, new prompt) vs A2"),
          ("llm-hints2", "B2", "A2", "llm-hints2", "B2 (Loki hints v2) vs A2"),
          ("llm-hints2", "W", "A2", "llm-hints2", "W (wrong hints) vs A2"),
+         ("llm-hints2", "B2", "W", "llm-hints2", "B2 (Loki hints v2) vs W (wrong hints)"),
          ("ql10", "D", "A", "llm-full", "D (Loki blocks) vs A"),
          ("ql10", "Dh", "A", "llm-full", "D+h (Loki blocks + kind guess) vs A"))
 METRICS = ("pass", "ast", "cfg")
