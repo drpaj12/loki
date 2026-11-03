@@ -103,7 +103,7 @@ class SchemasTest(unittest.TestCase):
         self.assertTrue(validate_key(bad))
         meta: dict[str, Any] = {
                 "schema": 1, "design": "d", "floor": "f2", "odin3_version": "1", "abi_version": 1,
-                "script": ["a"], "loki_version": "0.1.0",
+                "script": ["a"], "loki_version": "1.0.0",
                 "counts": {k: 0 for k in schemas._COUNTS}, "unmatched": 0, "loops_cut": 0,
                 "equiv": {"writer": {"status": "equivalent", "tool_exit": 0}}}
         self.assertEqual(validate_meta(meta), [])
@@ -114,7 +114,7 @@ class SchemasTest(unittest.TestCase):
                   "source": {"url": "u", "commit": "c", "license": "MIT"}}
         self.assertEqual(validate_design(design), [])
         man: dict[str, Any] = {
-               "schema": 1, "created_by": "loki 0.1.0", "odin3_version": "1", "split_seed": "s",
+               "schema": 1, "created_by": "loki 1.0.0", "odin3_version": "1", "split_seed": "s",
                "split_rule": "r", "designs": [
                    {"design": "d", "benchmark": "micro", "split": "train",
                     "floors": {"f2": {"status": "ok", "nodes": 3}}}]}

@@ -167,7 +167,7 @@ def write_fake_floor(root: Path, design: str, floor: str) -> Path:
     graph, loops = build_graph(nl, labels, num, design, floor)
     meta = {
         "schema": 1, "design": design, "floor": floor, "odin3_version": "1.0.0", "abi_version": 5,
-        "script": ["lower"], "loki_version": "0.1.0", "loops_cut": loops, "unmatched": 1,
+        "script": ["lower"], "loki_version": "1.0.0", "loops_cut": loops, "unmatched": 1,
         "counts": {"nodes": 4, "pi": 2, "po": 1, "lut": 1, "ff": 0, "const": 0, "hard": 0,
                    "edges": 3},
         "equiv": {"writer": {"status": "equivalent", "tool_exit": 0, "mode": "full"}},

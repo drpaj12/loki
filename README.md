@@ -3,6 +3,8 @@
 Reverse engineering of structural netlists (LUT, hard-block and gate-level) back to hierarchical, word-level
 Verilog, with a Bayesian hypothesis flow over Odin III's provenance IR. It asks how much of a design can be
 recovered without a language model, and measures it against an answer key that Odin III provenance supplies.
+**Status: v1.0.0** (2026-11-03). The tools work for the recorded experiments; the feature table below says which parts are commands, which are research code and which were dismissed. Release notes: [`docs/V1.0.0.md`](docs/V1.0.0.md).
+
 Four levels, each with a spec in `docs/specs/`:
 
 - **L0**, the ground-truth dataset: provenance is the answer key (`loki bench`, `loki assemble`).
@@ -18,7 +20,7 @@ kind guess on them reaches a macro F1 of 0.392 (the weakest part). Clustering do
 Loki's hints did not help a model that already has the netlist. Loki does not detect Trojans (see Leman Russ III for that).
 Paper: [`docs/paper/`](docs/paper/README.md). Manual: <https://drpaj12.github.io/loki/>. Hub: <https://github.com/drpaj12/YggdrasilIII>.
 
-Loki III is part of **Yggdrasil III**, the suite of Odin III (<https://github.com/drpaj12/odin3>, the trunk), Wyrd III (<https://github.com/drpaj12/wyrd>, the canopy, with Bifrost III and Midgard III), Loki III (<https://github.com/drpaj12/loki>), The Norns III (<https://github.com/drpaj12/nornsIII>) and Verdandi III (<https://github.com/drpaj12/verdandiIII>) on side branches, and Mímir III (<https://github.com/drpaj12/mimirIII>, the fruit). Loki III is a side branch, a tool and experiment; it uses Odin III's provenance IR and its L2 clusters seed The Norns III. It depends on the `odin3` Python package and never changes the Odin III core. Version 0.1.0 (`pyproject.toml`). The hub is <https://github.com/drpaj12/YggdrasilIII> (documentation: <https://drpaj12.github.io/YggdrasilIII/>, versions of every piece: <https://drpaj12.github.io/YggdrasilIII/versions.html>) and its picture of the tree is <https://github.com/drpaj12/YggdrasilIII/blob/main/images/yggdrasil-tree.png>.
+Loki III is part of **Yggdrasil III**, the suite of Odin III (<https://github.com/drpaj12/odin3>, the trunk), Wyrd III (<https://github.com/drpaj12/wyrd>, the canopy, with Bifrost III and Midgard III), Loki III (<https://github.com/drpaj12/loki>), The Norns III (<https://github.com/drpaj12/nornsIII>) and Verdandi III (<https://github.com/drpaj12/verdandiIII>) on side branches, and Mímir III (<https://github.com/drpaj12/mimirIII>, the fruit). Loki III is a side branch, a tool and experiment; it uses Odin III's provenance IR and its L2 clusters seed The Norns III. It depends on the `odin3` Python package and never changes the Odin III core. Version 1.0.0 (`pyproject.toml`; [release notes](docs/V1.0.0.md)). The hub is <https://github.com/drpaj12/YggdrasilIII> (documentation: <https://drpaj12.github.io/YggdrasilIII/>, versions of every piece: <https://drpaj12.github.io/YggdrasilIII/versions.html>) and its picture of the tree is <https://github.com/drpaj12/YggdrasilIII/blob/main/images/yggdrasil-tree.png>.
 
 License: MIT.
 
@@ -31,6 +33,7 @@ as a record, and the options that remain are off by default). Verdicts are in th
 
 | Feature | Status | Where |
 |---|---|---|
+| Release v1.0.0: the pipeline, detectors, three endpoints, Gate-Breaker replica and Q-L rounds as recorded in the paper | v1.0.0 (see notes) | [`docs/V1.0.0.md`](docs/V1.0.0.md) |
 | L0 ground-truth dataset: Odin III provenance as the answer key, three floors (f1, f2, f3), anonymised names, `cell_type` labels in `graph.json` | works | `loki bench`, `loki assemble`, `loki check`; [dataset](docs/user/dataset.md), [formats](docs/user/formats.md) |
 | Naming-neutral answer key: names exist only in `key.json`; the renamed-instance re-run over 105,646 identifiers shows nothing recovered is a naming artefact | works | [`experiments/rename-l2/EXPERIMENT.md`](experiments/rename-l2/EXPERIMENT.md) |
 | L1 Bayesian flow: detectors, provers, commit with Odin III `raise` and `submod`, `unmap` facts and the `hard` detector for hard blocks | works | `loki re`; [hypotheses](docs/user/hypotheses.md), [runbook](docs/runbook-l1.md) |
