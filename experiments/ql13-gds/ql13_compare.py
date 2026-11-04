@@ -19,7 +19,45 @@ from typing import Any
 
 import ql13_env as env
 
-FIELDS = ["endpoint", "design", "cells", "ffs", "blocks", "key_total", "key_right"]
+FIELDS = ["endpoint", "design", "cells", "ffs", "blocks", "key_total", "key_right",
+          "coarse_total", "coarse_right"]
+
+
+def coarse_q12(nl: Any, ep: str, n: str, qnl: Any) -> list[frozenset[int]]:
+    """Key without the construct type: flip-flops with the same HDL line and column (the key the
+    gds endpoint can give from the chain). Census labels, cell name join, as ``q12_key``."""
+    import csv
+    from collections import defaultdict
+    path = qnl.census_dir(ep, n) / "labels.csv"
+    if not path.is_file():
+        return []
+    cell_of = {c.cname: c.idx for c in nl.cells if c.kind == "ff" and c.cname}
+    groups: dict[tuple[str, str], set[int]] = defaultdict(set)
+    with path.open(encoding="utf-8", newline="") as fh:
+        for r in csv.DictReader(fh):
+            if r["kind"] == "ff" and r["node_id"] in cell_of:
+                groups[(r["hdl_line"], r["hdl_col"])].add(cell_of[r["node_id"]])
+    return [frozenset(g) for _k, g in sorted(groups.items()) if len(g) >= 2]
+
+
+def coarse_gates(nl: Any, n: str, qk: Any) -> list[frozenset[int]]:
+    import csv
+    from collections import defaultdict
+    path = qk.labels_path(n)
+    if not path.is_file():
+        return []
+    ff_of = {c.out: c.idx for c in nl.cells if c.typ.startswith("DFF")}
+    groups: dict[tuple[str, str], set[int]] = defaultdict(set)
+    with path.open(encoding="utf-8", newline="") as fh:
+        for r in csv.DictReader(fh):
+            if r["kind"] in qk.SKIP_KINDS or not r["bus_name"]:
+                continue
+            bus, bit = r["bus_name"], int(r["bit_index"])
+            for name in ((f"{bus}[{bit}]", bus) if bit == 0 else (f"{bus}[{bit}]",)):
+                if name in ff_of:
+                    groups[(r["hdl_line"], r["hdl_col"])].add(ff_of[name])
+                    break
+    return [frozenset(g) for _k, g in sorted(groups.items()) if len(g) >= 2]
 
 
 def rows_gates(names: list[str]) -> list[dict[str, Any]]:
@@ -34,10 +72,13 @@ def rows_gates(names: list[str]) -> list[dict[str, Any]]:
         blocks = qbd.load_blocks(n)
         cons = qk.key_constructs(nl, n)
         rb = qk.right_blocks(nl, blocks, cons)
+        cc = coarse_gates(nl, n, qk)
+        crb = qk.right_blocks(nl, blocks, cc)
         out.append({"endpoint": "gates", "design": n, "cells": len(nl.cells),
                     "ffs": sum(1 for c in nl.cells if c.typ.startswith("DFF")),
                     "blocks": len(blocks), "key_total": len(cons),
-                    "key_right": sum(1 for x in rb if x)})
+                    "key_right": sum(1 for x in rb if x), "coarse_total": len(cc),
+                    "coarse_right": sum(1 for x in crb if x)})
     return out
 
 
@@ -54,10 +95,13 @@ def rows_q12(names: list[str], eps: list[str]) -> list[dict[str, Any]]:
             blocks = qbd.load_blocks(ep, n)
             cons = qk.key_constructs(nl, ep, n)
             rb = qk.right_blocks(nl, blocks, cons)
+            cc = coarse_q12(nl, ep, n, nlm)
+            crb = qk.right_blocks(nl, blocks, cc)
             out.append({"endpoint": ep, "design": n, "cells": len(nl.cells),
                         "ffs": sum(1 for c in nl.cells if c.kind == "ff"),
                         "blocks": len(blocks), "key_total": len(cons),
-                        "key_right": sum(1 for x in rb if x)})
+                        "key_right": sum(1 for x in rb if x), "coarse_total": len(cc),
+                        "coarse_right": sum(1 for x in crb if x)})
     return out
 
 

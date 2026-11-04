@@ -9,8 +9,10 @@ Usage: ``python3 -B ql13_chain.py``.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+import shutil
 import subprocess
 import sys
 from collections import Counter
@@ -150,6 +152,16 @@ def design_rows(name: str, root: Path) -> dict[str, Any]:
     for s, msg in steps.items():
         if msg.startswith("FAILED"):
             row["failed_step"], row["error"] = s, msg[len("FAILED"):].strip()[:160]
+    eq = root / "out" / "equiv.txt"
+    if row["failed_step"] == "equiv" and eq.is_file():
+        # the flow refused the step message (a home path in it); the tool's own last line says why
+        lines = [x for x in eq.read_text(encoding="utf-8").splitlines() if "notice:" not in x]
+        row["error"] = "equiv-check: " + re.sub(r"\S*/out/", "", lines[-1].split(": ", 1)[-1])[:140]
+    orlog = root / "out" / "openroad.log"
+    if row["failed_step"] == "place" and orlog.is_file():
+        errs = [x.strip() for x in orlog.read_text(encoding="utf-8", errors="replace").splitlines()
+                if re.match(r"\[ERROR |Error:", x)]
+        row["error"] = "openroad: " + (errs[0] if errs else "rc 1")[:140]
     for s in ("equiv", "lvs"):
         hp = list((root / "out" / "prov").glob(f"*-{s}.json"))
         if hp:
@@ -160,6 +172,39 @@ def design_rows(name: str, root: Path) -> dict[str, Any]:
 def _du(path: Path) -> int:
     p = subprocess.run(["du", "-sk", str(path)], capture_output=True, text=True, check=False)
     return int(p.stdout.split()[0]) if p.stdout else 0
+
+
+def partial_prov(prov: Path, dst: Path) -> Path | None:
+    """A run that stopped after ``extract`` (an LVS mismatch) has step files and no index. Copy
+    them to ``dst`` with an index built from the headers and the sha256 of the copied files, so the
+    reader can open it. Descriptive use only: the run is not a finished flow. None when the run has
+    no ``extract`` objects."""
+    heads = sorted(prov.glob("[0-9][0-9]-*.json"))
+    if not (prov / "09-extract.objects.jsonl").is_file() or not heads:
+        return None
+    dst.mkdir(parents=True, exist_ok=True)
+    steps: list[dict[str, Any]] = []
+    hashes = {}
+    for h in heads:
+        hdr = json.loads(h.read_text(encoding="utf-8"))
+        shutil.copyfile(h, dst / h.name)
+        obj = hdr.get("objects_file")
+        entry: dict[str, Any] = {
+            "id": hdr["step"], "stage": hdr["stage"], "file": h.name, "objects": obj,
+            "sha256": hashlib.sha256(h.read_bytes()).hexdigest(),
+            "count": hdr["counts"]["objects"], "needs": hdr.get("needs", []),
+            "tool": hdr["tool"]}
+        if obj:
+            shutil.copyfile(prov / obj, dst / obj)
+            entry["objects_sha256"] = hashlib.sha256((prov / obj).read_bytes()).hexdigest()
+        steps.append(entry)
+        hashes[h.name] = entry["sha256"]
+    first = json.loads(heads[0].read_text(encoding="utf-8"))
+    index = {"schema": 1, "kind": "odin3-prov-index", "flow": "silicon-sky130",
+             "design": first.get("design", ""), "top": first.get("top", ""), "steps": steps,
+             "tools": [], "inputs": [], "partial": True}
+    (dst / "index.json").write_text(json.dumps(index), encoding="utf-8")
+    return dst
 
 
 def schema_check(prov: Path) -> str:
@@ -200,13 +245,15 @@ def analyse(run: ProvRun) -> tuple[dict[str, Any], list[dict[str, Any]], Counter
             cat.append({"cell": obj.id, "master": obj.type, "class": cls,
                         "broken_at": ch.broken_at, "link_kind": ch.last_kind, "cause": ch.cause})
     gates = run.stage_objects("gates")
+    odin_names = {g.name for g in gates} | {str(g.attrs.get("odin_name", "")) for g in gates}
+    name_leaks = sum(1 for o in run.stage_objects("extracted") if o.name in odin_names)
     sums = census_sums(run)
     row = {"extracted": sum(classes.values()), **{f"n_{c}": classes[c] for c in CLASSES},
            "nonfiller": nonfill, "joined": joined, "a_share": _share(joined, nonfill),
            "logic_denominator": denom_b, "full_chain": full, "b_share": _share(full, denom_b),
            "odin_cells": len(gates), "resized": sums.get("resized", 0),
            "removed": sums.get("removed", 0), "renamed": sums.get("renamed", 0),
-           "gds_label_mismatch": mismatches,
+           "gds_label_mismatch": mismatches, "extracted_odin_names": name_leaks,
            "inserted_link_kinds": json.dumps({k: dict(v) for k, v in sorted(insert_kinds.items())},
                                              sort_keys=True)}
     return row, cat, weakest
@@ -228,15 +275,21 @@ def main() -> int:
             continue
         row = design_rows(name, root)
         prov = root / "out" / "prov"
+        partial = False
+        if not (prov / "index.json").is_file():
+            got = partial_prov(prov, root / "prov-partial")
+            if got is not None:
+                prov, partial = got, True
         if (prov / "index.json").is_file():
-            row["schema_check"] = schema_check(prov)
+            row["schema_check"] = "partial run (no index)" if partial else schema_check(prov)
             try:
                 run = read_run(prov)
             except ProvError as err:
                 row["schema_check"] += f" | read: {err}"[:120]
             else:
                 c_row, cat, weak = analyse(run)
-                chain_rows.append({"design": name, "lvs": row["lvs"], **c_row})
+                chain_rows.append({"design": name, "lvs": row["lvs"] or "none",
+                                   "partial": int(partial), **c_row})
                 cat_rows += [{"design": name, **x} for x in cat]
                 weak_rows += [{"design": name, "weakest": k, "cells": v}
                               for k, v in sorted(weak.items())]

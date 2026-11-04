@@ -3,6 +3,8 @@ netlist converter on a small hand-written hierarchical SPICE (no Odin III, no ex
 
 from __future__ import annotations
 
+import json
+import shutil
 import sys
 import tempfile
 import unittest
@@ -75,6 +77,35 @@ class ChainTest(unittest.TestCase):
         self.assertEqual(c.broken_at, "extracted")
 
 
+class BreakTest(unittest.TestCase):
+    """A run with a cut link must land in the failure catalogue (the measure can say no)."""
+
+    def _copy(self, tmp: Path) -> Path:
+        dst = tmp / "prov"
+        shutil.copytree(FIXTURE, dst)
+        return dst
+
+    def test_cut_join_and_cut_cone(self) -> None:
+        with tempfile.TemporaryDirectory() as t:
+            prov = self._copy(Path(t))
+            ext = prov / "09-extract.objects.jsonl"
+            rows = [json.loads(x) for x in ext.read_text(encoding="utf-8").splitlines()]
+            logic = [r for r in rows if "tap" not in r["type"] and "fill" not in r["type"]]
+            logic[0]["links"] = []  # no location_match: unjoined
+            ext.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+            gates = prov / "03-map.objects.jsonl"
+            grows = [json.loads(x) for x in gates.read_text(encoding="utf-8").splitlines()]
+            grows[0]["links"] = []  # a mapped gate with no cone link to the ir
+            gates.write_text("\n".join(json.dumps(r) for r in grows) + "\n", encoding="utf-8")
+            row, cat, _w = ch.analyse(read_run(prov, verify=False))
+        self.assertEqual(row["n_unjoined"], 1)
+        self.assertLess(float(row["a_share"]), 1.0)
+        self.assertLess(float(row["b_share"]), 1.0)
+        causes = {c["cause"] for c in cat}
+        self.assertIn("no location_match link", causes)
+        self.assertTrue(len(cat) >= 2, cat)
+
+
 class NetTest(unittest.TestCase):
     def test_cover(self) -> None:
         self.assertEqual(gn.cover("( ~ A ) | ( ~ B )", ["A", "B"]), ["0- 1", "-0 1"])
@@ -96,6 +127,18 @@ class NetTest(unittest.TestCase):
         self.assertEqual(sorted(p["orig"] for p in ports if p["dir"] == "out"), ["q"])
         self.assertEqual(sorted(p["orig"] for p in ports if p["dir"] == "in"), ["a", "b", "clk"])
 
+    def test_constants_get_unique_cnames(self) -> None:
+        spice = (".subckt sky130_fd_sc_hd__conb_1 HI LO VPWR VGND VPB VNB\n.ends\n"
+                 ".subckt top y z VDD VSS\n"
+                 "Xsky130_fd_sc_hd__conb_1_0 y z VDD VSS VDD VSS sky130_fd_sc_hd__conb_1\n.ends\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            sp = Path(tmp) / "h.spice"
+            sp.write_text(spice, encoding="utf-8")
+            text, _ports, _kinds = gn.convert(sp, {})
+        names = [x for x in text.splitlines() if x.startswith(".cname")]
+        self.assertEqual(len(names), len(set(names)))
+        self.assertEqual(len(names), 2)
+
     def test_resized_master_and_buffer(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             lib_file = Path(tmp) / "t.o3lib"
@@ -107,6 +150,9 @@ class NetTest(unittest.TestCase):
         kind, lc = gn.lib_cell(lib, "sky130_fd_sc_hd__clkbuf_16",
                                ["X", "A", "VGND", "VPWR", "VPB", "VNB"])
         self.assertEqual((kind, lc.fn), ("lut", {"X": "A"}))
+        kind, lc = gn.lib_cell(lib, "sky130_fd_sc_hd__clkinvlp_4",
+                               ["A", "Y", "VGND", "VPWR", "VPB", "VNB"])
+        self.assertEqual(lc.fn, {"Y": "~ A"})
         with self.assertRaises(gn.Unsupported):
             gn.lib_cell(lib, "sky130_fd_sc_hd__nosuch_2", ["A", "X"])
         self.assertEqual(gn.lib_cell(lib, "sky130_fd_sc_hd__dfxtp_1", [])[0], "ff")

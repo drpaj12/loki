@@ -93,3 +93,115 @@ unlabelled chip. Block counts are small (few designs have >= 2 flip-flops under 
 cell class `O-lut` is a stand-in for the unseen SKY130 gate class.
 
 ## Amendments
+
+- 2026-11-03 (during the run; plan commit 14788c7; the analysis code was written on the stored comparator run and the first finished
+  runs, and items 3 and 4 were fixed while the 44 runs were coming in, before the full tables; stated here, not hidden):
+  1. Staging for the four processor modules (code unchanged, nothing in Odin III changed). The first attempt failed at `read` for all
+     four: `include_not_found: 'defines.v'` (tinyriscv) and `ambiguous_top` (picorv32.v has several modules and the flow's
+     `read_verilog` needs one top). `ql13_flow.stage_source` now copies `defines.v` beside the tinyriscv source and, for
+     `picorv32_pcpi_div`, writes the module verbatim from `module` to `endmodule` (it instantiates no other module and uses no macro
+     outside `ifdef` branches). The four were run again (`--redo`); the first attempts are kept as `status.attempt1.json`.
+  2. Runs that stopped at LVS leave step files up to `lvs` and no `index.json` (the index is written last). For descriptive use only,
+     `ql13_chain.partial_prov` copies the step files with an index built from their headers and sha256 values; such rows have
+     `partial` 1 in the CSVs and are outside the hypothesis.
+  3. Key at the gds endpoint. The chain gives an HDL line and column (the first span of the mapped cell), not a construct type, so
+     the key here is flip-flops with the same line and column. For the comparison, the same key (without the type) is computed at
+     gates, lut4, k4 and k6 (`results/prior_key.csv`, columns `coarse_*`). The Q-L12 key with the type is in the `key_*` columns.
+  4. Class of an extracted cell is read at the end of its chain (the label at `placed`), not at the `gds` stage: the `gds` stage
+     labels the clock-tree buffers `physical:repair_buffer` while `placed` and `routed` label them `physical:cts_buffer`
+     (38 cells in the 9 LVS-match designs, `gds_label_mismatch` in `chain.csv`). This is an Odin III v1.4 labelling inconsistency, not fixed here.
+
+## Results (2026-11-03)
+
+Generated tables: `results/summary.md` (`ql13_report.py`) from `results/flow.csv`, `chain.csv`, `catalogue.csv`, `weakest.csv`,
+`gds_blocks.csv`, `gds_key.csv`, `prior_key.csv`. Flow: Odin III 1.4.0 (debug build of the v1.4 lane), OpenROAD `f12e2f474` (March 2022),
+Magic 8.3.465, Netgen 1.5.272, KLayout 0.30.12, SKY130A `sky130_fd_sc_hd`. Run root and flow code: Odin III read only.
+
+### Plain English
+
+Of 44 designs, 9 went through the whole flow to an LVS match. For those 9, every logic cell read back from the layout joined to a
+placed cell without a name (3676 of 3676 cells that are not tap or fill), and every logic cell had a complete chain
+extracted -> gds -> routed -> placed -> mapped -> elaborated -> HDL span (3638 of 3638). Nothing was removed by physical design,
+638 resize events changed a cell's master but not its identity, and the flow added tap, fill and clock-tree cells that carry a
+physical label instead of an HDL chain. So on the designs where the flow works, provenance is fully recoverable on the GDS path.
+
+That is 9 of 44. The other 35 are outside the hypothesis, and most of them are small: 13 have one cell or none (the OpenROAD
+floorplan makes zero rows and the Tcl driver stops), 11 more stop in placement or routing (OpenROAD errors on 2 to 399 cells), 2 stop in
+`equiv`, and 9 place and route, then fail LVS (in the two LVS logs read, Prob044 and Prob087, the cell supply pins VPWR, VPB and VNB
+form nets of their own that have no match in the reference; the cause was not traced further). The flow was not changed to fix any of these.
+
+For the 9 failed-LVS runs the step files are readable up to `lvs`; on those the shares were also 1.0 (descriptive, partial runs).
+
+Block recovery without a model on the extracted-cell netlist is a small sample: 5 key constructs in the 9 designs, 3 with a right
+block; the same designs give 3 of 5 at lut4, k4 and k6 and 3 of 3 at gates (gates has no key for the processor module). The only
+large design with a key, `picorv32_pcpi_div`, has no right block at gds, lut4, k4 or k6 (gates has no key for it).
+
+### H-L13 (headline first, then the label)
+
+| quantity | LVS-match designs (n = 9) | label |
+|---|---|---|
+| (a) name-free join, non-filler extracted cells | 3676 of 3676 = 1.000 | SUPPORTED |
+| (b) full chain to an HDL line, logic cells | 3638 of 3638 = 1.000 | SUPPORTED |
+| designs with both shares 1.0 / below 1.0 / out of scope | 9 / 0 / 35 | |
+
+Overall: SUPPORTED on the 9 designs where the flow reaches LVS match (every one of them is SUPPORTED); not tested on the 35 where it does not.
+Weakest link on every chain: `medium` (the `cone` link from a mapped gate to the elaborated cells, by the v1.4 rule); all other links
+are `exact` or `high`. Failure catalogue: 0 cells (`results/catalogue.csv` has the header only). The measure can say no: a unit test
+cuts a join and a cone link and the cells land in the catalogue (`test_ql13.py`).
+
+### The 9 LVS-match designs
+
+| design | logic | tap | fill | CTS buffers | resize events | seconds | disk MB |
+|---|---|---|---|---|---|---|---|
+| Prob143_fsm_onehot | 19 | 4 | 39 | 0 | 5 | 3.5 | 3.8 |
+| Prob121_2014_q3bfsm | 14 | 4 | 46 | 3 | 0 | 5.1 | 4.3 |
+| Prob055_conditional | 129 | 30 | 272 | 0 | 18 | 30.4 | 11.2 |
+| Prob097_mux9to1v | 143 | 44 | 353 | 0 | 19 | 36.4 | 16.4 |
+| Prob052_gates100 | 248 | 70 | 588 | 0 | 8 | 42.4 | 17.0 |
+| Prob018_mux256to1 | 404 | 102 | 875 | 0 | 143 | 134.7 | 74.6 |
+| Prob105_rotate100 | 604 | 260 | 2073 | 9 | 104 | 201.2 | 59.2 |
+| Prob115_shift18 | 514 | 180 | 1469 | 9 | 138 | 204.8 | 59.9 |
+| picorv32_pcpi_div | 1563 | 532 | 4363 | 17 | 203 | 751.5 | 185.1 |
+| total | 3638 | 1226 | 10078 | 38 | 638 | | |
+
+Totals over the 9: 14980 extracted cells. No hold buffer, repair buffer or tie cell was inserted, no Odin III cell was removed or
+renamed, and no extracted cell carries an Odin III name (`extracted_odin_names` 0). The `equiv` check was `equivalent` in all 9.
+`schema_check.py` passed on all 9 `prov` directories. Total flow time for all 44 runs 2249 s; disk of the run root 1.2 GB; host disk
+41 GB free before and after (`df -h /mnt/c`).
+
+### The 35 designs outside the hypothesis (errors as the flow reported them; see `results/summary.md` for each)
+
+- 13 x place: `openroad_flow.tcl, 51 empty command name ""`: one cell or none, "Added 0 rows".
+- 4 x place `GPL-0305` RePlAce diverged; 1 x `GPL-0304`; 2 x `GPL-0302` (use a higher density); 1 x `PPL-0024` (402 pins, 349 possible; Prob092_gatesv100);
+  2 x global routing "net not properly covered" (`GRT-0076`); 1 x `net7 initial #node != #rpin` (tinyriscv_csr).
+- 2 x equiv: Prob046_dff8p (`latch $n21 is clocked by internal net`: a negative-edge clock), tinyriscv_clint (`undriven net raddr_o[0] reaches
+  primary output; pass --allow-undriven`). The flow turned both into a privacy refusal (`absolute or home path in equiv header.check.detail`);
+  the tool's own last line is in `flow.csv`.
+- 9 x lvs: 8 x `Netlists do not match`, 1 x `Top level cell failed pin matching` (tinyriscv_div, the largest layout, 7181 extracted cells, 772 s).
+
+Questions for the controller (not fixed here): (1) the tiny-design floorplan with zero rows; (2) the `gds`-stage label `physical:repair_buffer` for CTS buffers
+against `physical:cts_buffer` at `placed` and `routed` (38 cells in 4 designs); (3) the privacy check turning an `equiv` tool error into a path refusal;
+(4) the LVS supply-net mismatch of small designs.
+
+### Block recovery without a model (right block for a flip-flop key construct; key = same HDL line and column)
+
+| design | gds | gates | lut4 | k4 | k6 |
+|---|---|---|---|---|---|
+| Prob105_rotate100 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+| Prob115_shift18 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+| Prob121_2014_q3bfsm | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+| picorv32_pcpi_div | 0 / 2 | no key | 0 / 2 | 0 / 2 | 0 / 2 |
+| pooled (right / key) | 3 / 5 = 0.600 | 3 / 3 = 1.000 | 3 / 5 = 0.600 | 3 / 5 = 0.600 | 3 / 5 = 0.600 |
+
+The other five designs of the 9 have no flip-flops (or none in a key construct) and no key. Cell counts differ by endpoint (for example
+Prob105: 613 cells at gds, 1007 at gates, 402 at lut4, 303 at k4 and k6). On the benchmark the share is 0.610 at gates, 0.754 at k4 and 0.773 at k6
+(paper Table tab:join); 5 constructs cannot say whether the gds endpoint is above or below them. The LVS-failed `tinyriscv_div` (partial
+run, 1 key construct) has 0 of 1 at every endpoint but gates (no key). Q-L12 key with construct type at k4/k6/lut4 is in `prior_key.csv`.
+
+### Limits of this result
+
+- 9 of 44 designs reach LVS match; the finding holds for them. They are 8 VerilogEval problems and 1 processor module, 14 to 1563 logic cells.
+- The `extracted` stage holds cells, not transistors. The join is on cell type and DEF-placement location (a real scanned chip has no DEF).
+- OpenROAD is the March 2022 pin, the power grid is two layers (met1 rails, met4 straps), the library is drive strength 1 without latches.
+- The `cone` link is `medium` by definition: a mapped gate maps to the RTL objects whose spans it shares, so the chain is complete but coarse at that step.
+- Block recovery: 5 key constructs, grouping by line and column without a construct type, cell class `O-lut` as a stand-in, no retuning.

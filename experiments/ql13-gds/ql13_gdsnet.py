@@ -27,7 +27,7 @@ from loki.prov_steps import ProvRun
 
 POWER = {"VGND", "VPWR", "VPB", "VNB", "VDD", "VSS"}
 BUF_RE = re.compile(r"__(clkbuf|buf|dlygate|dlymetal|clkdlybuf)\d*[a-z]*_\d+$")
-INV_RE = re.compile(r"__(inv|clkinv)_\d+$")
+INV_RE = re.compile(r"__(inv|clkinv|clkinvlp)_\d+$")
 DRIVE_RE = re.compile(r"_\d+$")
 LIBCELL_RE = re.compile(r"^cell (\S+) gate")
 
@@ -171,7 +171,7 @@ def convert(spice: Path, lib: dict[str, LibCell]) -> tuple[str, list[dict[str, s
         if ins.master.endswith("conb_1"):
             for pin, n in sig.items():
                 cells.append(f".names {net(n)}\n{'1' if pin == 'HI' else ''}".rstrip("\n")
-                             + f"\n.cname {ins.ext_id}")
+                             + f"\n.cname {ins.ext_id}_{pin}")  # HI and LO: two BLIF cells
                 driven.add(n)
             kinds[ins.ext_id] = "const"
             continue

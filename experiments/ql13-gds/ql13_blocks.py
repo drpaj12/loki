@@ -46,9 +46,13 @@ def one(name: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     gdir = root / "gds"
     gdir.mkdir(exist_ok=True)
     row: dict[str, Any] = {"design": name, "status": "ok", "cells": 0, "ffs": 0, "labelled": 0,
-                           "unknown": 0, "blocks": 0, "key_total": 0, "key_right": 0}
+                           "unknown": 0, "blocks": 0, "key_total": 0, "key_right": 0,
+                           "partial": int(not (out / "prov" / "index.json").is_file())}
     spice = out / "ext_hier.spice"
-    if not spice.is_file() or not (out / "prov" / "index.json").is_file():
+    prov = out / "prov"
+    if not (prov / "index.json").is_file():  # a run that stopped at LVS: ql13_chain's partial copy
+        prov = root / "prov-partial"
+    if not spice.is_file() or not (prov / "index.json").is_file():
         row["status"] = "no_extract"
         return row, []
     try:
@@ -58,7 +62,7 @@ def one(name: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         return row, []
     (gdir / "netlist.blif").write_text(text, encoding="utf-8")
     (gdir / "ports.json").write_text(json.dumps(ports), encoding="utf-8")
-    labs = gn.labels(read_run(out / "prov"), kinds)
+    labs = gn.labels(read_run(prov), kinds)
     gn.write_csv(gdir / "labels.csv", labs)
     nl = nlm.parse(text, ports)
     row["cells"] = len(nl.cells)
