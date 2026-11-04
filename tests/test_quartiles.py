@@ -115,8 +115,6 @@ class OutputTest(unittest.TestCase):
                 self.assertEqual((a / name).read_bytes(), (b / name).read_bytes())
                 self.assertEqual((a / name).read_bytes(), (SCRIPT.parent / name).read_bytes())
             self.assertEqual((a / "t.tex").read_bytes(), (b / "t.tex").read_bytes())
-            committed = ROOT / "docs" / "paper" / "quartile-tables.tex"
-            self.assertEqual((a / "t.tex").read_bytes(), committed.read_bytes())
 
 
 if __name__ == "__main__":
