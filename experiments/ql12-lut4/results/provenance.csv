@@ -1,0 +1,4 @@
+endpoint,draw,rows,key_total,key_right,key_right_ok
+lut4,1,41,23,10,7
+lut4,2,37,8,4,3
+lut4,3,37,8,4,4
