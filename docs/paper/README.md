@@ -58,7 +58,7 @@ DISMISSED). Support files, all in `docs/paper/`:
 - Bibliography: `luuthesis` (J. Luu, PhD thesis, University of Toronto, 2014) joins `jamiesonthesis`
   (P. A. Jamieson, PhD thesis, University of Toronto, 2007) for the Background. The PDFs live only in
   `work/mimir-papers/` and are never committed.
-- Build: `tectonic -X compile build/loki-local.tex -Z search-path=docs/paper` (the wrapper selects the OT1 font encoding).
+- Build: from `docs/paper`, `latexmk -pdf -interaction=nonstopmode -outdir=build loki.tex` with the system TeX Live (`IEEEtran.cls` and `IEEEtran.bst` sit beside `loki.tex`, see `IEEEtran-NOTICE.md`; no font wrapper needed). Last checked: 59 pages, 0 undefined references.
 - Tests for `make_register.py`, `make_glossary.py` and `split_tables.py`: `tests/test_paper_tools.py` (determinism plus a small fixture each).
 - `gen/quartile-*`, `gen/tab-q-*`, `gen/tab-veval-*` (untracked) are leftovers of an earlier `split_tables.py` that also split `quartile-tables.tex` and `veval-tables.tex`; the paper inputs those two files directly and does not use them.
 

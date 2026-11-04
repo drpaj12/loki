@@ -219,7 +219,7 @@ differences with intervals (bootstrap over designs, B = 2000, `random.Random(5)`
 
 ruff and `mypy --strict` clean per CLAUDE.md; the unittest suite passes except the known stale
 `test_4b_real_micros_beats_wl` (confirmed by name); new unit tests for the detector. Generated
-CSVs and the generated .tex regenerate byte-identically. Tectonic builds `docs/paper/loki.tex`
+CSVs and the generated .tex regenerate byte-identically. latexmk builds `docs/paper/loki.tex`
 clean from the worktree and from a `git archive` copy under `/tmp/claude-1000/le5-*`; the tracked
 PDF is rebuilt. No absolute home-directory path in committed files.
 
