@@ -1,0 +1,116 @@
+"""Unit tests of Q-L13: chain completeness on the stored comparator run, and the extracted-cell
+netlist converter on a small hand-written hierarchical SPICE (no Odin III, no external tool)."""
+
+from __future__ import annotations
+
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import ql13_chain as ch  # noqa: E402
+import ql13_env as env  # noqa: E402
+import ql13_gdsnet as gn  # noqa: E402
+
+from loki.prov_steps import read_run  # noqa: E402
+
+FIXTURE = env.REPO / "tests" / "data" / "prov_steps" / "silicon"
+LIB_TEXT = """library t
+
+cell sky130_fd_sc_hd__nand2_1 gate area 1
+  in A 1 ; in B 1 ; out Y 1
+  fn Y = ( ~ A ) | ( ~ B )
+end
+cell sky130_fd_sc_hd__dfxtp_1 gate area 1
+  in CLK 1 clock ; in D 1 ; out Q 1
+  seq Q <= D @ posedge CLK init x
+end
+"""
+SPICE = """* test
+.subckt sky130_fd_sc_hd__nand2_1 B Y A VGND VPWR VPB VNB
+.ends
+
+.subckt sky130_fd_sc_hd__dfxtp_1 Q CLK D VPWR VGND VPB VNB
+.ends
+
+.subckt sky130_fd_sc_hd__fill_4 VGND VPWR VPB VNB
+.ends
+
+.subckt top a b clk q VDD VSS
+Xsky130_fd_sc_hd__nand2_1_0 b nand/Y a VSS VDD VDD VSS sky130_fd_sc_hd__nand2_1
+Xsky130_fd_sc_hd__dfxtp_1_0 q clk
++ nand/Y VDD VSS VDD VSS sky130_fd_sc_hd__dfxtp_1
+Xsky130_fd_sc_hd__fill_4_0 VSS VDD VDD VSS sky130_fd_sc_hd__fill_4
+.ends
+"""
+
+
+class ChainTest(unittest.TestCase):
+    def test_comparator_share_one(self) -> None:
+        row, cat, weak = ch.analyse(read_run(FIXTURE))
+        self.assertEqual(row["n_logic"], 17)
+        self.assertEqual(row["a_share"], "1.0000")
+        self.assertEqual(row["b_share"], "1.0000")
+        self.assertEqual(cat, [])
+        self.assertEqual(sum(weak.values()), 17)
+        self.assertGreater(row["n_tap"] + row["n_fill"], 0)
+
+    def test_chain_reaches_hdl_through_every_stage(self) -> None:
+        run = read_run(FIXTURE)
+        obj = next(o for o in run.stage_objects("extracted") if ch.cell_class(run, o) == "logic")
+        c = ch.full_chain(run, obj, "logic")
+        self.assertTrue(c.complete)
+        self.assertEqual(c.stages[0], "extracted")
+        self.assertEqual(c.stages[-1], "hdl")
+        for stage in ch.STAGE_ORDER:
+            self.assertIn(stage, c.stages)
+        self.assertTrue(c.spans)
+
+    def test_unjoined_is_a_break(self) -> None:
+        run = read_run(FIXTURE)
+        obj = next(o for o in run.stage_objects("extracted") if ch.cell_class(run, o) == "logic")
+        c = ch.full_chain(run, obj, "unjoined")
+        self.assertFalse(c.complete)
+        self.assertEqual(c.broken_at, "extracted")
+
+
+class NetTest(unittest.TestCase):
+    def test_cover(self) -> None:
+        self.assertEqual(gn.cover("( ~ A ) | ( ~ B )", ["A", "B"]), ["0- 1", "-0 1"])
+        self.assertEqual(gn.cover("( A & B )", ["A", "B"]), ["11 1"])
+        with self.assertRaises(gn.Unsupported):
+            gn.cover("( C )", ["A", "B"])
+
+    def test_convert(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            sp = Path(tmp) / "h.spice"
+            sp.write_text(SPICE, encoding="utf-8")
+            lib_file = Path(tmp) / "t.o3lib"
+            lib_file.write_text(LIB_TEXT, encoding="utf-8")
+            text, ports, kinds = gn.convert(sp, gn.read_lib(lib_file))
+        self.assertEqual(kinds, {"sky130_fd_sc_hd__nand2_1_0": "lut",
+                                 "sky130_fd_sc_hd__dfxtp_1_0": "ff"})
+        self.assertIn(".latch", text)
+        self.assertIn("0- 1\n-0 1", text)
+        self.assertEqual(sorted(p["orig"] for p in ports if p["dir"] == "out"), ["q"])
+        self.assertEqual(sorted(p["orig"] for p in ports if p["dir"] == "in"), ["a", "b", "clk"])
+
+    def test_resized_master_and_buffer(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            lib_file = Path(tmp) / "t.o3lib"
+            lib_file.write_text(LIB_TEXT, encoding="utf-8")
+            lib = gn.read_lib(lib_file)
+        kind, lc = gn.lib_cell(lib, "sky130_fd_sc_hd__nand2_4",
+                               ["A", "B", "Y", "VGND", "VPWR", "VPB", "VNB"])
+        self.assertEqual((kind, lc.outs), ("lut", ["Y"]))
+        kind, lc = gn.lib_cell(lib, "sky130_fd_sc_hd__clkbuf_16",
+                               ["X", "A", "VGND", "VPWR", "VPB", "VNB"])
+        self.assertEqual((kind, lc.fn), ("lut", {"X": "A"}))
+        with self.assertRaises(gn.Unsupported):
+            gn.lib_cell(lib, "sky130_fd_sc_hd__nosuch_2", ["A", "X"])
+        self.assertEqual(gn.lib_cell(lib, "sky130_fd_sc_hd__dfxtp_1", [])[0], "ff")
+
+
+if __name__ == "__main__":
+    unittest.main()
