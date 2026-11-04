@@ -1,0 +1,13 @@
+call	note
+1389	Bash python wrote own outbox
+1462	Write + Edit own outbox
+1463	reply in chat, no Write
+1464	Write + Edit own outbox
+1974	2 Writes own outbox
+2473	2 Writes own outbox
+2525	Bash python wrote own outbox
+3415	Write + Bash sed -i on own outbox
+3421	2 Writes + 2 Edits own outbox
+3424	Write + Edit own outbox
+3452	2 Reads own call file
+3462	Bash: sed/python on own call file, scratch /tmp/x.v and /tmp/claude-1000/t.v, wrote own outbox via python, ran iverilog on its reply (self-check, protocol deviation); no repo or other call/outbox file touched

@@ -204,3 +204,132 @@ SHA-256: `block_prompt_lut.txt` cbacc5394283bbc8147f7cfd80c8e6393028dcf1a40e3380
   8. Deviations from the brief's wording: the block check is the Q-L10 one (400 random cycles in Icarus Verilog against the faithful Verilog of
      the block's covers), not Odin III + ABC `cec`; Q-L10 did not use Odin III + ABC for it. The design check of the processor modules uses
      Yosys + ABC `dsec` as Q-L10 did. Odin III is used (read only) for the netlists, the block builder's graphlet pass and the AST/CFG flatten.
+  9. Run choice (Peter 2026-11-03, before any call; recorded here before the first call): the reduced run. Arm A on every design that has an
+     A call, and arm D on the designs of at most 64 blocks, i.e. without D on the bit-slice designs Prob092_gatesv100 and Prob017_mux2to1v
+     (counts row "D designs of at most 64 blocks"). Both endpoints: 1074 calls (k4 537 = D 416 + A 121; k6 537 = D 417 + A 120). One endpoint
+     per run, k4 first, then k6. Order, batching and template unchanged: the calls of `batches.json` filtered to the endpoint and the
+     subset, in their order and batch (batches shrink to the kept calls; 50 batches at k4). Prob092 and Prob017 still get arm A; for them
+     the D-vs-A and D-vs-gates comparisons have no D row, and the analysis states this. Before the run the user message of all 537 k4 call
+     files was hashed and equals `calls_table.csv` prompt_sha256 (0 mismatches). The stop rule is unchanged (85 percent weekly meter, checked
+     before the run and between the endpoints; refused plus no-file above 12 and above 10 percent of calls made, checked after each batch).
+
+## Results (2026-11-03, the reduced run of amendment 9)
+
+Generated tables: `results/summary.md` and `results/tests.csv` (`q12_analyze.py`), from `results/results.csv`, `results/blocks.csv`
+and `results/astcfg_rows.csv` (`q12_collect.py`, `q12_astcfg.py`). Call status per call: `results/status.csv`; batches as run:
+`results/run-batches.json`; tool-use audit: `results/tool-audit-k4.tsv`, `results/tool-audit-k6.tsv`.
+
+### Plain English
+
+On these designs, cutting the LUT netlist into blocks does not beat giving the model the whole netlist. The whole-netlist prompt
+(arm A) passes the testbench as often as the block decode (arm D) or more often. No design has a higher pass rate under D than
+under A. Under A, 2 designs at k4 and 4 at k6 pass on more draws than under D. The RTL the two arms write is equally close to the reference in AST
+and CFG similarity. Against the gate-level run (Q-L10), the block decode at the LUT endpoints passes about as often (the
+interval is wide) and is as close or slightly closer to the reference in AST and CFG.
+
+Read k4 and k6 as two runs of the same test, not as two LUT sizes. Both endpoints come from the six-input mapper, and k6 only
+adds hard adders. The one VerilogEval design with an adder (Prob156) was filtered out before the run (amendment 1.2). So 120 of
+the 121 arm A prompts and 1584 of the 1610 arm D block prompts at k4 are byte-identical to their k6 counterparts. The two
+endpoints differ only on the processor modules. The k4 vs k6 differences below are draw-to-draw variation of the same prompts.
+A four-input LUT endpoint was not built.
+
+### Run
+
+1074 calls (k4 537, k6 537), one fresh `claude-sonnet-5-5` subagent each, no retry. 1070 `ok`, 4 `no_file`:
+- k4: calls 1322, 1386 and 2581.
+- k6: call 1463.
+
+Each `no_file` call answered in chat and did not write its outbox file. The stop rule was never near: 4 bad of 1074.
+
+The weekly meter read 36 before the run and 44 after it. Output tokens summed from the subagent transcripts: k4 1.22M, k6 0.98M.
+Cache reads were about 48M per endpoint. These are harness totals and include each subagent's system prompt.
+
+A design row whose block lost its reply is `not_run` and is not in the paired tests, as in Q-L10.
+
+Tool-use audit (in `results/tool-audit-k*.tsv`): no call read or wrote another call's file, an outbox file other than its own, or
+a repository file.
+- 19 calls used tools beyond one Read and one Write.
+  - Most re-wrote or edited their own outbox.
+  - Calls 302, 1389 and 2525 wrote it through Bash.
+  - Call 1448 ran `echo`.
+- Call 3462 (k6, a processor block) went further. It wrote scratch copies under `/tmp` and compiled its own reply with Icarus Verilog
+  before writing it. This is a self-check the protocol does not allow. The reply is kept as written and flagged here.
+
+### H-L12 (headline first, then the label; unit = design, bootstrap 95 percent interval)
+
+(a) D at the endpoint not lower than D at gates (non-inferior within 0.05):
+
+| endpoint | measure | D minus D-at-gates | interval | designs W/L/T | label |
+| --- | --- | --- | --- | --- | --- |
+| k4 | pass@1 | -0.004 | (-0.107, +0.079) | 4/3/35 | INCONCLUSIVE |
+| k4 | AST flat | +0.007 | (-0.001, +0.015) | 17/5/12 | SUPPORTED |
+| k4 | CFG flat | -0.001 | (-0.015, +0.009) | 13/7/17 | SUPPORTED |
+| k6 | pass@1 | +0.048 | (-0.071, +0.159) | 7/4/31 | INCONCLUSIVE |
+| k6 | AST flat | +0.010 | (+0.004, +0.017) | 18/4/12 | SUPPORTED |
+| k6 | CFG flat | -0.000 | (-0.014, +0.009) | 13/7/17 | SUPPORTED |
+
+(b) A lower than D at the endpoint (designs where both run):
+
+| endpoint | measure | D minus A | interval | designs W/L/T | label |
+| --- | --- | --- | --- | --- | --- |
+| k4 | pass@1 | -0.038 | (-0.103, +0.000) | 0/2/37 | INCONCLUSIVE |
+| k4 | AST flat | -0.006 | (-0.029, +0.013) | 11/12/11 | INCONCLUSIVE |
+| k4 | CFG flat | -0.006 | (-0.044, +0.044) | 7/19/11 | INCONCLUSIVE |
+| k6 | pass@1 | -0.070 | (-0.158, -0.009) | 0/4/34 | CONTRADICTED |
+| k6 | AST flat | -0.007 | (-0.027, +0.011) | 10/12/12 | INCONCLUSIVE |
+| k6 | CFG flat | -0.006 | (-0.044, +0.043) | 7/18/12 | INCONCLUSIVE |
+
+Confirmatory family (the four pass@1 tests): exact McNemar on MAJ gives p = 1.000 and 0.500 at each endpoint, and Holm-adjusted
+p is 1.000 for all four. The paired-majority view finds no difference. The bootstrap rule labels (b) at k6 CONTRADICTED, and the
+k4 interval ends at 0.
+
+Verdict:
+- H-L12(a): SUPPORTED on AST and CFG, INCONCLUSIVE on pass@1, the primary measure.
+- H-L12(b): not supported. Its direction is reversed: A is not lower than D. On the bootstrap rule (b) is CONTRADICTED at k6 and
+  INCONCLUSIVE at k4. Since k4 and k6 are replicates, the plain reading is that the whole-netlist prompt matches or beats the
+  block decode on pass@1 at the LUT level for designs of this size.
+
+Where D loses:
+- At k4: Prob097_mux9to1v, Prob154_fsm_ps2data.
+- At k6: Prob018_mux256to1, Prob097_mux9to1v, Prob121_2014_q3bfsm, Prob154_fsm_ps2data.
+
+Every loss is a `runtime` outcome of the assembled design (the testbench ran and reported a failure). In each case some blocks
+check `ok` and others do not, so one wrong block is enough to fail the design.
+
+Descriptive, no verdict: A at the endpoint minus A at gates (full run) is +0.046 (+0.009, +0.102), designs 4/0/32, at both
+endpoints. The whole-netlist prompt passes slightly more often on the LUT netlist than on the gate netlist.
+
+AST/CFG values are absent where the scorer cannot read the reference RTL, the same for both arms:
+- pyverilog fails on Prob023, Prob097, Prob121 and Prob154 (SystemVerilog syntax).
+- The Odin III flatten of Prob018 leaves a `$shiftx` cell that it cannot read back (CFG only).
+
+### Provenance and processor modules
+
+Key constructs (arm D) with a right block, and with a right block that checks `ok`:
+
+| endpoint | draw 1 | draw 2 | draw 3 |
+| --- | --- | --- | --- |
+| k4 | 9 / 8 of 24 | 3 / 3 of 6 | 5 / 5 of 9 |
+| k6 | 11 / 11 of 24 | 5 / 5 of 9 | 5 / 5 of 9 |
+
+Processor modules (one draw, arm D, sequential equivalence; arm A only for tinyriscv_clint at k4, `neq`):
+- k4: all four `neq`.
+  - picorv32_pcpi_div: 0 of 4 blocks `ok`
+  - tinyriscv_div: 10 of 12
+  - tinyriscv_csr: 5 of 6
+  - tinyriscv_clint: 3 of 4
+- k6:
+  - tinyriscv_div `pass` (3 of 5 blocks `ok`)
+  - tinyriscv_csr `pass` (11 of 11)
+  - tinyriscv_clint `pass` (6 of 6)
+  - picorv32_pcpi_div `error` (5 of 5 blocks `ok`)
+
+These are the only rows where the k4 and k6 netlists differ. With one draw each, they are not a test.
+
+### Limits of this result
+
+- The designs are small: 40 VerilogEval problems, and arm A ran on every one. The case for blocks is the design too large for one
+  prompt, and this set does not test it.
+- The bit-slice designs Prob092 and Prob017 have no D row (amendment 9).
+- k4 and k6 are not separate LUT sizes for the VerilogEval set (above).
+- The block check is a random simulation, and the design check of the processor modules is an equivalence check, not a proof.
