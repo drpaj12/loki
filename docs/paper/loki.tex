@@ -63,10 +63,10 @@ their path and then joined by a conductance rule are the right block for 0.715 o
 constructs, against 0.385 for bounded cones, and a kind guess on those blocks reaches a macro F1
 of 0.392. Structures that synthesis erased recover weakly, clustering does not find the
 designer's hierarchy, and a split step, a word-first detector and Loki's hints to a language model
-did not help; a model with the netlist does far better than without it.
+did not help; a model with the netlist does far better than without it. Cutting the netlist into blocks for a model does not beat giving it the whole netlist at gates, four-input LUTs or six-input LUTs. On the 9 of 44 designs that a silicon flow takes to a matched layout, every logic cell read back from the GDS joins to a placed cell and has a full chain to an HDL line, with no name used.
 
-Every claim is a hypothesis with one experiment and one verdict. Of 104 register rows, 14 are
-USEFUL, 12 POSSIBLY GOOD, 19 DISMISSED, 34 INCONCLUSIVE and 25 are measurements. Round-by-round
+Every claim is a hypothesis with one experiment and one verdict. Of 111 register rows, 14 are
+USEFUL, 13 POSSIBLY GOOD, 22 DISMISSED, 35 INCONCLUSIVE and 27 are measurements. Round-by-round
 records are in the appendix. No area, speed or power is measured.
 \end{abstract}
 
@@ -1022,7 +1022,7 @@ Construct types per cell & 3.70 & 3.65 & 1.79 \\
 \end{tabular}
 \end{table}
 
-The k4 and k6 netlists have fewer cells (63.2 and 113.5 against 305.3), but a cell is a function of about four inputs that stands for 4.8 gates at k4 and 2.7 at k6. So the reverse engineering is larger in what one cell hides, not in how many cells there are. The length of the provenance chain per cell does not grow (3.65 at k4 against 3.70 at gates), so the extra work is in undoing the merge, not in a longer chain. On the benchmark units of Section~\ref{sec:results-main} the pattern is the same (mean 190.1, 48.1 and 54.3 cells; 1.74, 4.14 and 4.06 inputs per logic cell). Every language-model experiment of this paper was run at the gates endpoint only; no reply exists for k4 or k6, so the paired comparisons of Section~\ref{sec:ql11} are at one endpoint and the structural results of Section~\ref{sec:results-main} carry the other two.
+The k4 and k6 netlists have fewer cells (63.2 and 113.5 against 305.3), but a cell is a function of about four inputs that stands for 4.8 gates at k4 and 2.7 at k6. So the reverse engineering is larger in what one cell hides, not in how many cells there are. The length of the provenance chain per cell does not grow (3.65 at k4 against 3.70 at gates), so the extra work is in undoing the merge, not in a longer chain. On the benchmark units of Section~\ref{sec:results-main} the pattern is the same (mean 190.1, 48.1 and 54.3 cells; 1.74, 4.14 and 4.06 inputs per logic cell). The model experiments of Sections~\ref{sec:llm-full} to~\ref{sec:ql11} were run at the gates endpoint only; the block decode and the whole-netlist prompt were run at the LUT endpoints later (Section~\ref{sec:ql12}), where the k4 endpoint is a replicate of k6 for the VerilogEval set and a real four-input LUT endpoint (lut4) was built.
 
 \section{Results: what the evidence says now}
 \label{sec:results-main}
@@ -1297,7 +1297,7 @@ Ceiling: some prefix of the \#74 paths is right & \#74 & 0.556 \\
 \hev{Measurements.} The conductance join raises the share from 0.550 to 0.715, against 0.385 for cones. Per unit the geomean is 1.149 (1.123 to 1.177), W194 / L9 / T654, against the blocks before the join, and 1.318 (1.276 to 1.364), W394 / L46 / T417, against cones. It repairs 157 of the 251 constructs cut across blocks. Of the 95 swallowed constructs, 42 are right after the step and were right before it, and it loses 29 constructs that were right, all in composite parts. The Bayes-factor joins give 0.680 and 0.677, shared control nets 0.617. Every split threshold loses more constructs than it repairs. Table~\ref{tab:join} gives the share by scope.
 
 \begin{table}[t]
-\caption{Right-block share by scope before and after the join (test, 1141 constructs).}
+\caption{Right-block share by scope before and after the join (test, 1141 constructs; the last row is the 5 key constructs of the 9 designs of Section~\ref{sec:ql13}, where gates, lut4, k4 and k6 give 3 of 3, 3 of 5, 3 of 5 and 3 of 5 on the same designs).}
 \label{tab:join}
 \centering
 \footnotesize
@@ -1307,10 +1307,12 @@ Scope & Constructs & Cones & Before join & After join \\
 \midrule
 All & 1141 & 0.385 & 0.550 & 0.715 \\
 Gate netlists & 351 & 0.242 & 0.538 & 0.610 \\
-Four-input LUT & 460 & 0.439 & 0.602 & 0.754 \\
+k4 (six-input mapper) & 460 & 0.439 & 0.602 & 0.754 \\
 k6 and hard-map & 330 & 0.461 & 0.491 & 0.773 \\
 Single designs & 635 & 0.356 & 0.539 & 0.742 \\
 Composite parts & 506 & 0.421 & 0.565 & 0.682 \\
+\midrule
+Extracted layout (9 designs, Section~\ref{sec:ql13}) & 5 & -- & -- & 0.600 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1574,7 +1576,7 @@ Hint, D+h vs D & 8 & 0.750 & 0.708 & $-0.042$ ($-0.125$, 0.000) \\
 
 \hev{Methodology.} We compared three AST and CFG wrappers that earlier experiments had written (Q-L10, the f3 experiment, round 2) on 16 problems: all three call the same Gate-Breaker AST code and the same Odin~III CFG probe, and they agree to six decimals on 15 of the 16 problems, and the sixteenth fails to parse the same way in all three. We kept the Q-L10 wrapper, which adds a numpy kernel that equals the probe's sum on small graphs, the flatten step and the node limit (12,000), and re-scoring arm~A with it reproduced the 492 values that Q-L10 had written. Two writers are compared: the model's code \emph{as written}, and the code flattened to one module by the Odin~III writer on both sides, the \emph{same-writer} comparison, which is the headline because the blocks arm writes several modules and the other arms one. Pairs are the same problem and draw; a problem's difference is the mean over its draws; the interval is a bootstrap over problems (2\,000 resamples, seed 20261103); the label is BETTER or WORSE when the interval excludes zero and INCONCLUSIVE otherwise. For (b) the constructs are split at the median number of cells of their endpoint and the interval resamples designs. The rule for (b) was fixed before the analysis: SUPPORTED when the interval of large minus small right-block share is below zero, DISMISSED when above.
 
-\hev{Measurements.} Table~\ref{tab:ql11} gives the same-writer differences at the gates endpoint; it is the only endpoint for which a model reply exists. Blocks (D) against the netlist (A) on the 43 problems run (15 of them gate-free): pass@1 $+0.008$, W / L / T over draws 5 / 4 / 118; AST $-0.026$ on 36 problems, W / L / T 16 / 57 / 33; CFG $-0.028$ on 41 problems, 20 / 65 / 34. As written the assembled top module is far from the reference ($-0.354$ AST, $-0.396$ CFG) because it only instantiates blocks. Version-2 hints (B2) against A2: pass@1 $+0.099$, W / L / T over draws 20 / 1 / 171, and against the wrong-hint control $+0.073$; AST and CFG move by under 0.02. On the four over-cap designs, where arm~A cannot run, D passes 8 of 12 draws and its flattened design has AST 0.748 and CFG 0.874. For (b), the right-block share is 0.779 above the median size (29 cells) and 0.653 below it, a difference of $+0.126$ ($+0.076$ to $+0.177$); by endpoint it is $-0.008$ at gates ($-0.116$ to $+0.101$), $+0.292$ at k4 and $+0.234$ at k6.
+\hev{Measurements.} Table~\ref{tab:ql11} gives the same-writer differences at the gates endpoint; it is the only endpoint for which a model reply exists at this point; Section~\ref{sec:ql12} adds the LUT endpoints. Blocks (D) against the netlist (A) on the 43 problems run (15 of them gate-free): pass@1 $+0.008$, W / L / T over draws 5 / 4 / 118; AST $-0.026$ on 36 problems, W / L / T 16 / 57 / 33; CFG $-0.028$ on 41 problems, 20 / 65 / 34. As written the assembled top module is far from the reference ($-0.354$ AST, $-0.396$ CFG) because it only instantiates blocks. Version-2 hints (B2) against A2: pass@1 $+0.099$, W / L / T over draws 20 / 1 / 171, and against the wrong-hint control $+0.073$; AST and CFG move by under 0.02. On the four over-cap designs, where arm~A cannot run, D passes 8 of 12 draws and its flattened design has AST 0.748 and CFG 0.874. For (b), the right-block share is 0.779 above the median size (29 cells) and 0.653 below it, a difference of $+0.126$ ($+0.076$ to $+0.177$); by endpoint it is $-0.008$ at gates ($-0.116$ to $+0.101$), $+0.292$ at k4 and $+0.234$ at k6.
 
 \begin{table}[t]
 \caption{Differences at the gates endpoint, tested arm minus reference arm, same writer, with the 95 percent bootstrap interval over problems. N is the number of problems with a pass value; AST and CFG use the problems where both arms have a parsed design. The reference is A (A2 for B2, W for the fourth row).}
@@ -1598,7 +1600,119 @@ D+h vs A & 28 & $-$0.024 ($-$0.083, +0.024) & $-$0.036 ($-$0.063, $-$0.015) & $-
 
 \hev{Interpretation.} Loki's block control does not make the design more like the reference than the netlist alone does: it is about 0.03 lower on both similarity measures, and it loses in 57 of the 106 scored draws against 16 wins, while correctness is not detectably different. The model with the whole netlist writes text closer to the designer's than a model that sees one block at a time, which fits the cut: the glue between blocks is written by a script, not by the model. The version-2 hints are the one place where a model with Loki's help passes more testbenches (about ten points higher pass@1), and the gain is in functional correctness; the similarity to the reference does not change, so the hints change what the model gets right, not how it writes it. For (b), large constructs are not the ones lost. At the gates endpoint size makes no difference, and at k4 and k6 the small constructs are recovered less often (0.61 and 0.66 against 0.91 and 0.89); of their misses 37 of 92 at k4 and 39 of 57 at k6 are constructs swallowed by a larger block. So the cut of the blocks is the cause of the loss, but the failure is the block that grows too far and not the construct that is too big. Only a replay of the block builder with an earlier stop on small constructs can test that.
 
-\hev{Conclusion.} (a) For pass@1 the blocks arm is \verdict{INCONCLUSIVE} against A ($+0.008$, W / L / T over problems 3 / 3 / 37); for AST and CFG it is \verdict{DISMISSED}: the interval is below zero, $-0.026$ and $-0.028$, with no rule fixed in advance. The version-2 hint arm is the one that passes more tests than A2 ($+0.099$, interval above zero), with unchanged similarity. At k4 and k6 the hypothesis is untested: no reply exists there. (b) \verdict{DISMISSED}: large constructs are recovered as often or more often than small ones, $+0.126$ [QL11-a to QL11-c; Appendix~\ref{rec:ql11}].
+\hev{Conclusion.} (a) For pass@1 the blocks arm is \verdict{INCONCLUSIVE} against A ($+0.008$, W / L / T over problems 3 / 3 / 37); for AST and CFG it is \verdict{DISMISSED}: the interval is below zero, $-0.026$ and $-0.028$, with no rule fixed in advance. The version-2 hint arm is the one that passes more tests than A2 ($+0.099$, interval above zero), with unchanged similarity. At k4 and k6 the hypothesis was untested here; Section~\ref{sec:ql12} runs both prompts there. (b) \verdict{DISMISSED}: large constructs are recovered as often or more often than small ones, $+0.126$ [QL11-a to QL11-c; Appendix~\ref{rec:ql11}].
+
+\subsection{Back to HDL at four endpoints: the gate, four-input LUT and six-input LUT runs}
+\label{arg:ql12}
+\label{sec:ql12}
+
+Section~\ref{sec:ql11} ended with a gap: every model reply was for the gates endpoint. This round closes the gap for the two LUT endpoints. A first run (k4 and k6) found that the two names do not stand for two LUT sizes, so a second run built a real four-input netlist. The text below tells both in order.
+
+\hev{Hypothesis.} We carry the two claims about Loki's blocks to the LUT endpoints. (a) The block decode (arm~D) at the LUT endpoint is not lower than the block decode at gates, within a margin of 0.05 on pass@1, the primary measure, and on AST and CFG similarity. (b) The whole-netlist prompt (arm~A) is lower than the block decode at the same endpoint.
+
+\hev{Implication.} If (a) holds, the extra work of a LUT netlist (fewer cells, each hiding more gates) does not make the model's job harder, and Loki's block cut works at every endpoint. If (b) holds, the block cut earns its place at the LUT endpoints, where a cell says more than a gate. If neither holds, the cut is a way to reach designs too large for one prompt and not a way to be more correct.
+
+\hev{Experiment.} The designs are the 40 VerilogEval problems that pass the ceiling filter (a faithful decode of the netlist passes the testbench) and four processor modules, 44 in all. Arm~A gives the model the whole netlist. Arm~D gives it one block at a time, and a script glues the decoded blocks. The prompts are the same fixed text at both LUT endpoints and say ``LUT-level netlist (BLIF)'' without a size. VerilogEval problems have three draws, processor modules one. Arm~A runs when its prompt is at most 40,000 bytes; arm~D runs on designs of at most 64 blocks. Each call is a fresh \code{claude-sonnet-5-5} subagent with no retry. The rules and tests were fixed before any call (plans \code{experiments/}\allowbreak\code{ql12-k4k6/} and \code{ql12-lut4/}).
+
+\hev{Methodology.} The unit is the design. The difference is the mean over designs with a 95 percent bootstrap interval (2000 resamples) and W / L / T counts. The strict label follows the register: a difference whose interval touches zero is INCONCLUSIVE, and an interval wholly on the wrong side of the rule is DISMISSED. The confirmatory family is the pass@1 tests, with an exact McNemar test on the majority of the draws and a Holm correction. The first run made two LUT netlists with the same Odin~III six-input mapper (LUTs of one to six inputs); the second adds the real four-input endpoint (\code{abc --lut 4}, at most four inputs in all 51 netlists built), with every other part of the code unchanged. We call the endpoints gates, lut4 and k6, and treat the k4 of the first run as a replicate of k6. The reason is that for the VerilogEval set 120 of the 121 arm~A prompts and 1,584 of the 1,610 arm~D block prompts at k4 are byte-identical to those at k6 (the one design with an adder was filtered out before the run); the two differ only on the processor modules. The four-input mapping needs 4,235 LUTs for the 44 designs against 3,066 for the six-input one, a rise of 38 percent, with the same 1,047 flip-flops.
+
+\hev{Measurements.} Table~\ref{tab:ql12} gives the two tests at lut4 and k6, tested arm minus reference, with the strict label. Table~\ref{tab:ql12sbs} gives the three endpoints side by side. At k4 the pass@1 test (b) gives $-0.038$ ($-0.103$ to $+0.000$), W / L / T 0 / 2 / 37, and test (a) gives $-0.004$ ($-0.107$ to $+0.079$), 4 / 3 / 35; these are the k6 results again, within draw-to-draw variation. The whole-netlist prompt passes slightly more often on the LUT netlist than on the gate netlist: $+0.046$ ($+0.009$ to $+0.102$), 4 / 0 / 32 at k6, and $+0.019$ ($-0.046$ to $+0.083$) at lut4 (descriptive). At lut4 arm~D passes more draws than arm~A on 2 designs and fewer on 3, with 33 ties. Where arm~D loses to arm~A at k6 (Prob018, Prob097, Prob121, Prob154), the testbench ran and failed: some blocks check ok and others do not, and one wrong block fails the design. The key constructs of the Odin~III answer key with a right block, in draw 1: 10 of 23 at lut4 (7 whose decode checks ok) and 11 of 24 at k6. For the processor modules (one draw, a sequential equivalence check), k6 gives \code{tinyriscv\_div}, \code{tinyriscv\_csr} and \code{tinyriscv\_clint} equivalent and \code{picorv32\_pcpi\_div} an error; lut4 gives only \code{tinyriscv\_csr} equivalent. These rows are not a test.
+
+\begin{table}[t]
+\caption{Test of H-L12 at the two LUT endpoints. Difference, 95 percent interval over designs, designs W / L / T, and the strict label. (a) is arm~D at the endpoint minus arm~D at gates; (b) is arm~D minus arm~A at the endpoint. Source: \code{ql12-lut4/results/tests.csv} and \code{ql12-k4k6/results/tests.csv}.}
+\label{tab:ql12}
+\centering
+\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llllll@{}}
+\toprule
+Endpoint & Test & Measure & Difference (interval) & W / L / T & Label \\
+\midrule
+lut4 & (a) & pass@1 & $+0.008$ ($-0.089$, $+0.106$) & 5 / 3 / 33 & INCONCLUSIVE \\
+lut4 & (a) & AST & $+0.006$ ($+0.001$, $+0.011$) & 16 / 4 / 12 & SUPPORTED \\
+lut4 & (a) & CFG & $-0.004$ ($-0.020$, $+0.006$) & 9 / 8 / 18 & SUPPORTED \\
+lut4 & (b) & pass@1 & $-0.026$ ($-0.105$, $+0.044$) & 2 / 3 / 33 & INCONCLUSIVE \\
+lut4 & (b) & AST & $-0.015$ ($-0.039$, $+0.006$) & 8 / 13 / 11 & INCONCLUSIVE \\
+lut4 & (b) & CFG & $-0.009$ ($-0.052$, $+0.044$) & 5 / 19 / 11 & INCONCLUSIVE \\
+k6 & (a) & pass@1 & $+0.048$ ($-0.071$, $+0.159$) & 7 / 4 / 31 & INCONCLUSIVE \\
+k6 & (a) & AST & $+0.010$ ($+0.004$, $+0.017$) & 18 / 4 / 12 & SUPPORTED \\
+k6 & (a) & CFG & $-0.000$ ($-0.014$, $+0.009$) & 13 / 7 / 17 & SUPPORTED \\
+k6 & (b) & pass@1 & $-0.070$ ($-0.158$, $-0.009$) & 0 / 4 / 34 & CONTRADICTED \\
+k6 & (b) & AST & $-0.007$ ($-0.027$, $+0.011$) & 10 / 12 / 12 & INCONCLUSIVE \\
+k6 & (b) & CFG & $-0.006$ ($-0.044$, $+0.043$) & 7 / 18 / 12 & INCONCLUSIVE \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[t]
+\caption{Three FPGA-side endpoints side by side, mean over the designs all three endpoints share (the number of designs in brackets). D is the block decode, A the whole-netlist prompt. Source: \code{ql12-lut4/results/side\_by\_side.csv}.}
+\label{tab:ql12sbs}
+\centering
+\footnotesize
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Arm & Measure & gates & lut4 & k6 \\
+\midrule
+D & pass@1 (41) & 0.846 & 0.854 & 0.886 \\
+D & AST (32) & 0.784 & 0.789 & 0.791 \\
+D & CFG (35) & 0.877 & 0.873 & 0.875 \\
+A & pass@1 (36) & 0.926 & 0.944 & 0.972 \\
+A & AST (32) & 0.805 & 0.806 & 0.805 \\
+A & CFG (36) & 0.903 & 0.885 & 0.883 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\hev{Run facts.} The first run made 1,074 calls (537 each at k4 and k6): 1,070 ok and 4 with no reply file (calls 1322, 1386 and 2581 at k4, call 1463 at k6), each of which answered in chat. The second made 529 calls, 528 ok and one with no reply file (call 255). The stop rule (a bad-call share) was never near. The subagents wrote 1.22 million output tokens at k4, 0.98 million at k6 and 0.77 million at lut4; cache reads were about 48 million per endpoint at k4 and k6 and 46.7 million at lut4. These are harness totals that include each subagent's system prompt. In the tool-use audit no call read another call's file, an outbox file other than its own, or a repository file. In the first run 19 calls used tools beyond one read and one write, mostly to rewrite or edit their own reply, and three wrote it through a shell. One of them, call 3462 (k6, a processor block), copied scratch files to a temporary directory and compiled its own reply with Icarus Verilog before writing it. The protocol does not allow that self-check; the reply is kept as written and flagged. In the second run, call 101 wrote its reply through a shell and call 529 edited it after writing. A design row whose block lost its reply is marked not run and is left out of the paired tests.
+
+\hev{Interpretation.} Cutting a LUT netlist into blocks does not beat the whole netlist, and it does not fall behind either. The block decode at lut4 and k6 passes the testbench about as often as at gates (the intervals are wide, from $-0.09$ to $+0.16$), and its RTL is as close to the reference in AST and CFG, a little closer in AST ($+0.006$ and $+0.010$, intervals above zero). The whole-netlist prompt is not lower than the block decode: at k6 it is ahead by 0.070, the reverse of (b). A finer LUT does not help or hurt recovery on designs of this size, since every measure stays within a few points across the three endpoints. The limits are that the designs are small (the case for blocks is a design too large for one prompt, and this set does not test it), that three bit-slice designs have no arm~D row at lut4 and two at k6, that the AST and CFG scorer cannot read four reference designs (SystemVerilog syntax) and one flatten, that the block check is a random simulation, and that the equivalence check of the processor modules is not a proof. Designs larger than these were left out by choice.
+
+\hev{Conclusion.} (a) \verdict{INCONCLUSIVE} on pass@1, the primary measure, at lut4 and at k6 (the interval is wide and touches zero), while on AST and CFG the block decode at the LUT endpoints is not lower than at gates (SUPPORTED under the non-inferiority rule). (b) \verdict{DISMISSED}: the whole-netlist prompt is not lower than the block decode (at k6 the interval is below zero, $-0.070$; at lut4 and k4 the label is \verdict{INCONCLUSIVE}) [QL12-a, QL12-b; Appendix~\ref{rec:ql12}].
+
+
+\section{Target four: the netlist read back from a layout}
+\label{sec:ql13}
+\label{arg:ql13}
+
+The three endpoints so far (gates, lut4, k6) are all netlists. A fourth deep target goes one step further down the flow, to a layout. Peter Jamieson asked whether Loki's provenance results hold on the path from the design to a GDS file, and whether the chain is fully recoverable there. The purpose is the silicon provenance vision: a scanned chip that can be checked against a golden design that carries provenance.
+
+\hev{Hypothesis.} Provenance survives physical design. For every design that the Odin~III silicon flow takes to a layout whose extracted netlist matches the placed one (an LVS match), (a) every logic cell of the netlist read back from the GDS joins to a placed cell without using a name, and (b) every such cell has a complete chain: extracted, GDS, routed, placed, mapped, elaborated, HDL span.
+
+\hev{Implication.} If both hold, a cell found in a layout can be followed to the line of Verilog it came from, with no name to lean on, and the provenance idea reaches silicon. If (a) fails, the join through cell type and location is not enough. If (b) fails, a link of the chain is lost in place and route or in extraction, and the failure catalogue names it.
+
+\hev{Experiment.} Odin~III 1.4.0 maps the design onto \code{sky130\_fd\_sc\_hd} cells (no Yosys). OpenROAD (a March 2022 build) places and routes it, KLayout writes the GDS, Magic extracts the cells and Netgen checks LVS. Each step writes a provenance file. The extracted cells carry no Odin~III name, so the join uses the cell type and the location in the placed design. The designs are the 44 of the Q-L12 set (40 VerilogEval problems and 4 processor modules). No model is called. The plan was committed first (\code{experiments/}\allowbreak\code{ql13-gds/EXPERIMENT.md}, commit 14788c7).
+
+\hev{Methodology.} The unit is the design. A design is in the hypothesis only when its flow ends in LVS match; a design that fails the flow is reported with its error and is not fixed. Join (a) is the share of extracted cells that are not tap or fill and have a name-free link to a placed object. Chain (b) is the share of logic cells whose chain reaches an HDL span through the stages in order; cells the flow inserts (tap, fill, clock-tree buffers) are counted apart with their link kind. A unit test cuts a join and a cone link and checks that the cells land in the failure catalogue, so the measure can say no. We then cut the extracted cell netlist into Loki blocks (the block builder of Section~\ref{arg:ra12}, cell class of soft-logic LUT netlists, no retuning) and score the right-block rule on key constructs, which here are flip-flops with the same HDL line and column.
+
+\hev{Measurements.} Of the 44 designs, 9 reached LVS match (Table~\ref{tab:gds}). On those 9, 3,676 of 3,676 extracted cells that are not tap or fill joined by type and location, and 3,638 of 3,638 logic cells have a complete chain to an HDL span. Physical design removed no cell and resized 638 times. It added 1,226 tap cells, 10,078 fill cells and 38 clock-tree buffers, which carry a physical label and no HDL chain. The failure catalogue is empty. The weakest link on every chain is the medium-confidence cone link from a mapped gate to the elaborated cells; every other link is exact or high. The other 35 designs did not reach LVS match, and the flow was not changed for them: 13 have one cell or none (the floorplan has no rows and the driver stops), 11 stop in placement or global routing, 2 stop in the equivalence check and 9 place and route and then fail LVS. For the 9 failed-LVS runs the step files are readable up to LVS, and the shares there are also 1.0 (descriptive, partial runs). Cutting the extracted netlist into blocks gives 3 of 5 key constructs with a right block (0.600); on the same 9 designs the other endpoints give 3 of 3 at gates and 3 of 5 at lut4, k4 and k6, and the only large design with a key (\code{picorv32\_pcpi\_div}) has no right block at the four endpoints that have a key for it. The extracted-layout row is in Table~\ref{tab:join}.
+
+\begin{table}[t]
+\caption{Provenance on the GDS path, the 9 designs with LVS match. Logic cells are the Odin~III cells; tap, fill and clock-tree buffers are inserted by the flow. Source: \code{ql13-gds/results/summary.md}.}
+\label{tab:gds}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Design & Logic & Tap & Fill & Clock buffers & Join (a) & Chain (b) \\
+\midrule
+Prob143\_fsm\_onehot & 19 & 4 & 39 & 0 & 1.000 & 1.000 \\
+Prob121\_2014\_q3bfsm & 14 & 4 & 46 & 3 & 1.000 & 1.000 \\
+Prob055\_conditional & 129 & 30 & 272 & 0 & 1.000 & 1.000 \\
+Prob097\_mux9to1v & 143 & 44 & 353 & 0 & 1.000 & 1.000 \\
+Prob052\_gates100 & 248 & 70 & 588 & 0 & 1.000 & 1.000 \\
+Prob018\_mux256to1 & 404 & 102 & 875 & 0 & 1.000 & 1.000 \\
+Prob105\_rotate100 & 604 & 260 & 2073 & 9 & 1.000 & 1.000 \\
+Prob115\_shift18 & 514 & 180 & 1469 & 9 & 1.000 & 1.000 \\
+picorv32\_pcpi\_div & 1563 & 532 & 4363 & 17 & 1.000 & 1.000 \\
+\midrule
+All 9 & 3638 & 1226 & 10078 & 38 & 3676/3676 & 3638/3638 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\hev{Interpretation.} Where the flow works, provenance is fully recoverable on the GDS path, without names, for logic cells, and the cells the flow inserts are labelled as such. The result is for cells, not transistors, for 9 designs of 14 to 1,563 logic cells, and it says nothing about the 35 designs the flow could not finish; 9 of 44 is the scope of the claim. The join uses the placed design (DEF) of the golden run; a chip scanned without one needs a cell recogniser first. The clock-tree buffers are physical cells with no HDL chain, as they should be. The block-recovery number rests on 5 constructs and cannot rank the layout endpoint against the others. The limits are the OpenROAD March 2022 pin, a two-layer power grid, a library of drive strength 1 without latches, and the cell class of LUT netlists used as a stand-in for the unseen SKY130 cells.
+
+\hev{Conclusion.} (a) and (b) are \verdict{POSSIBLY GOOD}: supported on the 9 designs with LVS match, and not tested on the other 35. The block-recovery comparison is a \verdict{MEASUREMENT} [QL13-a, QL13-b; Appendix~\ref{rec:ql13}].
 
 \section{Discussion and limits}
 \label{sec:discussion}
@@ -1669,7 +1783,7 @@ check names the wrong blocks (all ten checked processor assemblies were made equ
 a repair round that asks the model again only for the flagged blocks is the obvious next experiment, with the same scorer. Third, the
 interval for the hint (eight designs) is too wide to call it harmless or useful; more multi-block designs with a kind guess are needed.
 
-\emph{Running the model at k4 and k6.} Every reply of this paper is for the gates endpoint, so the claim that Loki with a model improves on Gate-Breaker alone is untested at the two endpoints where the problem is larger (Section~\ref{sec:endpoints}). Arm~A at one endpoint needs 411 calls (137 problems, three draws); from the cell counts of Table~\ref{tab:endpoints} we estimate 0.18 million input tokens at k4 and 0.33 million at k6 against 0.89 million at gates, and 51 thousand output tokens, a rough estimate because a LUT line carries a truth table. Arm~D needs the block builder run on the k4 and k6 netlists first, which uses no model call, to know how many blocks, and so calls, it makes. A second step is the swallowing test of Section~\ref{sec:ql11}: the block builder with an earlier stop for small constructs, scored by the right-block share.
+\emph{Larger designs at the LUT endpoints.} The model has now been run at all three FPGA-side endpoints (Section~\ref{sec:ql12}), on 40 small VerilogEval problems and four processor modules. Designs too large for one prompt, where the block cut is the only way in, were not run at the LUT endpoints; bigger designs were left out by choice. A further step is the swallowing test of Section~\ref{sec:ql11}: the block builder with an earlier stop for small constructs, scored by the right-block share.
 
 \emph{A guard for the join.} The join loses 29 constructs that were right because a joined block takes in
 a neighbour. A guard that refuses to join two blocks whose kind posteriors are both confident and
@@ -1699,9 +1813,9 @@ transformation was applied, starting with state-machine encoding and then carry 
 \label{sec:conclusion}
 
 Loki~III asks how far netlist-to-RTL reverse engineering gets without a language model. We
-stated each claim as a hypothesis and gave it one experiment and one verdict. Of 104 register rows,
-14 are USEFUL, 12 are POSSIBLY GOOD with their fragility stated, 19 are DISMISSED, 34 are
-INCONCLUSIVE and 25 are measurements. The provenance answer key and the renamed-instance protocol are
+stated each claim as a hypothesis and gave it one experiment and one verdict. Of 111 register rows,
+14 are USEFUL, 13 are POSSIBLY GOOD with their fragility stated, 22 are DISMISSED, 35 are
+INCONCLUSIVE and 27 are measurements. The provenance answer key and the renamed-instance protocol are
 the part that works and that we would export to any future comparison, with or without a model. The
 structures that synthesis already reverse engineered are recovered (hard adders 67 of 67, precision
 0.985), the stated probabilities are better calibrated (error 0.217 against 0.650), and the pipeline is
@@ -1713,6 +1827,7 @@ designer's hierarchy, and a word-first detector, a split step and Loki's hints t
 did not help. A model that decodes the netlist one Loki block at a time passes about as often as
 Gate-Breaker's whole-netlist prompt on the 27 designs the cut changes (72 against 73 of 81, inconclusive), decodes three of
 four designs too large for one prompt, and its text is slightly less like the reference (Section~\ref{sec:ql10}).
+At the four-input and six-input LUT endpoints the block decode again does not beat the whole-netlist prompt (pass@1 $-0.026$ and $-0.070$ for the block decode minus the whole netlist; Section~\ref{sec:ql12}). As a fourth deep target, the netlist read back from a layout keeps full provenance on the 9 of 44 designs that reach a matched layout (3,638 of 3,638 logic cells; Section~\ref{sec:ql13}), and says nothing about the other 35.
 
 \appendices
 \makeatletter
@@ -1754,7 +1869,9 @@ Graphlet library and partitions & 2026-10-31 & \#68, \#69, \#70 \\
 Fuzzy graphlets & 2026-10-31 & \#71 \\
 Q-L4 to Q-L9 & 2026-11-01, 11-02 & \#72 to \#78 \\
 Q-L10 & 2026-11-02 & \#82 \\
-Q-L11 & open & \#84 \\
+Q-L11 & 2026-11-03 & \#84 \\
+Q-L12 (k4 and k6, lut4) & 2026-11-03 & \#88, \#90 \\
+Q-L13 & 2026-11-03 & \#91 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3234,6 +3351,24 @@ blocks rises from 0.237 to 0.392 (the \#75 Gaussian posterior on the blocks befo
 \hev{Experiment and result.} Inventory: every model reply is for the gates endpoint; the arms are A, B, C (137 problems, three draws), A2, B1p, B2, W (64 problems, three draws), D and D+h (43 and 28 problems run, three draws; 9 more designs with one to three draws) and the 40-problem pilot, which was not re-scored (its replies are stored without an arm key and its arms were run again in the full run). 1,967 compiled replies were scored in two writers (3,934 scores) with the Q-L10 wrapper. Paired differences, same writer, tested minus reference (95 percent interval, problems resampled): D minus A, pass@1 $+0.008$ ($-0.031$ to $+0.054$), AST $-0.026$ ($-0.045$ to $-0.010$), CFG $-0.028$ ($-0.046$ to $-0.013$); B (v1 hints) minus A, pass@1 $-0.010$, AST $0.000$, CFG $-0.005$, all inconclusive; B2 (v2 hints) minus A2, pass@1 $+0.099$ ($+0.052$ to $+0.151$), AST $+0.001$, CFG $+0.007$ ($+0.000$ to $+0.019$); C (no netlist) minus A, pass@1 $-0.329$. The endpoint sizes are in Table~\ref{tab:endpoints}. The loss of structure: recovered 816 of 1,141 constructs, partly 325, missed outright 0; failure class cut 180, swallowed 110, partly reached 35; size test large minus small $+0.126$ ($+0.076$ to $+0.177$).
 
 \hev{Verdict and PR.} QL11-a (D against A on AST and CFG) DISMISSED, with the pass@1 difference INCONCLUSIVE; QL11-b (size of the construct) DISMISSED; QL11-c (endpoint size, failure classes, mixing) a measurement. loki PR \#84.
+
+\subsection{Q-L12: back to HDL at the LUT endpoints}
+\label{rec:ql12}
+
+\hev{Question.} Plans \code{experiments/}\allowbreak\code{ql12-k4k6/EXPERIMENT.md} and \code{ql12-lut4/EXPERIMENT.md}, committed before any model call (the lut4 plan commit 0bf0c8d). Is the block decode at the LUT endpoint not lower than at gates, and is the whole-netlist prompt lower than the block decode?
+
+\hev{Experiment and result.} 1,074 calls at k4 and k6 (1,070 ok, 4 without a reply file) and 529 calls at lut4 (528 ok, 1 without a reply file), one fresh \code{claude-sonnet-5-5} subagent per call. 40 VerilogEval problems and 4 processor modules. Output tokens 1.22 million (k4), 0.98 million (k6), 0.77 million (lut4). The k4 run is a replicate of k6 for the VerilogEval set (identical prompts for 120 of 121 arm~A and 1,584 of 1,610 arm~D prompts). The lut4 netlist needs 4,235 LUTs for the 44 designs, 3,066 for the six-input mapper. Tool-use deviations: call 3462 compiled its own reply with Icarus Verilog (kept, flagged); 19 calls in the first run and 2 in the second used tools beyond one read and one write. Results are in Tables~\ref{tab:ql12} and~\ref{tab:ql12sbs}.
+
+\hev{Verdict and PR.} QL12-a INCONCLUSIVE on pass@1 (AST and CFG not lower than at gates); QL12-b DISMISSED (arm~A is not lower than arm~D). loki PR \#88 (k4 and k6) and \#90 (lut4).
+
+\subsection{Q-L13: provenance on the GDS path}
+\label{rec:ql13}
+
+\hev{Question.} Plan \code{experiments/}\allowbreak\code{ql13-gds/EXPERIMENT.md}, commit 14788c7 (amendments dated 2026-11-03 are in the file). Is provenance fully recoverable on the path from the design to a GDS file? Unit: the design; 44 run, 9 reach LVS match. No model call.
+
+\hev{Experiment and result.} Join 3,676 of 3,676, chain 3,638 of 3,638, failure catalogue empty, weakest link the medium-confidence cone link; the 35 other designs are outside the hypothesis with the flow errors listed in the file (13 floorplan with no rows, 11 placement or global routing, 2 equivalence check, 9 LVS). Right-block share on the extracted cells 3 of 5. Limits: cells not transistors; OpenROAD March 2022 pin; two-layer power grid; the DEF used for the join; 5 key constructs.
+
+\hev{Verdict and PR.} QL13-a POSSIBLY GOOD (supported on the 9 designs with LVS match); QL13-b a measurement. loki PR \#91.
 
 \section{The f3 experiment in detail}
 \label{app:f3}
