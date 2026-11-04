@@ -3,7 +3,7 @@
 L1 (`loki re`) and L2 (`loki analyze`) are on `main`. This page says what the specifications promise;
 the commands, flags and output tree are in the repository README and in
 [`docs/runbook-l1.md`](https://github.com/drpaj12/loki/blob/main/docs/runbook-l1.md), and the measured
-results are in the [paper](https://github.com/drpaj12/loki/tree/main/docs/paper).
+results are in the paper (kept locally by the author).
 
 ## L1: Bayesian hypotheses
 

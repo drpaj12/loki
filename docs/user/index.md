@@ -15,7 +15,7 @@ The work is split in four levels.
 | L2 | Analysis plugins (graph and clustering methods, graphlets, GNN baseline) | `loki analyze` |
 | L3 | Design patterns and blocks: pattern census and v0 detector; anchor-grow-join blocks and a kind guess | `loki/l3/`, `experiments/` |
 
-Headline result, from the [paper](https://github.com/drpaj12/loki/tree/main/docs/paper): the answer key covers
+Headline result, from the paper (kept locally by the author): the answer key covers
 all 54,306 gate nodes of 150 designs and the pipeline is naming-neutral over 105,646 renamed identifiers; hard
 adders are recovered 67 of 67; grown and joined blocks are the right block for 0.715 of 1141 held-out
 constructs against 0.385 for bounded cones, and a kind guess on them reaches a macro F1 of 0.392. Clustering
@@ -23,9 +23,8 @@ does not find the designer's hierarchy, and Loki's hints did not help a model th
 Loki III does not detect hardware Trojans.
 
 This manual covers installing Loki III, building the L0 dataset, the files in that dataset, what L1
-and L2 do, and the L0 results on the Odin III micro designs. The paper and the experiments that
-measure the levels are in the repository: the
-[paper](https://github.com/drpaj12/loki/tree/main/docs/paper),
+and L2 do, and the L0 results on the Odin III micro designs. The experiments that
+measure the levels are in the repository (the paper is kept locally by the author): the
 [renamed-instance experiment](https://github.com/drpaj12/loki/blob/main/experiments/rename-l2/EXPERIMENT.md) and
 [f3 recovery experiment](https://github.com/drpaj12/loki/blob/main/experiments/f3-recovery/EXPERIMENT.md).
 The other Yggdrasil III manuals are linked in the sidebar: the

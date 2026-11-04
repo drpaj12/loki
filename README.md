@@ -13,12 +13,12 @@ Four levels, each with a spec in `docs/specs/`:
 - **L3**, design patterns and blocks: a pattern census with a v0 detector, and anchor-grow-join blocks with a kind guess (research code under `experiments/`).
 
 A Gate-Breaker style harness (`experiments/llm-*`) tests whether Loki's hints help a language model that
-is given the netlist. Headline result (paper, `docs/paper/loki.tex`): the answer key covers all 54,306 gate nodes of
+is given the netlist. Headline result (from the paper, kept locally by the author): the answer key covers all 54,306 gate nodes of
 150 designs and the pipeline is naming-neutral over 105,646 renamed identifiers; hard adders are recovered 67 of 67;
 grown and joined blocks are the right block for 0.715 of 1141 held-out constructs against 0.385 for bounded cones, and the
 kind guess on them reaches a macro F1 of 0.392 (the weakest part). Clustering does not find the designer's hierarchy, and
 Loki's hints did not help a model that already has the netlist. Loki does not detect Trojans (see Leman Russ III for that).
-Paper: [`docs/paper/`](docs/paper/README.md). Manual: <https://drpaj12.github.io/loki/>. Hub: <https://github.com/drpaj12/YggdrasilIII>.
+Paper: kept locally by the author. Manual: <https://drpaj12.github.io/loki/>. Hub: <https://github.com/drpaj12/YggdrasilIII>.
 
 Loki III is part of **Yggdrasil III**, the suite of Odin III (<https://github.com/drpaj12/odin3>, the trunk), Wyrd III (<https://github.com/drpaj12/wyrd>, the canopy, with Bifrost III and Midgard III), Loki III (<https://github.com/drpaj12/loki>), The Norns III (<https://github.com/drpaj12/nornsIII>) and Verdandi III (<https://github.com/drpaj12/verdandiIII>) on side branches, and Mímir III (<https://github.com/drpaj12/mimirIII>, the fruit). Loki III is a side branch, a tool and experiment; it uses Odin III's provenance IR and its L2 clusters seed The Norns III. It depends on the `odin3` Python package and never changes the Odin III core. Version 1.0.0 (`pyproject.toml`; [release notes](docs/V1.0.0.md)). The hub is <https://github.com/drpaj12/YggdrasilIII> (documentation: <https://drpaj12.github.io/YggdrasilIII/>, versions of every piece: <https://drpaj12.github.io/YggdrasilIII/versions.html>) and its picture of the tree is <https://github.com/drpaj12/YggdrasilIII/blob/main/images/yggdrasil-tree.png>.
 
@@ -29,7 +29,7 @@ License: MIT.
 Status: **works** = a command or module on `main` with tests; **experiment** = research code under
 `experiments/`, run by script and not a `loki` command; **dismissed** = measured and did not help (kept
 as a record, and the options that remain are off by default). Verdicts are in the
-[paper](docs/paper/README.md) register.
+paper register (kept locally by the author).
 
 | Feature | Status | Where |
 |---|---|---|
@@ -58,7 +58,7 @@ as a record, and the options that remain are off by default). Verdicts are in th
 
 ## Paper and experiments
 
-The [paper](docs/paper/README.md) (`docs/paper/loki.tex`) reports the L0/L1/L2 recovery statistics under the
+The paper (kept locally by the author) reports the L0/L1/L2 recovery statistics under the
 Gate-Breaker metrics, with every number traced to the experiment records:
 
 - [`experiments/rename-l2/EXPERIMENT.md`](experiments/rename-l2/EXPERIMENT.md): the renamed-instance re-run
@@ -96,7 +96,7 @@ Start at the Yggdrasil III hub; every manual links to the others.
   [GUI](https://drpaj12.github.io/wyrd/wyrd-gui-tutorial.pdf).
 - [Loki III manual](https://drpaj12.github.io/loki/).
 - [Verdandi III manual](https://drpaj12.github.io/verdandiIII/).
-- [The Norns III](https://github.com/drpaj12/nornsIII) (repository; plan and paper under `docs/`).
+- [The Norns III](https://github.com/drpaj12/nornsIII) (repository; plan under `docs/`).
 - [Set up the whole suite](https://drpaj12.github.io/YggdrasilIII/getting-started.html) on a clean Linux or
   Windows machine, and [drive it with Claude Code](https://drpaj12.github.io/YggdrasilIII/ai-agent.html).
 
