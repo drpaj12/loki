@@ -1,0 +1,45 @@
+design,clock,exit,seconds,failed_step,error,equiv,lvs,schema_check,disk_kb
+Prob002_m2014_q4i,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,128
+Prob003_step_one,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,128
+Prob001_zero,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,128
+Prob007_wire,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,124
+Prob008_m2014_q4h,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,124
+Prob042_vector4,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,124
+Prob018_mux256to1,,0,134.7,,,equivalent,match,ok,76428
+Prob015_vector1,,1,0.8,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,124
+Prob004_vector2,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,124
+Prob017_mux2to1v,,1,0.9,place,openroad: [ERROR GPL-0304] RePlAce diverged at initial iteration. Re-run with a smaller init_density_penalty value.,equivalent,,,840
+Prob006_vectorr,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,124
+Prob034_dff8,clk,1,0.9,place,openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength.,equivalent,,,164
+Prob059_wire4,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,124
+Prob091_2012_q2b,,1,0.9,place,openroad: [ERROR GRT-0076] Net y[1] not properly covered.,equivalent,,,148
+Prob023_vector100r,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,140
+Prob032_vector0,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,124
+Prob052_gates100,,0,42.4,,,equivalent,match,ok,17376
+Prob036_ringer,,1,0.8,place,openroad: [ERROR GPL-0302] Use a higher -density or re-floorplan with a larger core area.,equivalent,,,132
+Prob046_dff8p,clk,1,0.5,equiv,equiv-check: gates.blif:38: unsupported: latch $n21 is clocked by internal net $n37,,,,136
+Prob093_ece241_2014_q3,,1,0.9,place,openroad: [ERROR GRT-0076] Net c not properly covered.,equivalent,,,148
+Prob043_vector5,,1,3.6,lvs,LVS: Final result: Netlists do not match.,equivalent,mismatch,partial run (no index),4120
+Prob054_edgedetect,clk,1,0.9,place,openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength.,equivalent,,,240
+Prob045_edgedetect2,clk,1,0.9,place,openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength.,equivalent,,,220
+Prob044_vectorgates,,1,2.6,lvs,LVS: Final result: Netlists do not match.,equivalent,mismatch,partial run (no index),3524
+Prob055_conditional,,0,30.4,,,equivalent,match,ok,11480
+Prob064_vector3,,1,0.7,place,"openroad: Error: openroad_flow.tcl, 51 empty command name """"",equivalent,,,128
+Prob065_7420,,1,0.8,place,openroad: [ERROR GPL-0302] Use a higher -density or re-floorplan with a larger core area.,equivalent,,,136
+Prob081_7458,,1,2.1,lvs,LVS: Final result: Netlists do not match.,equivalent,mismatch,partial run (no index),3348
+Prob092_gatesv100,,1,1.1,place,openroad: [ERROR PPL-0024] Number of pins 402 exceeds max possible 349.,equivalent,,,3560
+Prob105_rotate100,clk,0,201.2,,,equivalent,match,ok,60656
+Prob100_fsm3comb,,1,2.1,lvs,LVS: Final result: Netlists do not match.,equivalent,mismatch,partial run (no index),3420
+Prob087_gates,,1,2.8,lvs,LVS: Final result: Netlists do not match.,equivalent,mismatch,partial run (no index),3384
+Prob079_fsm3onehot,,1,3.2,lvs,LVS: Final result: Netlists do not match.,equivalent,mismatch,partial run (no index),3480
+Prob115_shift18,clk,0,204.8,,,equivalent,match,ok,61336
+Prob097_mux9to1v,,0,36.4,,,equivalent,match,ok,16840
+Prob121_2014_q3bfsm,clk,0,5.1,,,equivalent,match,ok,4360
+Prob112_always_case2,,1,2.5,lvs,LVS: Final result: Netlists do not match.,equivalent,mismatch,partial run (no index),3520
+Prob143_fsm_onehot,,0,3.5,,,equivalent,match,ok,3872
+Prob150_review2015_fsmonehot,,1,3.0,lvs,LVS: Final result: Netlists do not match.,equivalent,mismatch,partial run (no index),3744
+Prob154_fsm_ps2data,clk,1,1.0,place,openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength.,equivalent,,,576
+tinyriscv_csr,clk,1,22.7,place,openroad: Error: net net7 initial #node != #rpin,equivalent,,,133812
+tinyriscv_clint,clk,1,4.1,equiv,equiv-check: rtl.blif: undriven net raddr_o[0] reaches primary output raddr_o[0]; pass --allow-undriven to tie it to 0,,,,27036
+tinyriscv_div,clk,1,771.6,lvs,LVS: Final result: Top level cell failed pin matching.,equivalent,mismatch,partial run (no index),489780
+picorv32_pcpi_div,clk,0,751.5,,,equivalent,match,ok,189564
