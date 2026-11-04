@@ -1,0 +1,5 @@
+endpoint,arm,calls,est_tokens_in,est_tokens_out
+lut4,D,408,411962,53696
+lut4,D multi-block designs,396,372707,50627
+lut4,D designs of at most 64 blocks,408,411962,53696
+lut4,A,121,316723,20099
