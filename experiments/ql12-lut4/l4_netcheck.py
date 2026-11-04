@@ -1,8 +1,8 @@
 """Netlist check of the lut4 build: largest LUT input count and LUT / FF counts beside k4 and k6.
 
-For every design of the set, read the lut4 BLIF (this lane's census) and the Q-L12 "k4" (f2, six-input
-mapper) and "k6" (f1-k6) BLIFs (read only), count LUTs (``.names`` with at least one input,
-constants and buffers counted apart), flip-flops and hard adders, and the largest number of inputs
+For every design of the set, read the lut4 BLIF (this lane's census) and the Q-L12 "k4" (f2,
+six-input mapper) and "k6" (f1-k6) BLIFs (read only). Count LUTs (``.names`` with at least one
+input; constants and buffers apart), flip-flops and hard adders, and the largest number of inputs
 of a ``.names``. Fails (exit 1) when a lut4 netlist has a LUT above 4 inputs. Writes
 ``results/netcheck.csv``. No model call. Usage: ``python -B l4_netcheck.py``.
 """

@@ -28,8 +28,9 @@ env.ENDPOINTS = {"lut4": ("O-lut", "f2")}
 env.HERE = HERE
 env.RES = HERE / "results"
 EP = "lut4"
-FROZEN = {"block_prompt_lut.txt": "cbacc5394283bbc8147f7cfd80c8e6393028dcf1a40e338012d459b7783de93e",
-          "a_prompt_lut.txt": "7639439931d2f2aea16f007746bb244ac7530b1d3690850d89f93e95376d61cb"}
+FROZEN = {
+    "block_prompt_lut.txt": "cbacc5394283bbc8147f7cfd80c8e6393028dcf1a40e338012d459b7783de93e",
+    "a_prompt_lut.txt": "7639439931d2f2aea16f007746bb244ac7530b1d3690850d89f93e95376d61cb"}
 
 
 def _frozen_template(name: str) -> str:

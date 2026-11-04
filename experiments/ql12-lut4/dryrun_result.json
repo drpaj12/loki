@@ -1,0 +1,27 @@
+{
+ "astcfg_rows_scored": 12,
+ "blocks_checked_ok": 120,
+ "blocks_total": 131,
+ "designs": [
+  "Prob001_zero",
+  "Prob034_dff8",
+  "Prob045_edgedetect2",
+  "Prob055_conditional",
+  "Prob097_mux9to1v",
+  "Prob115_shift18",
+  "Prob121_2014_q3bfsm",
+  "Prob154_fsm_ps2data",
+  "tinyriscv_clint"
+ ],
+ "outcomes": {
+  "assembly": 17,
+  "pass": 26,
+  "runtime": 2,
+  "syntax": 5
+ },
+ "pass": 26,
+ "replies": 156,
+ "rows": 50,
+ "timeouts": 0,
+ "unexpected": []
+}

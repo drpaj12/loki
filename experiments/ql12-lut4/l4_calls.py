@@ -5,8 +5,9 @@ Usage: ``python -B l4_calls.py`` (after ``l4_run.py blocks``). Builds the prompt
 checked), then keeps the reduced-run subset (Q-L12 amendment 9): every arm A call, and the arm D
 calls of designs of at most 64 blocks. Calls are numbered from 1 in the new run root. Writes
 ``<run>/calls/``, ``<run>/calls.jsonl``, ``batches.json``, ``batches-D.json``, the compact
-``run-batches.json`` (``[[batch, [call, ...]], ...]``), ``calls_table.csv`` (sha256 of the text after
-the user-message delimiter), ``counts.csv``, ``designs.json``, ``blocks_summary.csv``, ``a_limit.csv``.
+``run-batches.json`` (``[[batch, [call, ...]], ...]``), ``calls_table.csv`` (sha256 of the text
+after the user-message delimiter), ``counts.csv``, ``designs.json``, ``blocks_summary.csv``,
+``a_limit.csv``.
 It also re-hashes every call file and fails on a mismatch with ``calls_table.csv``.
 """
 

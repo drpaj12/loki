@@ -55,7 +55,7 @@ PATCH_DIR = env.WS / "work" / "l3-out" / "patched"  # the census's patched copie
 def source(problem: str) -> Path:
     """Source of a VerilogEval problem as the l3-census builds it (top ``RefModule``)."""
     name = f"{problem}_ref.sv"
-    return (PATCH_DIR if problem in PATCHED else VEVAL) / name
+    return Path((PATCH_DIR if problem in PATCHED else VEVAL) / name)
 
 
 def build(name: str, src: Path, top: str, base: Path) -> None:
