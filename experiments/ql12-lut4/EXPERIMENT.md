@@ -105,3 +105,91 @@ Descriptive, no verdict: lut4 minus k6 for D and for A (same problems, same draw
   9. Analysis (`l4_analyze.py`): the tests of the plan (a), (b), the descriptive A-at-lut4 minus A-at-gates, and lut4 minus k6 for D and A,
      for pass@1, AST flat and CFG flat; `results/side_by_side.csv` puts gates, lut4 and k6 in one table (all designs with data, and the
      designs all three share). Holm over the two pass@1 McNemar tests (a, all designs) and (b).
+
+## Results (2026-11-03)
+
+Generated tables: `results/summary.md`, `results/tests.csv` and `results/side_by_side.csv` (`l4_analyze.py`). They are built from
+`results/results.csv`, `results/blocks.csv` and `results/astcfg_rows.csv` (`l4_run.py collect`, `l4_run.py astcfg`). Call status:
+`results/status.csv`. Tool-use audit: `results/tool-audit.tsv`.
+
+### Plain English
+
+With real four-input LUTs, the result of Q-L12 holds and becomes even. The block decode (D) passes about as often as at gates.
+Its RTL is as close to the reference in AST and CFG, slightly closer in AST. The whole-netlist prompt (A) is no longer ahead of D:
+- D passes more draws than A on 2 designs (Prob064_vector3, Prob097_mux9to1v).
+- A passes more draws than D on 3 designs (Prob052_gates100, Prob115_shift18, Prob154_fsm_ps2data).
+- They tie on 33 designs.
+
+The four-input netlists are about 37 percent larger in LUT count than the six-input ones (4235 against 3066 LUTs). Every measure stays
+within a few points of six-input LUTs and gates. Across these three endpoints, finer LUTs neither help nor hurt recovery on designs of
+this size.
+
+### Run
+
+529 calls, one fresh `claude-sonnet-5-5` subagent each, no retry. 528 `ok`. Call 255 is `no_file`: it replied in chat and did not
+write its outbox. The stop rule was never near.
+
+The weekly meter read 44 before the run and 47 after. Output tokens summed from the subagent transcripts: 0.77M. Cache reads were
+46.7M. These are harness totals.
+
+Tool-use audit: no call touched another call's file or the repository.
+- Call 101 wrote its own outbox through Bash.
+- Call 529 edited its own outbox after writing it.
+
+### H-L12 at lut4 (headline first, then the label; unit = design, bootstrap 95 percent interval)
+
+| test | measure | difference | interval | designs W/L/T | label |
+| --- | --- | --- | --- | --- | --- |
+| (a) D lut4 minus D gates | pass@1 | +0.008 | (-0.089, +0.106) | 5/3/33 | INCONCLUSIVE |
+| (a) | AST flat | +0.006 | (+0.001, +0.011) | 16/4/12 | SUPPORTED |
+| (a) | CFG flat | -0.004 | (-0.020, +0.006) | 9/8/18 | SUPPORTED |
+| (b) D minus A at lut4 | pass@1 | -0.026 | (-0.105, +0.044) | 2/3/33 | INCONCLUSIVE |
+| (b) | AST flat | -0.015 | (-0.039, +0.006) | 8/13/11 | INCONCLUSIVE |
+| (b) | CFG flat | -0.009 | (-0.052, +0.044) | 5/19/11 | INCONCLUSIVE |
+
+Exact McNemar on MAJ: p = 1.000 for (a) and for (b). Holm-adjusted p is 1.000 for both.
+
+Verdict:
+- H-L12(a) at lut4: SUPPORTED on AST and CFG, INCONCLUSIVE on pass@1, the primary measure. This is the same as at k4 and k6.
+- H-L12(b) at lut4: INCONCLUSIVE. A is not lower than D.
+
+Descriptive, no verdict:
+
+| comparison | measure | difference | interval |
+| --- | --- | --- | --- |
+| A lut4 minus A gates | pass@1 | +0.019 | (-0.046, +0.083) |
+| D lut4 minus D k6 | pass@1 | -0.033 | (-0.122, +0.057) |
+| D lut4 minus D k6 | AST | -0.002 | |
+| D lut4 minus D k6 | CFG | -0.002 | |
+| A lut4 minus A k6 | pass@1 | -0.033 | (-0.075, +0.000) |
+
+The A lut4 minus A k6 pass@1 difference is 0/3/37 over designs.
+
+Side by side (mean over the designs all three endpoints share; `results/side_by_side.csv`):
+
+| arm | measure | gates | lut4 | k6 |
+| --- | --- | --- | --- | --- |
+| D | pass@1 (41) | 0.846 | 0.854 | 0.886 |
+| D | AST flat (32) | 0.784 | 0.789 | 0.791 |
+| D | CFG flat (35) | 0.877 | 0.873 | 0.875 |
+| A | pass@1 (36) | 0.926 | 0.944 | 0.972 |
+| A | AST flat (32) | 0.805 | 0.806 | 0.805 |
+| A | CFG flat (36) | 0.903 | 0.885 | 0.883 |
+
+Provenance (arm D): key constructs with a right block, and with a right block whose decode checks `ok`:
+- draw 1: 10 of 23, of which 7 check `ok`.
+- draw 2: 4 of 8, of which 3 check `ok`.
+- draw 3: 4 of 8, of which 4 check `ok`.
+
+Processor modules (one draw):
+- D: tinyriscv_csr `pass` (15 of 16 blocks `ok`).
+- D: picorv32_pcpi_div `neq` (2 of 5 blocks `ok`).
+- D: tinyriscv_div `error` (5 of 7 blocks `ok`).
+- D: tinyriscv_clint `error` (4 of 5 blocks `ok`).
+- A: tinyriscv_clint `neq`.
+
+### Limits
+
+The limits of Q-L12 apply: small designs, a random-simulation block check, and an equivalence check for the processor modules that
+is not a proof. Prob092, Prob017 and Prob105 have no D row at lut4 (more than 64 blocks). Prob105 does have D rows at k4 and k6, so
+it is not in the D lut4-minus-k6 pairs.
