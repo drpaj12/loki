@@ -27,8 +27,8 @@ from tests.test_rp_l2 import write as write_obj
 
 FILE = "reverse-provenance.json"
 DIGEST = {
-    # design.v: sha256 of its sorted lines (see normal). Same value for Odin III 1.1.0 (the CI wheel)
-    # and 1.5.0 to 1.6.0; write_verilog only moved a module's always/initial/assign after its instances.
+    # design.v: sha256 of its sorted lines (see normal). Same for Odin III 1.1.0 (CI wheel) and
+    # 1.5.0 to 1.6.0; write_verilog only moved a module's always/initial/assign after its instances.
     "design.v": "9ea61e5925ffcdca06bfcbbe55307b3737bf6dcf2dbf3cfd0f84eeb3c6941b03",
     "overlay.json": "801861472087421b1f322c4a64c32a0a5036b24fc3e748381631050dad9d8a65",
     "report.json": "4944547d163d8b12253020579f16ff7bd8d4a3e02108e04e70e4b7900172fcc3",
