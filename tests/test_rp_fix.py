@@ -27,7 +27,9 @@ from tests.test_rp_l2 import write as write_obj
 
 FILE = "reverse-provenance.json"
 DIGEST = {
-    "design.v": "a5786b9f739939a7a796823dc06a59d55f7cb02faf0256aa733595e62495cb3b",
+    # design.v: sha256 of its sorted lines (see normal). Same for Odin III 1.1.0 (CI wheel) and
+    # 1.5.0 to 1.6.0; write_verilog only moved a module's always/initial/assign after its instances.
+    "design.v": "9ea61e5925ffcdca06bfcbbe55307b3737bf6dcf2dbf3cfd0f84eeb3c6941b03",
     "overlay.json": "801861472087421b1f322c4a64c32a0a5036b24fc3e748381631050dad9d8a65",
     "report.json": "4944547d163d8b12253020579f16ff7bd8d4a3e02108e04e70e4b7900172fcc3",
     "report.md": "7c20c9bebf6e5f0db6c9ba24756752994a459d452f7bd2e1585e3aa8d8a3e740",
@@ -376,6 +378,8 @@ class RealFixTest(unittest.TestCase):
     def normal(name: str, path: Path) -> bytes:
         """The file with the machine-specific paths replaced (and the versions of report.json)."""
         data = path.read_bytes()
+        if name == "design.v":  # item order inside a module differs between Odin III versions
+            return b"\n".join(sorted(data.splitlines())) + b"\n"
         if name not in ("report.json", "report.md"):
             return data
         text = data.decode("utf-8").replace(str(ADD2), "ADD2").replace(str(CALIB), "CALIB")
