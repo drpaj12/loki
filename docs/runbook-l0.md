@@ -6,7 +6,7 @@ Wyrd installed in the same virtual environment as Loki.
 ## Install
 
     python3 -m venv .venv && .venv/bin/pip install ruff mypy cffi
-    .venv/bin/pip install -e <wyrd checkout>
+    .venv/bin/pip install -e <wyrd checkout>             # git clone https://github.com/drpaj12/wyrd
     .venv/bin/pip install --no-deps -e .          # registers the wyrd.steps entry point loki-dataset
     .venv/bin/wyrd config init                    # writes ~/.config/wyrd/machine.toml (set vtr_root)
     export ODIN3_ROOT=<odin3 checkout> ODIN3_LIB=$ODIN3_ROOT/build/release/libodin3.so

@@ -100,6 +100,13 @@ Start at the Yggdrasil III hub; every manual links to the others.
 - [Set up the whole suite](https://drpaj12.github.io/YggdrasilIII/getting-started.html) on a clean Linux or
   Windows machine, and [drive it with Claude Code](https://drpaj12.github.io/YggdrasilIII/ai-agent.html).
 
+## Install
+
+Python 3.11 or newer, Odin III 1.6.0 (the version these commands were checked against; the `odin3` Python package
+or a checkout with `libodin3.so`; `loki prov` needs 1.4.0 or later), Wyrd III and VTR in one virtual environment:
+see [`docs/user/install.md`](docs/user/install.md). Tools outside the suite and their versions: the hub's
+[tools page](https://github.com/drpaj12/YggdrasilIII/blob/main/docs/tools.md).
+
 ## Development
 
     python3 -m venv .venv && .venv/bin/pip install ruff mypy cffi
