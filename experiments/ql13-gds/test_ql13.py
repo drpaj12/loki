@@ -176,3 +176,28 @@ class EnvTest(unittest.TestCase):
             if old is not None:
                 os.environ["QL13_RES"] = old
             importlib.reload(env)
+
+
+class FlowTest(unittest.TestCase):
+    def test_limit_inside_heavy_run(self) -> None:
+        import ql13_flow as fl
+        d = {"name": "x", "top": "t", "src": "s", "clock": "clk"}
+        cmd = fl.build_cmd(d, Path("/a/s.v"), Path("/r"))
+        self.assertTrue(cmd[0].endswith("heavy-run"))
+        self.assertEqual(cmd[1:5], ["timeout", "-s", "KILL", str(fl.FLOW_LIMIT)])
+        self.assertGreater(fl.BACKSTOP, fl.SLOT_WAIT + fl.FLOW_LIMIT)
+        self.assertGreaterEqual(fl.FLOW_LIMIT, 14400)
+
+    def test_timeout_kills_whole_group(self) -> None:
+        import os
+        import time
+
+        import ql13_flow as fl
+        marker = Path(tempfile.mkdtemp()) / "pid"
+        sh = f"sleep 300 & echo $! > {marker}; wait"
+        out, code = fl.run_group(["bash", "-c", sh], 1.0)
+        self.assertEqual(code, 124)
+        pid = int(marker.read_text())
+        time.sleep(0.3)
+        with self.assertRaises(ProcessLookupError):
+            os.kill(pid, 0)

@@ -122,6 +122,14 @@ cell class `O-lut` is a stand-in for the unseen SKY130 gate class.
   `silicon_flow.py` CLI (design, --top, --out, --tools, --odin3, --clock) and step names are unchanged, so no other adaptation.
   All 44 designs, smallest first, one job at a time under heavy-run. Designs that stay outside LVS match are reported with the
   flow's error and are not fixed in Odin III (listed as Odin III gaps for the controller).
+  Correction during the run (2026-11-11, same day, before any result table): the first flow driver had a 3600 s Python timeout
+  around `heavy-run`, so the wait for a heavy slot (both slots were held by another lane) counted against it. Prob002 and
+  Prob003 ended "exit 124, 3600.1 s" without the flow running (not flow results), and killing the wrapper orphaned its flock
+  children, which kept slot 0 and waited on slot 1 (deadlock; the controller killed the orphans). Fix in `ql13_flow.py`, with
+  tests: the time limit is now inside heavy-run (`heavy-run timeout -s KILL 28800 python3 silicon_flow.py ...`, slot wait not
+  counted); the Python timeout stays only as a backstop (14400 s slot wait + 28800 s + 600 s), the child runs in its own
+  session and a timeout kills the whole process group. Prob002 and Prob003 are run again (`--redo`); the first attempts are
+  discarded as non-results. Prob018 was in progress when the driver was stopped to apply the fix and is run again from its start.
 
 ## Results (2026-11-03)
 
