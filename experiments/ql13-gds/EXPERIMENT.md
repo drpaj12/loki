@@ -110,6 +110,18 @@ cell class `O-lut` is a stand-in for the unseen SKY130 gate class.
   4. Class of an extracted cell is read at the end of its chain (the label at `placed`), not at the `gds` stage: the `gds` stage
      labels the clock-tree buffers `physical:repair_buffer` while `placed` and `routed` label them `physical:cts_buffer`
      (38 cells in the 9 LVS-match designs, `gds_label_mismatch` in `chain.csv`). This is an Odin III v1.4 labelling inconsistency, not fixed here.
+- 2026-11-11: rerun with Odin III v1.6.1 (plan commit: the commit that adds this entry). Peter 2026-11-11: rerun the 44-design
+  experiment so the paper's "9 of 44" becomes a current number. Same hypothesis H-L13, same 44 designs, same definitions, labels,
+  measures (a), (b) and block recovery; only the Odin III version changes. Flow: Odin III v1.6.1 (tag v1.6.1, commit
+  3567dd1c2d7492b3d38df8ea23a80eeb29b3e1c9, read-only checkout `work/odin3-v161` for `tools/silicon` and `tools/heavy-run`),
+  binary `odin3/build/rel-v161/odin3` (reports "odin3 1.6.1 (ABI 7)", release build), same external installs as 11-03 (OpenROAD
+  `f12e2f474102bfb875eeee57fb610d7d7de17770`, Magic 8.3.465, Netgen 1.5.272, KLayout 0.30.12 in `work/tools`; the first three
+  read from `silicon_flow.discover`). Run root `work/ql13-v161-out` (the 11-03 `work/ql13-out` is kept). Results in
+  `results-v161/` (the 11-03 `results/` stays as is). Run by env: `QL13_ODIN`, `QL13_ODIN_BIN`, `QL13_OUT`, and a new `QL13_RES`.
+  One code change, minimal: `ql13_env.RES` reads `QL13_RES` (default unchanged `results/`), with a unit test; the v1.6.1
+  `silicon_flow.py` CLI (design, --top, --out, --tools, --odin3, --clock) and step names are unchanged, so no other adaptation.
+  All 44 designs, smallest first, one job at a time under heavy-run. Designs that stay outside LVS match are reported with the
+  flow's error and are not fixed in Odin III (listed as Odin III gaps for the controller).
 
 ## Results (2026-11-03)
 

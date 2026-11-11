@@ -2,6 +2,7 @@
 
 QL13_OUT is the run root (default <workspace>/work/ql13-out). QL13_ODIN is the Odin III v1.4
 checkout (default <workspace>/work/odin3-v14, read only); its build/debug/odin3 is the binary.
+QL13_RES is the results directory (default ``results/``; the v1.6.1 rerun uses ``results-v161/``).
 QL13_TOOLS is the user-space tools directory of the silicon flow manual
 (default <workspace>/work/tools).
 """
@@ -22,7 +23,7 @@ RUN = Path(os.environ.get("QL13_OUT", str(WS / "work" / "ql13-out")))
 ODIN = Path(os.environ.get("QL13_ODIN", str(WS / "work" / "odin3-v14")))
 TOOLS = Path(os.environ.get("QL13_TOOLS", str(WS / "work" / "tools")))
 ODIN_BIN = Path(os.environ.get("QL13_ODIN_BIN", str(ODIN / "build" / "debug" / "odin3")))
-RES = HERE / "results"
+RES = Path(os.environ.get("QL13_RES", str(HERE / "results")))
 VEVAL = WS / "external" / "verilog-eval" / "dataset_spec-to-rtl"
 EXT = WS / "external"
 TINY = EXT / "tinyriscv" / "rtl" / "core"

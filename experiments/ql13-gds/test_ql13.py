@@ -160,3 +160,19 @@ class NetTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EnvTest(unittest.TestCase):
+    def test_results_dir_default_and_override(self) -> None:
+        import importlib
+        import os
+        old = os.environ.pop("QL13_RES", None)
+        try:
+            self.assertEqual(importlib.reload(env).RES.name, "results")
+            os.environ["QL13_RES"] = "/x/results-v161"
+            self.assertEqual(importlib.reload(env).RES, Path("/x/results-v161"))
+        finally:
+            os.environ.pop("QL13_RES", None)
+            if old is not None:
+                os.environ["QL13_RES"] = old
+            importlib.reload(env)
