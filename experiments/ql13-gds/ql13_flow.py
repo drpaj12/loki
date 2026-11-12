@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -20,7 +21,13 @@ from pathlib import Path
 
 import ql13_env as env
 
-TIMEOUT = 3600
+# Time limit of the flow itself, INSIDE heavy-run (``heavy-run timeout -s KILL N ...``), so the wait
+# for a heavy slot (up to ODIN3_HEAVY_WAIT, 14400 s) is not counted. The Python timeout is only a
+# backstop: slot wait + flow limit + margin; it kills the whole process group (no orphan keeps a
+# slot).
+FLOW_LIMIT = 28800
+SLOT_WAIT = 14400
+BACKSTOP = SLOT_WAIT + FLOW_LIMIT + 600
 
 
 def stage_source(d: dict[str, str], dst: Path) -> None:
@@ -41,6 +48,31 @@ def stage_source(d: dict[str, str], dst: Path) -> None:
         shutil.copyfile(src.parent / "defines.v", dst.parent / "defines.v")
 
 
+def build_cmd(d: dict[str, str], src: Path, root: Path) -> list[str]:
+    """heavy-run first, the flow time limit inside it (slot wait not counted)."""
+    cmd = [str(env.ODIN / "tools" / "heavy-run"), "timeout", "-s", "KILL", str(FLOW_LIMIT),
+           "python3", "-B", str(env.ODIN / "tools" / "silicon" / "silicon_flow.py"), str(src),
+           "--top", d["top"], "--out", str(root / "out"), "--tools", str(env.TOOLS),
+           "--odin3", str(env.ODIN_BIN)]
+    if d["clock"]:
+        cmd += ["--clock", d["clock"]]
+    return cmd
+
+
+def run_group(cmd: list[str], limit: float) -> tuple[str, int]:
+    """Run ``cmd`` in its own session; on timeout kill the whole group (flock children too)."""
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                            stdin=subprocess.DEVNULL, start_new_session=True,
+                            env=dict(os.environ, ODIN3_HEAVY_OK="1"))
+    try:
+        out, _ = proc.communicate(timeout=limit)
+        return out, proc.returncode
+    except subprocess.TimeoutExpired:
+        os.killpg(proc.pid, signal.SIGKILL)
+        out, _ = proc.communicate()
+        return f"timeout after {limit}s (process group killed)\n{out or ''}", 124
+
+
 def run_one(d: dict[str, str], redo: bool = False) -> dict[str, object]:
     root = env.RUN / d["name"]
     status = root / "status.json"
@@ -49,20 +81,9 @@ def run_one(d: dict[str, str], redo: bool = False) -> dict[str, object]:
     (root / "src").mkdir(parents=True, exist_ok=True)
     src = root / "src" / Path(d["src"]).name
     stage_source(d, src)
-    cmd = [str(env.ODIN / "tools" / "heavy-run"), "python3", "-B",
-           str(env.ODIN / "tools" / "silicon" / "silicon_flow.py"), str(src), "--top", d["top"],
-           "--out", str(root / "out"), "--tools", str(env.TOOLS), "--odin3", str(env.ODIN_BIN)]
-    if d["clock"]:
-        cmd += ["--clock", d["clock"]]
+    cmd = build_cmd(d, src, root)
     t0 = time.monotonic()
-    try:
-        p = subprocess.run(cmd, capture_output=True, text=True, timeout=TIMEOUT, check=False,
-                           stdin=subprocess.DEVNULL, env=dict(os.environ, ODIN3_HEAVY_OK="1"))
-        out, code = p.stdout + p.stderr, p.returncode
-    except subprocess.TimeoutExpired as err:
-        partial = err.stdout.decode("utf-8", "replace") if isinstance(err.stdout, bytes) \
-            else (err.stdout or "")
-        out, code = f"timeout after {TIMEOUT}s\n{partial}", 124
+    out, code = run_group(cmd, BACKSTOP)
     secs = time.monotonic() - t0
     (root / "flow.log").write_text(out, encoding="utf-8")
     steps: dict[str, str] = {}

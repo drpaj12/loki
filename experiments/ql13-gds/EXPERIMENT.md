@@ -110,6 +110,33 @@ cell class `O-lut` is a stand-in for the unseen SKY130 gate class.
   4. Class of an extracted cell is read at the end of its chain (the label at `placed`), not at the `gds` stage: the `gds` stage
      labels the clock-tree buffers `physical:repair_buffer` while `placed` and `routed` label them `physical:cts_buffer`
      (38 cells in the 9 LVS-match designs, `gds_label_mismatch` in `chain.csv`). This is an Odin III v1.4 labelling inconsistency, not fixed here.
+- 2026-11-11: rerun with Odin III v1.6.1 (plan commit: the commit that adds this entry). Peter 2026-11-11: rerun the 44-design
+  experiment so the paper's "9 of 44" becomes a current number. Same hypothesis H-L13, same 44 designs, same definitions, labels,
+  measures (a), (b) and block recovery; only the Odin III version changes. Flow: Odin III v1.6.1 (tag v1.6.1, commit
+  3567dd1c2d7492b3d38df8ea23a80eeb29b3e1c9, read-only checkout `work/odin3-v161` for `tools/silicon` and `tools/heavy-run`),
+  binary `odin3/build/rel-v161/odin3` (reports "odin3 1.6.1 (ABI 7)", release build), same external installs as 11-03 (OpenROAD
+  `f12e2f474102bfb875eeee57fb610d7d7de17770`, Magic 8.3.465, Netgen 1.5.272, KLayout 0.30.12 in `work/tools`; the first three
+  read from `silicon_flow.discover`). Run root `work/ql13-v161-out` (the 11-03 `work/ql13-out` is kept). Results in
+  `results-v161/` (the 11-03 `results/` stays as is). Run by env: `QL13_ODIN`, `QL13_ODIN_BIN`, `QL13_OUT`, and a new `QL13_RES`.
+  One code change, minimal: `ql13_env.RES` reads `QL13_RES` (default unchanged `results/`), with a unit test; the v1.6.1
+  `silicon_flow.py` CLI (design, --top, --out, --tools, --odin3, --clock) and step names are unchanged, so no other adaptation.
+  All 44 designs, smallest first, one job at a time under heavy-run. Designs that stay outside LVS match are reported with the
+  flow's error and are not fixed in Odin III (listed as Odin III gaps for the controller).
+  Correction during the run (2026-11-11, same day, before any result table): the first flow driver had a 3600 s Python timeout
+  around `heavy-run`, so the wait for a heavy slot (both slots were held by another lane) counted against it. Prob002 and
+  Prob003 ended "exit 124, 3600.1 s" without the flow running (not flow results), and killing the wrapper orphaned its flock
+  children, which kept slot 0 and waited on slot 1 (deadlock; the controller killed the orphans). Fix in `ql13_flow.py`, with
+  tests: the time limit is now inside heavy-run (`heavy-run timeout -s KILL 28800 python3 silicon_flow.py ...`, slot wait not
+  counted); the Python timeout stays only as a backstop (14400 s slot wait + 28800 s + 600 s), the child runs in its own
+  session and a timeout kills the whole process group. Prob002 and Prob003 are run again (`--redo`); the first attempts are
+  discarded as non-results. Prob018 was in progress when the driver was stopped to apply the fix and is run again from its start.
+  Second correction (2026-11-11, found on the first chain analysis, stated before the tables): in Odin III 1.6.1 the `gates` object links
+  (`cone`, `medium`) straight to `hdl` spans, so `resolve` reaches HDL without the `ir` stage; the strict rule "path passes ir"
+  gives (b) = 0 on all LVS-match designs although no chain is lost. `ql13_chain` now also reports `reach_hdl` and `b_reach_share`
+  (the chain reaches an HDL span; only the `ir` hop is absent and the last two stages are gates, hdl), keeps the strict `b_share` and
+  the catalogue as they were, and the labels and the gds-endpoint answer key use the reach reading. A unit test covers the shape. The
+  Q-L6/Q-L8/Q-L9 model files for the block builder were restored from the F: archive (2026-11-04b, sha256 verified) to `work/ql-restore`
+  (the old `work/ql*-out` roots had been archived); the gates, lut4, k4 and k6 columns are the stored 11-03 `prior_key.csv`.
 
 ## Results (2026-11-03)
 
@@ -205,3 +232,151 @@ run, 1 key construct) has 0 of 1 at every endpoint but gates (no key). Q-L12 key
 - OpenROAD is the March 2022 pin, the power grid is two layers (met1 rails, met4 straps), the library is drive strength 1 without latches.
 - The `cone` link is `medium` by definition: a mapped gate maps to the RTL objects whose spans it shares, so the chain is complete but coarse at that step.
 - Block recovery: 5 key constructs, grouping by line and column without a construct type, cell class `O-lut` as a stand-in, no retuning.
+
+## Results (2026-11-11, v1.6.1)
+
+Plan commit `29fffbac467dd19d9e631d0b5cce55758114aba1` (the amendment above); later commits fix the flow driver timeout and add the
+second reading of (b) (both stated in the amendments). Generated tables: `results-v161/summary.md` (`ql13_report.py`) from
+`flow.csv`, `chain.csv`, `catalogue.csv`, `weakest.csv`, `gds_blocks.csv`, `gds_key.csv`; `prior_key.csv` is the 11-03 file copied
+(the gates, lut4, k4 and k6 endpoints do not depend on the Odin III version). Flow: Odin III 1.6.1 (release build, tag v1.6.1,
+`3567dd1c`), OpenROAD `f12e2f474` (March 2022), Magic 8.3.465, Netgen 1.5.272, KLayout 0.30.12, SKY130A `sky130_fd_sc_hd`.
+
+### Plain English
+
+Of 44 designs, 28 now go through the whole flow to an LVS match (11-03, Odin III 1.4.0: 9). For those 28, every extracted cell that is
+not tap or fill joins a placed cell without a name (8096 of 8096), and every logic cell reaches a line of Verilog (7941 of 7941).
+Nothing was removed by physical design, 1166 resize events changed a cell's master but not its identity, and the flow added tap
+(2961), fill (24164), clock-tree (139) and repair (16) cells that carry a physical label instead of an HDL chain.
+
+One thing changed shape and must be said plainly. In Odin III 1.4.0 the chain from a mapped gate to HDL went through the elaborated
+cells (stage `ir`); in 1.6.1 the mapped gate links to the HDL spans directly (same `cone` link kind, same `medium` confidence, and the same
+spans as the 1.4.0 path), so the `ir` stage is no longer on the path. The 11-03 definition of (b) said "through `ir`". Read that
+literally, (b) is 0 of 7941. Read as the hypothesis was worded ("a complete provenance chain ... HDL line"), it is 7941 of 7941. Both are
+reported; the label below uses the second reading, and the first is in the failure catalogue (7941 cells, all "stage ir not on the path").
+This is a decision recorded here after seeing the data, not hidden. Whether the dropped `ir` hop is intended is a question for the controller.
+
+16 designs are still outside: 9 have no logic cell at all (pure wires: the flow runs to the end but there is no layout and LVS is
+"not applicable"), and 7 stop in OpenROAD global placement with a RePlAce divergence on small designs. The flow was not changed
+to fix these.
+
+### H-L13 (headline first, then the label)
+
+| quantity | LVS-match designs (n = 28) | label |
+|---|---|---|
+| (a) name-free join, non-filler extracted cells | 8096 of 8096 = 1.000 | SUPPORTED |
+| (b) logic cells that reach an HDL line | 7941 of 7941 = 1.000 | SUPPORTED |
+| (b) strict: `ir` stage on the path (11-03 wording) | 0 of 7941 = 0.000 | not met by shape (see above) |
+| designs with both shares 1.0 / below 1.0 / out of scope | 28 / 0 / 16 | |
+
+Overall: SUPPORTED on the 28 LVS-match designs under the reach reading of (b); the strict reading fails on all 28 by the path shape,
+with no chain lost. Weakest link on every chain: `medium` (the `cone` link from a mapped gate, by the v1.4 rule); 7941 of 7941.
+`gds_label_mismatch` is 0 (the 11-03 `physical:repair_buffer` against `physical:cts_buffer` inconsistency is fixed). No extracted cell
+carries an Odin III name (0), no Odin III cell was removed or renamed, no tie or hold buffer was inserted. `schema_check.py` passed on all 44
+`prov` directories. The measure can say no: a unit test cuts a join and a cone link and the cells land in the catalogue, and another
+tests the straight gates-to-hdl shape (`test_ql13.py`).
+
+### Inserted physical cells, counted apart (28 LVS-match designs)
+
+tap 2961, fill 24164, CTS buffers 139 (link kind `physical:cts_buffer`), repair buffers 16 (`physical:repair_buffer`, all in
+tinyriscv_csr), hold buffers 0, tie cells 0, unjoined 0. Extracted cells total 35221 (7941 logic + 8096 - 7941 = 155 inserted buffers + 2961 tap + 24164 fill).
+Resize events: 1166.
+
+### Per design: old status (v1.4.0, 11-03) to new status (v1.6.1)
+
+Counts: LVS match 9 to 28. Of the 9 old matches, all 9 still match. Of the 9 old LVS mismatches, 9 now match. Of the 13 old place
+errors with "empty command name" (at most one cell), 4 now match and 9 are designs with no logic. 6 old place/route errors are
+still place errors; the other 5 old place/route errors now match (see table). Of 2 old `equiv` failures, Prob046_dff8p now matches and
+tinyriscv_clint now stops at placement. (Prob001_zero shows 2482.6 s because that run started while another lane held both heavy slots; the wait
+was counted by the first driver, see the amendment. Other long runs: tinyriscv_csr 1562 s, tinyriscv_div 884 s, picorv32_pcpi_div 793 s.)
+
+| design | old status (v1.4) | new status (v1.6.1) | logic cells (v1.6.1) |
+|---|---|---|---|
+| Prob002_m2014_q4i | place: empty command name (<=1 cell) | LVS match | 1 |
+| Prob003_step_one | place: empty command name (<=1 cell) | LVS match | 1 |
+| Prob001_zero | place: empty command name (<=1 cell) | LVS match | 1 |
+| Prob007_wire | place: empty command name (<=1 cell) | no cells; flow ends, LVS not applicable | 0 |
+| Prob008_m2014_q4h | place: empty command name (<=1 cell) | no cells; flow ends, LVS not applicable | 0 |
+| Prob042_vector4 | place: empty command name (<=1 cell) | no cells; flow ends, LVS not applicable | 0 |
+| Prob018_mux256to1 | LVS match | LVS match | 404 |
+| Prob015_vector1 | place: empty command name (<=1 cell) | no cells; flow ends, LVS not applicable | 0 |
+| Prob004_vector2 | place: empty command name (<=1 cell) | no cells; flow ends, LVS not applicable | 0 |
+| Prob017_mux2to1v | place: [ERROR GPL-0304] RePlAce diverged at initial iteration. Re-r | place: openroad: [ERROR GPL-0304] RePlAce diverged at initial itera | 0 |
+| Prob006_vectorr | place: empty command name (<=1 cell) | no cells; flow ends, LVS not applicable | 0 |
+| Prob034_dff8 | place: [ERROR GPL-0305] RePlAce diverged at newStepLength. | place: openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength | 0 |
+| Prob059_wire4 | place: empty command name (<=1 cell) | no cells; flow ends, LVS not applicable | 0 |
+| Prob091_2012_q2b | place: [ERROR GRT-0076] Net y[1] not properly covered. | LVS match | 3 |
+| Prob023_vector100r | place: empty command name (<=1 cell) | no cells; flow ends, LVS not applicable | 0 |
+| Prob032_vector0 | place: empty command name (<=1 cell) | no cells; flow ends, LVS not applicable | 0 |
+| Prob052_gates100 | LVS match | LVS match | 248 |
+| Prob036_ringer | place: [ERROR GPL-0302] Use a higher -density or re-floorplan with  | LVS match | 2 |
+| Prob046_dff8p | equiv error | LVS match | 25 |
+| Prob093_ece241_2014_q3 | place: [ERROR GRT-0076] Net c not properly covered. | LVS match | 5 |
+| Prob043_vector5 | LVS mismatch | LVS match | 21 |
+| Prob054_edgedetect | place: [ERROR GPL-0305] RePlAce diverged at newStepLength. | place: openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength | 0 |
+| Prob045_edgedetect2 | place: [ERROR GPL-0305] RePlAce diverged at newStepLength. | place: openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength | 0 |
+| Prob044_vectorgates | LVS mismatch | LVS match | 12 |
+| Prob055_conditional | LVS match | LVS match | 129 |
+| Prob064_vector3 | place: empty command name (<=1 cell) | LVS match | 1 |
+| Prob065_7420 | place: [ERROR GPL-0302] Use a higher -density or re-floorplan with  | place: openroad: [ERROR GPL-0304] RePlAce diverged at initial itera | 0 |
+| Prob081_7458 | LVS mismatch | LVS match | 4 |
+| Prob092_gatesv100 | place: [ERROR PPL-0024] Number of pins 402 exceeds max possible 349 | LVS match | 399 |
+| Prob105_rotate100 | LVS match | LVS match | 604 |
+| Prob100_fsm3comb | LVS mismatch | LVS match | 4 |
+| Prob087_gates | LVS mismatch | LVS match | 10 |
+| Prob079_fsm3onehot | LVS mismatch | LVS match | 9 |
+| Prob115_shift18 | LVS match | LVS match | 514 |
+| Prob097_mux9to1v | LVS match | LVS match | 143 |
+| Prob121_2014_q3bfsm | LVS match | LVS match | 14 |
+| Prob112_always_case2 | LVS mismatch | LVS match | 5 |
+| Prob143_fsm_onehot | LVS match | LVS match | 19 |
+| Prob150_review2015_fsmonehot | LVS mismatch | LVS match | 10 |
+| Prob154_fsm_ps2data | place: [ERROR GPL-0305] RePlAce diverged at newStepLength. | place: openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength | 0 |
+| tinyriscv_csr | place: Error: net net7 initial #node != #rpin | LVS match | 2131 |
+| tinyriscv_clint | equiv error | place: openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength | 0 |
+| tinyriscv_div | LVS mismatch | LVS match | 1659 |
+| picorv32_pcpi_div | LVS match | LVS match | 1563 |
+
+### The 16 designs still outside the hypothesis (Odin III gaps for the controller, not fixed here)
+
+- 9 designs with no logic cell (Prob004_vector2, Prob006_vectorr, Prob007_wire, Prob008_m2014_q4h, Prob015_vector1, Prob023_vector100r,
+  Prob032_vector0, Prob042_vector4, Prob059_wire4): the flow completes, `lvs` reports "no cells in the design; nothing to compare"
+  (`not-applicable`). Probably by design (a wire has no cell to trace); the controller decides whether the flow should say so as a pass.
+- 5 x place `[ERROR GPL-0305] RePlAce diverged at newStepLength.`: Prob034_dff8, Prob045_edgedetect2, Prob054_edgedetect,
+  Prob154_fsm_ps2data, tinyriscv_clint.
+- 2 x place `[ERROR GPL-0304] RePlAce diverged at initial iteration. Re-run with a smaller init_density_penalty value.`: Prob017_mux2to1v, Prob065_7420.
+  (The flow reports these as "OUT OF SCOPE" in its place step; openroad.log has the line.) These are the small-design global-placement
+  failures of 11-03 (GPL-0304/0305), still open.
+- Question for the controller: the dropped `ir` hop in the 1.6.1 chain (above).
+
+### Block recovery without a model (right block for a flip-flop key construct; key = same HDL line and column)
+
+| design | gds | gates | lut4 | k4 | k6 |
+|---|---|---|---|---|---|
+| Prob046_dff8p | 1 / 1 | no key | 1 / 1 | 1 / 1 | 1 / 1 |
+| Prob105_rotate100 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+| Prob115_shift18 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+| Prob121_2014_q3bfsm | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 | 1 / 1 |
+| tinyriscv_csr | 2 / 2 | no key | 2 / 2 | 2 / 2 | 2 / 2 |
+| tinyriscv_div | 0 / 1 | no key | 0 / 1 | 0 / 1 | 0 / 1 |
+| picorv32_pcpi_div | 0 / 2 | no key | 0 / 2 | 0 / 2 | 0 / 2 |
+| pooled (right / key) | 6 / 9 = 0.667 | 3 / 3 = 1.000 | 6 / 9 = 0.667 | 6 / 9 = 0.667 | 6 / 9 = 0.667 |
+
+The other 21 LVS-match designs have no flip-flops in a key construct. Cell counts differ by endpoint (for example Prob105: 613 cells at
+gds). The benchmark shares are 0.610 at gates, 0.754 at k4 and 0.773 at k6 (paper Table tab:join); 9 constructs cannot say whether the gds
+endpoint is above or below them. The gds endpoint labels use the reach reading of (b), because the strict reading would leave every cell
+`unknown`. The two large processor modules have no right block at any endpoint (as on 11-03 for `picorv32_pcpi_div`).
+The 9 key constructs: gds, lut4, k4 and k6 agree design by design.
+
+### Cost
+
+Run root `work/ql13-v161-out`: 697 MB over the 44 runs (flow.csv `disk_kb` sum 697300 KB) and the Q-L6/Q-L8/Q-L9 model files restored from the F: archive
+(2026-11-04b, SHA256 verified) into `work/ql-restore`: 236 MB. `/mnt/c` free: 61 GB before, 59 GB after. Flow time sum 6734 s (includes
+the slot wait of Prob001_zero).
+
+### Limits of this result
+
+- 28 of 44 designs reach LVS match: 25 VerilogEval problems and 3 processor modules (tinyriscv_csr, tinyriscv_div, picorv32_pcpi_div); 1 to 2131 logic cells.
+- The `extracted` stage holds cells, not transistors. The join is on cell type and DEF-placement location (a real scanned chip has no DEF).
+- OpenROAD is the March 2022 pin, the power grid is two layers (met1 rails, met4 straps), the library is drive strength 1 without latches.
+- The `cone` link is `medium`: a mapped gate maps to the RTL spans it shares, so the chain is complete but coarse at that step.
+- The (b) reading changed after seeing the 1.6.1 data (stated above). Block recovery: 9 key constructs, grouping by line and column without a construct type, cell class `O-lut` as a stand-in, no retuning.

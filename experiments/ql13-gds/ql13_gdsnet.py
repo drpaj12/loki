@@ -212,7 +212,7 @@ def labels(run: ProvRun, kinds: dict[str, str]) -> list[dict[str, str]]:
         cls = ch.cell_class(run, obj)
         c = ch.full_chain(run, obj, cls)
         line = col = ""
-        if c.complete and c.own_span:
+        if c.reached and c.own_span:
             line, _, rest = c.own_span.partition(".")
             col = rest.partition("-")[0]
         rows.append({"node_id": ext_id, "kind": kinds[ext_id], "cls": cls,
