@@ -130,6 +130,13 @@ cell class `O-lut` is a stand-in for the unseen SKY130 gate class.
   counted); the Python timeout stays only as a backstop (14400 s slot wait + 28800 s + 600 s), the child runs in its own
   session and a timeout kills the whole process group. Prob002 and Prob003 are run again (`--redo`); the first attempts are
   discarded as non-results. Prob018 was in progress when the driver was stopped to apply the fix and is run again from its start.
+  Second correction (2026-11-11, found on the first chain analysis, stated before the tables): in Odin III 1.6.1 the `gates` object links
+  (`cone`, `medium`) straight to `hdl` spans, so `resolve` reaches HDL without the `ir` stage; the strict rule "path passes ir"
+  gives (b) = 0 on all LVS-match designs although no chain is lost. `ql13_chain` now also reports `reach_hdl` and `b_reach_share`
+  (the chain reaches an HDL span; only the `ir` hop is absent and the last two stages are gates, hdl), keeps the strict `b_share` and
+  the catalogue as they were, and the labels and the gds-endpoint answer key use the reach reading. A unit test covers the shape. The
+  Q-L6/Q-L8/Q-L9 model files for the block builder were restored from the F: archive (2026-11-04b, sha256 verified) to `work/ql-restore`
+  (the old `work/ql*-out` roots had been archived); the gates, lut4, k4 and k6 columns are the stored 11-03 `prior_key.csv`.
 
 ## Results (2026-11-03)
 
