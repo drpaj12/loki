@@ -17,7 +17,7 @@ import ql13_env as env
 def label(chain: dict[str, str] | None) -> str:
     if chain is None or chain["lvs"] != "match":
         return "OUT"
-    return "SUPPORTED" if chain["a_share"] == "1.0000" and chain["b_share"] == "1.0000" \
+    return "SUPPORTED" if chain["a_share"] == "1.0000" and chain["b_reach_share"] == "1.0000" \
         else "CONTRADICTED"
 
 
@@ -37,16 +37,19 @@ def main() -> int:
             f"{len(flow) - len(ok)}.",
             f"Per-design label (W/L/T style: supported / contradicted / out of scope): "
             f"{c['SUPPORTED']} / {c['CONTRADICTED']} / {c['OUT']}.", ""]
-    tot = {k: sum(int(chain[d][k]) for d in ok) for k in
-           ("nonfiller", "joined", "logic_denominator", "full_chain", "n_logic", "n_tap", "n_fill",
-            "n_cts_buffer", "n_repair_buffer", "n_hold_buffer", "n_tie", "n_unjoined", "resized",
-            "removed", "odin_cells")} if ok else {}
+    keys = ("nonfiller", "joined", "logic_denominator", "full_chain", "n_logic", "n_tap", "n_fill",
+            "reach_hdl", "n_cts_buffer", "n_repair_buffer", "n_hold_buffer", "n_tie", "n_unjoined",
+            "resized", "removed", "odin_cells")
+    tot = {k: sum(int(chain[d][k]) for d in ok) for k in keys} if ok else {}
     if ok:
         out += [f"(a) name-free join, LVS-match designs pooled: {tot['joined']} of "
                 f"{tot['nonfiller']} non-filler extracted cells = "
                 f"{pct(tot['joined'], tot['nonfiller'])}.",
                 f"(b) full chain to an HDL line: {tot['full_chain']} of {tot['logic_denominator']} "
-                f"logic cells = {pct(tot['full_chain'], tot['logic_denominator'])}.",
+                f"logic cells = {pct(tot['full_chain'], tot['logic_denominator'])} with the ir hop "
+                f"on the path (strict, v1.4 shape); reaches an HDL span (gates to hdl directly "
+                f"or through ir): {tot['reach_hdl']} of {tot['logic_denominator']} = "
+                f"{pct(tot['reach_hdl'], tot['logic_denominator'])}. The label uses the second.",
                 f"Odin III cells {tot['odin_cells']}; removed by physical design {tot['removed']}; "
                 f"resized {tot['resized']}.", ""]
     fails: Counter[tuple[str, str]] = Counter()
@@ -71,13 +74,15 @@ def main() -> int:
                    + " |")
     out += ["", "## Chain, per design with a prov directory", "",
             "| design | LVS | extracted | logic | tap | fill | cts | repair | hold | tie "
-            "| unjoined | (a) | (b) | resized | removed | gds label mismatch |",
-            "|" + "---|" * 16]
+            "| unjoined | (a) | (b) strict | (b) reach | resized | removed | gds label mismatch |",
+            "|" + "---|" * 17]
     for d, r in chain.items():
         out.append("| " + " | ".join([d, r["lvs"], r["extracted"], r["n_logic"], r["n_tap"],
-                                      r["n_fill"], r["n_cts_buffer"], r["n_repair_buffer"],
-                                      r["n_hold_buffer"], r["n_tie"], r["n_unjoined"],
-                                      r["a_share"], r["b_share"], r["resized"], r["removed"],
+                                      r["n_fill"], r["n_cts_buffer"],
+                                      r["n_repair_buffer"], r["n_hold_buffer"], r["n_tie"],
+                                      r["n_unjoined"],
+                                      r["a_share"], r["b_share"], r["b_reach_share"],
+                                      r["resized"], r["removed"],
                                       r["gds_label_mismatch"]]) + " |")
     out += ["", f"## Failure catalogue ({len(cat)} cells)", ""]
     by = Counter((x["broken_at"], x["cause"], x["class"]) for x in cat)

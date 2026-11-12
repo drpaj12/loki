@@ -1,0 +1,45 @@
+design,clock,exit,seconds,failed_step,error,equiv,lvs,schema_check,disk_kb
+Prob002_m2014_q4i,,0,2.7,,,equivalent,match,ok,3324
+Prob003_step_one,,0,2.4,,,equivalent,match,ok,3320
+Prob001_zero,,0,2482.6,,,equivalent,match,ok,3324
+Prob007_wire,,0,2.3,lvs,lvs: no cells in the design; nothing to compare,equivalent,not-applicable,ok,2356
+Prob008_m2014_q4h,,0,2.3,lvs,lvs: no cells in the design; nothing to compare,equivalent,not-applicable,ok,2356
+Prob042_vector4,,0,2.8,lvs,lvs: no cells in the design; nothing to compare,equivalent,not-applicable,ok,2416
+Prob018_mux256to1,,0,150.5,,,equivalent,match,ok,28428
+Prob015_vector1,,0,2.7,lvs,lvs: no cells in the design; nothing to compare,equivalent,not-applicable,ok,2404
+Prob004_vector2,,0,2.5,lvs,lvs: no cells in the design; nothing to compare,equivalent,not-applicable,ok,2452
+Prob017_mux2to1v,,3,0.9,place,openroad: [ERROR GPL-0304] RePlAce diverged at initial iteration. Re-run with a smaller init_density_penalty value.,equivalent,,ok,300
+Prob006_vectorr,,0,2.6,lvs,lvs: no cells in the design; nothing to compare,equivalent,not-applicable,ok,2380
+Prob034_dff8,clk,3,0.8,place,openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength.,equivalent,,ok,164
+Prob059_wire4,,0,2.6,lvs,lvs: no cells in the design; nothing to compare,equivalent,not-applicable,ok,2360
+Prob091_2012_q2b,,0,3.2,,,equivalent,match,ok,3528
+Prob023_vector100r,,0,4.8,lvs,lvs: no cells in the design; nothing to compare,equivalent,not-applicable,ok,3624
+Prob032_vector0,,0,2.5,lvs,lvs: no cells in the design; nothing to compare,equivalent,not-applicable,ok,2368
+Prob052_gates100,,0,54.3,,,equivalent,match,ok,15316
+Prob036_ringer,,0,2.6,,,equivalent,match,ok,3432
+Prob046_dff8p,clk,0,8.1,,,equivalent,match,ok,4580
+Prob093_ece241_2014_q3,,0,2.9,,,equivalent,match,ok,3496
+Prob043_vector5,,0,4.5,,,equivalent,match,ok,3896
+Prob054_edgedetect,clk,3,0.8,place,openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength.,equivalent,,ok,204
+Prob045_edgedetect2,clk,3,0.7,place,openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength.,equivalent,,ok,188
+Prob044_vectorgates,,0,3.7,,,equivalent,match,ok,3732
+Prob055_conditional,,0,42.3,,,equivalent,match,ok,9868
+Prob064_vector3,,0,2.6,,,equivalent,match,ok,3428
+Prob065_7420,,3,0.7,place,openroad: [ERROR GPL-0304] RePlAce diverged at initial iteration. Re-run with a smaller init_density_penalty value.,equivalent,,ok,144
+Prob081_7458,,0,2.9,,,equivalent,match,ok,3604
+Prob092_gatesv100,,0,74.8,,,equivalent,match,ok,25168
+Prob105_rotate100,clk,0,283.8,,,equivalent,match,ok,43592
+Prob100_fsm3comb,,0,3.0,,,equivalent,match,ok,3596
+Prob087_gates,,0,3.5,,,equivalent,match,ok,3568
+Prob079_fsm3onehot,,0,3.4,,,equivalent,match,ok,3668
+Prob115_shift18,clk,0,258.1,,,equivalent,match,ok,38444
+Prob097_mux9to1v,,0,52.3,,,equivalent,match,ok,14144
+Prob121_2014_q3bfsm,clk,0,5.7,,,equivalent,match,ok,4252
+Prob112_always_case2,,0,3.3,,,equivalent,match,ok,3668
+Prob143_fsm_onehot,,0,3.9,,,equivalent,match,ok,3876
+Prob150_review2015_fsmonehot,,0,3.8,,,equivalent,match,ok,3860
+Prob154_fsm_ps2data,clk,3,0.8,place,openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength.,equivalent,,ok,364
+tinyriscv_csr,clk,0,1561.7,,,equivalent,match,ok,195728
+tinyriscv_clint,clk,3,4.2,place,openroad: [ERROR GPL-0305] RePlAce diverged at newStepLength.,not-proven,,ok,5804
+tinyriscv_div,clk,0,884.4,,,equivalent,match,ok,122432
+picorv32_pcpi_div,clk,0,793.1,,,equivalent,match,ok,108144

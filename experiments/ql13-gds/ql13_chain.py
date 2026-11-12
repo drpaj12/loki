@@ -45,10 +45,16 @@ class Chain:
     own_span: str = ""  # first source span of the gates object on the path ("line.col-line.col")
     broken_at: str = ""
     cause: str = ""
+    ir_skipped: bool = False  # v1.6.1: gates links straight to hdl spans; the ir hop is absent
 
     @property
     def complete(self) -> bool:
         return not self.broken_at
+
+    @property
+    def reached(self) -> bool:
+        """Reaches an HDL span: complete, or complete except that the ``ir`` hop is skipped."""
+        return self.complete or self.ir_skipped
 
 
 def cell_class(run: ProvRun, obj: ProvObject) -> str:
@@ -111,6 +117,8 @@ def full_chain(run: ProvRun, obj: ProvObject, cls: str) -> Chain:
     if not ch.spans and not ch.broken_at:
         ch.broken_at, ch.cause = ch.stages[-1], "no source span"
     missing = [s for s in STAGE_ORDER if s not in ch.stages]
+    if missing == ["ir"] and ch.stages[-2:] == ["gates", "hdl"] and ch.spans:
+        ch.ir_skipped = True
     if missing and not ch.broken_at:
         ch.broken_at, ch.cause = missing[0], f"stage {missing[0]} not on the path"
     return ch
@@ -152,6 +160,8 @@ def design_rows(name: str, root: Path) -> dict[str, Any]:
     for s, msg in steps.items():
         if msg.startswith("FAILED"):
             row["failed_step"], row["error"] = s, msg[len("FAILED"):].strip()[:160]
+        elif msg.startswith("OUT OF SCOPE"):
+            row["failed_step"], row["error"] = s, "flow: " + msg[len("OUT OF SCOPE"):].strip()[:150]
     eq = root / "out" / "equiv.txt"
     if row["failed_step"] == "equiv" and eq.is_file():
         # the flow refused the step message (a home path in it); the tool's own last line says why
@@ -165,7 +175,10 @@ def design_rows(name: str, root: Path) -> dict[str, Any]:
     for s in ("equiv", "lvs"):
         hp = list((root / "out" / "prov").glob(f"*-{s}.json"))
         if hp:
-            row[s] = json.loads(hp[0].read_text(encoding="utf-8"))["check"]["result"]
+            chk = json.loads(hp[0].read_text(encoding="utf-8"))["check"]
+            row[s] = chk["result"]
+            if s == "lvs" and chk["result"] == "not-applicable":
+                row["failed_step"], row["error"] = "lvs", "lvs: " + str(chk.get("detail", ""))[:140]
     return row
 
 
@@ -219,6 +232,7 @@ def analyse(run: ProvRun) -> tuple[dict[str, Any], list[dict[str, Any]], Counter
     joined = 0
     nonfill = 0
     full = 0
+    reach = 0
     denom_b = 0
     cat: list[dict[str, Any]] = []
     mismatches = 0
@@ -238,9 +252,11 @@ def analyse(run: ProvRun) -> tuple[dict[str, Any], list[dict[str, Any]], Counter
             insert_kinds.setdefault(cls, Counter())[ch.last_kind or "none"] += 1
             continue
         denom_b += 1
+        reach += ch.reached
+        if ch.reached:
+            weakest[ch.weakest] += 1
         if ch.complete:
             full += 1
-            weakest[ch.weakest] += 1
         else:
             cat.append({"cell": obj.id, "master": obj.type, "class": cls,
                         "broken_at": ch.broken_at, "link_kind": ch.last_kind, "cause": ch.cause})
@@ -251,6 +267,7 @@ def analyse(run: ProvRun) -> tuple[dict[str, Any], list[dict[str, Any]], Counter
     row = {"extracted": sum(classes.values()), **{f"n_{c}": classes[c] for c in CLASSES},
            "nonfiller": nonfill, "joined": joined, "a_share": _share(joined, nonfill),
            "logic_denominator": denom_b, "full_chain": full, "b_share": _share(full, denom_b),
+           "reach_hdl": reach, "b_reach_share": _share(reach, denom_b),
            "odin_cells": len(gates), "resized": sums.get("resized", 0),
            "removed": sums.get("removed", 0), "renamed": sums.get("renamed", 0),
            "gds_label_mismatch": mismatches, "extracted_odin_names": name_leaks,

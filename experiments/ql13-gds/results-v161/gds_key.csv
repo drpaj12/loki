@@ -1,0 +1,10 @@
+design,construct,ffs,right_blocks
+Prob046_dff8p,0,8,[0]
+Prob105_rotate100,0,100,[0]
+Prob115_shift18,0,64,[0]
+Prob121_2014_q3bfsm,0,3,[0]
+tinyriscv_csr,0,64,[0]
+tinyriscv_csr,1,192,[1]
+tinyriscv_div,0,238,[]
+picorv32_pcpi_div,0,6,[]
+picorv32_pcpi_div,1,194,[]

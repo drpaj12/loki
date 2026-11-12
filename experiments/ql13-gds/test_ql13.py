@@ -201,3 +201,24 @@ class FlowTest(unittest.TestCase):
         time.sleep(0.3)
         with self.assertRaises(ProcessLookupError):
             os.kill(pid, 0)
+
+
+class IrSkippedTest(unittest.TestCase):
+    def test_gates_linked_straight_to_hdl(self) -> None:
+        """Odin III v1.6.1 shape: the gates object links to hdl; strict (b) 0, reach share 1."""
+        with tempfile.TemporaryDirectory() as t:
+            prov = Path(t) / "p"
+            shutil.copytree(FIXTURE, prov)
+            ir = {}
+            for line in (prov / "02-elab.objects.jsonl").read_text(encoding="utf-8").splitlines():
+                r = json.loads(line)
+                ir[r["id"]] = [x for x in r["links"] if x["to"].startswith("hdl:")]
+            gp = prov / "03-map.objects.jsonl"
+            rows = [json.loads(x) for x in gp.read_text(encoding="utf-8").splitlines()]
+            for r in rows:
+                r["links"] = [dict(h, kind="cone") for x in r["links"] for h in ir.get(x["to"], [])]
+            gp.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+            row, cat, _w = ch.analyse(read_run(prov, verify=False))
+        self.assertEqual(row["b_share"], "0.0000")
+        self.assertEqual(row["b_reach_share"], "1.0000")
+        self.assertTrue(cat and all(c["broken_at"] == "ir" for c in cat))
